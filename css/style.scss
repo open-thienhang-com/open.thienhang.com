@@ -1,6 +1,6 @@
 $white: #ffffff;
 $black: #000000;
-$primary1: #f89cab;
+$primary1: #00b894;
 $btnColor: #db4f66;
 
 
@@ -268,7 +268,7 @@ a:focus {
   .slider_container {
     color: #fefefe;
     background-color: $black;
-    background-color: #f89cab;
+    background-color: #00b894;
     padding: 25px;
     border-radius: 0 0 15px 15px;
   }
@@ -298,7 +298,7 @@ a:focus {
     }
 
     a {
-      @include hero_btn(#db4566, $white, 10px, 40px, 5px);
+      @include hero_btn(#55efc4, $white, 10px, 40px, 5px);
       margin-top: 25px;
       text-transform: uppercase;
     }
