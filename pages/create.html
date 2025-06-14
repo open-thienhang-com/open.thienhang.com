@@ -1,0 +1,92 @@
+l<div class="main-panel">
+    <div class="content-wrapper">
+      <div class="row">
+        <div class="col-12 grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+              <h4 class="card-title">Register New Hotel</h4>
+              <p class="card-description"> Fill in hotel details below </p>
+              <form class="forms-sample">
+  
+                <div class="form-group">
+                  <label for="hotelName">Hotel Name</label>
+                  <input type="text" class="form-control" id="hotelName" placeholder="Enter hotel name">
+                </div>
+  
+                <div class="form-group">
+                  <label for="hotelEmail">Email</label>
+                  <input type="email" class="form-control" id="hotelEmail" placeholder="Enter email">
+                </div>
+  
+                <div class="form-group">
+                  <label for="hotelPhone">Phone</label>
+                  <input type="text" class="form-control" id="hotelPhone" placeholder="Phone number">
+                </div>
+  
+                <div class="form-group">
+                  <label for="hotelCity">City</label>
+                  <input type="text" class="form-control" id="hotelCity" placeholder="City">
+                </div>
+  
+                <div class="form-group">
+                  <label for="hotelAddress">Address</label>
+                  <textarea class="form-control" id="hotelAddress" rows="3" placeholder="Street address"></textarea>
+                </div>
+  
+                <div class="form-group">
+                  <label for="hotelAminities">Amenities</label>
+                  <select multiple class="form-control" id="hotelAminities">
+                    <option>WiFi</option>
+                    <option>Parking</option>
+                    <option>Pool</option>
+                    <option>Breakfast</option>
+                    <option>Air Conditioning</option>
+                  </select>
+                </div>
+  
+                <div class="form-group">
+                  <label>Accepted Payment Methods</label><br>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="paymentCash" value="cash">
+                    <label class="form-check-label" for="paymentCash">Cash</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="paymentCard" value="card">
+                    <label class="form-check-label" for="paymentCard">Credit Card</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="paymentPaypal" value="paypal">
+                    <label class="form-check-label" for="paymentPaypal">PayPal</label>
+                  </div>
+                </div>
+  
+                <hr>
+                <h5>Room Information</h5>
+                <div id="rooms-container">
+                  <div class="form-group">
+                    <label for="roomName">Room Name</label>
+                    <input type="text" class="form-control" id="roomName" placeholder="Room type or name">
+                  </div>
+                  <div class="form-group">
+                    <label for="roomPrice">Price Per Night</label>
+                    <input type="number" class="form-control" id="roomPrice" placeholder="USD">
+                  </div>
+                  <div class="form-group">
+                    <label for="roomCapacity">Capacity</label>
+                    <input type="number" class="form-control" id="roomCapacity" placeholder="Number of people">
+                  </div>
+                </div>
+  
+                <button type="button" class="btn btn-outline-primary mb-3" onclick="addRoomSection()">+ Add Another Room</button>
+  
+                <button type="submit" class="btn btn-primary me-2">Submit</button>
+                <button class="btn btn-light" type="reset">Cancel</button>
+              </form>
+  
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
