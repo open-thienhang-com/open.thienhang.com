@@ -122,14 +122,14 @@
     <li class="nav-item">
       <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
         <i class="icon-layout menu-icon"></i>
-        <span class="menu-title">Domain</span>
+        <span class="menu-title">UI Elements</span>
         <i class="menu-arrow"></i>
       </a>
       <div class="collapse" id="ui-basic">
         <ul class="nav flex-column sub-menu">
-          <li class="nav-item"> <a class="nav-link" href="../../pages/ui-features/buttons.html">Web Shop</a></li>
-          <li class="nav-item"> <a class="nav-link" href="../../pages/ui-features/dropdowns.html">Restaurant</a></li>
-          <li class="nav-item"> <a class="nav-link" href="../../pages/ui-features/typography.html">Hotel</a></li>
+          <li class="nav-item"> <a class="nav-link" href="../../pages/ui-features/buttons.html">Buttons</a></li>
+          <li class="nav-item"> <a class="nav-link" href="../../pages/ui-features/dropdowns.html">Dropdowns</a></li>
+          <li class="nav-item"> <a class="nav-link" href="../../pages/ui-features/typography.html">Typography</a></li>
         </ul>
       </div>
     </li>
@@ -160,22 +160,12 @@
     <li class="nav-item">
       <a class="nav-link" data-bs-toggle="collapse" href="#tables" aria-expanded="false" aria-controls="tables">
         <i class="icon-grid-2 menu-icon"></i>
-        <span class="menu-title">Data</span>
+        <span class="menu-title">Tables</span>
         <i class="menu-arrow"></i>
       </a>
       <div class="collapse" id="tables">
         <ul class="nav flex-column sub-menu">
-          <li class="nav-item"> <a class="nav-link" href="../../pages/tables/basic-table.html">Customer</a></li>
-        </ul>
-      </div>
-      <div class="collapse" id="tables">
-        <ul class="nav flex-column sub-menu">
-          <li class="nav-item"> <a class="nav-link" href="../../pages/tables/basic-table.html">Product</a></li>
-        </ul>
-      </div>
-      <div class="collapse" id="tables">
-        <ul class="nav flex-column sub-menu">
-          <li class="nav-item"> <a class="nav-link" href="../../pages/tables/basic-table.html">Inventory</a></li>
+          <li class="nav-item"> <a class="nav-link" href="../../pages/tables/basic-table.html">Basic table</a></li>
         </ul>
       </div>
     </li>
@@ -228,6 +218,88 @@
         <!-- partial -->
         <div class="main-panel">
           <div class="content-wrapper">
+            <div class="row">
+              <div class="col-12 grid-margin stretch-card">
+                <div class="card">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="card-body">
+                        <h4 class="card-title">Single color buttons</h4>
+                        <p class="card-description">Add class <code>.btn-{color}</code> for buttons in theme colors</p>
+                        <div class="template-demo">
+                          <button type="button" class="btn btn-primary">Primary</button>
+                          <button type="button" class="btn btn-secondary">Secondary</button>
+                          <button type="button" class="btn btn-success">Success</button>
+                          <button type="button" class="btn btn-danger">Danger</button>
+                          <button type="button" class="btn btn-warning">Warning</button>
+                          <button type="button" class="btn btn-info">Info</button>
+                          <button type="button" class="btn btn-light">Light</button>
+                          <button type="button" class="btn btn-dark">Dark</button>
+                          <button type="button" class="btn btn-link">Link</button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card-body">
+                        <h4 class="card-title">Rounded buttons</h4>
+                        <p class="card-description">Add class <code>.btn-rounded</code></p>
+                        <div class="template-demo">
+                          <button type="button" class="btn btn-primary btn-rounded btn-fw">Primary</button>
+                          <button type="button" class="btn btn-secondary btn-rounded btn-fw">Secondary</button>
+                          <button type="button" class="btn btn-success btn-rounded btn-fw">Success</button>
+                          <button type="button" class="btn btn-danger btn-rounded btn-fw">Danger</button>
+                          <button type="button" class="btn btn-warning btn-rounded btn-fw">Warning</button>
+                          <button type="button" class="btn btn-info btn-rounded btn-fw">Info</button>
+                          <button type="button" class="btn btn-light btn-rounded btn-fw">Light</button>
+                          <button type="button" class="btn btn-dark btn-rounded btn-fw">Dark</button>
+                          <button type="button" class="btn btn-link btn-rounded btn-fw">Link</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 grid-margin stretch-card">
+                <div class="card">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="card-body">
+                        <h4 class="card-title">Outlined buttons</h4>
+                        <p class="card-description">Add class <code>.btn-outline-{color}</code> for outline buttons</p>
+                        <div class="template-demo">
+                          <button type="button" class="btn btn-outline-primary btn-fw">Primary</button>
+                          <button type="button" class="btn btn-outline-secondary btn-fw">Secondary</button>
+                          <button type="button" class="btn btn-outline-success btn-fw">Success</button>
+                          <button type="button" class="btn btn-outline-danger btn-fw">Danger</button>
+                          <button type="button" class="btn btn-outline-warning btn-fw">Warning</button>
+                          <button type="button" class="btn btn-outline-info btn-fw">Info</button>
+                          <button type="button" class="btn btn-outline-light btn-fw">Light</button>
+                          <button type="button" class="btn btn-outline-dark btn-fw">Dark</button>
+                          <button type="button" class="btn btn-link btn-fw">Link</button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card-body">
+                        <h4 class="card-title">Inverse buttons</h4>
+                        <p class="card-description">Add class <code>.btn-inverse-{color} for inverse buttons</code></p>
+                        <div class="template-demo">
+                          <button type="button" class="btn btn-inverse-primary btn-fw">Primary</button>
+                          <button type="button" class="btn btn-inverse-secondary btn-fw">Secondary</button>
+                          <button type="button" class="btn btn-inverse-success btn-fw">Success</button>
+                          <button type="button" class="btn btn-inverse-danger btn-fw">Danger</button>
+                          <button type="button" class="btn btn-inverse-warning btn-fw">Warning</button>
+                          <button type="button" class="btn btn-inverse-info btn-fw">Info</button>
+                          <button type="button" class="btn btn-inverse-light btn-fw">Light</button>
+                          <button type="button" class="btn btn-inverse-dark btn-fw">Dark</button>
+                          <button type="button" class="btn btn-link btn-fw">Link</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <!-- content-wrapper ends -->
           <!-- partial:../../partials/_footer.html -->
@@ -255,7 +327,5 @@
     <script src="../../assets/js/settings.js"></script>
     <script src="../../assets/js/todolist.js"></script>
     <!-- endinject -->
-    <!-- Custom js for this page-->
-    <!-- End custom js for this page-->
   </body>
 </html>
