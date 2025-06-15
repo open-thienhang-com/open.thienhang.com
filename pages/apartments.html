@@ -1,0 +1,88 @@
+<h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Available Apartments</h2>
+<div id="status" class="text-center text-gray-500">Loading apartments...</div>
+<div id="apartmentList" class="row mb-12 g-6">
+</div>
+
+  
+
+<script>
+  console.log("Apartments API URL loaded");
+  async function fetchApartments() {
+    const status = document.getElementById("status");
+    const container = document.getElementById("apartmentList");
+
+    try {
+      const res = await fetch("https://api.thienhang.com/services/hotel/apartment/apartments", {
+        headers: {
+          "Accept": "application/json"
+        }
+      });
+
+      if (!res.ok) throw new Error("Network error");
+
+      const result = await res.json();
+      const apartments = result.data;
+
+      status.style.display = "none";
+      container.classList.remove("hidden");
+
+      apartments.forEach(apartment => {
+        const card = document.createElement("div");
+        card.className = "col-md-6 col-lg-4";
+
+        card.innerHTML = `
+            <div class="card">
+              <img
+                src="https://images.ctfassets.net/hrltx12pl8hq/28ECAQiPJZ78hxatLTa7Ts/2f695d869736ae3b0de3e56ceaca3958/free-nature-images.jpg?fit=fill&w=1200&h=630"
+                class="card-img-top"
+                alt="Apartment Image"
+              />
+              <div class="card-body">
+                <h5 class="card-title">${apartment.title}</h5>
+                <p class="card-text">
+                  Price: <strong>${apartment.price_per_day.toLocaleString()} ${apartment.currency}</strong>
+                </p>
+              </div>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                  Area: ${apartment.total_area} m²
+                </li>
+                <li class="list-group-item">
+                  Furnished: ${apartment.is_furnished ? "Yes" : "No"}
+                </li>
+                <li class="list-group-item">
+                  Garage: ${apartment.is_garage ? "Yes" : "No"}
+                </li>
+                <li class="list-group-item">
+                  Status: <span class="${apartment.is_booked ? 'text-danger' : 'text-success'}">
+                    ${apartment.is_booked ? "Booked" : "Available"}
+                  </span>
+                </li>
+              </ul>
+              <div class="card-body">
+                <a href="javascript:void(0)" onclick="showMore('${apartment._id}')" class="card-link btn btn-sm btn-primary w-100">
+                  View Details
+                </a>
+              </div>
+            </div>
+        `;
+
+        container.appendChild(card);
+      });
+
+    } catch (err) {
+      console.error("Fetch error:", err);
+      status.innerText = "❌ Failed to load apartments.";
+    }
+  }
+
+  function showMore(id) {
+    // alert(`View details for apartment ID: ${id}`);
+    // // or redirect: 
+    window.location.href = `/index.html?page=apartment&id=${id}`;
+    loadPage("hotel_detail")
+  }
+
+  fetchApartments();
+
+</script>

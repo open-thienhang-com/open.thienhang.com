@@ -48,6 +48,7 @@
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
 
     <script src="../assets/js/config.js"></script>
+    <script src="main.js"></script>
   </head>
 
   <body>
@@ -78,7 +79,7 @@
           <ul class="menu-inner py-1">
             <!-- Dashboards -->
             <li class="menu-item">
-              <a onclick="loadPage('dashboard')" class="menu-link menu-toggle">
+              <a onclick="loadPage('dashboard', {})" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-home-smile"></i>
                 <div class="text-truncate" data-i18n="Dashboards">Dashboards</div>
                 <span class="badge rounded-pill bg-danger ms-auto">5</span>
@@ -101,7 +102,7 @@
 
               <ul class="menu-sub">
                 <li class="menu-item">
-                  <a onclick="loadPage('apartment')" class="menu-link">
+                  <a onclick="loadPage('apartments')" class="menu-link">
                     <div class="text-truncate" data-i18n="Without menu">Apartments</div>
                   </a>
                 </li>
@@ -489,6 +490,6 @@
 
     <!-- Place this tag before closing body tag for github widget button. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
-    <script src="main.js"></script>
+    
   </body>
 </html>

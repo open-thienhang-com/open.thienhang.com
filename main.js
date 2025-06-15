@@ -1,74 +1,69 @@
-// Load sub page content
-async function loadPage(page) {
-    const content = document.getElementById("main-content");
-    try {
-      const response = await fetch(`pages/${page}.html`);
-      const html = await response.text();
-      content.innerHTML = html;
-    } catch (err) {
-      content.innerHTML = "<p>Error loading page</p>";
-      console.error("Load error:", err);
+// ✅ Load page với param và localStorage
+async function loadPage(pageName, params = {}) {
+  const content = document.getElementById("main-content");
+
+  try {
+    // Cập nhật localStorage
+    localStorage.setItem("currentPage", pageName);
+    localStorage.setItem("pageParams", JSON.stringify(params));
+
+    // Cập nhật URL trên thanh địa chỉ (không reload)
+    const url = new URL(window.location);
+    url.searchParams.set("page", pageName);
+    Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
+    history.replaceState({}, "", url);
+
+    // Load HTML nội dung
+    const response = await fetch(`pages/${pageName}.html`);
+    const htmlText = await response.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlText, "text/html");
+
+    // Chèn nội dung
+    content.innerHTML = doc.body.innerHTML;
+
+    // Tải & thực thi script bên trong trang
+    const scripts = doc.querySelectorAll("script");
+    scripts.forEach(oldScript => {
+      const newScript = document.createElement("script");
+      if (oldScript.src) {
+        newScript.src = oldScript.src;
+      } else {
+        newScript.textContent = oldScript.textContent;
+      }
+      document.body.appendChild(newScript);
+    });
+
+  } catch (err) {
+    content.innerHTML = "<p>Error loading page</p>";
+    console.error("❌ Load error:", err);
+  }
+}
+
+// ✅ Khi trang load
+window.onload = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const page = urlParams.get("page") 
+  
+  if (!page) {
+    // Nếu không có tham số page, lấy từ localStorage
+    const storedPage = localStorage.getItem("currentPage");
+    if (storedPage) {
+      loadPage(storedPage);
+      return;
+    } else {
+      // Nếu không có trang nào được lưu, tải trang mặc định
+      loadPage("test");
+      return;
     }
   }
-
-  // Auto load default page
-  window.onload = () => loadPage('hotels');
-
-
-
-  // function addRoomSection() {
-  //   const container = document.getElementById("rooms-container");
-  //   const section = document.createElement("div");
-  //   section.innerHTML = `
-  //    <div class="card mb-4">
-  //     <div class="card-body">
-  //       <h4 class="card-title">Add Room</h4>
-  //       <div class="row">
-          
-  //         <!-- Left: Upload image -->
-  //         <div class="col-md-4 d-flex flex-column align-items-center justify-content-center border-end">
-  //           <div class="mb-3 text-center">
-  //             <label for="roomImage" class="form-label">Room Thumbnail</label>
-  //             <input class="form-control" type="file" id="roomImage" accept="image/*">
-  //           </div>
-  //           <img id="previewImage" src="https://via.placeholder.com/200x150?text=Preview" class="img-fluid rounded border" style="max-height: 150px;" alt="Preview">
-  //         </div>
-
-  //         <!-- Right: Room Info -->
-  //         <div class="col-md-8">
-  //           <div class="form-group mb-3">
-  //             <label>Room Name</label>
-  //             <input type="text" class="form-control" placeholder="Room type or name">
-  //           </div>
-  //           <div class="form-group mb-3">
-  //             <label>Price Per Night</label>
-  //             <input type="number" class="form-control" placeholder="USD">
-  //           </div>
-  //           <div class="form-group mb-3">
-  //             <label>Capacity</label>
-  //             <input type="number" class="form-control" placeholder="Number of people">
-  //           </div>
-  //         </div>
-
-  //       </div>
-  //     </div>
-  //   </div>
-  //   `;
-  //   container.appendChild(section);
-  // }
-
-
-
-  // const fileInput = document.getElementById("roomImage");
-  // const previewImage = document.getElementById("previewImage");
-
-  // fileInput.addEventListener("change", function () {
-  //   const file = this.files[0];
-  //   if (file) {
-  //     previewImage.src = URL.createObjectURL(file);
-  //   }
-  // });
-
-
-
   
+  const otherParams = {};
+  urlParams.forEach((value, key) => {
+    if (key !== "page") {
+      otherParams[key] = value;
+    }
+  });
+
+  loadPage(page, otherParams);
+};

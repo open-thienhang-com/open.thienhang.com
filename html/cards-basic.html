@@ -812,22 +812,43 @@
                   </div>
                 </div>
                 <div class="col-md-6 col-lg-4">
-                  <h6 class="mt-2 text-body-secondary">Kitchen sink</h6>
-                  <div class="card">
-                    <img class="card-img-top" src="../assets/img/elements/7.png" alt="Card image cap" />
-                    <div class="card-body">
-                      <h5 class="card-title">Card title</h5>
-                      <p class="card-text">Some quick example text to build on the card title.</p>
+                    <div class="col-md-6 col-lg-4">
+                      <h6 class="mt-2 text-body-secondary">Apartment</h6>
+                      <div class="card">
+                        <img
+                          src="https://images.ctfassets.net/hrltx12pl8hq/28ECAQiPJZ78hxatLTa7Ts/2f695d869736ae3b0de3e56ceaca3958/free-nature-images.jpg?fit=fill&w=1200&h=630"
+                          class="card-img-top"
+                          alt="Apartment Image"
+                        />
+                        <div class="card-body">
+                          <h5 class="card-title">${apartment.title}</h5>
+                          <p class="card-text">
+                            Price: <strong>${apartment.price_per_day.toLocaleString()} ${apartment.currency}</strong>
+                          </p>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                          <li class="list-group-item">
+                            Area: ${apartment.total_area} m²
+                          </li>
+                          <li class="list-group-item">
+                            Furnished: ${apartment.is_furnished ? "Yes" : "No"}
+                          </li>
+                          <li class="list-group-item">
+                            Garage: ${apartment.is_garage ? "Yes" : "No"}
+                          </li>
+                          <li class="list-group-item">
+                            Status: <span class="${apartment.is_booked ? 'text-danger' : 'text-success'}">
+                              ${apartment.is_booked ? "Booked" : "Available"}
+                            </span>
+                          </li>
+                        </ul>
+                        <div class="card-body">
+                          <a href="javascript:void(0)" onclick="showMore('${apartment._id}')" class="card-link btn btn-sm btn-primary w-100">
+                            View Details
+                          </a>
+                        </div>
+                      </div>
                     </div>
-                    <ul class="list-group list-group-flush">
-                      <li class="list-group-item">Cras justo odio</li>
-                      <li class="list-group-item">Vestibulum at eros</li>
-                    </ul>
-                    <div class="card-body">
-                      <a href="javascript:void(0)" class="card-link">Card link</a>
-                      <a href="javascript:void(0)" class="card-link">Another link</a>
-                    </div>
-                  </div>
                 </div>
               </div>
 
