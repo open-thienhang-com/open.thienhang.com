@@ -2,7 +2,7 @@
 
 <html
   lang="en"
-  class="layout-menu-fixed layout-wide"
+  class="layout-menu-fixed layout-compact"
   data-assets-path="../assets/"
   data-template="vertical-menu-template-free">
   <head>
@@ -11,7 +11,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>OPEN MESH</title>
+    <title>Demo: Container - Layouts | Sneat - Bootstrap Dashboard FREE</title>
 
     <meta name="description" content="" />
 
@@ -125,7 +125,7 @@
           <ul class="menu-inner py-1">
             <!-- Dashboards -->
             <li class="menu-item">
-              <a onclick="loadPage('dashboard')" class="menu-link menu-toggle">
+              <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-home-smile"></i>
                 <div class="text-truncate" data-i18n="Dashboards">Dashboards</div>
                 <span class="badge rounded-pill bg-danger ms-auto">5</span>
@@ -193,12 +193,12 @@
                     <div class="text-truncate" data-i18n="Without navbar">Without navbar</div>
                   </a>
                 </li>
-                <li class="menu-item active">
+                <li class="menu-item">
                   <a href="layouts-fluid.html" class="menu-link">
                     <div class="text-truncate" data-i18n="Fluid">Fluid</div>
                   </a>
                 </li>
-                <li class="menu-item">
+                <li class="menu-item active">
                   <a href="layouts-container.html" class="menu-link">
                     <div class="text-truncate" data-i18n="Container">Container</div>
                   </a>
@@ -609,7 +609,7 @@
           <!-- Navbar -->
 
           <nav
-            class="layout-navbar container-fluid navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
+            class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
             id="layout-navbar">
             <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
               <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
@@ -713,16 +713,27 @@
           <!-- Content wrapper -->
           <div class="content-wrapper">
             <!-- Content -->
-            <div class="container-fluid flex-grow-1 container-p-y">
-              <div id="main-content"></div>
-              
+            <div class="container-xxl flex-grow-1 container-p-y">
+              <!-- Layout Demo -->
+              <div class="layout-demo-wrapper">
+                <div class="layout-demo-placeholder">
+                  <img
+                    src="../assets/img/layouts/layout-container-light.png"
+                    class="img-fluid"
+                    alt="Layout container" />
+                </div>
+                <div class="layout-demo-info">
+                  <h4>Layout container</h4>
+                  <p>Container layout sets a <code>max-width</code> at each responsive breakpoint.</p>
+                </div>
+              </div>
               <!--/ Layout Demo -->
             </div>
             <!-- / Content -->
 
             <!-- Footer -->
             <footer class="content-footer footer bg-footer-theme">
-              <div class="container-fluid">
+              <div class="container-xxl">
                 <div
                   class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
                   <div class="mb-2 mb-md-0">
@@ -812,6 +823,5 @@
 
     <!-- Place this tag before closing body tag for github widget button. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
-    <script src="main.js"></script>
   </body>
 </html>

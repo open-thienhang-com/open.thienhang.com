@@ -2,7 +2,7 @@
 
 <html
   lang="en"
-  class="layout-menu-fixed layout-wide"
+  class="layout-menu-fixed layout-compact"
   data-assets-path="../assets/"
   data-template="vertical-menu-template-free">
   <head>
@@ -11,7 +11,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>OPEN MESH</title>
+    <title>Demo: Collapse - UI elements | Sneat - Bootstrap Dashboard FREE</title>
 
     <meta name="description" content="" />
 
@@ -125,7 +125,7 @@
           <ul class="menu-inner py-1">
             <!-- Dashboards -->
             <li class="menu-item">
-              <a onclick="loadPage('dashboard')" class="menu-link menu-toggle">
+              <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-home-smile"></i>
                 <div class="text-truncate" data-i18n="Dashboards">Dashboards</div>
                 <span class="badge rounded-pill bg-danger ms-auto">5</span>
@@ -176,7 +176,7 @@
             </li>
 
             <!-- Layouts -->
-            <li class="menu-item active open">
+            <li class="menu-item">
               <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-layout"></i>
                 <div class="text-truncate" data-i18n="Layouts">Layouts</div>
@@ -193,7 +193,7 @@
                     <div class="text-truncate" data-i18n="Without navbar">Without navbar</div>
                   </a>
                 </li>
-                <li class="menu-item active">
+                <li class="menu-item">
                   <a href="layouts-fluid.html" class="menu-link">
                     <div class="text-truncate" data-i18n="Fluid">Fluid</div>
                   </a>
@@ -381,7 +381,7 @@
               </a>
             </li>
             <!-- User interface -->
-            <li class="menu-item">
+            <li class="menu-item active open">
               <a href="javascript:void(0)" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-box"></i>
                 <div class="text-truncate" data-i18n="User interface">User interface</div>
@@ -412,7 +412,7 @@
                     <div class="text-truncate" data-i18n="Carousel">Carousel</div>
                   </a>
                 </li>
-                <li class="menu-item">
+                <li class="menu-item active">
                   <a href="ui-collapse.html" class="menu-link">
                     <div class="text-truncate" data-i18n="Collapse">Collapse</div>
                   </a>
@@ -609,7 +609,7 @@
           <!-- Navbar -->
 
           <nav
-            class="layout-navbar container-fluid navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
+            class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
             id="layout-navbar">
             <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
               <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
@@ -713,16 +713,176 @@
           <!-- Content wrapper -->
           <div class="content-wrapper">
             <!-- Content -->
-            <div class="container-fluid flex-grow-1 container-p-y">
-              <div id="main-content"></div>
-              
-              <!--/ Layout Demo -->
+            <div class="container-xxl flex-grow-1 container-p-y">
+              <!-- Collapse -->
+              <h5>Collapse</h5>
+              <div class="row g-6">
+                <div class="col-12">
+                  <div class="card">
+                    <h5 class="card-header">Basic</h5>
+                    <div class="card-body">
+                      <p class="card-text">
+                        Toggle the visibility of content across your project with a few classes and our JavaScript
+                        plugins.
+                      </p>
+                      <p class="demo-inline-spacing">
+                        <a
+                          class="btn btn-primary me-1"
+                          data-bs-toggle="collapse"
+                          href="#collapseExample"
+                          role="button"
+                          aria-expanded="false"
+                          aria-controls="collapseExample">
+                          Link with href
+                        </a>
+                        <button
+                          class="btn btn-primary me-1"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#collapseExample"
+                          aria-expanded="false"
+                          aria-controls="collapseExample">
+                          Button with data-bs-target
+                        </button>
+                      </p>
+                      <div class="collapse" id="collapseExample">
+                        <div class="d-grid d-sm-flex p-4 border">
+                          <img
+                            src="../assets/img/elements/1.png"
+                            alt="collapse-image"
+                            height="125"
+                            class="me-6 mb-sm-0 mb-2" />
+                          <span>
+                            Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has
+                            been the industry's standard dummy text ever since the 1500s, when an unknown printer took a
+                            galley of type and scrambled it to make a type specimen book. It has survived not only five
+                            centuries, but also the leap into electronic typesetting, remaining essentially unchanged.
+                            It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum
+                            passages, and more recently with desktop publishing software like Aldus PageMaker including
+                            versions of Lorem Ipsum.It is a long established fact that a reader will be distracted by
+                            the readable content of a page when looking at its layout. The point of using Lorem Ipsum is
+                            that it has a more-or-less normal distribution of letters.
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="card">
+                    <h5 class="card-header">Horizontal</h5>
+                    <div class="card-body">
+                      <p class="card-text">
+                        The collapse plugin also supports horizontal collapsing.<br />
+                        If you want more detailed information, you can check the
+                        <a
+                          href="https://demos.themeselection.com/sneat-bootstrap-html-admin-template/documentation//ui-collapse.html#horizontal-collapse"
+                          target="_blank"
+                          >documentation</a
+                        >.
+                      </p>
+                      <p class="demo-inline-spacing">
+                        <button
+                          class="btn btn-primary"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#collapseWidthExample"
+                          aria-expanded="false"
+                          aria-controls="collapseWidthExample">
+                          Toggle width collapse
+                        </button>
+                      </p>
+                      <div style="min-height: 120px">
+                        <div class="collapse-horizontal collapse show" id="collapseWidthExample">
+                          <div class="p-4 border" style="width: 300px">
+                            Lorem Ipsum is simply dummy text of the printing and typesetting industry Ipsum has been
+                            the.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="card">
+                    <h5 class="card-header">Multiple targets</h5>
+                    <div class="card-body">
+                      <p class="card-text">Show and hide multiple elements by referencing them with a selector.</p>
+
+                      <p class="demo-inline-spacing">
+                        <a
+                          class="btn btn-primary me-1"
+                          data-bs-toggle="collapse"
+                          href="#multiCollapseExample1"
+                          role="button"
+                          aria-expanded="false"
+                          aria-controls="multiCollapseExample1"
+                          >Toggle first element</a
+                        >
+                        <button
+                          class="btn btn-primary me-1"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#multiCollapseExample2"
+                          aria-expanded="false"
+                          aria-controls="multiCollapseExample2">
+                          Toggle second element
+                        </button>
+                        <button
+                          class="btn btn-primary me-1"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target=".multi-collapse"
+                          aria-expanded="false"
+                          aria-controls="multiCollapseExample1 multiCollapseExample2">
+                          Toggle both elements
+                        </button>
+                      </p>
+                      <div class="row">
+                        <div class="col-12 col-lg-6 mb-2 mb-lg-0">
+                          <div class="collapse multi-collapse" id="multiCollapseExample1">
+                            <div class="d-grid d-sm-flex p-4 border">
+                              <img
+                                src="../assets/img/elements/2.png"
+                                alt="collapse-image"
+                                height="125"
+                                class="me-6 mb-sm-0 mb-2" />
+                              <span>
+                                All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as
+                                necessary, making this the first true generator on the Internet. It uses a dictionary of
+                                over 200 Latin words, combined with a handful of model sentence structures, to generate
+                                Lorem Ipsum which looks reasonable.
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-12 col-lg-6">
+                          <div class="collapse multi-collapse" id="multiCollapseExample2">
+                            <div class="d-grid d-sm-flex p-4 border">
+                              <img
+                                src="../assets/img/elements/3.png"
+                                alt="collapse-image"
+                                height="125"
+                                class="me-6 mb-sm-0 mb-2" />
+                              <span>
+                                There are many variations of passages of Lorem Ipsum available, but the majority have
+                                suffered alteration in some form, by injected humour, or randomised words which don't
+                                look even slightly believable. If you are going to use a passage of Lorem Ipsum.
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             <!-- / Content -->
 
             <!-- Footer -->
             <footer class="content-footer footer bg-footer-theme">
-              <div class="container-fluid">
+              <div class="container-xxl">
                 <div
                   class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
                   <div class="mb-2 mb-md-0">
@@ -812,6 +972,5 @@
 
     <!-- Place this tag before closing body tag for github widget button. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
-    <script src="main.js"></script>
   </body>
 </html>

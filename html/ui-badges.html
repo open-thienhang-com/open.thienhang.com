@@ -2,7 +2,7 @@
 
 <html
   lang="en"
-  class="layout-menu-fixed layout-wide"
+  class="layout-menu-fixed layout-compact"
   data-assets-path="../assets/"
   data-template="vertical-menu-template-free">
   <head>
@@ -11,7 +11,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>OPEN MESH</title>
+    <title>Demo: Badges - UI elements | Sneat - Bootstrap Dashboard FREE</title>
 
     <meta name="description" content="" />
 
@@ -125,7 +125,7 @@
           <ul class="menu-inner py-1">
             <!-- Dashboards -->
             <li class="menu-item">
-              <a onclick="loadPage('dashboard')" class="menu-link menu-toggle">
+              <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-home-smile"></i>
                 <div class="text-truncate" data-i18n="Dashboards">Dashboards</div>
                 <span class="badge rounded-pill bg-danger ms-auto">5</span>
@@ -176,7 +176,7 @@
             </li>
 
             <!-- Layouts -->
-            <li class="menu-item active open">
+            <li class="menu-item">
               <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-layout"></i>
                 <div class="text-truncate" data-i18n="Layouts">Layouts</div>
@@ -193,7 +193,7 @@
                     <div class="text-truncate" data-i18n="Without navbar">Without navbar</div>
                   </a>
                 </li>
-                <li class="menu-item active">
+                <li class="menu-item">
                   <a href="layouts-fluid.html" class="menu-link">
                     <div class="text-truncate" data-i18n="Fluid">Fluid</div>
                   </a>
@@ -381,7 +381,7 @@
               </a>
             </li>
             <!-- User interface -->
-            <li class="menu-item">
+            <li class="menu-item active open">
               <a href="javascript:void(0)" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-box"></i>
                 <div class="text-truncate" data-i18n="User interface">User interface</div>
@@ -397,7 +397,7 @@
                     <div class="text-truncate" data-i18n="Alerts">Alerts</div>
                   </a>
                 </li>
-                <li class="menu-item">
+                <li class="menu-item active">
                   <a href="ui-badges.html" class="menu-link">
                     <div class="text-truncate" data-i18n="Badges">Badges</div>
                   </a>
@@ -609,7 +609,7 @@
           <!-- Navbar -->
 
           <nav
-            class="layout-navbar container-fluid navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
+            class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
             id="layout-navbar">
             <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
               <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
@@ -713,16 +713,173 @@
           <!-- Content wrapper -->
           <div class="content-wrapper">
             <!-- Content -->
-            <div class="container-fluid flex-grow-1 container-p-y">
-              <div id="main-content"></div>
-              
-              <!--/ Layout Demo -->
+            <div class="container-xxl flex-grow-1 container-p-y">
+              <div class="row g-6">
+                <!-- Basic Badges -->
+                <div class="col-lg-6">
+                  <div class="card">
+                    <h5 class="card-header">Basic Badges</h5>
+                    <div class="card-body">
+                      <div class="small fw-medium">Default</div>
+                      <div class="demo-inline-spacing">
+                        <span class="badge text-bg-primary">Primary</span>
+                        <span class="badge text-bg-secondary">Secondary</span>
+                        <span class="badge text-bg-success">Success</span>
+                        <span class="badge text-bg-danger">Danger</span>
+                        <span class="badge text-bg-warning">Warning</span>
+                        <span class="badge text-bg-info">Info</span>
+                        <span class="badge text-bg-dark">Dark</span>
+                      </div>
+                    </div>
+                    <hr class="m-0" />
+                    <div class="card-body">
+                      <div class="small fw-medium">Pills</div>
+
+                      <div class="demo-inline-spacing">
+                        <span class="badge rounded-pill text-bg-primary">Primary</span>
+                        <span class="badge rounded-pill text-bg-secondary">Secondary</span>
+                        <span class="badge rounded-pill text-bg-success">Success</span>
+                        <span class="badge rounded-pill text-bg-danger">Danger</span>
+                        <span class="badge rounded-pill text-bg-warning">Warning</span>
+                        <span class="badge rounded-pill text-bg-info">Info</span>
+                        <span class="badge rounded-pill text-bg-dark">Dark</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Label Badges -->
+                <div class="col-lg-6">
+                  <div class="card">
+                    <h5 class="card-header">Label Badges</h5>
+                    <div class="card-body">
+                      <div class="small fw-medium">Label Default</div>
+
+                      <div class="demo-inline-spacing">
+                        <span class="badge bg-label-primary">Primary</span>
+                        <span class="badge bg-label-secondary">Secondary</span>
+                        <span class="badge bg-label-success">Success</span>
+                        <span class="badge bg-label-danger">Danger</span>
+                        <span class="badge bg-label-warning">Warning</span>
+                        <span class="badge bg-label-info">Info</span>
+                        <span class="badge bg-label-dark">Dark</span>
+                      </div>
+                    </div>
+                    <hr class="m-0" />
+                    <div class="card-body">
+                      <div class="small fw-medium">Label Pills</div>
+
+                      <div class="demo-inline-spacing">
+                        <span class="badge rounded-pill bg-label-primary">Primary</span>
+                        <span class="badge rounded-pill bg-label-secondary">Secondary</span>
+                        <span class="badge rounded-pill bg-label-success">Success</span>
+                        <span class="badge rounded-pill bg-label-danger">Danger</span>
+                        <span class="badge rounded-pill bg-label-warning">Warning</span>
+                        <span class="badge rounded-pill bg-label-info">Info</span>
+                        <span class="badge rounded-pill bg-label-dark">Dark</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Button with Badges -->
+                <div class="col-lg">
+                  <div class="card">
+                    <h5 class="card-header">Button with Badges</h5>
+                    <div class="card-body">
+                      <div class="row gy-3">
+                        <div class="col-sm-4">
+                          <small class="fw-medium">Default</small>
+                          <div class="demo-inline-spacing">
+                            <button type="button" class="btn btn-primary">
+                              Text
+                              <span class="badge bg-white text-primary ms-1">4</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary">
+                              Text
+                              <span class="badge bg-white text-secondary rounded-pill ms-1">4</span>
+                            </button>
+                          </div>
+                        </div>
+                        <div class="col-sm-4">
+                          <small class="fw-medium">Outline</small>
+                          <div class="demo-inline-spacing">
+                            <button type="button" class="btn btn-outline-primary">
+                              Text
+                              <span class="badge ms-1">4</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary">
+                              Text
+                              <span class="badge rounded-pill ms-1">4</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Badge Circle -->
+                <div class="col-12">
+                  <div class="card">
+                    <h5 class="card-header">Badge Circle & Square Style</h5>
+                    <div class="card-body">
+                      <div class="row gy-6">
+                        <div class="col-xl-6">
+                          <h6>Basic</h6>
+                          <div class="small fw-medium mb-2">Default</div>
+                          <div class="demo-inline-spacing">
+                            <p>
+                              <span class="badge badge-center rounded-pill text-bg-primary">1</span>
+                              <span class="badge badge-center rounded-pill text-bg-secondary">2</span>
+                              <span class="badge badge-center rounded-pill text-bg-success">3</span>
+                              <span class="badge badge-center rounded-pill text-bg-danger">4</span>
+                              <span class="badge badge-center rounded-pill text-bg-warning">5</span>
+                              <span class="badge badge-center rounded-pill text-bg-info">6</span>
+                            </p>
+                            <p>
+                              <span class="badge badge-center text-bg-primary">1</span>
+                              <span class="badge badge-center text-bg-secondary">2</span>
+                              <span class="badge badge-center text-bg-success">3</span>
+                              <span class="badge badge-center text-bg-danger">4</span>
+                              <span class="badge badge-center text-bg-warning">5</span>
+                              <span class="badge badge-center text-bg-info">6</span>
+                            </p>
+                          </div>
+                        </div>
+                        <div class="col-xl-6">
+                          <h6>Label</h6>
+                          <div class="small fw-medium mb-2">Default</div>
+                          <div class="demo-inline-spacing">
+                            <p>
+                              <span class="badge badge-center rounded-pill bg-label-primary">1</span>
+                              <span class="badge badge-center rounded-pill bg-label-secondary">2</span>
+                              <span class="badge badge-center rounded-pill bg-label-success">3</span>
+                              <span class="badge badge-center rounded-pill bg-label-danger">4</span>
+                              <span class="badge badge-center rounded-pill bg-label-warning">5</span>
+                              <span class="badge badge-center rounded-pill bg-label-info">6</span>
+                            </p>
+                            <p>
+                              <span class="badge badge-center bg-label-primary">1</span>
+                              <span class="badge badge-center bg-label-secondary">2</span>
+                              <span class="badge badge-center bg-label-success">3</span>
+                              <span class="badge badge-center bg-label-danger">4</span>
+                              <span class="badge badge-center bg-label-warning">5</span>
+                              <span class="badge badge-center bg-label-info">6</span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             <!-- / Content -->
 
             <!-- Footer -->
             <footer class="content-footer footer bg-footer-theme">
-              <div class="container-fluid">
+              <div class="container-xxl">
                 <div
                   class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
                   <div class="mb-2 mb-md-0">
@@ -812,6 +969,5 @@
 
     <!-- Place this tag before closing body tag for github widget button. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
-    <script src="main.js"></script>
   </body>
 </html>

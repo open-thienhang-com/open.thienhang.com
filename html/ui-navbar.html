@@ -2,7 +2,7 @@
 
 <html
   lang="en"
-  class="layout-menu-fixed layout-wide"
+  class="layout-menu-fixed layout-compact"
   data-assets-path="../assets/"
   data-template="vertical-menu-template-free">
   <head>
@@ -11,7 +11,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>OPEN MESH</title>
+    <title>Demo: Navbar - UI elements | Sneat - Bootstrap Dashboard FREE</title>
 
     <meta name="description" content="" />
 
@@ -125,7 +125,7 @@
           <ul class="menu-inner py-1">
             <!-- Dashboards -->
             <li class="menu-item">
-              <a onclick="loadPage('dashboard')" class="menu-link menu-toggle">
+              <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-home-smile"></i>
                 <div class="text-truncate" data-i18n="Dashboards">Dashboards</div>
                 <span class="badge rounded-pill bg-danger ms-auto">5</span>
@@ -176,7 +176,7 @@
             </li>
 
             <!-- Layouts -->
-            <li class="menu-item active open">
+            <li class="menu-item">
               <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-layout"></i>
                 <div class="text-truncate" data-i18n="Layouts">Layouts</div>
@@ -193,7 +193,7 @@
                     <div class="text-truncate" data-i18n="Without navbar">Without navbar</div>
                   </a>
                 </li>
-                <li class="menu-item active">
+                <li class="menu-item">
                   <a href="layouts-fluid.html" class="menu-link">
                     <div class="text-truncate" data-i18n="Fluid">Fluid</div>
                   </a>
@@ -381,7 +381,7 @@
               </a>
             </li>
             <!-- User interface -->
-            <li class="menu-item">
+            <li class="menu-item active open">
               <a href="javascript:void(0)" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-box"></i>
                 <div class="text-truncate" data-i18n="User interface">User interface</div>
@@ -437,7 +437,7 @@
                     <div class="text-truncate" data-i18n="Modals">Modals</div>
                   </a>
                 </li>
-                <li class="menu-item">
+                <li class="menu-item active">
                   <a href="ui-navbar.html" class="menu-link">
                     <div class="text-truncate" data-i18n="Navbar">Navbar</div>
                   </a>
@@ -609,7 +609,7 @@
           <!-- Navbar -->
 
           <nav
-            class="layout-navbar container-fluid navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
+            class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
             id="layout-navbar">
             <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
               <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
@@ -713,16 +713,153 @@
           <!-- Content wrapper -->
           <div class="content-wrapper">
             <!-- Content -->
-            <div class="container-fluid flex-grow-1 container-p-y">
-              <div id="main-content"></div>
-              
-              <!--/ Layout Demo -->
+            <div class="container-xxl flex-grow-1 container-p-y">
+              <!-- Basic -->
+              <h5 class="pb-1 mb-6">Example</h5>
+              <nav class="navbar navbar-expand-lg mb-12 bg-body-tertiary">
+                <div class="container-fluid">
+                  <a class="navbar-brand" href="javascript:void(0)">Navbar</a>
+                  <button
+                    class="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                  </button>
+                  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                      <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="javascript:void(0)">Home</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link" href="javascript:void(0)">Link</a>
+                      </li>
+                      <li class="nav-item dropdown">
+                        <a
+                          class="nav-link dropdown-toggle"
+                          href="javascript:void(0)"
+                          id="navbarDropdown"
+                          role="button"
+                          data-bs-toggle="dropdown"
+                          aria-expanded="false">
+                          Dropdown
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                          <li><a class="dropdown-item" href="javascript:void(0)">Action</a></li>
+                          <li><a class="dropdown-item" href="javascript:void(0)">Another action</a></li>
+                          <li>
+                            <hr class="dropdown-divider" />
+                          </li>
+                          <li><a class="dropdown-item" href="javascript:void(0)">Something else here</a></li>
+                        </ul>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link disabled" href="javascript:void(0)" tabindex="-1">Disabled</a>
+                      </li>
+                    </ul>
+                    <form class="d-flex" onsubmit="return false">
+                      <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
+                      <button class="btn btn-outline-primary" type="submit">Search</button>
+                    </form>
+                  </div>
+                </div>
+              </nav>
+              <!--/ Basic -->
+
+              <!-- Supported content -->
+              <h5 class="pb-1 mb-6">Supported content</h5>
+              <div class="mb-12">
+                <h6 class="mt-2 mb-4 text-body-secondary">Text</h6>
+                <nav class="navbar navbar-example navbar-expand-lg bg-body-tertiary">
+                  <div class="container-fluid">
+                    <a class="navbar-brand" href="javascript:void(0)">Navbar</a>
+                    <button
+                      class="navbar-toggler"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#navbar-ex-2"
+                      aria-controls="navbar-ex-2"
+                      aria-expanded="false"
+                      aria-label="Toggle navigation">
+                      <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbar-ex-2">
+                      <div class="navbar-nav me-auto">
+                        <a class="nav-item nav-link active" href="javascript:void(0)">Home</a>
+                        <a class="nav-item nav-link" href="javascript:void(0)">About</a>
+                        <a class="nav-item nav-link" href="javascript:void(0)">Contact</a>
+                      </div>
+
+                      <span class="navbar-text">Marshmallow brownie lemon drops cheesecake.</span>
+                    </div>
+                  </div>
+                </nav>
+
+                <h6 class="mt-6 mb-4 text-body-secondary">Input Group</h6>
+                <nav class="navbar navbar-example navbar-expand-lg bg-body-tertiary">
+                  <div class="container-fluid">
+                    <a class="navbar-brand" href="javascript:void(0)">Navbar</a>
+                    <button
+                      class="navbar-toggler"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#navbar-ex-4">
+                      <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="navbar-ex-4">
+                      <div class="navbar-nav me-auto">
+                        <a class="nav-item nav-link active" href="javascript:void(0)">Home</a>
+                        <a class="nav-item nav-link" href="javascript:void(0)">About</a>
+                        <a class="nav-item nav-link" href="javascript:void(0)">Contact</a>
+                      </div>
+
+                      <form class="d-flex" onsubmit="return false">
+                        <div class="input-group">
+                          <span class="input-group-text"><i class="icon-base bx bx-search"></i></span>
+                          <input type="text" class="form-control" placeholder="Search..." />
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </nav>
+
+                <h6 class="mt-6 mb-4 text-body-secondary">Button</h6>
+                <nav class="navbar navbar-example navbar-expand-lg bg-body-tertiary">
+                  <div class="container-fluid">
+                    <a class="navbar-brand" href="javascript:void(0)">Navbar</a>
+                    <button
+                      class="navbar-toggler"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#navbar-ex-3">
+                      <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="navbar-ex-3">
+                      <div class="navbar-nav me-auto">
+                        <a class="nav-item nav-link active" href="javascript:void(0)">Home</a>
+                        <a class="nav-item nav-link" href="javascript:void(0)">About</a>
+                        <a class="nav-item nav-link" href="javascript:void(0)">Contact</a>
+                      </div>
+
+                      <form onsubmit="return false">
+                        <button class="btn btn-outline-primary" type="button">Buy Now</button>
+                      </form>
+                    </div>
+                  </div>
+                </nav>
+              </div>
+              <!--/ Supported content -->
             </div>
             <!-- / Content -->
 
             <!-- Footer -->
             <footer class="content-footer footer bg-footer-theme">
-              <div class="container-fluid">
+              <div class="container-xxl">
                 <div
                   class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
                   <div class="mb-2 mb-md-0">
@@ -812,6 +949,5 @@
 
     <!-- Place this tag before closing body tag for github widget button. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
-    <script src="main.js"></script>
   </body>
 </html>
