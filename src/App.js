@@ -1,12 +1,22 @@
 import React, { Suspense, useEffect } from 'react'
-import { HashRouter, Route, Routes } from 'react-router-dom'
+import { HashRouter, Route, Routes, Navigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { ToastContainer } from 'react-toastify'
 
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
+import 'react-toastify/dist/ReactToastify.css'
 
 // We use those styles to show code examples, you should remove them in your application.
 import './scss/examples.scss'
+
+// Auth Context
+import { AuthProvider } from './contexts/AuthContext'
+import ProtectedRoute from './components/ProtectedRoute'
+import AuthDebug from './components/AuthDebug'
+
+// Import test utilities (makes them available in browser console)
+import './utils/testAuth'
 
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -36,23 +46,53 @@ const App = () => {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <HashRouter>
-      <Suspense
-        fallback={
-          <div className="pt-3 text-center">
-            <CSpinner color="primary" variant="grow" />
-          </div>
-        }
-      >
-        <Routes>
-          <Route exact path="/login" name="Login Page" element={<Login />} />
-          <Route exact path="/register" name="Register Page" element={<Register />} />
-          <Route exact path="/404" name="Page 404" element={<Page404 />} />
-          <Route exact path="/500" name="Page 500" element={<Page500 />} />
-          <Route path="*" name="Home" element={<DefaultLayout />} />
-        </Routes>
-      </Suspense>
-    </HashRouter>
+    <AuthProvider>
+      <HashRouter>
+        <Suspense
+          fallback={
+            <div className="d-flex justify-content-center align-items-center min-vh-100">
+              <CSpinner color="primary" variant="grow" />
+              <span className="ms-2">Loading...</span>
+            </div>
+          }
+        >
+          <Routes>
+            {/* Debug route - REMOVE IN PRODUCTION */}
+            <Route path="/debug" element={<AuthDebug />} />
+
+            {/* Public routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/404" element={<Page404 />} />
+            <Route path="/500" element={<Page500 />} />
+
+            {/* Protected routes */}
+            <Route
+              path="/*"
+              element={
+                <ProtectedRoute>
+                  <DefaultLayout />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </Suspense>
+      </HashRouter>
+
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+    </AuthProvider>
   )
 }
 
