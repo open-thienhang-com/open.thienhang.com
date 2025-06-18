@@ -8,6 +8,7 @@ import {
   cilDescription,
   cilDrop,
   cilExternalLink,
+  cilHome,
   cilNotes,
   cilPencil,
   cilPuzzle,
@@ -26,6 +27,24 @@ const _nav = [
       color: 'info',
       text: 'NEW',
     },
+  },
+  {
+    component: CNavGroup,
+    name: 'Hotels',
+    to: '/hotels',
+    icon: <CIcon icon={cilHome} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'All Hotels',
+        to: '/hotels',
+      },
+      {
+        component: CNavItem,
+        name: 'Create Hotel',
+        to: '/hotels/create',
+      },
+    ],
   },
   {
     component: CNavTitle,
