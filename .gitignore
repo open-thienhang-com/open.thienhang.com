@@ -9,7 +9,6 @@ yarn.lock
 /coverage
 
 # production
-/build
 
 # misc
 .eslintcache
