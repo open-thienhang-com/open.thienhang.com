@@ -8,6 +8,7 @@ import {
   cilDescription,
   cilDrop,
   cilExternalLink,
+  cilHome,
   cilNotes,
   cilPencil,
   cilPuzzle,
@@ -29,34 +30,49 @@ const _nav = [
   },
   {
     component: CNavGroup,
-    name: 'Governance',
-    to: '/givernance',
-    icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
+// <<<<<<< HEAD
+//     name: 'Governance',
+//     to: '/givernance',
+//     icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
+//     items: [
+//       {
+//         component: CNavItem,
+//         name: 'Assets',
+//         to: '/base/accordion',
+//       },
+//       {
+//         component: CNavItem,
+//         name: 'Permissions',
+//         to: '/base/breadcrumbs',
+//       },
+//       {
+//         component: CNavItem,
+//         name: 'Policies',
+//         to: '/base/paginations',
+//       },
+//       {
+//         component: CNavItem,
+//         name: 'Roles',
+//         to: '/base/accordion',
+//       },
+//       {
+//         component: CNavItem,
+//         name: 'Users',
+//         to: '/base/breadcrumbs',
+// =======
+    name: 'Hotels',
+    to: '/hotels',
+    icon: <CIcon icon={cilHome} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
-        name: 'Assets',
-        to: '/base/accordion',
+        name: 'All Hotels',
+        to: '/hotels',
       },
       {
         component: CNavItem,
-        name: 'Permissions',
-        to: '/base/breadcrumbs',
-      },
-      {
-        component: CNavItem,
-        name: 'Policies',
-        to: '/base/paginations',
-      },
-      {
-        component: CNavItem,
-        name: 'Roles',
-        to: '/base/accordion',
-      },
-      {
-        component: CNavItem,
-        name: 'Users',
-        to: '/base/breadcrumbs',
+        name: 'Create Hotel',
+        to: '/hotels/create',
       },
     ],
   },

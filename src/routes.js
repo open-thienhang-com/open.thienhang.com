@@ -1,6 +1,10 @@
 import React from 'react'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
+const Hotels = React.lazy(() => import('./views/hotels/Hotels'))
+const HotelDetail = React.lazy(() => import('./views/hotels/HotelDetail'))
+const CreateHotel = React.lazy(() => import('./views/hotels/CreateHotel'))
+const UpdateHotel = React.lazy(() => import('./views/hotels/UpdateHotel'))
 const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
 const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
 
@@ -55,6 +59,10 @@ const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/governance', name: 'Governance', element: Dashboard },
+  { path: '/hotels/create', name: 'Create Hotel', element: CreateHotel },
+  { path: '/hotels/:id/edit', name: 'Update Hotel', element: UpdateHotel },
+  { path: '/hotels/:id', name: 'Hotel Detail', element: HotelDetail },
+  { path: '/hotels', name: 'Hotels', element: Hotels },
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },
   { path: '/theme/typography', name: 'Typography', element: Typography },
