@@ -2,6 +2,7 @@ import Cookies from 'js-cookie'
 
 /**
  * Cookie utility functions for authentication
+ * Mixed approach: HttpOnly cookies for production + accessible storage for development
  */
 
 // Cookie names
@@ -11,64 +12,34 @@ export const COOKIE_NAMES = {
   USER_DATA: 'user_data',
 }
 
-// Cookie options - DISABLE secure for localhost
+// Check if we're in development
+const isDevelopment = process.env.NODE_ENV === 'development'
+
+// Cookie options
 const COOKIE_OPTIONS = {
-  secure: false, // Disable secure for localhost development
-  sameSite: 'lax', // Changed from strict to lax for better compatibility
+  secure: !isDevelopment, // Secure only in production
+  sameSite: isDevelopment ? 'lax' : 'strict',
   path: '/',
 }
 
 /**
- * Set access token in cookie
+ * Set access token - handles both HttpOnly and accessible cookies
  * @param {string} token
  * @param {Date} expiresAt - Optional expiration date
  */
 export const setAccessToken = (token, expiresAt = null) => {
-  console.log('🍪 Setting access token:', token ? `${token.substring(0, 20)}...` : 'null')
-  console.log('🍪 Token length:', token?.length || 0)
-  console.log('🍪 Token expires at:', expiresAt)
+  console.log('🍪 Server setting HttpOnly access token (cannot access from JS)')
+  console.log('🍪 Environment:', isDevelopment ? 'development' : 'production')
 
-  const options = { ...COOKIE_OPTIONS }
-
-  if (expiresAt) {
-    // Handle both string and Date formats
-    const expireDate = typeof expiresAt === 'string' ? new Date(expiresAt) : expiresAt
-    console.log('🍪 Parsed expire date:', expireDate)
-
-    // Only set expiration if it's a valid future date
-    if (expireDate && expireDate > new Date()) {
-      options.expires = expireDate
-    } else {
-      console.log('⚠️ Invalid expiration date, using default 1 day')
-      options.expires = 1
-    }
-  } else {
-    // Default to 1 day if no expiration provided
-    options.expires = 1
+  // Server will set HttpOnly + Secure cookies automatically
+  // We only track session state for application logic
+  const sessionInfo = {
+    hasToken: true,
+    expiresAt: expiresAt,
+    setAt: new Date().toISOString(),
   }
-
-  console.log('🍪 Cookie options:', options)
-
-  // Try to set cookie first
-  try {
-    Cookies.set(COOKIE_NAMES.ACCESS_TOKEN, token, options)
-
-    // Verify cookie was set
-    const stored = Cookies.get(COOKIE_NAMES.ACCESS_TOKEN)
-    if (stored) {
-      console.log('🍪 Token stored in cookie successfully')
-      // Clear any sessionStorage backup
-      sessionStorage.removeItem(COOKIE_NAMES.ACCESS_TOKEN)
-    } else {
-      throw new Error('Cookie not stored')
-    }
-  } catch (error) {
-    console.log('⚠️ Cookie storage failed, trying sessionStorage:', error.message)
-    // Fallback to sessionStorage for large tokens
-    sessionStorage.setItem(COOKIE_NAMES.ACCESS_TOKEN, token)
-    const sessionStored = sessionStorage.getItem(COOKIE_NAMES.ACCESS_TOKEN)
-    console.log('🍪 Token stored in sessionStorage:', !!sessionStored)
-  }
+  localStorage.setItem('auth_session', JSON.stringify(sessionInfo))
+  console.log('🍪 Session state tracked in localStorage')
 }
 
 /**
@@ -76,16 +47,13 @@ export const setAccessToken = (token, expiresAt = null) => {
  * @param {string} token
  */
 export const setRefreshToken = (token) => {
-  const options = {
-    ...COOKIE_OPTIONS,
-    expires: 7, // 7 days for refresh token
-  }
-
-  Cookies.set(COOKIE_NAMES.REFRESH_TOKEN, token, options)
+  console.log('🍪 Server setting HttpOnly refresh token (cannot access from JS)')
+  // Both development and production use HttpOnly cookies set by server
+  // No client-side storage needed for refresh token
 }
 
 /**
- * Set user data in cookie
+ * Set user data in cookie/storage
  * @param {Object} userData
  */
 export const setUserData = (userData) => {
@@ -94,32 +62,32 @@ export const setUserData = (userData) => {
     expires: 1, // 1 day
   }
 
+  // User data is usually not sensitive, so can be accessible
   Cookies.set(COOKIE_NAMES.USER_DATA, JSON.stringify(userData), options)
+  console.log('🍪 User data stored')
 }
 
 /**
- * Get access token from cookie
+ * Get access token - checks multiple sources
  * @returns {string|null}
  */
 export const getAccessToken = () => {
-  // Try cookie first
-  let token = Cookies.get(COOKIE_NAMES.ACCESS_TOKEN)
-
-  // Fallback to sessionStorage if not in cookie
-  if (!token) {
-    token = sessionStorage.getItem(COOKIE_NAMES.ACCESS_TOKEN)
-    if (token) {
-      console.log('🍪 Getting access token from sessionStorage:', `${token.substring(0, 20)}...`)
+  // HttpOnly cookies cannot be accessed from JavaScript
+  // We check session state to determine if valid token exists
+  const sessionInfo = localStorage.getItem('auth_session')
+  if (sessionInfo) {
+    try {
+      const parsed = JSON.parse(sessionInfo)
+      if (parsed.hasToken && parsed.expiresAt && new Date(parsed.expiresAt) > new Date()) {
+        console.log('🍪 Session indicates valid HttpOnly token exists')
+        return 'httponly_token_exists' // Placeholder to indicate token exists
+      }
+    } catch (error) {
+      console.error('🍪 Error parsing session info:', error)
     }
-  } else {
-    console.log('🍪 Getting access token from cookie:', `${token.substring(0, 20)}...`)
   }
-
-  if (!token) {
-    console.log('🍪 No access token found in cookie or sessionStorage')
-  }
-
-  return token || null
+  console.log('🍪 No valid session found')
+  return null
 }
 
 /**
@@ -127,7 +95,20 @@ export const getAccessToken = () => {
  * @returns {string|null}
  */
 export const getRefreshToken = () => {
-  return Cookies.get(COOKIE_NAMES.REFRESH_TOKEN) || null
+  // HttpOnly refresh token cannot be accessed from JavaScript
+  // Return placeholder if session exists to indicate refresh is possible
+  const sessionInfo = localStorage.getItem('auth_session')
+  if (sessionInfo) {
+    try {
+      const parsed = JSON.parse(sessionInfo)
+      if (parsed.hasToken) {
+        return 'httponly_refresh_exists'
+      }
+    } catch (error) {
+      console.error('🍪 Error checking refresh session:', error)
+    }
+  }
+  return null
 }
 
 /**
@@ -151,35 +132,25 @@ export const getUserData = () => {
 }
 
 /**
- * Remove all auth cookies
+ * Remove all auth cookies and storage
  */
 export const clearAuthCookies = () => {
-  console.log('🗑️ Clearing all auth cookies and sessionStorage')
+  console.log('🗑️ Clearing all auth cookies and storage')
 
-  // Clear cookies
+  // Clear accessible cookies (development)
   Cookies.remove(COOKIE_NAMES.ACCESS_TOKEN, { path: '/' })
   Cookies.remove(COOKIE_NAMES.REFRESH_TOKEN, { path: '/' })
   Cookies.remove(COOKIE_NAMES.USER_DATA, { path: '/' })
 
-  // Clear sessionStorage
-  sessionStorage.removeItem(COOKIE_NAMES.ACCESS_TOKEN)
-  sessionStorage.removeItem(COOKIE_NAMES.REFRESH_TOKEN)
-  sessionStorage.removeItem(COOKIE_NAMES.USER_DATA)
+  // Clear localStorage
+  localStorage.removeItem(COOKIE_NAMES.ACCESS_TOKEN)
+  localStorage.removeItem(COOKIE_NAMES.REFRESH_TOKEN)
+  localStorage.removeItem('auth_session')
 
-  // Verify cookies were removed
-  const tokenRemaining = Cookies.get(COOKIE_NAMES.ACCESS_TOKEN)
-  const refreshRemaining = Cookies.get(COOKIE_NAMES.REFRESH_TOKEN)
-  const userRemaining = Cookies.get(COOKIE_NAMES.USER_DATA)
+  // In production, HttpOnly cookies can only be cleared by server
+  // We'll send a logout request to clear them server-side
 
-  // Verify sessionStorage was cleared
-  const sessionTokenRemaining = sessionStorage.getItem(COOKIE_NAMES.ACCESS_TOKEN)
-
-  console.log('🗑️ Auth storage cleared:', {
-    cookieToken: !tokenRemaining,
-    cookieRefresh: !refreshRemaining,
-    cookieUser: !userRemaining,
-    sessionToken: !sessionTokenRemaining,
-  })
+  console.log('🗑️ Auth storage cleared')
 }
 
 /**
@@ -190,12 +161,67 @@ export const clearAuthCookies = () => {
 export const isTokenExpired = (token) => {
   if (!token) return true
 
+  // If it's our placeholder for HttpOnly tokens, check session info
+  if (token === 'httponly_token_exists') {
+    const sessionInfo = localStorage.getItem('auth_session')
+    if (sessionInfo) {
+      try {
+        const parsed = JSON.parse(sessionInfo)
+        return !parsed.hasToken || !parsed.expiresAt || new Date(parsed.expiresAt) <= new Date()
+      } catch (error) {
+        return true
+      }
+    }
+    return true
+  }
+
   try {
     const payload = JSON.parse(atob(token.split('.')[1]))
     return payload.exp * 1000 <= Date.now()
   } catch {
     return true
   }
+}
+
+/**
+ * Check if user has valid authentication session
+ * Works with both accessible tokens and HttpOnly cookies
+ * @returns {boolean}
+ */
+export const hasValidSession = () => {
+  if (isDevelopment) {
+    const token = getAccessToken()
+    return token && !isTokenExpired(token)
+  } else {
+    // In production, check session info for HttpOnly cookies
+    const sessionInfo = localStorage.getItem('auth_session')
+    if (sessionInfo) {
+      try {
+        const parsed = JSON.parse(sessionInfo)
+        return parsed.hasToken && parsed.expiresAt && new Date(parsed.expiresAt) > new Date()
+      } catch (error) {
+        return false
+      }
+    }
+    return false
+  }
+}
+
+/**
+ * Update session info when server sets HttpOnly cookies
+ * Call this after successful login/refresh in production
+ * @param {Object} sessionData
+ */
+export const updateSessionInfo = (sessionData) => {
+  const sessionInfo = {
+    hasToken: true,
+    expiresAt: sessionData.expires_at,
+    setAt: new Date().toISOString(),
+    scope: sessionData.scope,
+    tokenType: sessionData.token_type,
+  }
+  localStorage.setItem('auth_session', JSON.stringify(sessionInfo))
+  console.log('🍪 Session info updated for HttpOnly cookies')
 }
 
 /**

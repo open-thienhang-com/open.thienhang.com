@@ -19,7 +19,7 @@ console.log('🔧 Base URL will be:', isDevelopment ? '/api' : 'https://api.thie
 const api = axios.create({
   baseURL: isDevelopment ? '/api' : 'https://api.thienhang.com',
   timeout: 15000,
-  withCredentials: false,
+  withCredentials: true, // Enable cookies for HttpOnly authentication
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
@@ -45,17 +45,19 @@ const processQueue = (error, token = null) => {
 
 // Helper function to create authenticated request config
 const createAuthenticatedConfig = (config = {}) => {
-  const token = getAccessToken()
+  const sessionToken = getAccessToken()
 
-  if (!token || isTokenExpired(token)) {
+  if (!sessionToken) {
     throw new Error('AUTHENTICATION_REQUIRED')
   }
 
+  // For HttpOnly cookies, don't send Authorization header
+  // Browser will automatically include HttpOnly cookies in requests
   return {
     ...config,
+    withCredentials: true, // Ensure cookies are sent
     headers: {
       ...config.headers,
-      Authorization: `Bearer ${token}`,
       'X-Requested-With': 'XMLHttpRequest',
     },
   }
@@ -159,6 +161,7 @@ const publicApi = {
   get: (url, config = {}) =>
     api.get(url, {
       ...config,
+      withCredentials: true, // Enable cookies for HttpOnly responses
       headers: {
         ...config.headers,
         'X-Requested-With': 'XMLHttpRequest',
@@ -168,6 +171,7 @@ const publicApi = {
   post: (url, data, config = {}) =>
     api.post(url, data, {
       ...config,
+      withCredentials: true, // Enable cookies for HttpOnly responses
       headers: {
         ...config.headers,
         'X-Requested-With': 'XMLHttpRequest',
@@ -177,6 +181,7 @@ const publicApi = {
   put: (url, data, config = {}) =>
     api.put(url, data, {
       ...config,
+      withCredentials: true, // Enable cookies for HttpOnly responses
       headers: {
         ...config.headers,
         'X-Requested-With': 'XMLHttpRequest',
@@ -186,6 +191,7 @@ const publicApi = {
   delete: (url, config = {}) =>
     api.delete(url, {
       ...config,
+      withCredentials: true, // Enable cookies for HttpOnly responses
       headers: {
         ...config.headers,
         'X-Requested-With': 'XMLHttpRequest',
@@ -195,6 +201,7 @@ const publicApi = {
   patch: (url, data, config = {}) =>
     api.patch(url, data, {
       ...config,
+      withCredentials: true, // Enable cookies for HttpOnly responses
       headers: {
         ...config.headers,
         'X-Requested-With': 'XMLHttpRequest',
