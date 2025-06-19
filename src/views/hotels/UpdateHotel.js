@@ -20,7 +20,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import axiosWithInterceptors from '../../api/axios'
-import api, { directApi } from '../../api/axios'
+import api from '../../api/axios'
 import CIcon from '@coreui/icons-react'
 import { cilArrowLeft, cilSave } from '@coreui/icons'
 
@@ -96,7 +96,7 @@ const UpdateHotel = () => {
         response = await api.get(`/services/hotel/apartment/apartment/${id}`)
       } catch (proxyError) {
         console.log('⚠️ Proxy failed, trying direct API...')
-        response = await directApi.get(`/services/hotel/apartment/apartment/${id}`)
+        response = await api.get(`/services/hotel/apartment/apartment/${id}`)
       }
 
       console.log('✅ Hotel data API response:', response.data)

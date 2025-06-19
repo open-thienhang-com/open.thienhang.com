@@ -33,7 +33,7 @@ import {
   cilRoom,
   cilPencil,
 } from '@coreui/icons'
-import api, { directApi } from '../../api/axios'
+import api from '../../api/axios'
 
 const HotelDetail = () => {
   const { id } = useParams()
@@ -60,7 +60,7 @@ const HotelDetail = () => {
         response = await api.get(`/services/hotel/apartment/apartment/${hotelId}`)
       } catch (proxyError) {
         console.log('⚠️ Proxy failed, trying direct API...')
-        response = await directApi.get(`/services/hotel/apartment/apartment/${hotelId}`)
+        response = await api.get(`/services/hotel/apartment/apartment/${hotelId}`)
       }
 
       console.log('✅ Hotel detail API response:', response.data)

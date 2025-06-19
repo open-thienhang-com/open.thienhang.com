@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react'
 import { toast } from 'react-toastify'
-import api, { directApi } from '../api/axios'
+import api, { publicApi } from '../api/axios'
 import {
   getAccessToken,
   getRefreshToken,
@@ -164,13 +164,8 @@ export const AuthProvider = ({ children }) => {
     try {
       let response
 
-      try {
-        console.log('🔄 Trying login via proxy...')
-        response = await api.post('/authentication/login', { email, password })
-      } catch (proxyError) {
-        console.log('⚠️ Proxy failed, trying direct API...')
-        response = await directApi.post('/authentication/login', { email, password })
-      }
+      console.log('🔄 Attempting login...')
+      response = await publicApi.post('/authentication/login', { email, password })
 
       const { access_token, refresh_token, expires_at, token_type, scope } = response.data
 
@@ -277,17 +272,9 @@ export const AuthProvider = ({ children }) => {
     if (!refresh) return false
 
     try {
-      let response
-
-      try {
-        response = await api.post('/authentication/refresh', {
-          refresh_token: refresh,
-        })
-      } catch (proxyError) {
-        response = await directApi.post('/authentication/refresh', {
-          refresh_token: refresh,
-        })
-      }
+      response = await publicApi.post('/authentication/refresh', {
+        refresh_token: refresh,
+      })
 
       const { access_token, expires_at } = response.data
       setAccessToken(access_token, expires_at)

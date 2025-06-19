@@ -33,7 +33,7 @@ import {
   cilUser,
   cilTrash,
 } from '@coreui/icons'
-import api, { directApi } from '../../api/axios'
+import api from '../../api/axios'
 
 const Hotels = () => {
   const navigate = useNavigate()
@@ -63,7 +63,7 @@ const Hotels = () => {
         response = await api.get('/services/hotel/apartment/apartments')
       } catch (proxyError) {
         console.log('⚠️ Proxy failed, trying direct API...')
-        response = await directApi.get('/services/hotel/apartment/apartments')
+        response = await api.get('/services/hotel/apartment/apartments')
       }
 
       console.log('✅ Hotels API response:', response.data)
@@ -108,9 +108,7 @@ const Hotels = () => {
         response = await api.delete(`/services/hotel/apartment/apartment/${hotelToDelete._id}`)
       } catch (proxyError) {
         console.log('⚠️ Proxy failed, trying direct API...')
-        response = await directApi.delete(
-          `/services/hotel/apartment/apartment/${hotelToDelete._id}`,
-        )
+        response = await api.delete(`/services/hotel/apartment/apartment/${hotelToDelete._id}`)
       }
 
       console.log('✅ Hotel deleted successfully:', response.data)

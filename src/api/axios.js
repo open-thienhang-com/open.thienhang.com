@@ -8,28 +8,22 @@ import {
   isTokenExpired,
 } from '../utils/cookies'
 
-// Create axios instance
-const api = axios.create({
-  baseURL: process.env.NODE_ENV === 'development' ? '/api' : 'https://api.thienhang.com',
-  timeout: 15000,
-  withCredentials: false, // Important for CORS
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
-})
+// Check if we're in development mode
+const isDevelopment = process.env.NODE_ENV === 'development'
 
-// Alternative direct API instance for fallback
-const directApi = axios.create({
-  baseURL: 'https://api.thienhang.com',
+console.log('🔧 Environment:', process.env.NODE_ENV)
+console.log('🔧 Is Development:', isDevelopment)
+console.log('🔧 Base URL will be:', isDevelopment ? '/api' : 'https://api.thienhang.com')
+
+// Create axios instance - use proxy in development, direct API in production
+const api = axios.create({
+  baseURL: isDevelopment ? '/api' : 'https://api.thienhang.com',
   timeout: 15000,
   withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+    'X-Requested-With': 'XMLHttpRequest',
   },
 })
 
@@ -49,124 +43,252 @@ const processQueue = (error, token = null) => {
   failedQueue = []
 }
 
-// Request interceptor - Add auth token
-api.interceptors.request.use(
-  (config) => {
-    const token = getAccessToken()
-    if (token && !isTokenExpired(token)) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  },
-)
+// Helper function to create authenticated request config
+const createAuthenticatedConfig = (config = {}) => {
+  const token = getAccessToken()
 
-// Response interceptor - Handle token refresh
+  if (!token || isTokenExpired(token)) {
+    throw new Error('AUTHENTICATION_REQUIRED')
+  }
+
+  return {
+    ...config,
+    headers: {
+      ...config.headers,
+      Authorization: `Bearer ${token}`,
+      'X-Requested-With': 'XMLHttpRequest',
+    },
+  }
+}
+
+// Secure API wrapper that requires explicit authentication
+const secureApi = {
+  // GET request with authentication
+  get: async (url, config = {}) => {
+    try {
+      const authConfig = createAuthenticatedConfig(config)
+      return await api.get(url, authConfig)
+    } catch (error) {
+      if (error.message === 'AUTHENTICATION_REQUIRED') {
+        const refreshed = await handleTokenRefresh()
+        if (refreshed) {
+          const authConfig = createAuthenticatedConfig(config)
+          return await api.get(url, authConfig)
+        }
+        throw new Error('Authentication failed')
+      }
+      throw error
+    }
+  },
+
+  // POST request with authentication
+  post: async (url, data, config = {}) => {
+    try {
+      const authConfig = createAuthenticatedConfig(config)
+      return await api.post(url, data, authConfig)
+    } catch (error) {
+      if (error.message === 'AUTHENTICATION_REQUIRED') {
+        const refreshed = await handleTokenRefresh()
+        if (refreshed) {
+          const authConfig = createAuthenticatedConfig(config)
+          return await api.post(url, data, authConfig)
+        }
+        throw new Error('Authentication failed')
+      }
+      throw error
+    }
+  },
+
+  // PUT request with authentication
+  put: async (url, data, config = {}) => {
+    try {
+      const authConfig = createAuthenticatedConfig(config)
+      return await api.put(url, data, authConfig)
+    } catch (error) {
+      if (error.message === 'AUTHENTICATION_REQUIRED') {
+        const refreshed = await handleTokenRefresh()
+        if (refreshed) {
+          const authConfig = createAuthenticatedConfig(config)
+          return await api.put(url, data, authConfig)
+        }
+        throw new Error('Authentication failed')
+      }
+      throw error
+    }
+  },
+
+  // DELETE request with authentication
+  delete: async (url, config = {}) => {
+    try {
+      const authConfig = createAuthenticatedConfig(config)
+      return await api.delete(url, authConfig)
+    } catch (error) {
+      if (error.message === 'AUTHENTICATION_REQUIRED') {
+        const refreshed = await handleTokenRefresh()
+        if (refreshed) {
+          const authConfig = createAuthenticatedConfig(config)
+          return await api.delete(url, authConfig)
+        }
+        throw new Error('Authentication failed')
+      }
+      throw error
+    }
+  },
+
+  // PATCH request with authentication
+  patch: async (url, data, config = {}) => {
+    try {
+      const authConfig = createAuthenticatedConfig(config)
+      return await api.patch(url, data, authConfig)
+    } catch (error) {
+      if (error.message === 'AUTHENTICATION_REQUIRED') {
+        const refreshed = await handleTokenRefresh()
+        if (refreshed) {
+          const authConfig = createAuthenticatedConfig(config)
+          return await api.patch(url, data, authConfig)
+        }
+        throw new Error('Authentication failed')
+      }
+      throw error
+    }
+  },
+}
+
+// Public API for non-authenticated requests
+const publicApi = {
+  get: (url, config = {}) =>
+    api.get(url, {
+      ...config,
+      headers: {
+        ...config.headers,
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    }),
+
+  post: (url, data, config = {}) =>
+    api.post(url, data, {
+      ...config,
+      headers: {
+        ...config.headers,
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    }),
+
+  put: (url, data, config = {}) =>
+    api.put(url, data, {
+      ...config,
+      headers: {
+        ...config.headers,
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    }),
+
+  delete: (url, config = {}) =>
+    api.delete(url, {
+      ...config,
+      headers: {
+        ...config.headers,
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    }),
+
+  patch: (url, data, config = {}) =>
+    api.patch(url, data, {
+      ...config,
+      headers: {
+        ...config.headers,
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    }),
+}
+
+// Handle token refresh manually
+const handleTokenRefresh = async () => {
+  if (isRefreshing) {
+    return new Promise((resolve, reject) => {
+      failedQueue.push({ resolve, reject })
+    })
+  }
+
+  isRefreshing = true
+  const refreshToken = getRefreshToken()
+
+  if (!refreshToken) {
+    clearAuthCookies()
+    processQueue(new Error('No refresh token'), null)
+    isRefreshing = false
+    return false
+  }
+
+  try {
+    console.log('🔄 Attempting token refresh...')
+
+    const response = await api.post(
+      '/authentication/refresh',
+      {
+        refresh_token: refreshToken,
+      },
+      {
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      },
+    )
+
+    const { access_token, expires_at } = response.data
+    setAccessToken(access_token, expires_at)
+
+    console.log('✅ Token refreshed successfully')
+
+    // Process queued requests
+    processQueue(null, access_token)
+    isRefreshing = false
+    return true
+  } catch (refreshError) {
+    console.error('❌ Token refresh failed:', refreshError.response?.data || refreshError.message)
+    processQueue(refreshError, null)
+    clearAuthCookies()
+    isRefreshing = false
+    return false
+  }
+}
+
+// Response interceptor for error handling
 api.interceptors.response.use(
   (response) => {
     return response
   },
   async (error) => {
-    const originalRequest = error.config
-
-    // If proxy fails with CORS, try direct API
-    if (error.code === 'ERR_NETWORK' || error.response?.status === 0) {
-      console.log('Proxy failed, trying direct API...')
-      try {
-        // Add auth header if available
-        const token = getAccessToken()
-        const headers = { ...originalRequest.headers }
-        if (token && !isTokenExpired(token)) {
-          headers.Authorization = `Bearer ${token}`
-        }
-
-        const directResponse = await directApi({
-          ...originalRequest,
-          url: originalRequest.url.replace('/api', ''),
-          headers,
-        })
-        return directResponse
-      } catch (directError) {
-        console.error('Direct API also failed:', directError)
-        // Continue with original error handling
-      }
+    // Log errors for debugging
+    if (error.response) {
+      console.error('API Error:', {
+        status: error.response.status,
+        data: error.response.data,
+        url: error.config?.url,
+        method: error.config?.method,
+      })
+    } else if (error.request) {
+      console.error('Network Error:', {
+        url: error.config?.url,
+        method: error.config?.method,
+        message: error.message,
+      })
     }
 
-    // Handle 401 errors (unauthorized)
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        // If already refreshing, queue the request
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject })
-        })
-          .then((token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`
-            return api(originalRequest)
-          })
-          .catch((err) => {
-            return Promise.reject(err)
-          })
-      }
-
-      originalRequest._retry = true
-      isRefreshing = true
-
-      const refreshToken = getRefreshToken()
-
-      if (!refreshToken) {
-        clearAuthCookies()
-        window.location.href = '/login'
-        return Promise.reject(error)
-      }
-
-      try {
-        // Try refresh with proxy first, then direct
-        let response
-        try {
-          const refreshUrl =
-            process.env.NODE_ENV === 'development'
-              ? '/api/authentication/refresh'
-              : 'https://api.thienhang.com/authentication/refresh'
-
-          response = await axios.post(refreshUrl, {
-            refresh_token: refreshToken,
-          })
-        } catch (proxyError) {
-          console.log('Refresh via proxy failed, trying direct API...')
-          response = await directApi.post('/authentication/refresh', {
-            refresh_token: refreshToken,
-          })
-        }
-
-        const { access_token, expires_at } = response.data
-        setAccessToken(access_token, expires_at)
-
-        // Update auth header for original request
-        originalRequest.headers.Authorization = `Bearer ${access_token}`
-
-        // Process queued requests
-        processQueue(null, access_token)
-
-        return api(originalRequest)
-      } catch (refreshError) {
-        processQueue(refreshError, null)
-        clearAuthCookies()
-        window.location.href = '/login'
-        return Promise.reject(refreshError)
-      } finally {
-        isRefreshing = false
-      }
-    }
-
-    // Handle other errors
+    // Handle errors but don't auto-refresh tokens
     if (error.response) {
       const { status, data } = error.response
 
       switch (status) {
         case 400:
           toast.error(data.detail || data.message || 'Bad request')
+          break
+        case 401:
+          toast.error('Authentication required. Please login again.')
+          clearAuthCookies()
+          setTimeout(() => {
+            window.location.href = '/login'
+          }, 1000)
           break
         case 403:
           toast.error('Access denied')
@@ -181,7 +303,11 @@ api.interceptors.response.use(
           toast.error(data.detail || data.message || 'An error occurred')
       }
     } else if (error.request) {
-      toast.error('Network error. Please check your connection.')
+      if (error.code === 'ERR_NETWORK') {
+        toast.error('Network error. Please check your connection and try again.')
+      } else {
+        toast.error('Request failed. Please try again.')
+      }
     } else {
       toast.error('Something went wrong')
     }
@@ -190,6 +316,42 @@ api.interceptors.response.use(
   },
 )
 
-// Export both instances
-export default api
-export { directApi }
+// Authentication utilities
+const auth = {
+  // Check if user is authenticated
+  isAuthenticated: () => {
+    const token = getAccessToken()
+    return token && !isTokenExpired(token)
+  },
+
+  // Manual login function
+  login: async (credentials) => {
+    try {
+      console.log('🔐 Attempting login...')
+      const response = await publicApi.post('/authentication/login', credentials)
+      const { access_token, refresh_token, expires_at } = response.data
+
+      setAccessToken(access_token, expires_at)
+      console.log('✅ Login successful')
+
+      return response.data
+    } catch (error) {
+      console.error('❌ Login failed:', error.response?.data || error.message)
+      throw error
+    }
+  },
+
+  // Manual logout function
+  logout: () => {
+    console.log('🚪 Logging out...')
+    clearAuthCookies()
+    window.location.href = '/login'
+  },
+
+  // Manual token refresh
+  refreshToken: handleTokenRefresh,
+}
+
+// Export secure API, public API, and auth utilities
+export default secureApi
+export { publicApi, auth }
