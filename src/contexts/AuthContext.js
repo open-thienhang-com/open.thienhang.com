@@ -280,11 +280,11 @@ export const AuthProvider = ({ children }) => {
       let response
 
       try {
-        response = await api.post('/authentication/refresh', {
+        response = await api.post('/authentication/refresh-token', {
           refresh_token: refresh,
         })
       } catch (proxyError) {
-        response = await directApi.post('/authentication/refresh', {
+        response = await directApi.post('/authentication/refresh-token', {
           refresh_token: refresh,
         })
       }

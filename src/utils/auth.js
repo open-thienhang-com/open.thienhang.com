@@ -132,7 +132,7 @@ export const refreshAuthToken = async () => {
   if (!refreshToken) return false
 
   try {
-    const response = await api.post('/authentication/refresh', {
+    const response = await api.post('/authentication/refresh-token', {
       refresh_token: refreshToken,
     })
 
@@ -153,6 +153,19 @@ export const refreshAuthToken = async () => {
 export const getUserProfile = async () => {
   try {
     const response = await api.get('/user/profile')
+    return response.data
+  } catch (error) {
+    throw error
+  }
+}
+
+/**
+ * Get user short profile from API
+ * @returns {Promise<Object>}
+ */
+export const getUserShortProfile = async () => {
+  try {
+    const response = await api.get('/user/me')
     return response.data
   } catch (error) {
     throw error

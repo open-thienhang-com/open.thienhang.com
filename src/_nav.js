@@ -30,36 +30,49 @@ const _nav = [
   },
   {
     component: CNavGroup,
-// <<<<<<< HEAD
-//     name: 'Governance',
-//     to: '/givernance',
-//     icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
-//     items: [
-//       {
-//         component: CNavItem,
-//         name: 'Assets',
-//         to: '/base/accordion',
-//       },
-//       {
-//         component: CNavItem,
-//         name: 'Permissions',
-//         to: '/base/breadcrumbs',
-//       },
-//       {
-//         component: CNavItem,
-//         name: 'Policies',
-//         to: '/base/paginations',
-//       },
-//       {
-//         component: CNavItem,
-//         name: 'Roles',
-//         to: '/base/accordion',
-//       },
-//       {
-//         component: CNavItem,
-//         name: 'Users',
-//         to: '/base/breadcrumbs',
-// =======
+    name: 'Governance',
+    to: '/governance',
+    icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Assets',
+        to: '/governance/assets',
+      },
+      {
+        component: CNavItem,
+        name: 'Permissions',
+        to: '/governance/permissions',
+      },
+      {
+        component: CNavItem,
+        name: 'Policies',
+        to: '/governance/policies',
+      },
+      {
+        component: CNavItem,
+        name: 'Roles',
+        to: '/governance/roles',
+      },
+      {
+        component: CNavItem,
+        name: 'Users',
+        to: '/governance/users',
+      },
+      {
+        component: CNavItem,
+        name: 'Accounts',
+        to: '/governance/accounts',
+      },
+      {
+        component: CNavItem,
+        name: 'Domains & Teams',
+        to: '/governance/teams',
+      },
+    ],
+  },
+  {
+    component: CNavGroup,
     name: 'Hotels',
     to: '/hotels',
     icon: <CIcon icon={cilHome} customClassName="nav-icon" />,

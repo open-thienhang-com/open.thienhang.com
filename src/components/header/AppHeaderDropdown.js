@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   CAvatar,
   CBadge,
@@ -23,8 +23,44 @@ import {
 import CIcon from '@coreui/icons-react'
 
 import avatar8 from './../../assets/images/avatars/8.jpg'
+import api, { directApi } from '../../api/axios'
 
 const AppHeaderDropdown = () => {
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // // Fetch hotels data
+  // useEffect(() => {
+  //   fetchMe()
+  // }, [])
+
+  // const fetchMe = async () => {
+    
+  //   // setLoading(true)
+  //   setError(null)
+
+  //   try {
+  //     let response
+
+  //     try {
+  //       console.log('🏨 Fetching me via proxy...')
+  //       response = await api.get('/authentication/me')
+  //     } catch (proxyError) {
+  //       console.log('⚠️ Proxy failed, trying direct API...')
+  //       // response = await directApi.get('/login')
+  //     }
+
+  //     console.log('✅ Profile Information API response:', response.data)
+
+      
+  //   } catch (err) {
+  //     console.error('❌ Error fetching /me:', err)
+  //     // setError(err.response?.data?.message || err.message || 'Failed to fetch hotels')
+  //   } finally {
+  //     // setLoading(false)
+  //   }
+  // }
+
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>

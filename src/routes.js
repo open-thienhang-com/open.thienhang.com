@@ -7,7 +7,14 @@ const CreateHotel = React.lazy(() => import('./views/hotels/CreateHotel'))
 const UpdateHotel = React.lazy(() => import('./views/hotels/UpdateHotel'))
 const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
 const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
-
+// Governance 
+const Permission = React.lazy(() => import('./views/governance/permissions/Permissions'))
+const Role = React.lazy(() => import('./views/governance/roles/Roles'))
+const Policy = React.lazy(() => import('./views/governance/policies/Policies'))
+const User = React.lazy(() => import('./views/governance/users/Users'))
+const Account = React.lazy(() => import('./views/governance/accounts/Accounts'))
+const Asset = React.lazy(() => import('./views/governance/assets/Assets'))
+const Team = React.lazy(() => import('./views/governance/teams/Teams'))
 // Base
 const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
 const Breadcrumbs = React.lazy(() => import('./views/base/breadcrumbs/Breadcrumbs'))
@@ -58,7 +65,16 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
+
   { path: '/governance', name: 'Governance', element: Dashboard },
+  { path: '/governance/users', name: 'User', element: User },
+  { path: '/governance/teams', name: 'Teams', element: Team },
+  { path: '/governance/permissions', name: 'Permissions', element: Permission },
+  { path: '/governance/roles', name: 'Roles', element: Role },
+  { path: '/governance/policies', name: 'Policies', element: Policy },
+  { path: '/governance/accounts', name: 'Accounts', element: Account },
+  { path: '/governance/assets', name: 'Assets', element: Asset },
+
   { path: '/hotels/create', name: 'Create Hotel', element: CreateHotel },
   { path: '/hotels/:id/edit', name: 'Update Hotel', element: UpdateHotel },
   { path: '/hotels/:id', name: 'Hotel Detail', element: HotelDetail },

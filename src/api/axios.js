@@ -127,15 +127,15 @@ api.interceptors.response.use(
         try {
           const refreshUrl =
             process.env.NODE_ENV === 'development'
-              ? '/api/authentication/refresh'
-              : 'https://api.thienhang.com/authentication/refresh'
+              ? '/api/authentication/refresh-token'
+              : 'https://api.thienhang.com/authentication/refresh-token'
 
           response = await axios.post(refreshUrl, {
             refresh_token: refreshToken,
           })
         } catch (proxyError) {
           console.log('Refresh via proxy failed, trying direct API...')
-          response = await directApi.post('/authentication/refresh', {
+          response = await directApi.post('/authentication/refresh-token', {
             refresh_token: refreshToken,
           })
         }
