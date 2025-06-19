@@ -100,6 +100,8 @@ export const getAccessToken = () => {
         return 'httponly_token_exists' // Placeholder to indicate token exists
       } else {
         console.log('🍪 Session exists but token is expired or invalid')
+        // Clear invalid session
+        localStorage.removeItem('auth_session')
       }
     } catch (error) {
       console.error('🍪 Error parsing session info:', error)
@@ -351,5 +353,74 @@ if (typeof window !== 'undefined') {
     Cookies.remove('test_long', { path: '/' })
 
     console.log('🧪 Test cookies cleaned up')
+  }
+}
+
+/**
+ * Verify if HttpOnly cookies actually exist by making a test API call
+ * This is needed because localStorage session might exist but cookies could be deleted in DevTools
+ * @returns {Promise<boolean>}
+ */
+export const verifyHttpOnlyCookiesExist = async () => {
+  console.log('🔍 Verifying HttpOnly cookies exist by testing API call...')
+
+  // First check if we have session info
+  const sessionInfo = localStorage.getItem('auth_session')
+  if (!sessionInfo) {
+    console.log('🍪 No session info found in localStorage')
+    return false
+  }
+
+  try {
+    const parsed = JSON.parse(sessionInfo)
+    const now = new Date()
+    const expiresAt = parsed.expiresAt.includes('Z')
+      ? new Date(parsed.expiresAt)
+      : new Date(parsed.expiresAt + 'Z')
+
+    // Check if session is expired
+    if (!parsed.hasToken || expiresAt <= now) {
+      console.log('🍪 Session expired in localStorage')
+      return false
+    }
+
+    // Make a test API call to verify HttpOnly cookies are actually present
+    // Use fetch to avoid axios interceptors that might interfere
+    const testUrl = isDevelopment
+      ? '/api/authentication/me' // Via proxy
+      : 'https://api.thienhang.com/authentication/me' // Direct
+
+    console.log('🔍 Testing HttpOnly cookies with API call to:', testUrl)
+
+    const response = await fetch(testUrl, {
+      method: 'GET',
+      credentials: 'include', // Send HttpOnly cookies
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        Accept: 'application/json',
+      },
+    })
+
+    console.log('🔍 API response status:', response.status)
+
+    // If we get 200, cookies are present and valid
+    if (response.status === 200) {
+      console.log('✅ HttpOnly cookies verified - API call successful')
+      return true
+    }
+
+    // If we get 401/403, cookies are missing or invalid
+    if (response.status === 401 || response.status === 403) {
+      console.log('❌ HttpOnly cookies missing or invalid - API returned', response.status)
+      return false
+    }
+
+    // For other status codes, assume cookies are present but there's another issue
+    console.log('⚠️ API call returned unexpected status:', response.status)
+    return true
+  } catch (error) {
+    console.log('❌ Error verifying HttpOnly cookies:', error.message)
+    // Network error or other issue - assume cookies are missing
+    return false
   }
 }

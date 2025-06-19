@@ -11,7 +11,11 @@ import {
   clearAuthCookies,
   isTokenExpired,
   getTokenPayload,
+  verifyHttpOnlyCookiesExist,
 } from '../utils/cookies'
+
+// Check if we're in development
+const isDevelopment = process.env.NODE_ENV === 'development'
 
 // Auth Context
 const AuthContext = createContext()
@@ -169,6 +173,17 @@ export const AuthProvider = ({ children }) => {
         return
       }
 
+      // In development, verify session is still valid
+      console.log('🔍 Verifying session validity...')
+      const sessionValid = await verifyHttpOnlyCookiesExist()
+      console.log('🔍 Session verification result:', sessionValid)
+      if (!sessionValid) {
+        console.log('❌ Session invalid or expired, forcing login')
+        clearAuthCookies()
+        dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false })
+        return
+      }
+
       console.log('✅ Authentication restored for user:', userData.email)
       dispatch({
         type: AUTH_ACTIONS.SET_USER,
@@ -181,6 +196,43 @@ export const AuthProvider = ({ children }) => {
     const timer = setTimeout(checkAuth, 100)
     return () => clearTimeout(timer)
   }, [])
+
+  // Periodic check for HttpOnly cookie deletion in development
+  useEffect(() => {
+    if (!isDevelopment) return
+
+    let intervalId
+
+    // Only start checking if user is authenticated
+    if (state.isAuthenticated && !state.isLoading) {
+      console.log('🔍 Starting periodic HttpOnly cookie verification...')
+
+      const checkCookies = async () => {
+        try {
+          const sessionValid = await verifyHttpOnlyCookiesExist()
+
+          if (!sessionValid && state.isAuthenticated) {
+            console.log('❌ HttpOnly cookies manually deleted! Forcing logout...')
+            clearAuthCookies()
+            dispatch({ type: AUTH_ACTIONS.LOGOUT })
+            toast.warning('Session expired. Please login again.')
+          }
+        } catch (error) {
+          console.error('🔍 Error checking cookies:', error)
+        }
+      }
+
+      // Check every 10 seconds in development
+      intervalId = setInterval(checkCookies, 10000)
+    }
+
+    return () => {
+      if (intervalId) {
+        console.log('🔍 Stopping periodic cookie verification')
+        clearInterval(intervalId)
+      }
+    }
+  }, [state.isAuthenticated, state.isLoading])
 
   // Login function - prevent multiple calls
   const login = async (email, password) => {
