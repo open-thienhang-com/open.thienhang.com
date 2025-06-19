@@ -57,14 +57,10 @@ export const setRefreshToken = (token) => {
  * @param {Object} userData
  */
 export const setUserData = (userData) => {
-  const options = {
-    ...COOKIE_OPTIONS,
-    expires: 1, // 1 day
-  }
-
-  // User data is usually not sensitive, so can be accessible
-  Cookies.set(COOKIE_NAMES.USER_DATA, JSON.stringify(userData), options)
-  console.log('🍪 User data stored')
+  // Store user data in localStorage for reliability
+  // This avoids cookie domain/security issues
+  localStorage.setItem('user_data', JSON.stringify(userData))
+  console.log('💾 User data stored in localStorage:', userData.email)
 }
 
 /**
@@ -78,9 +74,32 @@ export const getAccessToken = () => {
   if (sessionInfo) {
     try {
       const parsed = JSON.parse(sessionInfo)
-      if (parsed.hasToken && parsed.expiresAt && new Date(parsed.expiresAt) > new Date()) {
+
+      // Debug the expiration check
+      const now = new Date()
+
+      // Server sends time without timezone, treat as UTC
+      let expiresAt
+      if (parsed.expiresAt.includes('Z')) {
+        expiresAt = new Date(parsed.expiresAt)
+      } else {
+        // Add Z to treat server time as UTC
+        expiresAt = new Date(parsed.expiresAt + 'Z')
+      }
+
+      const isExpired = expiresAt <= now
+
+      console.log('🔍 Token expiration check:')
+      console.log('  - Current time:', now.toISOString())
+      console.log('  - Expires at:', expiresAt.toISOString())
+      console.log('  - Is expired:', isExpired)
+      console.log('  - Time diff (minutes):', (expiresAt - now) / 1000 / 60)
+
+      if (parsed.hasToken && parsed.expiresAt && !isExpired) {
         console.log('🍪 Session indicates valid HttpOnly token exists')
         return 'httponly_token_exists' // Placeholder to indicate token exists
+      } else {
+        console.log('🍪 Session exists but token is expired or invalid')
       }
     } catch (error) {
       console.error('🍪 Error parsing session info:', error)
@@ -116,17 +135,17 @@ export const getRefreshToken = () => {
  * @returns {Object|null}
  */
 export const getUserData = () => {
-  const userData = Cookies.get(COOKIE_NAMES.USER_DATA)
-  console.log('🍪 Getting user data raw:', userData)
+  const userData = localStorage.getItem('user_data')
+  console.log('💾 Getting user data from localStorage:', !!userData)
 
   if (!userData) return null
 
   try {
     const parsed = JSON.parse(userData)
-    console.log('🍪 Getting user data parsed:', parsed)
+    console.log('💾 User data parsed:', parsed.email)
     return parsed
   } catch (error) {
-    console.error('🍪 Error parsing user data:', error)
+    console.error('💾 Error parsing user data:', error)
     return null
   }
 }
@@ -146,6 +165,7 @@ export const clearAuthCookies = () => {
   localStorage.removeItem(COOKIE_NAMES.ACCESS_TOKEN)
   localStorage.removeItem(COOKIE_NAMES.REFRESH_TOKEN)
   localStorage.removeItem('auth_session')
+  localStorage.removeItem('user_data')
 
   // In production, HttpOnly cookies can only be cleared by server
   // We'll send a logout request to clear them server-side
@@ -167,7 +187,17 @@ export const isTokenExpired = (token) => {
     if (sessionInfo) {
       try {
         const parsed = JSON.parse(sessionInfo)
-        return !parsed.hasToken || !parsed.expiresAt || new Date(parsed.expiresAt) <= new Date()
+        if (!parsed.hasToken || !parsed.expiresAt) return true
+
+        // Handle timezone the same way as getAccessToken
+        let expiresAt
+        if (parsed.expiresAt.includes('Z')) {
+          expiresAt = new Date(parsed.expiresAt)
+        } else {
+          expiresAt = new Date(parsed.expiresAt + 'Z')
+        }
+
+        return expiresAt <= new Date()
       } catch (error) {
         return true
       }

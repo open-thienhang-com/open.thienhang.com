@@ -110,23 +110,54 @@ export const AuthProvider = ({ children }) => {
 
   // Check authentication on app load
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       console.log('🔍 Checking authentication on app load...')
 
-      // Clear any old localStorage tokens to avoid conflicts
+      // Clear any old localStorage tokens to avoid conflicts (except our new ones)
       localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
-      localStorage.removeItem('user_data')
       localStorage.removeItem('user')
 
       const token = getAccessToken()
       const userData = getUserData()
 
-      console.log('🍪 Found token in cookies:', !!token)
-      console.log('🍪 Found user data in cookies:', !!userData)
+      console.log('🔍 Token session found:', !!token, token ? `(${token})` : '')
+      console.log('🔍 User data found:', !!userData, userData ? `(${userData.email})` : '')
 
-      if (!token || isTokenExpired(token)) {
-        console.log('❌ No valid token found')
+      // Debug localStorage state
+      console.log('🔍 Auth session:', localStorage.getItem('auth_session'))
+      console.log('🔍 User data storage:', localStorage.getItem('user_data'))
+
+      // For HttpOnly cookies, token will be 'httponly_token_exists' if valid
+      if (!token) {
+        console.log('❌ No token session found')
+        dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false })
+        return
+      }
+
+      // Check if session is expired
+      if (isTokenExpired(token)) {
+        console.log('❌ Token session expired, attempting refresh...')
+
+        // Try to refresh the token
+        const refreshed = await refreshToken()
+        if (refreshed) {
+          console.log('✅ Token refreshed successfully, checking again...')
+          // Re-check authentication after refresh
+          const newToken = getAccessToken()
+          if (newToken && !isTokenExpired(newToken)) {
+            console.log('✅ Authentication restored after refresh')
+            dispatch({
+              type: AUTH_ACTIONS.SET_USER,
+              payload: userData,
+            })
+            dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false })
+            return
+          }
+        }
+
+        console.log('❌ Token refresh failed, clearing session')
+        clearAuthCookies()
         dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false })
         return
       }
@@ -143,6 +174,7 @@ export const AuthProvider = ({ children }) => {
         type: AUTH_ACTIONS.SET_USER,
         payload: userData,
       })
+      dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false })
     }
 
     // Small delay to prevent race conditions
