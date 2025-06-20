@@ -89,6 +89,24 @@ const _nav = [
       },
     ],
   },
+  {
+    component: CNavGroup,
+    name: 'Device Detector',
+    to: '/hotels',
+    icon: <CIcon icon={cilHome} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'All Hotels',
+        to: '/hotels',
+      },
+      {
+        component: CNavItem,
+        name: 'Create Hotel',
+        to: '/hotels/create',
+      },
+    ],
+  },
   // {
   //   component: CNavTitle,
   //   name: 'Theme',
