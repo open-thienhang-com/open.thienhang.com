@@ -79,6 +79,7 @@ const routes = [
   { path: '/hotels/:id/edit', name: 'Update Hotel', element: UpdateHotel },
   { path: '/hotels/:id', name: 'Hotel Detail', element: HotelDetail },
   { path: '/hotels', name: 'Hotels', element: Hotels },
+  
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },
   { path: '/theme/typography', name: 'Typography', element: Typography },
