@@ -19,7 +19,7 @@ import {
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import axiosWithInterceptors from '../../api/axios'
+import api, { directApi } from '../../../api/axios'
 import CIcon from '@coreui/icons-react'
 import { cilArrowLeft, cilSave } from '@coreui/icons'
 
@@ -183,7 +183,7 @@ const CreateHotel = () => {
 
       console.log('Creating hotel with payload:', payload)
 
-      const response = await axiosWithInterceptors.post(
+      const response = await api.post(
         '/services/hotel/apartment/apartment',
         payload,
       )

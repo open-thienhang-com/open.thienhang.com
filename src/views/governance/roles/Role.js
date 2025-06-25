@@ -19,7 +19,7 @@ import {
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import axiosWithInterceptors from '../../api/axios'
+import axiosWithInterceptors from '../../../api/axios'
 import CIcon from '@coreui/icons-react'
 import { cilArrowLeft, cilSave } from '@coreui/icons'
 
