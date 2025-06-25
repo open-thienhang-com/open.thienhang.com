@@ -8,13 +8,20 @@ const UpdateHotel = React.lazy(() => import('./views/hotels/UpdateHotel'))
 const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
 const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
 // Governance 
-const Permission = React.lazy(() => import('./views/governance/permissions/Permissions'))
-const Role = React.lazy(() => import('./views/governance/roles/Roles'))
-const Policy = React.lazy(() => import('./views/governance/policies/Policies'))
-const User = React.lazy(() => import('./views/governance/users/Users'))
-const Account = React.lazy(() => import('./views/governance/accounts/Accounts'))
-const Asset = React.lazy(() => import('./views/governance/assets/Assets'))
-const Team = React.lazy(() => import('./views/governance/teams/Teams'))
+const Permissions = React.lazy(() => import('./views/governance/permissions/Permissions'))
+const Permission = React.lazy(() => import('./views/governance/permissions/Permission'))
+const Roles = React.lazy(() => import('./views/governance/roles/Roles'))
+const Role = React.lazy(() => import('./views/governance/roles/Role'))
+const Policies = React.lazy(() => import('./views/governance/policies/Policies'))
+const Policy = React.lazy(() => import('./views/governance/policies/Policy'))
+const Users = React.lazy(() => import('./views/governance/users/Users'))
+const User = React.lazy(() => import('./views/governance/users/User'))
+const Accounts = React.lazy(() => import('./views/governance/accounts/Accounts'))
+const Account = React.lazy(() => import('./views/governance/accounts/Account'))
+const Assets = React.lazy(() => import('./views/governance/assets/Assets'))
+const Asset = React.lazy(() => import('./views/governance/assets/Asset'))
+const Teams = React.lazy(() => import('./views/governance/teams/Teams'))
+const Team = React.lazy(() => import('./views/governance/teams/Team'))
 // Base
 const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
 const Breadcrumbs = React.lazy(() => import('./views/base/breadcrumbs/Breadcrumbs'))
@@ -67,14 +74,35 @@ const routes = [
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
 
   { path: '/governance', name: 'Governance', element: Dashboard },
-  { path: '/governance/users', name: 'User', element: User },
-  { path: '/governance/teams', name: 'Teams', element: Team },
-  { path: '/governance/permissions', name: 'Permissions', element: Permission },
-  { path: '/governance/roles', name: 'Roles', element: Role },
-  { path: '/governance/policies', name: 'Policies', element: Policy },
-  { path: '/governance/accounts', name: 'Accounts', element: Account },
-  { path: '/governance/assets', name: 'Assets', element: Asset },
-
+  //Users
+  { path: '/governance/users', name: 'User', element: Users },
+  { path: '/governance/user/create', name: 'Create User', element: User },
+  { path: '/governance/user/:id', name: 'User Detail', element: User },
+  //Teams
+  { path: '/governance/teams', name: 'Team', element: Teams },
+  { path: '/governance/team/create', name: 'Create Team', element: Team },
+  { path: '/governance/team/:id', name: 'Team Detail', element: Team },
+  //Permissions
+  { path: '/governance/permissions', name: 'Permissions', element: Permissions },
+  { path: '/governance/permission/create', name: 'Create Permission', element: Permission },
+  { path: '/governance/permission/:id', name: 'Permission Detail', element: Permission },
+  //Roles
+  { path: '/governance/roles', name: 'Roles', element: Roles },
+  { path: '/governance/role/create', name: 'Create Role', element: Role },
+  { path: '/governance/role/:id', name: 'Role Detail', element: Role },
+  //Policies
+  { path: '/governance/policies', name: 'Policies', element: Policies },
+  { path: '/governance/policy/create', name: 'Create Policy', element: Policy },
+  { path: '/governance/policy/:id', name: 'Policy Detail', element: Policy },
+  //Account
+  { path: '/governance/accounts', name: 'Accounts', element: Accounts },
+  { path: '/governance/account/create', name: 'Create Account', element: Account },
+  { path: '/governance/account/:id', name: 'Account Detail', element: Account },
+  //Asset
+  { path: '/governance/assets', name: 'Assets', element: Assets },
+  { path: '/governance/asset/create', name: 'CreateAsset', element: Asset },
+  { path: '/governance/asset/:id', name: 'AssetDetail', element: Asset },
+  //Hotel
   { path: '/hotels/create', name: 'Create Hotel', element: CreateHotel },
   { path: '/hotels/:id/edit', name: 'Update Hotel', element: UpdateHotel },
   { path: '/hotels/:id', name: 'Hotel Detail', element: HotelDetail },

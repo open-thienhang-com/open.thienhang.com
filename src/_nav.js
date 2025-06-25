@@ -38,7 +38,7 @@ const _nav = [
         component: CNavItem,
         name: 'Assets',
         to: '/governance/assets',
-      },
+      },      
       {
         component: CNavItem,
         name: 'Permissions',
