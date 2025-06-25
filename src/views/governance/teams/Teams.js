@@ -35,9 +35,9 @@ import {
 } from '@coreui/icons'
 import api, { directApi } from '../../../api/axios'
 
-const Users = () => {
+const Teams = () => {
   const navigate = useNavigate()
-  const [Users, setUsers] = useState([])
+  const [Teams, setTeams] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedUser, setSelectedUser] = useState(null)
@@ -46,12 +46,12 @@ const Users = () => {
   const [UserToDelete, setUserToDelete] = useState(null)
   const [deleting, setDeleting] = useState(false)
 
-  // Fetch Users data
+  // Fetch Teams data
   useEffect(() => {
-    fetchUsers()
+    fetchTeams()
   }, [])
 
-  const fetchUsers = async () => {
+  const fetchTeams = async () => {
     setLoading(true)
     setError(null)
 
@@ -59,23 +59,23 @@ const Users = () => {
       let response
 
       try {
-        console.log('🏨 Fetching Users via proxy...')
+        console.log('🏨 Fetching Teams via proxy...')
         response = await api.get('/governance/groups')
       } catch (proxyError) {
         console.log('⚠️ Proxy failed, trying direct API...')
         response = await directApi.get('/governance/groups')
       }
 
-      console.log('✅ Users API response:', response.data)
+      console.log('✅ Teams API response:', response.data)
 
       if (response.data && response.data.data) {
-        setUsers(response.data.data)
+        setTeams(response.data.data)
       } else {
         setError('Invalid response format')
       }
     } catch (err) {
-      console.error('❌ Error fetching Users:', err)
-      setError(err.response?.data?.message || err.message || 'Failed to fetch Users')
+      console.error('❌ Error fetching Teams:', err)
+      setError(err.response?.data?.message || err.message || 'Failed to fetch Teams')
     } finally {
       setLoading(false)
     }
@@ -87,7 +87,7 @@ const Users = () => {
   }
 
   const handleNavigateToDetail = (UserId) => {
-    navigate(`/users/${UserId}`)
+    navigate(`/teams/${UserId}`)
   }
 
   const handleDeleteClick = (User) => {
@@ -109,7 +109,7 @@ const Users = () => {
       } catch (proxyError) {
         console.log('⚠️ Proxy failed, trying direct API...')
         response = await directApi.delete(
-          `/governance/user/${UserToDelete._id}`,
+          `/governance/team/${UserToDelete._id}`,
         )
       }
 
@@ -119,7 +119,7 @@ const Users = () => {
       toast.success(response.data.message || `User "${UserToDelete.title}" deleted successfully!`)
 
       // Remove the deleted User from the list
-      setUsers((prev) => prev.filter((User) => User._id !== UserToDelete._id))
+      setTeams((prev) => prev.filter((User) => User._id !== UserToDelete._id))
 
       // Close modal and reset state
       setShowDeleteModal(false)
@@ -163,7 +163,7 @@ const Users = () => {
           <CCard>
             <CCardBody className="text-center py-5">
               <CSpinner color="primary" variant="grow" />
-              <div className="mt-3">Loading Users...</div>
+              <div className="mt-3">Loading Teams...</div>
             </CCardBody>
           </CCard>
         </CCol>
@@ -180,7 +180,7 @@ const Users = () => {
               <CAlert color="danger">
                 <strong>Error:</strong> {error}
                 <div className="mt-2">
-                  <CButton color="primary" size="sm" onClick={fetchUsers}>
+                  <CButton color="primary" size="sm" onClick={fetchTeams}>
                     Retry
                   </CButton>
                 </div>
@@ -200,65 +200,52 @@ const Users = () => {
             <CCardHeader>
               <div className="d-flex justify-content-between align-items-center">
                 <div>
-                  <strong>🏨 Accounts</strong>
-                  <small className="ms-2">Total: {Users.length} accounts</small>
+                  <strong>🏨 Teams</strong>
+                  <small className="ms-2">Total: {Teams.length} teams</small>
                 </div>
                 <div>
                   <CButton
                     color="success"
                     size="sm"
                     className="me-2"
-                    onClick={() => navigate('/user/create')}
+                    onClick={() => navigate('/team/create')}
                   >
                     Create User
                   </CButton>
-                  <CButton color="primary" size="sm" onClick={fetchUsers}>
+                  <CButton color="primary" size="sm" onClick={fetchTeams}>
                     Refresh
                   </CButton>
                 </div>
               </div>
             </CCardHeader>
             <CCardBody>
-  {Users.length === 0 ? (
+  {Teams.length === 0 ? (
     <CAlert color="info">No accounts found.</CAlert>
   ) : (
     <CTable hover responsive>
       <CTableHead>
         <CTableRow>
           {/* <CTableHeaderCell>Identify</CTableHeaderCell> */}
-          <CTableHeaderCell>Full Name</CTableHeaderCell>
-          <CTableHeaderCell>Email</CTableHeaderCell>
-          <CTableHeaderCell>Active</CTableHeaderCell>
-          <CTableHeaderCell>Verified</CTableHeaderCell>
-          <CTableHeaderCell>Actions</CTableHeaderCell>
+          <CTableHeaderCell>Name</CTableHeaderCell>
+          <CTableHeaderCell>Type</CTableHeaderCell>
+          <CTableHeaderCell>Description</CTableHeaderCell>
         </CTableRow>
       </CTableHead>
       <CTableBody>
-        {Users.map((user) => (
-          <CTableRow key={user.identify}>
-            {/* <CTableDataCell>{user.identify}</CTableDataCell> */}
-            <CTableDataCell>{user.full_name}</CTableDataCell>
-            <CTableDataCell>{user.email}</CTableDataCell>
+        {Teams.map((team) => (
+          <CTableRow key={team._id}>
+            {/* <CTableDataCell>{team.identify}</CTableDataCell> */}
+            <CTableDataCell>{team.group_name}</CTableDataCell>            
             <CTableDataCell>
-              {user.is_active ? (
-                <CBadge color="success">Active</CBadge>
-              ) : (
-                <CBadge color="secondary">Inactive</CBadge>
-              )}
+              <CBadge color="secondary">{team.group_type}</CBadge>
             </CTableDataCell>
-            <CTableDataCell>
-              {user.is_verified ? (
-                <CBadge color="primary">Verified</CBadge>
-              ) : (
-                <CBadge color="warning">Unverified</CBadge>
-              )}
-            </CTableDataCell>
+            <CTableDataCell>{team.group_description}</CTableDataCell>            
             <CTableDataCell>
               <div className="d-flex gap-1 flex-wrap">
                 <CButton
                   color="success"
                   size="sm"
-                  onClick={() => handleNavigateToDetail(user.identify)}
+                  onClick={() => handleNavigateToDetail(team.identify)}
                 >
                   Details
                 </CButton>
@@ -266,7 +253,7 @@ const Users = () => {
                   color="warning"
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate(`/user/${user.identify}/edit`)}
+                  onClick={() => navigate(`/team/${team.identify}/edit`)}
                 >
                   Edit
                 </CButton>
@@ -274,7 +261,7 @@ const Users = () => {
                   color="danger"
                   variant="outline"
                   size="sm"
-                  onClick={() => handleDeleteClick(user)}
+                  onClick={() => handleDeleteClick(team)}
                 >
                   <CIcon icon={cilTrash} size="sm" />
                 </CButton>
@@ -419,4 +406,4 @@ const Users = () => {
   )
 }
 
-export default Users
+export default Teams

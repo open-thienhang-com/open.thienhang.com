@@ -200,8 +200,8 @@ const Roles = () => {
             <CCardHeader>
               <div className="d-flex justify-content-between align-items-center">
                 <div>
-                  <strong>🏨 Accounts</strong>
-                  <small className="ms-2">Total: {Roles.length} accounts</small>
+                  <strong>🏨 Roles</strong>
+                  <small className="ms-2">Total: {Roles.length} roles</small>
                 </div>
                 <div>
                   <CButton

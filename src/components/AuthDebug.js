@@ -1,64 +1,51 @@
+import { CAlert, CCard, CCardBody, CCardHeader, CButton } from '@coreui/react'
 import React from 'react'
-import { CCard, CCardBody, CCardHeader, CAlert } from '@coreui/react'
 import { useAuth } from '../contexts/AuthContext'
-import { getAccessToken, getRefreshToken, getUserData, isTokenExpired } from '../utils/cookies'
+import { verifyHttpOnlyCookiesExist } from '../utils/cookies'
 
 const AuthDebug = () => {
   const { isAuthenticated, isLoading, user, error } = useAuth()
 
-  const token = getAccessToken()
-  const refreshToken = getRefreshToken()
-  const userData = getUserData()
-  const tokenExpired = token ? isTokenExpired(token) : 'No token'
-
-  const debugInfo = {
-    'Auth Context': {
-      isAuthenticated,
-      isLoading,
-      user: user?.email || 'None',
-      error: error || 'None',
-    },
-    Cookies: {
-      'Access Token': token ? `${token.substring(0, 20)}...` : 'None',
-      'Refresh Token': refreshToken ? `${refreshToken.substring(0, 20)}...` : 'None',
-      'User Data': userData ? `${userData.email} (ID: ${userData.id})` : 'None',
-      'Token Expired': tokenExpired,
-    },
-    'Current State': {
-      'Should Show Login': !isAuthenticated && !isLoading,
-      'Should Show Dashboard': isAuthenticated && !isLoading,
-      'Should Show Loading': isLoading,
-    },
+  const handleVerifyCookies = async () => {
+    console.log('🔍 Manual verification of HttpOnly cookies...')
+    const result = await verifyHttpOnlyCookiesExist()
+    console.log('🔍 Verification result:', result)
   }
 
   return (
     <CCard className="mb-4">
       <CCardHeader>
-        <strong>🐛 Authentication Debug Info</strong>
+        <strong>🐛 Authentication Debug Info (HttpOnly Cookies)</strong>
       </CCardHeader>
       <CCardBody>
-        {Object.entries(debugInfo).map(([section, data]) => (
-          <div key={section} className="mb-3">
-            <h6>{section}:</h6>
-            {Object.entries(data).map(([key, value]) => (
-              <CAlert
-                key={key}
-                color={
-                  key.includes('Error') && value !== 'None'
-                    ? 'danger'
-                    : key.includes('Authenticated') && value
-                      ? 'success'
-                      : key.includes('Loading') && value
-                        ? 'warning'
-                        : 'info'
-                }
-                className="py-2 px-3 mb-1"
-              >
-                <strong>{key}:</strong> {String(value)}
-              </CAlert>
-            ))}
-          </div>
-        ))}
+        <div className="mb-3">
+          <h6>📊 Current State:</h6>
+          <ul>
+            <li>
+              <strong>Authenticated:</strong> {isAuthenticated ? '✅ Yes' : '❌ No'}
+            </li>
+            <li>
+              <strong>Loading:</strong> {isLoading ? '⏳ Yes' : '✅ No'}
+            </li>
+            <li>
+              <strong>User Data:</strong> {user?.email || 'None'}
+            </li>
+            <li>
+              <strong>Error:</strong> {error || 'None'}
+            </li>
+          </ul>
+        </div>
+
+        <div className="mb-3">
+          <h6>🍪 HttpOnly Cookies:</h6>
+          <p className="text-muted">
+            Access and refresh tokens are stored as HttpOnly cookies by the server. JavaScript
+            cannot read these cookies directly for security.
+          </p>
+          <CButton color="info" size="sm" onClick={handleVerifyCookies}>
+            Verify HttpOnly Cookies
+          </CButton>
+        </div>
 
         <div className="mt-4">
           <h6>🔍 Recommendations:</h6>
@@ -66,7 +53,7 @@ const AuthDebug = () => {
             <CAlert color="warning">User should see login page</CAlert>
           )}
           {isAuthenticated && !isLoading && (
-            <CAlert color="success">User should see dashboard</CAlert>
+            <CAlert color="success">User should see dashboard - HttpOnly cookies working</CAlert>
           )}
           {isLoading && <CAlert color="info">System is checking authentication</CAlert>}
           {error && <CAlert color="danger">There's an error: {error}</CAlert>}

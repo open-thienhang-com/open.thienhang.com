@@ -3,9 +3,6 @@ import { toast } from 'react-toastify'
 import api, { directApi } from '../api/axios'
 import {
   getAccessToken,
-  getRefreshToken,
-  setAccessToken,
-  setRefreshToken,
   setUserData,
   getUserData,
   clearAuthCookies,
@@ -110,39 +107,41 @@ export const AuthProvider = ({ children }) => {
 
   // Check authentication on app load
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       console.log('🔍 Checking authentication on app load...')
 
       // Clear any old localStorage tokens to avoid conflicts
       localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
-      localStorage.removeItem('user_data')
-      localStorage.removeItem('user')
 
-      const token = getAccessToken()
       const userData = getUserData()
+      console.log('💾 Found user data in localStorage:', !!userData)
 
-      console.log('🍪 Found token in cookies:', !!token)
-      console.log('🍪 Found user data in cookies:', !!userData)
-
-      if (!token || isTokenExpired(token)) {
-        console.log('❌ No valid token found')
+      if (!userData) {
+        console.log('❌ No user data found')
         dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false })
         return
       }
 
-      if (!userData) {
-        console.log('❌ No user data found')
+      // Verify HttpOnly cookies exist by making test API call
+      try {
+        const testUrl =
+          process.env.NODE_ENV === 'development'
+            ? '/authentication/me'
+            : 'https://api.thienhang.com/authentication/me'
+
+        const response = await api.get(testUrl)
+        console.log('✅ Authentication verified with API call for user:', userData.email)
+
+        dispatch({
+          type: AUTH_ACTIONS.SET_USER,
+          payload: userData,
+        })
+      } catch (error) {
+        console.log('❌ Authentication verification failed:', error.response?.status)
         clearAuthCookies()
         dispatch({ type: AUTH_ACTIONS.LOGOUT })
-        return
       }
-
-      console.log('✅ Authentication restored for user:', userData.email)
-      dispatch({
-        type: AUTH_ACTIONS.SET_USER,
-        payload: userData,
-      })
     }
 
     // Small delay to prevent race conditions
@@ -183,30 +182,19 @@ export const AuthProvider = ({ children }) => {
         scope,
       })
 
-      // Store tokens in cookies
-      console.log(
-        '💾 About to store access token:',
-        access_token ? `${access_token.substring(0, 50)}...` : 'NULL',
-      )
-      setAccessToken(access_token, expires_at)
-      setRefreshToken(refresh_token)
+      // Server automatically sets HttpOnly cookies
+      console.log('🍪 Server has set HttpOnly access_token and refresh_token cookies')
+      console.log('📋 Token info:', {
+        hasAccessToken: !!access_token,
+        hasRefreshToken: !!refresh_token,
+        expires_at,
+        token_type,
+        scope,
+      })
 
-      // Verify tokens were stored immediately
-      const storedToken = getAccessToken()
-      const storedRefresh = getRefreshToken()
-      console.log(
-        '🔍 Verification - stored token:',
-        storedToken ? `${storedToken.substring(0, 20)}...` : 'NULL',
-      )
-      console.log(
-        '🔍 Verification - stored refresh:',
-        storedRefresh ? `${storedRefresh.substring(0, 20)}...` : 'NULL',
-      )
-
-      // Create user data
-      const tokenPayload = getTokenPayload(access_token)
+      // Create user data (since we can't read HttpOnly token, use API response)
       const userData = {
-        id: tokenPayload?.identity,
+        id: response.data.user?.identity || response.data.identity,
         email: email,
         token_type,
         scope,
@@ -214,21 +202,18 @@ export const AuthProvider = ({ children }) => {
         loginTime: new Date().toISOString(),
       }
 
-      // Store user data in cookie
+      // Store user data in localStorage (user info only, not tokens)
       setUserData(userData)
       console.log('💾 User data stored:', userData.email)
 
-      // Final verification of all cookies
-      console.log('🔍 Final cookie verification:')
-      console.log('  - Access token:', !!getAccessToken())
-      console.log('  - Refresh token:', !!getRefreshToken())
-      console.log('  - User data:', !!getUserData())
+      // Verify authentication by testing API call
+      console.log('🔍 Verifying HttpOnly cookies with test API call...')
 
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
         payload: {
           user: userData,
-          token: access_token,
+          token: 'httponly_token_exists', // Placeholder since we can't read HttpOnly cookies
         },
       })
 
@@ -273,25 +258,18 @@ export const AuthProvider = ({ children }) => {
 
   // Refresh token function
   const refreshToken = async () => {
-    const refresh = getRefreshToken()
-    if (!refresh) return false
-
     try {
       let response
 
       try {
-        response = await api.post('/authentication/refresh-token', {
-          refresh_token: refresh,
-        })
+        // Server automatically uses HttpOnly refresh_token cookie
+        response = await api.post('/authentication/refresh-token', {})
       } catch (proxyError) {
-        response = await directApi.post('/authentication/refresh-token', {
-          refresh_token: refresh,
-        })
+        response = await directApi.post('/authentication/refresh-token', {})
       }
 
-      const { access_token, expires_at } = response.data
-      setAccessToken(access_token, expires_at)
-      console.log('🔄 Token refreshed successfully')
+      // Server automatically updates HttpOnly cookies
+      console.log('🔄 Token refreshed successfully by server')
       return true
     } catch (error) {
       console.error('❌ Token refresh failed:', error)

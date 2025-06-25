@@ -1,52 +1,25 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CCol,
-  CRow,
-  CTable,
-  CTableBody,
-  CTableDataCell,
-  CTableHead,
-  CTableHeaderCell,
-  CTableRow,
-  CSpinner,
-  CAlert,
-  CBadge,
-  CButton,
-  CModal,
-  CModalBody,
-  CModalFooter,
-  CModalHeader,
-  CModalTitle,
+  CCard, CCardBody, CCardHeader,
+  CCol, CRow, CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow,
+  CSpinner, CAlert, CBadge, CButton,
+  CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle
 } from '@coreui/react'
 import { toast } from 'react-toastify'
 import CIcon from '@coreui/icons-react'
-import {
-  cilLocationPin,
-  cilPhone,
-  cilEnvelopeClosed,
-  cilHome,
-  cilBath,
-  cilUser,
-  cilTrash,
-} from '@coreui/icons'
+import { cilTrash } from '@coreui/icons'
 import api, { directApi } from '../../../api/axios'
 
 const Permissions = () => {
   const navigate = useNavigate()
-  const [Permissions, setPermissions] = useState([])
+  const [permissions, setPermissions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [selectedUser, setSelectedUser] = useState(null)
-  const [showModal, setShowModal] = useState(false)
+  const [selectedPermission, setSelectedPermission] = useState(null)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [UserToDelete, setUserToDelete] = useState(null)
   const [deleting, setDeleting] = useState(false)
 
-  // Fetch Permissions data
   useEffect(() => {
     fetchPermissions()
   }, [])
@@ -54,106 +27,51 @@ const Permissions = () => {
   const fetchPermissions = async () => {
     setLoading(true)
     setError(null)
-
     try {
       let response
-
       try {
-        console.log('🏨 Fetching Permissions via proxy...')
         response = await api.get('/governance/permissions')
-      } catch (proxyError) {
-        console.log('⚠️ Proxy failed, trying direct API...')
+      } catch {
         response = await directApi.get('/governance/permissions')
       }
-
-      console.log('✅ Permissions API response:', response.data)
-
-      if (response.data && response.data.data) {
-        setPermissions(response.data.data)
-      } else {
-        setError('Invalid response format')
-      }
+      const data = response.data?.data
+      if (Array.isArray(data)) setPermissions(data)
+      else throw new Error('Invalid response format')
     } catch (err) {
-      console.error('❌ Error fetching Permissions:', err)
-      setError(err.response?.data?.message || err.message || 'Failed to fetch Permissions')
+      setError(err.response?.data?.message || err.message || 'Failed to fetch permissions')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleViewDetails = (User) => {
-    setSelectedUser(User)
-    setShowModal(true)
-  }
-
-  const handleNavigateToDetail = (UserId) => {
-    navigate(`/Permissions/${UserId}`)
-  }
-
-  const handleDeleteClick = (User) => {
-    setUserToDelete(User)
+  const handleDeleteClick = (permission) => {
+    setSelectedPermission(permission)
     setShowDeleteModal(true)
   }
 
   const handleDeleteConfirm = async () => {
-    if (!UserToDelete) return
-
+    if (!selectedPermission) return
     setDeleting(true)
-
     try {
       let response
-
       try {
-        console.log('🗑️ Deleting User via proxy...', UserToDelete._id)
-        response = await api.delete(`/services/User/apartment/apartment/${UserToDelete._id}`)
-      } catch (proxyError) {
-        console.log('⚠️ Proxy failed, trying direct API...')
-        response = await directApi.delete(
-          `/governance/user/${UserToDelete._id}`,
-        )
+        response = await api.delete(`/governance/permission/${selectedPermission._id}`)
+      } catch {
+        response = await directApi.delete(`/governance/permission/${selectedPermission._id}`)
       }
-
-      console.log('✅ User deleted successfully:', response.data)
-
-      // Show success toast
-      toast.success(response.data.message || `User "${UserToDelete.title}" deleted successfully!`)
-
-      // Remove the deleted User from the list
-      setPermissions((prev) => prev.filter((User) => User._id !== UserToDelete._id))
-
-      // Close modal and reset state
-      setShowDeleteModal(false)
-      setUserToDelete(null)
+      toast.success(response.data.message || `Deleted: "${selectedPermission.name}"`)
+      setPermissions(prev => prev.filter(a => a._id !== selectedPermission._id))
+      closeModal()
     } catch (error) {
-      console.error('❌ Error deleting User:', error)
-
-      const errorMessage =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        `Failed to delete User "${UserToDelete.title}". Please try again.`
-
-      toast.error(errorMessage)
+      toast.error(error.response?.data?.message || 'Delete failed')
     } finally {
       setDeleting(false)
     }
   }
 
-  const handleDeleteCancel = () => {
+  const closeModal = () => {
     setShowDeleteModal(false)
-    setUserToDelete(null)
-  }
-
-  const formatCurrency = (amount, currency = 'USD') => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-    }).format(amount)
-  }
-
-  const getStatusBadge = (User) => {
-    if (!User.is_active) return <CBadge color="secondary">Inactive</CBadge>
-    if (User.is_booked) return <CBadge color="warning">Booked</CBadge>
-    return <CBadge color="success">Available</CBadge>
+    setSelectedPermission(null)
   }
 
   if (loading) {
@@ -194,90 +112,116 @@ const Permissions = () => {
 
   return (
     <>
-  <CRow>
-    <CCol xs={12}>
-      <CCard>
-        <CCardHeader>
-          <div className="d-flex justify-content-between align-items-center">
-            <div>
-              <strong>🔐 Permissions</strong>
-              <small className="ms-2">Total: {Permissions.length} permission(s)</small>
-            </div>
-            <div>
-              <CButton
-                color="success"
-                size="sm"
-                className="me-2"
-                onClick={() => navigate('/permission/create')}
-              >
-                Create Permission
-              </CButton>
-              <CButton color="primary" size="sm" onClick={fetchPermissions}>
-                Refresh
-              </CButton>
-            </div>
-          </div>
-        </CCardHeader>
-        <CCardBody>
-          {Permissions.length === 0 ? (
-            <CAlert color="info">No permissions found.</CAlert>
-          ) : (
-            <CTable hover responsive>
-              <CTableHead>
-                <CTableRow>
-                  <CTableHeaderCell>Name</CTableHeaderCell>
-                  <CTableHeaderCell>Code</CTableHeaderCell>
-                  <CTableHeaderCell>Description</CTableHeaderCell>
-                  <CTableHeaderCell>Actions</CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody>
-                {Permissions.map((permission) => (
-                  <CTableRow key={permission._id}>
-                    <CTableDataCell>{permission.name}</CTableDataCell>
-                    <CTableDataCell>
-                      <CBadge color="secondary">{permission.code}</CBadge>
-                    </CTableDataCell>
-                    <CTableDataCell>{permission.description}</CTableDataCell>
-                    <CTableDataCell>
-                      <div className="d-flex gap-1 flex-wrap">
-                        <CButton
-                          color="primary"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleViewPermission(permission)}
-                        >
-                          View
-                        </CButton>
-                        <CButton
-                          color="warning"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => navigate(`/permission/${permission._id}/edit`)}
-                        >
-                          Edit
-                        </CButton>
-                        <CButton
-                          color="danger"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeletePermission(permission)}
-                        >
-                          <CIcon icon={cilTrash} size="sm" />
-                        </CButton>
-                      </div>
-                    </CTableDataCell>
-                  </CTableRow>
-                ))}
-              </CTableBody>
-            </CTable>
-          )}
-        </CCardBody>
-      </CCard>
-    </CCol>
-  </CRow>
-</>
+      <CRow>
+        <CCol xs={12}>
+          <CCard>
+            <CCardHeader className="d-flex justify-content-between align-items-center">
+              <div>
+                <strong>🏨 Permissions</strong>
+                <small className="ms-2">Total: {permissions.length}</small>
+              </div>
+              <div>
+                <CButton
+                  color="success"
+                  size="sm"
+                  className="me-2"
+                  onClick={() => navigate('/governance/permission/create')}
+                >
+                  Create Permission
+                </CButton>
+                <CButton color="primary" size="sm" onClick={fetchPermissions}>
+                  Refresh
+                </CButton>
+              </div>
+            </CCardHeader>
+            <CCardBody>
+              {permissions.length === 0 ? (
+                <CAlert color="info">No permissions found.</CAlert>
+              ) : (
+                <CTable hover responsive>
+                  <CTableHead>
+                    <CTableRow>
+                      <CTableHeaderCell>Name</CTableHeaderCell>
+                      <CTableHeaderCell>Code</CTableHeaderCell>
+                      <CTableHeaderCell>Description</CTableHeaderCell>
+                      <CTableHeaderCell>Actions</CTableHeaderCell>
+                    </CTableRow>
+                  </CTableHead>
+                  <CTableBody>
+                    {permissions.map(permission => (
+                      <CTableRow key={permission._id}>
+                        <CTableDataCell>{permission.name}</CTableDataCell>
+                        <CTableDataCell>{permission.code}</CTableDataCell>
+                        <CTableDataCell>{permission.description}</CTableDataCell>
+                        <CTableDataCell>
+                          <div className="d-flex gap-1 flex-wrap">
+                            <CButton
+                              color="success"
+                              size="sm"
+                              onClick={() => navigate(`/governance/permission/${permission._id}`)}
+                            >
+                              Details
+                            </CButton>
+                            <CButton
+                              color="danger"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteClick(permission)}
+                            >
+                              <CIcon icon={cilTrash} size="sm" />
+                            </CButton>
+                          </div>
+                        </CTableDataCell>
+                      </CTableRow>
+                    ))}
+                  </CTableBody>
+                </CTable>
+              )}
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
 
+      {/* Delete Modal */}
+      <CModal visible={showDeleteModal} onClose={closeModal} size="sm">
+        <CModalHeader>
+          <CModalTitle>🗑️ Confirm Delete</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          {selectedPermission && (
+            <>
+              <p>Are you sure you want to delete this permission?</p>
+              <div className="bg-dark text-white p-3 rounded">
+                <strong>{selectedPermission.name}</strong>
+                <br />
+                <small>ID: {selectedPermission._id}</small>
+              </div>
+              <CAlert color="warning" className="mt-3 mb-0">
+                This action cannot be undone.
+              </CAlert>
+            </>
+          )}
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={closeModal} disabled={deleting}>
+            Cancel
+          </CButton>
+          <CButton color="danger" onClick={handleDeleteConfirm} disabled={deleting}>
+            {deleting ? (
+              <>
+                <CSpinner size="sm" className="me-2" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <CIcon icon={cilTrash} className="me-2" />
+                Delete
+              </>
+            )}
+          </CButton>
+        </CModalFooter>
+      </CModal>
+    </>
   )
 }
 

@@ -24,47 +24,20 @@ import CIcon from '@coreui/icons-react'
 
 import avatar8 from './../../assets/images/avatars/8.jpg'
 import api, { directApi } from '../../api/axios'
+import { useAuth } from '../../contexts/AuthContext'
 
 const AppHeaderDropdown = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-
-  // // Fetch hotels data
-  // useEffect(() => {
-  //   fetchMe()
-  // }, [])
-
-  // const fetchMe = async () => {
-    
-  //   // setLoading(true)
-  //   setError(null)
-
-  //   try {
-  //     let response
-
-  //     try {
-  //       console.log('🏨 Fetching me via proxy...')
-  //       response = await api.get('/authentication/me')
-  //     } catch (proxyError) {
-  //       console.log('⚠️ Proxy failed, trying direct API...')
-  //       // response = await directApi.get('/login')
-  //     }
-
-  //     console.log('✅ Profile Information API response:', response.data)
-
-      
-  //   } catch (err) {
-  //     console.error('❌ Error fetching /me:', err)
-  //     // setError(err.response?.data?.message || err.message || 'Failed to fetch hotels')
-  //   } finally {
-  //     // setLoading(false)
-  //   }
-  // }
-
+  const { isAuthenticated, user } = useAuth()
   return (
     <CDropdown variant="nav-item">
+      
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
-        <CAvatar src={avatar8} size="md" />
+        <CAvatar src={!isAuthenticated ? user.image : avatar8} size="md" />
+        <span className="ms-2 d-none d-md-inline-block">
+          {isAuthenticated ? user.email : 'Guest'}
+        </span>
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
         <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">Account</CDropdownHeader>
@@ -97,11 +70,11 @@ const AppHeaderDropdown = () => {
           </CBadge>
         </CDropdownItem>
         <CDropdownHeader className="bg-body-secondary fw-semibold my-2">Settings</CDropdownHeader>
-        <CDropdownItem href="#">
+        <CDropdownItem href="/profile">
           <CIcon icon={cilUser} className="me-2" />
           Profile
         </CDropdownItem>
-        <CDropdownItem href="#">
+        <CDropdownItem href="/settings">
           <CIcon icon={cilSettings} className="me-2" />
           Settings
         </CDropdownItem>
@@ -120,9 +93,9 @@ const AppHeaderDropdown = () => {
           </CBadge>
         </CDropdownItem>
         <CDropdownDivider />
-        <CDropdownItem href="#">
+        <CDropdownItem href={directApi + '/logout'}>
           <CIcon icon={cilLockLocked} className="me-2" />
-          Lock Account
+          Logout
         </CDropdownItem>
       </CDropdownMenu>
     </CDropdown>

@@ -16,7 +16,6 @@ import ProtectedRoute from './components/ProtectedRoute'
 import AuthDebug from './components/AuthDebug'
 
 // Import test utilities (makes them available in browser console)
-import './utils/testAuth'
 
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))

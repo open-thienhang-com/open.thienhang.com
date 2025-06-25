@@ -1,18 +1,12 @@
 import axios from 'axios'
 import { toast } from 'react-toastify'
-import {
-  getAccessToken,
-  getRefreshToken,
-  setAccessToken,
-  clearAuthCookies,
-  isTokenExpired,
-} from '../utils/cookies'
+import { clearAuthCookies } from '../utils/cookies'
 
 // Create axios instance
 const api = axios.create({
   baseURL: process.env.NODE_ENV === 'development' ? '/api' : 'https://api.thienhang.com',
   timeout: 15000,
-  withCredentials: false, // Important for CORS
+  withCredentials: true, // Send HttpOnly cookies automatically
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
@@ -23,13 +17,10 @@ const api = axios.create({
 const directApi = axios.create({
   baseURL: 'https://api.thienhang.com',
   timeout: 15000,
-  withCredentials: false,
+  withCredentials: true, // Send HttpOnly cookies automatically
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
   },
 })
 
@@ -49,13 +40,11 @@ const processQueue = (error, token = null) => {
   failedQueue = []
 }
 
-// Request interceptor - Add auth token
+// Request interceptor - HttpOnly cookies are sent automatically
 api.interceptors.request.use(
   (config) => {
-    const token = getAccessToken()
-    if (token && !isTokenExpired(token)) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
+    // HttpOnly cookies are sent automatically with withCredentials: true
+    // No need to manually add Authorization header
     return config
   },
   (error) => {
@@ -75,12 +64,8 @@ api.interceptors.response.use(
     if (error.code === 'ERR_NETWORK' || error.response?.status === 0) {
       console.log('Proxy failed, trying direct API...')
       try {
-        // Add auth header if available
-        const token = getAccessToken()
+        // HttpOnly cookies will be sent automatically
         const headers = { ...originalRequest.headers }
-        if (token && !isTokenExpired(token)) {
-          headers.Authorization = `Bearer ${token}`
-        }
 
         const directResponse = await directApi({
           ...originalRequest,
@@ -101,8 +86,8 @@ api.interceptors.response.use(
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })
         })
-          .then((token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`
+          .then(() => {
+            // HttpOnly cookies updated automatically by server
             return api(originalRequest)
           })
           .catch((err) => {
@@ -113,16 +98,9 @@ api.interceptors.response.use(
       originalRequest._retry = true
       isRefreshing = true
 
-      const refreshToken = getRefreshToken()
-
-      if (!refreshToken) {
-        clearAuthCookies()
-        window.location.href = '/login'
-        return Promise.reject(error)
-      }
-
       try {
         // Try refresh with proxy first, then direct
+        // Server will automatically refresh HttpOnly cookies on success
         let response
         try {
           const refreshUrl =
@@ -130,24 +108,23 @@ api.interceptors.response.use(
               ? '/api/authentication/refresh-token'
               : 'https://api.thienhang.com/authentication/refresh-token'
 
-          response = await axios.post(refreshUrl, {
-            refresh_token: refreshToken,
-          })
+          response = await axios.post(
+            refreshUrl,
+            {},
+            {
+              withCredentials: true, // Send existing refresh token cookie
+            },
+          )
         } catch (proxyError) {
           console.log('Refresh via proxy failed, trying direct API...')
-          response = await directApi.post('/authentication/refresh-token', {
-            refresh_token: refreshToken,
-          })
+          response = await directApi.post('/authentication/refresh-token', {})
         }
 
-        const { access_token, expires_at } = response.data
-        setAccessToken(access_token, expires_at)
-
-        // Update auth header for original request
-        originalRequest.headers.Authorization = `Bearer ${access_token}`
+        // Server updates HttpOnly cookies automatically
+        console.log('🔄 Token refreshed by server, HttpOnly cookies updated')
 
         // Process queued requests
-        processQueue(null, access_token)
+        processQueue(null, true)
 
         return api(originalRequest)
       } catch (refreshError) {

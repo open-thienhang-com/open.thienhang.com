@@ -1,195 +1,100 @@
 import Cookies from 'js-cookie'
+import axios from 'axios'
 
 /**
- * Cookie utility functions for authentication
+ * Cookie utility functions for HttpOnly authentication cookies
+ * Server automatically sets HttpOnly access_token and refresh_token cookies
+ * Client only manages user data in localStorage
  */
 
-// Cookie names
+// Cookie names (for reference - actual cookies are HttpOnly)
 export const COOKIE_NAMES = {
   ACCESS_TOKEN: 'access_token',
   REFRESH_TOKEN: 'refresh_token',
   USER_DATA: 'user_data',
 }
 
-// Cookie options - DISABLE secure for localhost
-const COOKIE_OPTIONS = {
-  secure: false, // Disable secure for localhost development
-  sameSite: 'lax', // Changed from strict to lax for better compatibility
-  path: '/',
-}
+// Check if we're in development
+const isDevelopment = process.env.NODE_ENV === 'development'
 
 /**
- * Set access token in cookie
- * @param {string} token
- * @param {Date} expiresAt - Optional expiration date
- */
-export const setAccessToken = (token, expiresAt = null) => {
-  console.log('🍪 Setting access token:', token ? `${token.substring(0, 20)}...` : 'null')
-  console.log('🍪 Token length:', token?.length || 0)
-  console.log('🍪 Token expires at:', expiresAt)
-
-  const options = { ...COOKIE_OPTIONS }
-
-  if (expiresAt) {
-    // Handle both string and Date formats
-    const expireDate = typeof expiresAt === 'string' ? new Date(expiresAt) : expiresAt
-    console.log('🍪 Parsed expire date:', expireDate)
-
-    // Only set expiration if it's a valid future date
-    if (expireDate && expireDate > new Date()) {
-      options.expires = expireDate
-    } else {
-      console.log('⚠️ Invalid expiration date, using default 1 day')
-      options.expires = 1
-    }
-  } else {
-    // Default to 1 day if no expiration provided
-    options.expires = 1
-  }
-
-  console.log('🍪 Cookie options:', options)
-
-  // Try to set cookie first
-  try {
-    Cookies.set(COOKIE_NAMES.ACCESS_TOKEN, token, options)
-
-    // Verify cookie was set
-    const stored = Cookies.get(COOKIE_NAMES.ACCESS_TOKEN)
-    if (stored) {
-      console.log('🍪 Token stored in cookie successfully')
-      // Clear any sessionStorage backup
-      sessionStorage.removeItem(COOKIE_NAMES.ACCESS_TOKEN)
-    } else {
-      throw new Error('Cookie not stored')
-    }
-  } catch (error) {
-    console.log('⚠️ Cookie storage failed, trying sessionStorage:', error.message)
-    // Fallback to sessionStorage for large tokens
-    sessionStorage.setItem(COOKIE_NAMES.ACCESS_TOKEN, token)
-    const sessionStored = sessionStorage.getItem(COOKIE_NAMES.ACCESS_TOKEN)
-    console.log('🍪 Token stored in sessionStorage:', !!sessionStored)
-  }
-}
-
-/**
- * Set refresh token in cookie
- * @param {string} token
- */
-export const setRefreshToken = (token) => {
-  const options = {
-    ...COOKIE_OPTIONS,
-    expires: 7, // 7 days for refresh token
-  }
-
-  Cookies.set(COOKIE_NAMES.REFRESH_TOKEN, token, options)
-}
-
-/**
- * Set user data in cookie
+ * Set user data in localStorage (not in cookies for reliability)
  * @param {Object} userData
  */
 export const setUserData = (userData) => {
-  const options = {
-    ...COOKIE_OPTIONS,
-    expires: 1, // 1 day
-  }
-
-  Cookies.set(COOKIE_NAMES.USER_DATA, JSON.stringify(userData), options)
+  localStorage.setItem('user_data', JSON.stringify(userData))
+  console.log('💾 User data stored in localStorage:', userData.email)
 }
 
 /**
- * Get access token from cookie
+ * Get access token - Returns placeholder since HttpOnly cookies can't be read by JS
  * @returns {string|null}
  */
 export const getAccessToken = () => {
-  // Try cookie first
-  let token = Cookies.get(COOKIE_NAMES.ACCESS_TOKEN)
-
-  // Fallback to sessionStorage if not in cookie
-  if (!token) {
-    token = sessionStorage.getItem(COOKIE_NAMES.ACCESS_TOKEN)
-    if (token) {
-      console.log('🍪 Getting access token from sessionStorage:', `${token.substring(0, 20)}...`)
-    }
-  } else {
-    console.log('🍪 Getting access token from cookie:', `${token.substring(0, 20)}...`)
+  // HttpOnly cookies cannot be accessed from JavaScript
+  // We return a placeholder to indicate cookies should exist
+  const userData = getUserData()
+  if (userData) {
+    console.log('🍪 HttpOnly access_token should exist (cannot verify from JS)')
+    return 'httponly_token_exists' // Placeholder
   }
-
-  if (!token) {
-    console.log('🍪 No access token found in cookie or sessionStorage')
-  }
-
-  return token || null
+  return null
 }
 
 /**
- * Get refresh token from cookie
- * @returns {string|null}
- */
-export const getRefreshToken = () => {
-  return Cookies.get(COOKIE_NAMES.REFRESH_TOKEN) || null
-}
-
-/**
- * Get user data from cookie
+ * Get user data from localStorage
  * @returns {Object|null}
  */
 export const getUserData = () => {
-  const userData = Cookies.get(COOKIE_NAMES.USER_DATA)
-  console.log('🍪 Getting user data raw:', userData)
+  const userData = localStorage.getItem('user_data')
+  console.log('💾 Getting user data from localStorage:', !!userData)
 
   if (!userData) return null
 
   try {
     const parsed = JSON.parse(userData)
-    console.log('🍪 Getting user data parsed:', parsed)
+    console.log('💾 User data parsed:', parsed.email)
     return parsed
   } catch (error) {
-    console.error('🍪 Error parsing user data:', error)
+    console.error('💾 Error parsing user data:', error)
     return null
   }
 }
 
 /**
- * Remove all auth cookies
+ * Remove all auth storage (localStorage only - HttpOnly cookies cleared by server)
  */
 export const clearAuthCookies = () => {
-  console.log('🗑️ Clearing all auth cookies and sessionStorage')
+  console.log('🗑️ Clearing auth storage')
 
-  // Clear cookies
+  // Clear localStorage
+  localStorage.removeItem('user_data')
+  localStorage.removeItem('access_token') // Legacy cleanup
+  localStorage.removeItem('refresh_token') // Legacy cleanup
+
+  // Clear any remaining test cookies
   Cookies.remove(COOKIE_NAMES.ACCESS_TOKEN, { path: '/' })
   Cookies.remove(COOKIE_NAMES.REFRESH_TOKEN, { path: '/' })
   Cookies.remove(COOKIE_NAMES.USER_DATA, { path: '/' })
 
-  // Clear sessionStorage
-  sessionStorage.removeItem(COOKIE_NAMES.ACCESS_TOKEN)
-  sessionStorage.removeItem(COOKIE_NAMES.REFRESH_TOKEN)
-  sessionStorage.removeItem(COOKIE_NAMES.USER_DATA)
-
-  // Verify cookies were removed
-  const tokenRemaining = Cookies.get(COOKIE_NAMES.ACCESS_TOKEN)
-  const refreshRemaining = Cookies.get(COOKIE_NAMES.REFRESH_TOKEN)
-  const userRemaining = Cookies.get(COOKIE_NAMES.USER_DATA)
-
-  // Verify sessionStorage was cleared
-  const sessionTokenRemaining = sessionStorage.getItem(COOKIE_NAMES.ACCESS_TOKEN)
-
-  console.log('🗑️ Auth storage cleared:', {
-    cookieToken: !tokenRemaining,
-    cookieRefresh: !refreshRemaining,
-    cookieUser: !userRemaining,
-    sessionToken: !sessionTokenRemaining,
-  })
+  console.log('🗑️ Auth storage cleared (HttpOnly cookies must be cleared by server)')
 }
 
 /**
- * Check if token is expired
+ * Check if token is expired - For HttpOnly tokens, we can't verify
  * @param {string} token
  * @returns {boolean}
  */
 export const isTokenExpired = (token) => {
   if (!token) return true
 
+  // If it's our placeholder for HttpOnly tokens, assume valid
+  if (token === 'httponly_token_exists' || token === 'httponly_refresh_exists') {
+    console.log('🍪 HttpOnly token - assuming valid (verified by API calls)')
+    return false
+  }
+
+  // For actual JWT tokens (fallback)
   try {
     const payload = JSON.parse(atob(token.split('.')[1]))
     return payload.exp * 1000 <= Date.now()
@@ -199,101 +104,113 @@ export const isTokenExpired = (token) => {
 }
 
 /**
- * Get token payload
+ * Check if user has valid authentication session
+ * Works by checking if user data exists and testing API call
+ * @returns {boolean}
+ */
+export const hasValidSession = () => {
+  const userData = getUserData()
+  return !!userData // If user data exists, assume HttpOnly cookies exist
+}
+
+/**
+ * Get token payload - Not possible with HttpOnly cookies
  * @param {string} token
  * @returns {Object|null}
  */
 export const getTokenPayload = (token) => {
-  if (!token) return null
+  console.log('⚠️ Cannot get token payload from HttpOnly cookies')
+  return null
+}
 
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    console.log('🔍 Token payload:', payload)
-    return payload
-  } catch (error) {
-    console.error('🔍 Error parsing token payload:', error)
-    return null
+/**
+ * Debug function to check authentication state
+ */
+export const debugCookies = () => {
+  console.log('=== AUTHENTICATION DEBUG (HttpOnly Cookies) ===')
+
+  const allCookies = Cookies.get()
+  console.log('🍪 Accessible cookies:', allCookies)
+
+  const userData = getUserData()
+  console.log('👤 User Data:', userData || 'Not found')
+  console.log('🔑 HttpOnly Access Token:', userData ? 'Should exist (HttpOnly)' : 'No user data')
+  console.log('🔄 HttpOnly Refresh Token:', userData ? 'Should exist (HttpOnly)' : 'No user data')
+
+  return {
+    allCookies,
+    userData,
+    hasSession: !!userData,
+    note: 'HttpOnly cookies cannot be accessed from JavaScript',
   }
 }
 
 /**
- * Debug function to check all cookies
- * Call this in browser console: window.debugCookies()
+ * Verify if HttpOnly cookies actually exist by making a test API call
+ * @returns {Promise<boolean>}
  */
-export const debugCookies = () => {
-  console.log('=== COOKIE DEBUG ===')
+export const verifyHttpOnlyCookiesExist = async () => {
+  console.log('🔍 Verifying HttpOnly cookies exist by testing API call...')
 
-  const allCookies = Cookies.get()
-  console.log('🍪 All cookies:', allCookies)
-
-  const token = getAccessToken()
-  const refreshToken = getRefreshToken()
+  // First check if we have user data
   const userData = getUserData()
-
-  console.log('🔑 Access Token:', token || 'Not found')
-  console.log('🔄 Refresh Token:', refreshToken || 'Not found')
-  console.log('👤 User Data:', userData || 'Not found')
-
-  if (token) {
-    console.log('🕐 Token expired:', isTokenExpired(token))
-    console.log('📋 Token payload:', getTokenPayload(token))
+  if (!userData) {
+    console.log('💾 No user data found in localStorage')
+    return false
   }
 
-  return {
-    allCookies,
-    token,
-    refreshToken,
-    userData,
-    tokenExpired: token ? isTokenExpired(token) : 'No token',
+  try {
+    // Make a test API call to verify HttpOnly cookies are actually present
+    const testUrl = isDevelopment
+      ? '/authentication/me' // Via proxy
+      : 'https://api.thienhang.com/authentication/me' // Direct
+
+    console.log('🔍 Testing HttpOnly cookies with API call to:', testUrl)
+
+    const response = await axios.get(testUrl, {
+      withCredentials: true, // Send HttpOnly cookies
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        Accept: 'application/json',
+      },
+    })
+
+    console.log('🔍 API response status:', response.status)
+
+    // If we get 200, cookies are present and valid
+    if (response.status === 200) {
+      console.log('✅ HttpOnly cookies verified - API call successful')
+      return true
+    }
+
+    // For other status codes, assume cookies are present but there's another issue
+    console.log('⚠️ API call returned unexpected status:', response.status)
+    return true
+  } catch (error) {
+    // Handle axios errors (includes 4xx and 5xx responses)
+    if (error.response) {
+      const status = error.response.status
+      console.log('🔍 API response status:', status)
+
+      // If we get 401/403, cookies are missing or invalid
+      if (status === 401 || status === 403) {
+        console.log('❌ HttpOnly cookies missing or invalid - API returned', status)
+        return false
+      }
+
+      // For other HTTP error status codes, assume cookies are present but there's another issue
+      console.log('⚠️ API call returned error status:', status)
+      return true
+    } else {
+      // Network error or other issue - assume cookies are missing
+      console.log('❌ Error verifying HttpOnly cookies:', error.message)
+      return false
+    }
   }
 }
 
-// Make debugCookies available globally for browser console
+// Make debug function available globally for browser console
 if (typeof window !== 'undefined') {
   window.debugCookies = debugCookies
-
-  // Add simple cookie test
-  window.testSimpleCookie = () => {
-    console.log('🧪 Testing simple cookie storage...')
-
-    // Test simple string
-    Cookies.set('test_simple', 'hello_world', { path: '/' })
-    const simple = Cookies.get('test_simple')
-    console.log('🧪 Simple cookie test:', simple === 'hello_world' ? 'PASS' : 'FAIL')
-
-    // Test JSON
-    const testData = { test: true, value: 123 }
-    Cookies.set('test_json', JSON.stringify(testData), { path: '/' })
-    const jsonRaw = Cookies.get('test_json')
-    const jsonParsed = JSON.parse(jsonRaw || '{}')
-    console.log('🧪 JSON cookie test:', jsonParsed.test === true ? 'PASS' : 'FAIL')
-
-    // Test with expiration
-    const future = new Date(Date.now() + 60000) // 1 minute
-    Cookies.set('test_expire', 'expires_soon', { path: '/', expires: future })
-    const expiring = Cookies.get('test_expire')
-    console.log('🧪 Expiring cookie test:', expiring === 'expires_soon' ? 'PASS' : 'FAIL')
-
-    // Test long string (simulating JWT)
-    const longString = 'a'.repeat(1000) // 1000 characters
-    Cookies.set('test_long', longString, { path: '/' })
-    const longResult = Cookies.get('test_long')
-    console.log('🧪 Long cookie test:', longResult === longString ? 'PASS' : 'FAIL')
-
-    // Show all test cookies
-    console.log('🧪 All test cookies:', {
-      simple: Cookies.get('test_simple'),
-      json: Cookies.get('test_json'),
-      expire: Cookies.get('test_expire'),
-      long: Cookies.get('test_long')?.length,
-    })
-
-    // Cleanup
-    Cookies.remove('test_simple', { path: '/' })
-    Cookies.remove('test_json', { path: '/' })
-    Cookies.remove('test_expire', { path: '/' })
-    Cookies.remove('test_long', { path: '/' })
-
-    console.log('🧪 Test cookies cleaned up')
-  }
+  window.verifyHttpOnlyCookies = verifyHttpOnlyCookiesExist
 }

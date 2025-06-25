@@ -1,9 +1,6 @@
 import api from '../api/axios'
 import {
   getAccessToken,
-  getRefreshToken,
-  setAccessToken,
-  setRefreshToken,
   clearAuthCookies,
   isTokenExpired,
   getTokenPayload,
@@ -15,46 +12,29 @@ import {
  */
 
 /**
- * Check if user is authenticated
+ * Check if user is authenticated (works with HttpOnly cookies)
  * @returns {boolean}
  */
 export const isAuthenticated = () => {
-  const token = getAccessToken()
-  if (!token) return false
-  return !isTokenExpired(token)
+  const userData = getUserData()
+  return !!userData // If user data exists, assume HttpOnly cookies exist
 }
 
 /**
- * Get current user from cookie or token
+ * Get current user from localStorage (HttpOnly tokens can't be read)
  * @returns {Object|null}
  */
 export const getCurrentUser = () => {
-  // Try to get user data from cookie first
-  let userData = getUserData()
-
-  // If no user data in cookie, try to get from token
-  if (!userData) {
-    const token = getAccessToken()
-    if (token) {
-      const tokenPayload = getTokenPayload(token)
-      if (tokenPayload) {
-        userData = {
-          id: tokenPayload.identity,
-          email: tokenPayload.email || 'Unknown',
-        }
-      }
-    }
-  }
-
-  return userData
+  return getUserData()
 }
 
 /**
- * Get auth token from cookie
+ * Get auth token - Not possible with HttpOnly cookies
  * @returns {string|null}
  */
 export const getToken = () => {
-  return getAccessToken()
+  console.log('⚠️ Cannot access HttpOnly tokens from JavaScript')
+  return null
 }
 
 /**
@@ -65,16 +45,14 @@ export const clearAuthData = () => {
 }
 
 /**
- * Set auth tokens in cookies
+ * Set auth tokens - Not needed with HttpOnly cookies (server handles this)
  * @param {string} accessToken
  * @param {string} refreshToken
  * @param {string} expiresAt
  */
 export const setAuthTokens = (accessToken, refreshToken, expiresAt) => {
-  setAccessToken(accessToken, expiresAt)
-  if (refreshToken) {
-    setRefreshToken(refreshToken)
-  }
+  console.log('⚠️ Tokens are set as HttpOnly cookies by the server automatically')
+  // Server handles HttpOnly cookie setting
 }
 
 /**
@@ -124,20 +102,14 @@ export const authenticatedRequest = async (url, options = {}) => {
 }
 
 /**
- * Refresh authentication token
+ * Refresh authentication token (HttpOnly cookies handled by server)
  * @returns {boolean}
  */
 export const refreshAuthToken = async () => {
-  const refreshToken = getRefreshToken()
-  if (!refreshToken) return false
-
   try {
-    const response = await api.post('/authentication/refresh-token', {
-      refresh_token: refreshToken,
-    })
-
-    const { access_token, expires_at } = response.data
-    setAccessToken(access_token, expires_at)
+    // Server automatically uses HttpOnly refresh_token cookie and updates access_token
+    const response = await api.post('/authentication/refresh-token', {})
+    console.log('🔄 Token refreshed by server, HttpOnly cookies updated')
     return true
   } catch (error) {
     console.error('Token refresh failed:', error)
@@ -173,18 +145,12 @@ export const getUserShortProfile = async () => {
 }
 
 /**
- * Check if current session is valid
+ * Check if current session is valid (works with HttpOnly cookies)
  * @returns {boolean}
  */
 export const isSessionValid = () => {
-  const token = getAccessToken()
-  const refreshToken = getRefreshToken()
-
-  if (!token && !refreshToken) return false
-  if (token && !isTokenExpired(token)) return true
-  if (refreshToken) return true // Can attempt refresh
-
-  return false
+  const userData = getUserData()
+  return !!userData // If user data exists, assume HttpOnly cookies exist
 }
 
 /**
