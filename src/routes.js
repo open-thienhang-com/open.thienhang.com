@@ -1,6 +1,7 @@
 import React from 'react'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
+const Marketplace = React.lazy(() => import('./views/dashboard/Marketplace'))
 const Hotels = React.lazy(() => import('./views/hotels/Hotels'))
 const HotelDetail = React.lazy(() => import('./views/hotels/HotelDetail'))
 const CreateHotel = React.lazy(() => import('./views/hotels/CreateHotel'))
@@ -72,6 +73,7 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
+  { path: '/marketplace', name: 'Marketplace', element: Marketplace },
 
   { path: '/governance', name: 'Governance', element: Dashboard },
   //Users
