@@ -1,0 +1,29 @@
+<div class="w-full text-white p-8 flex flex-col justify-center items-center">
+  <div class="w-2/3">
+    <h2 class="text-2xl font-bold mb-2">Welcome To <span class="text-white">Open Mesh!</span></h2>
+    <p class="text-sm mb-6">Sign in with your data that you entered during your registration</p>
+
+    <p-floatlabel variant="on">
+      <input class="w-full" pInputText id="email" [(ngModel)]="email" autocomplete="off" type="email"/>
+      <label for="email">Email</label>
+    </p-floatlabel>
+    <p-floatlabel variant="on" class="mt-4">
+      <input class="w-full" pInputText id="password" [(ngModel)]="password" autocomplete="off" type="password" />
+      <label for="password">Password</label>
+    </p-floatlabel>
+
+    <div class="flex items-center justify-between text-sm mt-2">
+      <label class="flex items-center gap-2">
+        <input [(ngModel)]="remember" name="remember" type="checkbox" class="accent-white" />
+        Remember me
+      </label>
+      <a class="text-white underline cursor-pointer" (click)="onForgotPassword.emit()">Forgot password</a>
+    </div>
+    <div class="w-full py-8">
+      <p-button label="Log in" severity="success" class="w-full" styleClass="w-full" (click)="login()"/>
+    </div>
+    <p class="mt-4 text-sm text-center">
+      Don't Have Your Account yet? <a class="cursor-pointer underline" (click)="onSignUp.emit()">Sign up</a>
+    </p>
+  </div>
+</div>

@@ -1,0 +1,44 @@
+<div class="flex justify-between items-center">
+  <app-title title="Assets"></app-title>
+  <p-button label="Add new" icon="pi pi-plus" styleClass="m-0" [outlined]="true" (click)="assetDetail.show()"/>
+</div>
+<div class="card mt-3">
+  <p-table
+    [value]="assets"
+    [tableStyle]="{ 'min-width': '50rem' }"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Source</th>
+        <th>Location</th>
+        <th>Owner</th>
+        <th>Sensitivity</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-asset>
+      <tr>
+        <td>{{ asset.name }}</td>
+        <td>{{ asset.type }}</td>
+        <td>{{ asset.source }}</td>
+        <td>{{ asset.location }}</td>
+        <td>{{ asset.owner }}</td>
+        <td>{{ asset.sensitivity }}</td>
+        <td>
+          <p-tag [value]="asset.status" [severity]="getSeverity(asset.status)" />
+        </td>
+        <td>
+          <div class="flex justify-around">
+            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" (click)="assetDetail.show(asset._id)"/>
+            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (click)="onDeleteAsset($event, asset._id)"/>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<app-asset #assetDetail></app-asset>

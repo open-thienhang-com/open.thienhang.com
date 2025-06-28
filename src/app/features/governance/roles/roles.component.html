@@ -1,0 +1,34 @@
+<div class="flex justify-between items-center">
+  <app-title title="Roles"></app-title>
+  <p-button label="Add new" icon="pi pi-plus" styleClass="m-0" [outlined]="true" (click)="roleDetail.show()"/>
+</div>
+<div class="card mt-3">
+  <p-table
+    [value]="roles"
+    [tableStyle]="{ 'min-width': '50rem' }"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Action</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-role>
+      <tr>
+        <td>{{ role.name }}</td>
+        <td>{{ role.type }}</td>
+        <td>{{ role.description }}</td>
+        <td>
+          <div class="flex justify-around">
+            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" (click)="roleDetail.show(role._id)"/>
+            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (click)="onDeleteRole($event, role._id)"/>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<app-role #roleDetail></app-role>

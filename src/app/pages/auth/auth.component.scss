@@ -1,0 +1,16 @@
+.auth-container {
+  background-image: url('/assets/images/sign-in-bg.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+
+  .sign-in-container {
+    background-image: url('/assets/images/sign-in-container.png');
+    background-position: center;
+    background-color: rgba(var(--white), 1);
+    background-size: cover;
+    padding: calc(20px + 28*(100vw - 300px) / 1620);
+    overflow: hidden;
+    border-radius: 10px;
+  }
+}

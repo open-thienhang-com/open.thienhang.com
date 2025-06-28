@@ -1,0 +1,38 @@
+<div class="flex justify-between items-center">
+  <app-title title="Teams"></app-title>
+  <p-button label="Add new" icon="pi pi-plus" styleClass="m-0" [outlined]="true" (click)="teamDetail.show()"/>
+</div>
+<div class="card mt-3">
+  <p-table
+    [value]="teams"
+    [tableStyle]="{ 'min-width': '50rem' }"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Name</th>
+        <th>Owner</th>
+        <th>Type</th>
+        <th>Members</th>
+        <th>Description</th>
+        <th>Action</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-team>
+      <tr>
+        <td>{{ team.name }}</td>
+        <td>{{ team.owners }}</td>
+        <td>{{ team.type }}</td>
+        <td>{{ team.members }}</td>
+        <td>{{ team.description }}</td>
+        <td>
+          <div class="flex justify-around">
+            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" (click)="teamDetail.show(team._id)"/>
+            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (click)="onDeleteTeam($event, team._id)"/>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<app-team #teamDetail></app-team>

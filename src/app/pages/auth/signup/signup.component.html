@@ -1,0 +1,36 @@
+<div class="w-full text-white p-8 flex flex-col justify-center items-center">
+  <div class="w-2/3">
+    <h2 class="text-2xl font-bold mb-2">Create your account</h2>
+    <p class="text-sm mb-6">Get Started For Free Today!</p>
+
+    <p-floatlabel variant="on">
+      <input class="w-full" pInputText id="username" [(ngModel)]="username" autocomplete="off" />
+      <label for="username">Username</label>
+    </p-floatlabel>
+    <p-floatlabel variant="on" class="mt-4">
+      <input class="w-full" pInputText id="email" [(ngModel)]="email" autocomplete="off" type="email" />
+      <label for="email">Email</label>
+    </p-floatlabel>
+    <p-floatlabel variant="on" class="mt-4">
+      <input class="w-full" pInputText id="password" [(ngModel)]="password" autocomplete="off" type="password" />
+      <label for="password">Password</label>
+    </p-floatlabel>
+    <p-floatlabel variant="on" class="mt-4">
+      <input class="w-full" pInputText id="confirmPassword" [(ngModel)]="confirmPassword" autocomplete="off" type="password" />
+      <label for="confirmPassword">Confirm Password</label>
+    </p-floatlabel>
+
+    <div class="flex items-center justify-between text-sm mt-2">
+      <label class="flex items-center gap-2">
+        <input [(ngModel)]="acceptTnC" name="accept-tnc" type="checkbox" class="accent-white" />
+        Accept Terms & Conditions
+      </label>
+    </div>
+    <div class="w-full py-8">
+      <p-button label="Sign up" severity="success" class="w-full" styleClass="w-full"/>
+    </div>
+    <p class="mt-4 text-sm text-center">
+      Already have an account? <a class="underline cursor-pointer" (click)="onLogIn.emit()">Log in</a>
+    </p>
+  </div>
+</div>

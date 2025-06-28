@@ -1,0 +1,34 @@
+<div class="flex justify-between items-center">
+  <app-title title="Policies"></app-title>
+  <p-button label="Add new" icon="pi pi-plus" styleClass="m-0" [outlined]="true" (click)="policyDetail.show()"/>
+</div>
+<div class="card mt-3">
+  <p-table
+    [value]="policies"
+    [tableStyle]="{ 'min-width': '50rem' }"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Action</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-policy>
+      <tr>
+        <td>{{ policy.name }}</td>
+        <td>{{ policy.type }}</td>
+        <td>{{ policy.description }}</td>
+        <td>
+          <div class="flex justify-around">
+            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" (click)="policyDetail.show(policy._id)"/>
+            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (click)="onDeletePolicy($event, policy._id)"/>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<app-policy #policyDetail></app-policy>

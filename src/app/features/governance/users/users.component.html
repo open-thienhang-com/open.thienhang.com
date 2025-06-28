@@ -1,0 +1,34 @@
+<div class="flex justify-between items-center">
+  <app-title title="Users"></app-title>
+  <p-button label="Add new" icon="pi pi-plus" styleClass="m-0" [outlined]="true" (click)="userDetail.show()"/>
+</div>
+<div class="card mt-3">
+  <p-table
+    [value]="users"
+    [tableStyle]="{ 'min-width': '50rem' }"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Company</th>
+        <th>Action</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-user>
+      <tr>
+        <td>{{ user.first_name }} {{user.last_name}}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.company }}</td>
+        <td>
+          <div class="flex justify-around">
+            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" (click)="userDetail.show(user._id)"/>
+            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (click)="onDeleteUser($event, user._id)"/>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<app-user #userDetail></app-user>
