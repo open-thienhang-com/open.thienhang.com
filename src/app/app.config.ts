@@ -5,13 +5,17 @@ import {routes} from './app.routes';
 import {provideAnimationsAsync} from '@angular/platform-browser/animations/async';
 import {providePrimeNG} from 'primeng/config';
 import Aura from '@primeng/themes/lara';
-import {provideHttpClient, withFetch} from '@angular/common/http';
+import {provideHttpClient, withInterceptors} from '@angular/common/http';
+import {credentialsInterceptor} from './core/interceptor/with-credentials.interceptor';
 
+// @ts-ignore
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({eventCoalescing: true}),
     provideRouter(routes),
-    provideHttpClient(withFetch()),
+    provideHttpClient(
+      withInterceptors([credentialsInterceptor])
+    ),
     provideAnimationsAsync(),
     providePrimeNG({
       theme: { preset: Aura, options: { darkModeSelector: '.p-dark' } },

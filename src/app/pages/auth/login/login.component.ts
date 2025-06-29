@@ -18,8 +18,8 @@ import {Router} from '@angular/router';
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
-  email = '';
-  password = '';
+  email = 'me@thienhang.com';
+  password = 'stringst';
   remember = false;
   @Output() onSignUp: EventEmitter<any> = new EventEmitter();
   @Output() onForgotPassword: EventEmitter<any> = new EventEmitter();
@@ -32,7 +32,10 @@ export class LoginComponent {
       email: this.email,
       password: this.password,
     }).subscribe(res => {
-      this.router.navigate(['/']);
+      console.log(res);
+      if (res) {
+        this.router.navigate(['']).then();
+      }
     })
   }
 
