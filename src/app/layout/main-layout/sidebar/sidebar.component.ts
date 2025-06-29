@@ -1,11 +1,7 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {Menu} from 'primeng/menu';
-import {Badge} from 'primeng/badge';
-import {Avatar} from 'primeng/avatar';
 import {CommonModule} from '@angular/common';
 import {Router, RouterLink} from '@angular/router';
 import {Ripple} from 'primeng/ripple';
-import {StyleClass} from 'primeng/styleclass';
 import {
   trigger,
   state,
@@ -13,14 +9,15 @@ import {
   transition,
   animate,
 } from '@angular/animations';
+import {CurrentUserComponent} from './current-user/current-user.component';
 
 @Component({
   selector: 'app-sidebar',
   imports: [
     CommonModule,
-    Avatar,
     Ripple,
-    RouterLink
+    RouterLink,
+    CurrentUserComponent
   ],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
@@ -43,6 +40,8 @@ export class SidebarComponent {
   ngOnInit() {
     this.menu = [
       { label: 'Dashboard', icon: 'pi pi-home', url: '/dashboard' },
+      { label: 'Marketplace', icon: 'pi pi-home', url: '/dashboard' },
+      { label: 'Data product', icon: 'pi pi-home', url: '/dashboard' },
       {
         label: 'Governance',
         icon: 'pi pi-chart-line',

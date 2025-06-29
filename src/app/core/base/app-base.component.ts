@@ -20,6 +20,10 @@ export abstract class AppBaseComponent {
     this.messageService.add({ severity: 'success', summary: 'Success', detail: message });
   }
 
+  showError(message) {
+    this.messageService.add({ severity: 'error', summary: 'Error', detail: message });
+  }
+
   confirmOnDelete(event: Event, asyncTask: Observable<any>, callbackOnSuccess?) {
     this.confirmationService.confirm({
       target: event.target as EventTarget,

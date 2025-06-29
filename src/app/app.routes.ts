@@ -10,6 +10,7 @@ import {RolesComponent} from './features/governance/roles/roles.component';
 import {AccountsComponent} from './features/governance/accounts/accounts.component';
 import {UsersComponent} from './features/governance/users/users.component';
 import {PermissionsComponent} from './features/governance/permissions/permissions.component';
+import {authGuard} from './core/guard/auth.guard';
 
 export const routes: Routes = [
   {
@@ -54,6 +55,7 @@ export const routes: Routes = [
         pathMatch: 'full',
       },
     ],
+    canActivate: [authGuard],
   },
   {
     path: 'login',

@@ -1,21 +1,24 @@
 <div class="min-h-screen auth-container flex items-center justify-center">
   <div class="sign-in-container shadow-lg flex w-[900px] overflow-hidden">
-    <!-- Left side (image) -->
-    <div class="w-2/3 flex items-center justify-center p-6">
-      <img src="assets/images/sign-in-img.png" alt="Login Visual" class="max-w-full h-auto"/>
-    </div>
-
-    <!-- Right side (form) -->
     @if (curMode === modes.login) {
+      <div class="w-2/3 flex items-center justify-center p-6">
+        <img src="assets/images/sign-in-img.png" alt="Login Visual" class="max-w-full h-auto"/>
+      </div>
       <app-login class="flex flex-col justify-center items-center w-1/2"
                  (onForgotPassword)="setCurMode(modes.forgotPassword)"
                  (onSignUp)="setCurMode(modes.signup)"></app-login>
     }
     @if (curMode === modes.signup) {
+      <div class="w-2/3 flex items-center justify-center p-6">
+        <img src="assets/images/sign-up.png" alt="Sign up Visual" class="max-w-full h-auto"/>
+      </div>
       <app-signup class="flex flex-col justify-center items-center w-1/2"
                   (onLogIn)="setCurMode(modes.login)"></app-signup>
     }
     @if (curMode === modes.forgotPassword) {
+      <div class="w-2/3 flex items-center justify-center p-6">
+        <img src="assets/images/forgot-password.png" alt="Forgot password Visual" class="max-w-full h-auto"/>
+      </div>
       <app-forgot-password class="flex flex-col justify-center items-center w-1/2"
                            (onLogIn)="setCurMode(modes.login)"></app-forgot-password>
     }

@@ -2,10 +2,9 @@
   <div class="w-2/3">
     <h2 class="text-2xl font-bold mb-2">Create your account</h2>
     <p class="text-sm mb-6">Get Started For Free Today!</p>
-
     <p-floatlabel variant="on">
-      <input class="w-full" pInputText id="username" [(ngModel)]="username" autocomplete="off" />
-      <label for="username">Username</label>
+      <input class="w-full" pInputText id="fullName" [(ngModel)]="fullName" autocomplete="off" />
+      <label for="fullName">Full Name</label>
     </p-floatlabel>
     <p-floatlabel variant="on" class="mt-4">
       <input class="w-full" pInputText id="email" [(ngModel)]="email" autocomplete="off" type="email" />
@@ -27,10 +26,11 @@
       </label>
     </div>
     <div class="w-full py-8">
-      <p-button label="Sign up" severity="success" class="w-full" styleClass="w-full"/>
+      <p-button label="Sign up" severity="success" class="w-full" styleClass="w-full" (click)="signUp()"/>
     </div>
     <p class="mt-4 text-sm text-center">
       Already have an account? <a class="underline cursor-pointer" (click)="onLogIn.emit()">Log in</a>
     </p>
   </div>
 </div>
+<p-toast />

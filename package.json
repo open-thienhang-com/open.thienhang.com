@@ -6,7 +6,8 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --output-path=dist/open-mesh --base-href=/",
+    "deploy": "npx angular-cli-ghpages --dir=dist/open-mesh",
     "test": "ng test"
   },
   "dependencies": {

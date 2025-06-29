@@ -1,0 +1,15 @@
+
+<p-menu #menu [model]="menuItems" [popup]="true" />
+<a pRipple
+   class="m-4 flex items-center cursor-pointer p-2 gap-2 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple justify-between">
+  <div class="flex items-center">
+    <p-avatar image="https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png" shape="circle"/>
+    <div class="flex flex-col ml-3">
+      <span class="font-bold">{{user.full_name}}</span>
+      <span class="text-sm">
+        <p-tag severity="success" value="Admin" />
+      </span>
+    </div>
+  </div>
+  <p-button icon="pi pi-cog" [rounded]="true" [text]="true" (click)="menu.toggle($event)" severity="secondary" />
+</a>

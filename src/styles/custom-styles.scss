@@ -6,33 +6,6 @@
   height: 100%;
 }
 
-app-sidebar {
-  .p-menu {
-    border-radius: 0 !important;
-    border-top: 0;
-    z-index: 2;
-  }
-  .p-menu-start {
-    height: 40px;
-  }
-
-  .p-menu-list {
-    padding-top: 0;
-  }
-}
-
-app-header {
-  .header {
-    box-shadow: 0px 1px 4px 0px var(--p-content-border-color);
-  }
-  .p-inputtext {
-    border: none
-  }
-  .p-inputtext:enabled:focus {
-    border: none
-  }
-}
-
 .p-datatable-tbody > tr:last-child > td {
   border-width: 0
 }

@@ -8,7 +8,7 @@
     overflow: hidden;
     border-right: 1px solid var(--p-content-border-color);
     background: var(--card-bg);
-    box-shadow: 3px 0px 5px 1px var(--p-content-border-color);
+    box-shadow: 1px 0 3px 1px var(--p-content-border-color);
     &.collapsed {
       width: 60px;
     }
@@ -24,5 +24,33 @@
       overflow: auto;
       padding: 1rem 1.5rem;
     }
+  }
+}
+
+
+app-sidebar {
+  .p-menu {
+    border-radius: 0 !important;
+    border-top: 0;
+    z-index: 2;
+  }
+  .p-menu-start {
+    height: 40px;
+  }
+
+  .p-menu-list {
+    padding-top: 0;
+  }
+}
+
+app-header {
+  .header {
+    box-shadow: 0px 1px 4px 0px var(--p-content-border-color);
+  }
+  .p-inputtext {
+    border: none
+  }
+  .p-inputtext:enabled:focus {
+    border: none
   }
 }
