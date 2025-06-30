@@ -1,7 +1,7 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {Router, RouterLink} from '@angular/router';
-import {Ripple} from 'primeng/ripple';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
+import { Ripple } from 'primeng/ripple';
 import {
   trigger,
   state,
@@ -9,7 +9,7 @@ import {
   transition,
   animate,
 } from '@angular/animations';
-import {CurrentUserComponent} from './current-user/current-user.component';
+import { CurrentUserComponent } from './current-user/current-user.component';
 
 @Component({
   selector: 'app-sidebar',
@@ -35,13 +35,13 @@ export class SidebarComponent {
   @Input() collapsed = false;
   @Output() toggle = new EventEmitter<void>();
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   ngOnInit() {
     this.menu = [
       { label: 'Dashboard', icon: 'pi pi-home', url: '/dashboard' },
-      { label: 'Marketplace', icon: 'pi pi-home', url: '/dashboard' },
-      { label: 'Data product', icon: 'pi pi-home', url: '/dashboard' },
+      { label: 'Marketplace', icon: 'pi pi-home', url: '/marketplace' },
+      { label: 'Data product', icon: 'pi pi-home', url: '/data-product' },
       {
         label: 'Governance',
         icon: 'pi pi-chart-line',

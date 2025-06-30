@@ -1,0 +1,47 @@
+<!-- <p-card class="xl:col-span-2" *ngIf="dataProduct; else noData">
+  <div class="flex items-center mb-4">
+    <p-avatar [image]="dataProduct.avatarUrl || 'https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png'" shape="circle"/>
+    <div class="ml-3">
+      <div class="font-bold text-lg">{{ dataProduct.name || 'No name' }}</div>
+      <div class="text-sm text-gray-500">{{ dataProduct.description || 'No description' }}</div>
+      <div class="text-xs text-gray-400">Domain: {{ dataProduct.domain || 'N/A' }}</div>
+    </div>
+  </div>
+  <div class="mb-2">
+    <span class="font-semibold">Owner:</span>
+    {{ dataProduct.owner?.first_name || 'Unknown' }} {{ dataProduct.owner?.last_name || '' }} ({{ dataProduct.owner?.email || 'No email' }})
+  </div>
+  <div class="mb-2" *ngIf="dataProduct.teams && dataProduct.teams.length">
+    <span class="font-semibold">Team:</span>
+    {{ dataProduct.teams[0]?.name || 'No team name' }} - {{ dataProduct.teams[0]?.description || 'No team description' }}
+  </div>
+  <div class="mb-2" *ngIf="dataProduct.assets && dataProduct.assets.length">
+    <span class="font-semibold">Asset:</span>
+    {{ dataProduct.assets[0]?.name || 'No asset name' }} ({{ dataProduct.assets[0]?.type || 'No type' }}) - {{ dataProduct.assets[0]?.description || 'No asset description' }}
+  </div>
+</p-card>
+
+<ng-template #noData>
+  <p-card class="xl:col-span-2">
+    <div class="flex items-center mb-4">
+      <p-avatar image="https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png" shape="circle"/>
+      <div class="ml-3">
+        <div class="font-bold text-lg">No name</div>
+        <div class="text-sm text-gray-500">No description</div>
+        <div class="text-xs text-gray-400">Domain: N/A</div>
+      </div>
+    </div>
+    <div class="mb-2">
+      <span class="font-semibold">Owner:</span>
+      Unknown (No email)
+    </div>
+    <div class="mb-2">
+      <span class="font-semibold">Team:</span>
+      No team name - No team description
+    </div>
+    <div class="mb-2">
+      <span class="font-semibold">Asset:</span>
+      No asset name (No type) - No asset description
+    </div>
+  </p-card>
+</ng-template> -->
