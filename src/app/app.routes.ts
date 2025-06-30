@@ -4,7 +4,6 @@ import { AssetsComponent } from './features/governance/assets/assets.component';
 import { AuthComponent } from './pages/auth/auth.component';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
-import { DataProductComponent } from './features/dataproduct/dataproduct.component';
 import { PoliciesComponent } from './features/governance/policies/policies.component';
 import { TeamsComponent } from './features/governance/teams/teams.component';
 import { RolesComponent } from './features/governance/roles/roles.component';
@@ -12,6 +11,7 @@ import { AccountsComponent } from './features/governance/accounts/accounts.compo
 import { UsersComponent } from './features/governance/users/users.component';
 import { PermissionsComponent } from './features/governance/permissions/permissions.component';
 import { authGuard } from './core/guard/auth.guard';
+import {DataProductComponent} from './features/data-product/data-product.component';
 
 export const routes: Routes = [
   {
