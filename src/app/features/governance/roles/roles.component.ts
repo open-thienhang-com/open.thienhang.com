@@ -5,19 +5,21 @@ import {TableModule} from 'primeng/table';
 import {TitleComponent} from '../../../shared/component/title/title.component';
 import {AppBaseComponent} from '../../../core/base/app-base.component';
 import {GovernanceServices} from '../../../core/services/governance.services';
+import {DataTableComponent} from "../../../shared/component/data-table/data-table.component";
 
 @Component({
   selector: 'app-roles',
-  imports: [
-    RoleComponent,
-    Button,
-    TableModule,
-    TitleComponent
-  ],
+    imports: [
+        RoleComponent,
+        Button,
+        TableModule,
+        TitleComponent,
+        DataTableComponent
+    ],
   templateUrl: './roles.component.html',
 })
 export class RolesComponent extends AppBaseComponent implements OnInit {
-  roles = [];
+  roles: any;
 
   constructor(
     private injector: Injector,
@@ -31,8 +33,10 @@ export class RolesComponent extends AppBaseComponent implements OnInit {
   }
 
   getRoles = (page = 0) => {
-    this.governanceServices.getRoles({offset: page}).subscribe(res => {
-      this.roles = res.data
+    this.isTableLoading = true;
+    this.governanceServices.getRoles({offset: page, size: this.tableRowsPerPage}).subscribe(res => {
+      this.roles = res;
+      this.isTableLoading = false;
     })
   }
 

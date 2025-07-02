@@ -2,6 +2,7 @@ import {Component, Input} from '@angular/core';
 import {Avatar} from 'primeng/avatar';
 import {Tag} from 'primeng/tag';
 import {Card} from 'primeng/card';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-data-prod-item',
@@ -16,26 +17,25 @@ import {Card} from 'primeng/card';
 })
 export class DataProdItemComponent {
   colors = [
-    'emerald',
-    'green',
-    'lime',
-    'orange',
-    'amber',
-    'yellow',
-    'teal',
-    'cyan',
-    'sky',
-    'blue',
-    'indigo',
-    'violet',
-    'purple',
-    'fuchsia',
-    'pink',
-    'rose',
+    '#792424',
+    '#a58a0a',
+    '#608209',
+    '#09822b',
+    '#5accbd',
+    '#225fcc',
+    '#6c19e0',
+    '#82097e',
   ]
   @Input() data: any = {};
 
+  constructor(private router: Router) {
+  }
+
   get getStyle() {
     return {'border-left': '3px solid ' + this.colors[Math.floor(Math.random() * this.colors.length)]}
+  }
+
+  goToDetail() {
+    this.router.navigate(['/data-product-detail']);
   }
 }

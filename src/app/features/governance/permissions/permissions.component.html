@@ -3,11 +3,9 @@
   <p-button label="Add new" icon="pi pi-plus" styleClass="m-0" [outlined]="true" (click)="permissionDetail.show()"/>
 </div>
 <div class="card mt-3">
-  <p-table
-    [value]="permissions"
-    [tableStyle]="{ 'min-width': '50rem' }"
-  >
-    <ng-template #header>
+  <app-data-table [data]="permissions" [rows]="tableRowsPerPage" [loading]="isTableLoading"
+                  (onPageChange)="getPermissions($event)">
+    <ng-template #tableHeader>
       <tr>
         <th>Name</th>
         <th>Code</th>
@@ -15,7 +13,7 @@
         <th>Action</th>
       </tr>
     </ng-template>
-    <ng-template #body let-permission>
+    <ng-template #tableBody let-permission>
       <tr>
         <td>{{ permission.name }}</td>
         <td>{{ permission.code }}</td>
@@ -28,7 +26,7 @@
         </td>
       </tr>
     </ng-template>
-  </p-table>
+  </app-data-table>
 </div>
 
 <app-permission #permissionDetail></app-permission>

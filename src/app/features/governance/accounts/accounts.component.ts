@@ -1,4 +1,4 @@
-import {Component, Injector} from '@angular/core';
+import {Component, Injector, OnInit} from '@angular/core';
 import {Button} from 'primeng/button';
 import {TableModule} from 'primeng/table';
 import {Tag} from 'primeng/tag';
@@ -6,6 +6,7 @@ import {TitleComponent} from '../../../shared/component/title/title.component';
 import {AppBaseComponent} from '../../../core/base/app-base.component';
 import {GovernanceServices} from '../../../core/services/governance.services';
 import {AccountComponent} from './account/account.component';
+import {DataTableComponent} from '../../../shared/component/data-table/data-table.component';
 
 @Component({
   selector: 'app-accounts',
@@ -14,12 +15,13 @@ import {AccountComponent} from './account/account.component';
     TableModule,
     Tag,
     TitleComponent,
-    AccountComponent
+    AccountComponent,
+    DataTableComponent
   ],
   templateUrl: './accounts.component.html',
 })
-export class AccountsComponent extends AppBaseComponent {
-  accounts = [];
+export class AccountsComponent extends AppBaseComponent implements OnInit {
+  accounts: any;
 
   constructor(
     private injector: Injector,
@@ -33,16 +35,18 @@ export class AccountsComponent extends AppBaseComponent {
   }
 
   getAccounts = (page = 0) => {
-    this.governanceServices.getAccounts({offset: page}).subscribe(res => {
-      this.accounts = res.data
+    this.isTableLoading = true;
+    this.governanceServices.getAccounts({offset: page, size: this.tableRowsPerPage}).subscribe(res => {
+      this.accounts = res;
+      this.isTableLoading = false;
     })
   }
 
-  getSeverity(status: string) {
+  getSeverity(status: boolean) {
     switch (status) {
-      case 'active':
+      case true:
         return 'success';
-      case 'inactive':
+      case false:
         return 'danger';
     }
   }

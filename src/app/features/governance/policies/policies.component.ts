@@ -1,10 +1,11 @@
-import {Component, Injector} from '@angular/core';
+import {Component, Injector, OnInit} from '@angular/core';
 import {PolicyComponent} from '../policies/policy/policy.component';
 import {Button} from 'primeng/button';
 import {TableModule} from 'primeng/table';
 import {TitleComponent} from '../../../shared/component/title/title.component';
 import {AppBaseComponent} from '../../../core/base/app-base.component';
 import {GovernanceServices} from '../../../core/services/governance.services';
+import {DataTableComponent} from '../../../shared/component/data-table/data-table.component';
 
 @Component({
   selector: 'app-policies',
@@ -12,12 +13,13 @@ import {GovernanceServices} from '../../../core/services/governance.services';
     PolicyComponent,
     Button,
     TableModule,
-    TitleComponent
+    TitleComponent,
+    DataTableComponent
   ],
   templateUrl: './policies.component.html'
 })
-export class PoliciesComponent extends AppBaseComponent {
-  policies = [];
+export class PoliciesComponent extends AppBaseComponent implements OnInit {
+  policies: any;
 
   constructor(
     private injector: Injector,
@@ -31,18 +33,11 @@ export class PoliciesComponent extends AppBaseComponent {
   }
 
   getPolicies = (page = 0) => {
-    this.governanceServices.getPolicies({offset: page}).subscribe(res => {
-      this.policies = res.data
+    this.isTableLoading = true;
+    this.governanceServices.getPolicies({offset: page, size: this.tableRowsPerPage}).subscribe(res => {
+      this.policies = res;
+      this.isTableLoading = false;
     })
-  }
-
-  getSeverity(status: string) {
-    switch (status) {
-      case 'active':
-        return 'success';
-      case 'inactive':
-        return 'danger';
-    }
   }
 
   onDeletePolicy(event: Event, id) {

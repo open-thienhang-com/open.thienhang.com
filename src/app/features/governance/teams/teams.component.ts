@@ -5,19 +5,21 @@ import {TableModule} from 'primeng/table';
 import {TitleComponent} from '../../../shared/component/title/title.component';
 import {AppBaseComponent} from '../../../core/base/app-base.component';
 import {GovernanceServices} from '../../../core/services/governance.services';
+import {DataTableComponent} from "../../../shared/component/data-table/data-table.component";
 
 @Component({
   selector: 'app-teams',
-  imports: [
-    TeamComponent,
-    Button,
-    TableModule,
-    TitleComponent
-  ],
+    imports: [
+        TeamComponent,
+        Button,
+        TableModule,
+        TitleComponent,
+        DataTableComponent
+    ],
   templateUrl: './teams.component.html',
 })
 export class TeamsComponent extends AppBaseComponent implements OnInit {
-  teams = [];
+  teams: any;
 
   constructor(
     private injector: Injector,
@@ -31,8 +33,10 @@ export class TeamsComponent extends AppBaseComponent implements OnInit {
   }
 
   getTeams = (page = 0) => {
-    this.governanceServices.getTeams({offset: page}).subscribe(res => {
-      this.teams = res.data
+    this.isTableLoading = true;
+    this.governanceServices.getTeams({offset: page, size: this.tableRowsPerPage}).subscribe(res => {
+      this.teams = res;
+      this.isTableLoading = false;
     })
   }
 

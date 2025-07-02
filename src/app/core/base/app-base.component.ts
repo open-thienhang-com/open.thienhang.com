@@ -10,6 +10,8 @@ import {Observable} from 'rxjs';
 export abstract class AppBaseComponent {
   messageService: MessageService;
   confirmationService: ConfirmationService;
+  tableRowsPerPage = 10;
+  isTableLoading = false;
 
   constructor(injector: Injector) {
     this.messageService = injector.get(MessageService);

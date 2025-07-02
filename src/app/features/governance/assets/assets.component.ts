@@ -1,4 +1,4 @@
-import {Component, Injector} from '@angular/core';
+import {Component, Injector, OnInit} from '@angular/core';
 import {GovernanceServices} from '../../../core/services/governance.services';
 import {TableModule} from 'primeng/table';
 import {Tag} from 'primeng/tag';
@@ -7,6 +7,7 @@ import {Button} from 'primeng/button';
 import {Router} from '@angular/router';
 import {AssetComponent} from './asset/asset.component';
 import {AppBaseComponent} from '../../../core/base/app-base.component';
+import {DataTableComponent} from '../../../shared/component/data-table/data-table.component';
 
 @Component({
   selector: 'app-assets',
@@ -15,16 +16,17 @@ import {AppBaseComponent} from '../../../core/base/app-base.component';
     Tag,
     TitleComponent,
     Button,
-    AssetComponent
+    AssetComponent,
+    DataTableComponent
   ],
   templateUrl: './assets.component.html',
 })
-export class AssetsComponent extends AppBaseComponent {
-  assets = [];
+export class AssetsComponent extends AppBaseComponent implements OnInit {
+  assets: any;
 
   constructor(
     private injector: Injector,
-    private router: Router, private governanceServices: GovernanceServices
+    private governanceServices: GovernanceServices
   ) {
     super(injector)
   }
@@ -34,8 +36,10 @@ export class AssetsComponent extends AppBaseComponent {
   }
 
   getAssets = (page = 0) => {
-    this.governanceServices.getAssets({offset: page}).subscribe(res => {
-      this.assets = res.data
+    this.isTableLoading = true;
+    this.governanceServices.getAssets({offset: page, size: this.tableRowsPerPage}).subscribe(res => {
+      this.assets = res;
+      this.isTableLoading = false;
     })
   }
 

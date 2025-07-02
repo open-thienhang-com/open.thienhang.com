@@ -5,19 +5,21 @@ import {TableModule} from 'primeng/table';
 import {TitleComponent} from '../../../shared/component/title/title.component';
 import {AppBaseComponent} from '../../../core/base/app-base.component';
 import {GovernanceServices} from '../../../core/services/governance.services';
+import {DataTableComponent} from "../../../shared/component/data-table/data-table.component";
 
 @Component({
   selector: 'app-users',
-  imports: [
-    UserComponent,
-    Button,
-    TableModule,
-    TitleComponent
-  ],
+    imports: [
+        UserComponent,
+        Button,
+        TableModule,
+        TitleComponent,
+        DataTableComponent
+    ],
   templateUrl: './users.component.html',
 })
 export class UsersComponent extends AppBaseComponent implements OnInit {
-  users = [];
+  users: any;
 
   constructor(
     private injector: Injector,
@@ -31,8 +33,10 @@ export class UsersComponent extends AppBaseComponent implements OnInit {
   }
 
   getUsers = (page = 0) => {
-    this.governanceServices.getUsers({offset: page}).subscribe(res => {
-      this.users = res.data
+    this.isTableLoading = true;
+    this.governanceServices.getUsers({offset: page, size: this.tableRowsPerPage}).subscribe(res => {
+      this.users = res;
+      this.isTableLoading = false;
     })
   }
 

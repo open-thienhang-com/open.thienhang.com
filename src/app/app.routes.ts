@@ -12,6 +12,7 @@ import { UsersComponent } from './features/governance/users/users.component';
 import { PermissionsComponent } from './features/governance/permissions/permissions.component';
 import { authGuard } from './core/guard/auth.guard';
 import {DataProductComponent} from './features/data-product/data-product.component';
+import {DataProdDetailComponent} from './features/data-product/data-prod-detail/data-prod-detail.component';
 
 export const routes: Routes = [
   {
@@ -53,6 +54,10 @@ export const routes: Routes = [
       {
         path: 'data-product',
         component: DataProductComponent,
+      },
+      {
+        path: 'data-product-detail',
+        component: DataProdDetailComponent,
       },
       {
         path: '',

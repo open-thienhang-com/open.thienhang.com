@@ -3,11 +3,9 @@
   <p-button label="Add new" icon="pi pi-plus" styleClass="m-0" [outlined]="true" (click)="roleDetail.show()"/>
 </div>
 <div class="card mt-3">
-  <p-table
-    [value]="roles"
-    [tableStyle]="{ 'min-width': '50rem' }"
-  >
-    <ng-template #header>
+  <app-data-table [data]="roles" [rows]="tableRowsPerPage" [loading]="isTableLoading"
+                  (onPageChange)="getRoles($event)">
+    <ng-template #tableHeader>
       <tr>
         <th>Name</th>
         <th>Type</th>
@@ -15,7 +13,7 @@
         <th>Action</th>
       </tr>
     </ng-template>
-    <ng-template #body let-role>
+    <ng-template #tableBody let-role>
       <tr>
         <td>{{ role.name }}</td>
         <td>{{ role.type }}</td>
@@ -28,7 +26,7 @@
         </td>
       </tr>
     </ng-template>
-  </p-table>
+  </app-data-table>
 </div>
 
 <app-role #roleDetail></app-role>
