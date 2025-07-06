@@ -36,6 +36,7 @@ export class DataProdItemComponent {
   }
 
   goToDetail() {
-    this.router.navigate(['/data-product-detail']);
+    const {id, domain} = this.data;
+    this.router.navigate(['/data-product-detail', {id, domain}]);
   }
 }

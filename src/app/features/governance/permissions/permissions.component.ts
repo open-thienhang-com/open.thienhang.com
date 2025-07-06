@@ -7,17 +7,19 @@ import {GovernanceServices} from '../../../core/services/governance.services';
 import {AppBaseComponent} from '../../../core/base/app-base.component';
 import {DataTableComponent} from "../../../shared/component/data-table/data-table.component";
 import {Tag} from "primeng/tag";
+import {DataTableFilterComponent} from '../../../shared/component/data-table-filter/data-table-filter.component';
 
 @Component({
   selector: 'app-permissions',
-    imports: [
-        PermissionComponent,
-        Button,
-        TableModule,
-        TitleComponent,
-        DataTableComponent,
-        Tag
-    ],
+  imports: [
+    PermissionComponent,
+    Button,
+    TableModule,
+    TitleComponent,
+    DataTableComponent,
+    Tag,
+    DataTableFilterComponent
+  ],
   templateUrl: './permissions.component.html',
 })
 export class PermissionsComponent extends AppBaseComponent implements OnInit {

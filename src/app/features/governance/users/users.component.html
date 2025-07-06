@@ -1,9 +1,7 @@
-<div class="flex justify-between items-center">
-  <app-title title="Users"></app-title>
-  <p-button label="Add new" icon="pi pi-plus" styleClass="m-0" [outlined]="true" (click)="userDetail.show()"/>
-</div>
+<app-data-table-filter title="Users" (onAddNew)="userDetail.show()" (onRefresh)="dataTable.refresh()"></app-data-table-filter>
+
 <div class="card mt-3">
-  <app-data-table [data]="users" [rows]="tableRowsPerPage" [loading]="isTableLoading"
+  <app-data-table #dataTable [data]="users" [rows]="tableRowsPerPage" [loading]="isTableLoading"
                   (onPageChange)="getUsers($event)">
     <ng-template #tableHeader>
       <tr>

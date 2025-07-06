@@ -8,16 +8,17 @@ import {Router} from '@angular/router';
 import {AssetComponent} from './asset/asset.component';
 import {AppBaseComponent} from '../../../core/base/app-base.component';
 import {DataTableComponent} from '../../../shared/component/data-table/data-table.component';
+import {DataTableFilterComponent} from '../../../shared/component/data-table-filter/data-table-filter.component';
 
 @Component({
   selector: 'app-assets',
   imports: [
     TableModule,
     Tag,
-    TitleComponent,
     Button,
     AssetComponent,
-    DataTableComponent
+    DataTableComponent,
+    DataTableFilterComponent
   ],
   templateUrl: './assets.component.html',
 })

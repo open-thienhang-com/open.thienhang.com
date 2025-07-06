@@ -6,16 +6,18 @@ import {TitleComponent} from '../../../shared/component/title/title.component';
 import {AppBaseComponent} from '../../../core/base/app-base.component';
 import {GovernanceServices} from '../../../core/services/governance.services';
 import {DataTableComponent} from "../../../shared/component/data-table/data-table.component";
+import {DataTableFilterComponent} from '../../../shared/component/data-table-filter/data-table-filter.component';
 
 @Component({
   selector: 'app-teams',
-    imports: [
-        TeamComponent,
-        Button,
-        TableModule,
-        TitleComponent,
-        DataTableComponent
-    ],
+  imports: [
+    TeamComponent,
+    Button,
+    TableModule,
+    TitleComponent,
+    DataTableComponent,
+    DataTableFilterComponent
+  ],
   templateUrl: './teams.component.html',
 })
 export class TeamsComponent extends AppBaseComponent implements OnInit {

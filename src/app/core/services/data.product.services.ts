@@ -15,4 +15,8 @@ export class DataProductServices {
     return this.http.get(url, { params });
   }
 
+  getDataProductDetail(id, domain) {
+    const url = `${this.baseUrl}/data-product/${domain}/${id}`;
+    return this.http.get(url);
+  }
 }

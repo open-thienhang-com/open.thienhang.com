@@ -6,16 +6,18 @@ import {TitleComponent} from '../../../shared/component/title/title.component';
 import {AppBaseComponent} from '../../../core/base/app-base.component';
 import {GovernanceServices} from '../../../core/services/governance.services';
 import {DataTableComponent} from "../../../shared/component/data-table/data-table.component";
+import {DataTableFilterComponent} from '../../../shared/component/data-table-filter/data-table-filter.component';
 
 @Component({
   selector: 'app-users',
-    imports: [
-        UserComponent,
-        Button,
-        TableModule,
-        TitleComponent,
-        DataTableComponent
-    ],
+  imports: [
+    UserComponent,
+    Button,
+    TableModule,
+    TitleComponent,
+    DataTableComponent,
+    DataTableFilterComponent
+  ],
   templateUrl: './users.component.html',
 })
 export class UsersComponent extends AppBaseComponent implements OnInit {

@@ -1,9 +1,7 @@
-<div class="flex justify-between items-center">
-  <app-title title="Roles"></app-title>
-  <p-button label="Add new" icon="pi pi-plus" styleClass="m-0" [outlined]="true" (click)="roleDetail.show()"/>
-</div>
+<app-data-table-filter title="Roles" (onAddNew)="roleDetail.show()" (onRefresh)="dataTable.refresh()"></app-data-table-filter>
+
 <div class="card mt-3">
-  <app-data-table [data]="roles" [rows]="tableRowsPerPage" [loading]="isTableLoading"
+  <app-data-table #dataTable [data]="roles" [rows]="tableRowsPerPage" [loading]="isTableLoading"
                   (onPageChange)="getRoles($event)">
     <ng-template #tableHeader>
       <tr>

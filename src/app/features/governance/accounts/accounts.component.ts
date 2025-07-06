@@ -7,6 +7,7 @@ import {AppBaseComponent} from '../../../core/base/app-base.component';
 import {GovernanceServices} from '../../../core/services/governance.services';
 import {AccountComponent} from './account/account.component';
 import {DataTableComponent} from '../../../shared/component/data-table/data-table.component';
+import {DataTableFilterComponent} from '../../../shared/component/data-table-filter/data-table-filter.component';
 
 @Component({
   selector: 'app-accounts',
@@ -16,7 +17,8 @@ import {DataTableComponent} from '../../../shared/component/data-table/data-tabl
     Tag,
     TitleComponent,
     AccountComponent,
-    DataTableComponent
+    DataTableComponent,
+    DataTableFilterComponent
   ],
   templateUrl: './accounts.component.html',
 })

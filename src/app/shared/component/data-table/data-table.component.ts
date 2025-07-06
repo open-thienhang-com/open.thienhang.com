@@ -17,12 +17,13 @@ export class DataTableComponent implements OnChanges {
   @Input() loading = false;
   @Input() paginator = true;
   @Input() stripedRows = true;
-  @Output() onPageChange: EventEmitter<any> = new EventEmitter();
-  @ContentChild('tableHeader', { static: false }) headerTemplate!: TemplateRef<any>;
-  @ContentChild('tableBody', { static: false }) bodyTemplate!: TemplateRef<any>;
+  @Output() onPageChange = new EventEmitter();
+  @ContentChild('tableHeader') headerTemplate!: TemplateRef<any>;
+  @ContentChild('tableBody') bodyTemplate!: TemplateRef<any>;
 
-  curPageData:any[] = [];
+  curPageData: any[] = [];
   totalRecords = 0;
+  curPageIndex = 0;
 
   ngOnChanges() {
     if (this.data) {
@@ -34,6 +35,11 @@ export class DataTableComponent implements OnChanges {
 
   changePage(data: TablePageEvent) {
     const {first, rows} = data;
-    this.onPageChange.emit(first/rows);
+    this.curPageIndex = first / rows
+    this.onPageChange.emit(this.curPageIndex);
+  }
+
+  refresh() {
+    this.onPageChange.emit(this.curPageIndex);
   }
 }

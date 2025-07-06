@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import {Component, Injector, OnInit} from '@angular/core';
 import {AppBaseComponent} from '../../core/base/app-base.component';
 import {DataProdItemComponent} from './data-prod-item/data-prod-item.component';
+import {DataProductServices} from '../../core/services/data.product.services';
 
 @Component({
   selector: 'app-data-product',
@@ -10,64 +11,15 @@ import {DataProdItemComponent} from './data-prod-item/data-prod-item.component';
   templateUrl: './data-product.component.html',
   standalone: true,
 })
-export class DataProductComponent extends AppBaseComponent {
-  dataProds = [
-    {
-      type: 'DATA CONSUMER',
-      title: 'Article Profitability Analysis',
-      team: 'Controlling Team',
-      description: '  actionable insights into the profitability of each article.',
-      tags: ['demo'],
-      color: 'red'
-    },
-    {
-      type: 'DATA CONSUMER',
-      title: 'Article Profitability Analysis',
-      team: 'Controlling Team',
-      description: ' PowerBI report that combines revenue, cost, and margin to deliver PowerBI report that combines revenue, cost, and margin to deliverPowerBI report that combines revenue, cost, and margin to deliver actionable insights into the profitability of each article.',
-      tags: ['demo']
-    },
-    {
-      type: 'DATA CONSUMER',
-      title: 'Article Profitability Analysis',
-      team: 'Controlling Team',
-      description: ' PowerBI report that combines revenue, cost, and margin to deliver actionable insights into the profitability of each article.',
-      tags: ['demo']
-    },
-    {
-      type: 'DATA CONSUMER',
-      title: 'Article Profitability Analysis',
-      team: 'Controlling Team',
-      description: ' PowerBI report that combines revenue, cost, and margin to deliver actionable insights into the profitability of PowerBI report that combines revenue, cost, and margin to deliverPowerBI report that combines revenue, cost, and margin to deliverPowerBI report that combines revenue, cost, and margin to deliverPowerBI report that combines revenue, cost, and margin to delivereach article.',
-      tags: ['demo']
-    },
-    {
-      type: 'DATA CONSUMER',
-      title: 'Article Profitability Analysis',
-      team: 'Controlling Team',
-      description: ' PowerBI report that combines revenue, cost, and margin to deliver actionable insights into the profitability of each article.',
-      tags: ['demo']
-    },
-    {
-      type: 'DATA CONSUMER',
-      title: 'Article Profitability Analysis',
-      team: 'Controlling Team',
-      description: ' PowerBI report that combines revenue, cost, and margin to deliver actionable insights into the profitability of each article.',
-      tags: ['demo']
-    },
-    {
-      type: 'DATA CONSUMER',
-      title: 'Article Profitability Analysis',
-      team: 'Controlling Team',
-      description: ' PowerBI report that combines revenue, cost, and margin to deliver actionable insights into the profitability of each PowerBI report that combines revenue, cost, and margin to deliver article.',
-      tags: ['demo']
-    },
-    {
-      type: 'DATA CONSUMER',
-      title: 'Article Profitability Analysis',
-      team: 'Controlling Team',
-      description: ' PowerBI report that combines revenue, cost, and margin to deliver actionable insights into the profitability of each PowerBI report that combines revenue, cost, and margin to deliverPowerBI report that combines revenue, cost, and margin to deliver article.',
-      tags: ['demo']
-    },
-  ]
+export class DataProductComponent extends AppBaseComponent implements OnInit {
+  dataProds: any[] = [ ]
+
+  constructor(private injector: Injector, private dataProdServices: DataProductServices) {
+    super(injector);
+  }
+  ngOnInit() {
+    this.dataProdServices.getDataProducts({}).subscribe(res => {
+      this.dataProds = res.data;
+    })
+  }
 }
