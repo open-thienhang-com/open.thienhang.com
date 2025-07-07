@@ -2,12 +2,16 @@ import { Component, Injector, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppBaseComponent } from '../../core/base/app-base.component';
 import { ProfileServices } from '../../core/services/profile.services';
+import { AvatarModule } from 'primeng/avatar';
+import { BadgeModule } from 'primeng/badge';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
   imports: [
-    CommonModule
+    CommonModule,
+    AvatarModule,
+    BadgeModule
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
