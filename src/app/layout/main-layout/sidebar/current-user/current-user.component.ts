@@ -1,13 +1,13 @@
-import {Component, Injector} from '@angular/core';
-import {Avatar} from 'primeng/avatar';
-import {Ripple} from 'primeng/ripple';
-import {AppBaseComponent} from '../../../../core/base/app-base.component';
-import {AuthServices} from '../../../../core/services/auth.services';
-import {Menu} from 'primeng/menu';
-import {Button} from 'primeng/button';
-import {MenuItem} from 'primeng/api';
-import {Router} from '@angular/router';
-import {Tag} from 'primeng/tag';
+import { Component, Injector } from '@angular/core';
+import { Avatar } from 'primeng/avatar';
+import { Ripple } from 'primeng/ripple';
+import { AppBaseComponent } from '../../../../core/base/app-base.component';
+import { AuthServices } from '../../../../core/services/auth.services';
+import { Menu } from 'primeng/menu';
+import { Button } from 'primeng/button';
+import { MenuItem } from 'primeng/api';
+import { Router } from '@angular/router';
+import { Tag } from 'primeng/tag';
 
 @Component({
   selector: 'app-current-user',
@@ -39,6 +39,7 @@ export class CurrentUserComponent extends AppBaseComponent {
         label: 'Profile',
         icon: 'pi pi-user',
         command: () => {
+          this.profile();
         }
       },
       {
@@ -61,5 +62,9 @@ export class CurrentUserComponent extends AppBaseComponent {
     this.authServices.logout().subscribe(res => {
       this.router.navigate(['/login']);
     });
+  }
+
+  profile() {
+    this.router.navigate(['/profile']);
   }
 }
