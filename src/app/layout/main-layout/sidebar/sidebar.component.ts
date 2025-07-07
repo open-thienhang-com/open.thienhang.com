@@ -40,6 +40,7 @@ export class SidebarComponent {
   ngOnInit() {
     this.menu = [
       { label: 'Dashboard', icon: 'pi pi-home', url: '/dashboard' },
+      { label: 'Profile', icon: 'pi pi-home', url: '/profile' },
       { label: 'Marketplace', icon: 'pi pi-home', url: '/marketplace' },
       { label: 'Data product', icon: 'pi pi-home', url: '/data-product' },
       {

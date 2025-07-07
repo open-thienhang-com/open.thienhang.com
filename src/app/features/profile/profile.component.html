@@ -1,0 +1,208 @@
+<div class="profile-container">
+  <div class="container-fluid">
+    <div class="row g-4">
+      <!-- Left Column - Profile Information -->
+      <div class="col-12 col-lg-8">
+        <div class="profile-card">
+          <!-- Profile Header -->
+          <div class="profile-header">
+            <div class="avatar-section">
+              <div class="avatar-wrapper">
+                <div class="avatar-placeholder">
+                  <i class="pi pi-user"></i>
+                </div>
+                <div class="avatar-status" [class.online]="profile.is_active"></div>
+              </div>
+              <div class="profile-basic">
+                <h2 class="profile-name">{{ profile.full_name || 'Unknown User' }}</h2>
+                <p class="profile-email">{{ profile.email }}</p>
+                <div class="profile-badges">
+                  <span class="badge" [class.badge-success]="profile.is_active" [class.badge-secondary]="!profile.is_active">
+                    {{ profile.is_active ? 'Active' : 'Inactive' }}
+                  </span>
+                  <span class="badge" [class.badge-primary]="profile.is_verified" [class.badge-warning]="!profile.is_verified">
+                    {{ profile.is_verified ? 'Verified' : 'Unverified' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Profile Details -->
+          <div class="profile-details">
+            <h4 class="section-title">Account Information</h4>
+            <div class="details-grid">
+              <div class="detail-item">
+                <div class="detail-icon">
+                  <i class="pi pi-id-card"></i>
+                </div>
+                <div class="detail-content">
+                  <label class="detail-label">User ID</label>
+                  <span class="detail-value">{{ profile.identify }}</span>
+                </div>
+              </div>
+
+              <div class="detail-item">
+                <div class="detail-icon">
+                  <i class="pi pi-user"></i>
+                </div>
+                <div class="detail-content">
+                  <label class="detail-label">Full Name</label>
+                  <span class="detail-value">{{ profile.full_name || 'Not provided' }}</span>
+                </div>
+              </div>
+
+              <div class="detail-item">
+                <div class="detail-icon">
+                  <i class="pi pi-envelope"></i>
+                </div>
+                <div class="detail-content">
+                  <label class="detail-label">Email Address</label>
+                  <span class="detail-value">{{ profile.email }}</span>
+                </div>
+              </div>
+
+              <div class="detail-item">
+                <div class="detail-icon">
+                  <i class="pi pi-shield"></i>
+                </div>
+                <div class="detail-content">
+                  <label class="detail-label">Account Status</label>
+                  <span class="detail-value status" [class.active]="profile.is_active" [class.inactive]="!profile.is_active">
+                    {{ profile.is_active ? 'Active Account' : 'Inactive Account' }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="detail-item">
+                <div class="detail-icon">
+                  <i class="pi pi-check-circle"></i>
+                </div>
+                <div class="detail-content">
+                  <label class="detail-label">Email Verification</label>
+                  <span class="detail-value status" [class.verified]="profile.is_verified" [class.unverified]="!profile.is_verified">
+                    {{ profile.is_verified ? 'Email Verified' : 'Email Not Verified' }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="detail-item">
+                <div class="detail-icon">
+                  <i class="pi pi-desktop"></i>
+                </div>
+                <div class="detail-content">
+                  <label class="detail-label">Active Sessions</label>
+                  <span class="detail-value">{{ profile.sessions ? profile.sessions.length : 0 }} session(s)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Account Actions -->
+          <div class="profile-actions">
+            <h4 class="section-title">Account Actions</h4>
+            <div class="action-buttons">
+              <button class="btn btn-primary">
+                <i class="pi pi-pencil"></i>
+                Edit Profile
+              </button>
+              <button class="btn btn-outline-primary">
+                <i class="pi pi-key"></i>
+                Change Password
+              </button>
+              <button class="btn btn-outline-secondary">
+                <i class="pi pi-cog"></i>
+                Account Settings
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column - Active Sessions -->
+      <div class="col-12 col-lg-4">
+        <div class="sessions-card">
+          <div class="sessions-header">
+            <h4 class="sessions-title">
+              <i class="pi pi-desktop"></i>
+              Active Sessions
+            </h4>
+            <span class="sessions-count">{{ profile.sessions ? profile.sessions.length : 0 }}</span>
+          </div>
+
+          <div class="sessions-info">
+            <p class="info-text">
+              Manage your active sessions. You can terminate any session if you suspect unauthorized access.
+            </p>
+          </div>
+
+          <!-- Sessions List -->
+          <div class="sessions-list" *ngIf="profile.sessions && profile.sessions.length > 0">
+            <div class="session-item" *ngFor="let session of profile.sessions; let i = index">
+              <div class="session-header">
+                <div class="session-number">
+                  <span class="session-badge">{{ i + 1 }}</span>
+                </div>
+                <div class="session-status">
+                  <span class="status-dot active"></span>
+                  <span class="status-text">Active</span>
+                </div>
+              </div>
+
+              <div class="session-details">
+                <div class="session-detail">
+                  <div class="detail-icon">
+                    <i class="pi pi-desktop"></i>
+                  </div>
+                  <div class="detail-info">
+                    <label>Device</label>
+                    <span>{{ getDeviceInfo(session.device) }}</span>
+                  </div>
+                </div>
+
+                <div class="session-detail">
+                  <div class="detail-icon">
+                    <i class="pi pi-id-card"></i>
+                  </div>
+                  <div class="detail-info">
+                    <label>Session ID</label>
+                    <code class="session-id">{{ session.session | slice:0:20 }}...</code>
+                  </div>
+                </div>
+
+                <div class="session-detail">
+                  <div class="detail-icon">
+                    <i class="pi pi-clock"></i>
+                  </div>
+                  <div class="detail-info">
+                    <label>Expires in</label>
+                    <span class="expire-time">{{ formatRemainingTime(session.remaining_seconds) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="session-actions">
+                <button 
+                  (click)="terminateSession(session.session)" 
+                  class="btn btn-danger btn-terminate"
+                  title="Terminate this session">
+                  <i class="pi pi-times"></i>
+                  Terminate Session
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- No Sessions State -->
+          <div *ngIf="!profile.sessions || profile.sessions.length === 0" class="no-sessions">
+            <div class="no-sessions-icon">
+              <i class="pi pi-info-circle"></i>
+            </div>
+            <h5 class="no-sessions-title">No Active Sessions</h5>
+            <p class="no-sessions-text">You currently have no active sessions.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

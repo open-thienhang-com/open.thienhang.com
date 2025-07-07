@@ -11,9 +11,9 @@ import { AccountsComponent } from './features/governance/accounts/accounts.compo
 import { UsersComponent } from './features/governance/users/users.component';
 import { PermissionsComponent } from './features/governance/permissions/permissions.component';
 import { authGuard } from './core/guard/auth.guard';
-import {DataProductComponent} from './features/data-product/data-product.component';
-import {DataProdDetailComponent} from './features/data-product/data-prod-detail/data-prod-detail.component';
-
+import { DataProductComponent } from './features/data-product/data-product.component';
+import { DataProdDetailComponent } from './features/data-product/data-prod-detail/data-prod-detail.component';
+import { ProfileComponent } from './features/profile/profile.component';
 export const routes: Routes = [
   {
     path: '',
@@ -50,6 +50,10 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         component: DashboardComponent,
+      },
+      {
+        path: 'profile',
+        component: ProfileComponent,
       },
       {
         path: 'data-product',
