@@ -14,6 +14,9 @@ import { authGuard } from './core/guard/auth.guard';
 import { DataProductComponent } from './features/data-product/data-product.component';
 import { DataProdDetailComponent } from './features/data-product/data-prod-detail/data-prod-detail.component';
 import { ProfileComponent } from './features/profile/profile.component';
+import { SettingsComponent } from './features/settings/setting.component';
+
+
 export const routes: Routes = [
   {
     path: '',
@@ -54,6 +57,10 @@ export const routes: Routes = [
       {
         path: 'profile',
         component: ProfileComponent,
+      },
+      {
+        path: 'settings',
+        component: SettingsComponent,
       },
       {
         path: 'data-product',

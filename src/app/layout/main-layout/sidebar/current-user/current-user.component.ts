@@ -46,6 +46,7 @@ export class CurrentUserComponent extends AppBaseComponent {
         label: 'Setting',
         icon: 'pi pi-cog',
         command: () => {
+          this.setting();
         }
       },
       {
@@ -66,5 +67,9 @@ export class CurrentUserComponent extends AppBaseComponent {
 
   profile() {
     this.router.navigate(['/profile']);
+  }
+
+  setting() {
+    this.router.navigate(['/settings']);
   }
 }
