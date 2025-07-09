@@ -1,29 +1,684 @@
-<app-data-table-filter title="Permissions" (onAddNew)="permissionDetail.show()" (onRefresh)="dataTable.refresh()"></app-data-table-filter>
-<div class="card mt-3">
-  <app-data-table #dataTable [data]="permissions" [rows]="tableRowsPerPage" [loading]="isTableLoading"
-                  (onPageChange)="getPermissions($event)">
-    <ng-template #tableHeader>
-      <tr>
-        <th>Name</th>
-        <th>Code</th>
-        <th>Description</th>
-        <th>Action</th>
-      </tr>
-    </ng-template>
-    <ng-template #tableBody let-permission>
-      <tr>
-        <td>{{ permission.name }}</td>
-        <td>{{ permission.code }}</td>
-        <td>{{ permission.description }}</td>
-        <td>
-          <div class="flex justify-around">
-            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" (click)="permissionDetail.show(permission._id)"/>
-            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (click)="onDeletePermission($event, permission._id)"/>
+<!-- Permissions Management - ACL Granular Rights -->
+<div class="min-h-screen bg-gray-50 p-6">
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Header Section -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
+            <i class="pi pi-key text-white text-xl"></i>
           </div>
-        </td>
-      </tr>
-    </ng-template>
-  </app-data-table>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">Permission Management</h1>
+            <p class="text-gray-600">Define granular access rights and control system operations</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <p-button 
+            icon="pi pi-filter" 
+            [outlined]="true" 
+            (onClick)="toggleFilters()"
+            pTooltip="Toggle Filters">
+          </p-button>
+          <p-button 
+            label="Permission Matrix" 
+            icon="pi pi-table" 
+            severity="secondary" 
+            [outlined]="true"
+            (click)="setViewMode('matrix')">
+          </p-button>
+          <p-button 
+            label="Add Permission" 
+            icon="pi pi-plus" 
+            severity="primary"
+            (click)="toggleCreateDialog()">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Introduction Card -->
+    <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl border border-orange-200 p-6 mb-8">
+      <div class="flex items-start gap-4">
+        <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <i class="pi pi-info-circle text-orange-600 text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Understanding Permissions</h3>
+          <p class="text-gray-700 mb-4">
+            Permissions are the foundation of your access control system. They define what actions users can perform 
+            on specific resources. Each permission follows the pattern: <code class="bg-white px-2 py-1 rounded text-sm">resource:action</code>
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-database text-orange-500"></i>
+              <span><strong>Resources:</strong> What can be accessed</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-cog text-orange-500"></i>
+              <span><strong>Actions:</strong> What can be done</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-shield text-orange-500"></i>
+              <span><strong>Scope:</strong> Where it applies</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Total Permissions</p>
+            <p class="text-2xl font-bold text-gray-900">{{ stats.totalPermissions }}</p>
+          </div>
+          <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-key text-orange-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Active Permissions</p>
+            <p class="text-2xl font-bold text-green-600">{{ stats.activePermissions }}</p>
+          </div>
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-check-circle text-green-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">System Permissions</p>
+            <p class="text-2xl font-bold text-blue-600">{{ stats.systemPermissions }}</p>
+          </div>
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-cog text-blue-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Custom Permissions</p>
+            <p class="text-2xl font-bold text-purple-600">{{ stats.customPermissions }}</p>
+          </div>
+          <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-wrench text-purple-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Panel -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6" *ngIf="showFilters">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Filter Permissions</h3>
+      </div>
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-search"></i>
+              <input 
+                type="text" 
+                pInputText 
+                placeholder="Search permissions..." 
+                [(ngModel)]="searchTerm"
+                class="w-full" />
+            </span>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Resource</label>
+            <p-dropdown 
+              [options]="resourceOptions" 
+              [(ngModel)]="selectedResource"
+              optionLabel="label" 
+              optionValue="value"
+              placeholder="Select resource"
+              class="w-full">
+            </p-dropdown>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Action</label>
+            <p-dropdown 
+              [options]="actionOptions" 
+              [(ngModel)]="selectedAction"
+              optionLabel="label" 
+              optionValue="value"
+              placeholder="Select action"
+              class="w-full">
+            </p-dropdown>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Scope</label>
+            <p-dropdown 
+              [options]="scopeOptions" 
+              [(ngModel)]="selectedScope"
+              optionLabel="label" 
+              optionValue="value"
+              placeholder="Select scope"
+              class="w-full">
+            </p-dropdown>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-3 mt-6">
+          <p-button 
+            label="Apply Filters" 
+            icon="pi pi-check" 
+            (onClick)="applyFilters()">
+          </p-button>
+          <p-button 
+            label="Clear" 
+            icon="pi pi-times" 
+            [outlined]="true" 
+            (onClick)="clearFilters()">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Default Permissions Layout -->
+    <div class="space-y-8">
+      
+      <!-- User Management Permissions -->
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-blue-50">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-500">
+                <i class="text-white pi pi-users"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">User Management</h3>
+                <p class="text-sm text-gray-500">Permissions for managing user accounts and profiles</p>
+              </div>
+            </div>
+            <p-tag value="4 permissions" severity="info"></p-tag>
+          </div>
+        </div>
+        
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <!-- Create User Permission -->
+            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-green-500">
+                    <i class="text-white text-sm pi pi-plus"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900">Create User</h4>
+                    <p class="text-xs text-gray-500">users:create</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              <p class="text-sm text-gray-600 mb-3">Ability to create new user accounts in the system</p>
+              <div class="flex items-center gap-2 mb-3">
+                <p-chip label="Global" [removable]="false"></p-chip>
+                <p-chip label="Admin" [removable]="false"></p-chip>
+              </div>
+              <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                <span class="text-xs text-gray-500">12 roles assigned</span>
+                <div class="flex items-center gap-1">
+                  <p-button 
+                    icon="pi pi-pencil" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="secondary" 
+                    size="small">
+                  </p-button>
+                  <p-button 
+                    icon="pi pi-trash" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="danger" 
+                    size="small">
+                  </p-button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Read User Permission -->
+            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-500">
+                    <i class="text-white text-sm pi pi-eye"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900">View User</h4>
+                    <p class="text-xs text-gray-500">users:read</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              <p class="text-sm text-gray-600 mb-3">Ability to view user profiles and information</p>
+              <div class="flex items-center gap-2 mb-3">
+                <p-chip label="Organization" [removable]="false"></p-chip>
+                <p-chip label="Standard" [removable]="false"></p-chip>
+              </div>
+              <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                <span class="text-xs text-gray-500">24 roles assigned</span>
+                <div class="flex items-center gap-1">
+                  <p-button 
+                    icon="pi pi-pencil" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="secondary" 
+                    size="small">
+                  </p-button>
+                  <p-button 
+                    icon="pi pi-trash" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="danger" 
+                    size="small">
+                  </p-button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Update User Permission -->
+            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-orange-500">
+                    <i class="text-white text-sm pi pi-pencil"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900">Update User</h4>
+                    <p class="text-xs text-gray-500">users:update</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              <p class="text-sm text-gray-600 mb-3">Ability to modify user account details and settings</p>
+              <div class="flex items-center gap-2 mb-3">
+                <p-chip label="Team" [removable]="false"></p-chip>
+                <p-chip label="Manager" [removable]="false"></p-chip>
+              </div>
+              <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                <span class="text-xs text-gray-500">8 roles assigned</span>
+                <div class="flex items-center gap-1">
+                  <p-button 
+                    icon="pi pi-pencil" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="secondary" 
+                    size="small">
+                  </p-button>
+                  <p-button 
+                    icon="pi pi-trash" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="danger" 
+                    size="small">
+                  </p-button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Delete User Permission -->
+            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-red-500">
+                    <i class="text-white text-sm pi pi-trash"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900">Delete User</h4>
+                    <p class="text-xs text-gray-500">users:delete</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              <p class="text-sm text-gray-600 mb-3">Ability to delete user accounts from the system</p>
+              <div class="flex items-center gap-2 mb-3">
+                <p-chip label="Global" [removable]="false"></p-chip>
+                <p-chip label="Admin Only" [removable]="false"></p-chip>
+              </div>
+              <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                <span class="text-xs text-gray-500">3 roles assigned</span>
+                <div class="flex items-center gap-1">
+                  <p-button 
+                    icon="pi pi-pencil" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="secondary" 
+                    size="small">
+                  </p-button>
+                  <p-button 
+                    icon="pi pi-trash" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="danger" 
+                    size="small">
+                  </p-button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Products Permissions -->
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-green-50">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-green-500">
+                <i class="text-white pi pi-database"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">Data Products</h3>
+                <p class="text-sm text-gray-500">Permissions for data product access and management</p>
+              </div>
+            </div>
+            <p-tag value="6 permissions" severity="success"></p-tag>
+          </div>
+        </div>
+        
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            
+            <!-- Data Access Permission -->
+            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-500">
+                    <i class="text-white text-sm pi pi-eye"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900">Access Data</h4>
+                    <p class="text-xs text-gray-500">data:access</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              <p class="text-sm text-gray-600 mb-3">Basic data product viewing and browsing access</p>
+              <div class="flex items-center gap-2 mb-3">
+                <p-chip label="Organization" [removable]="false"></p-chip>
+              </div>
+              <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                <span class="text-xs text-gray-500">18 roles assigned</span>
+                <div class="flex items-center gap-1">
+                  <p-button 
+                    icon="pi pi-pencil" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="secondary" 
+                    size="small">
+                  </p-button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Data Download Permission -->
+            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-purple-500">
+                    <i class="text-white text-sm pi pi-download"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900">Download Data</h4>
+                    <p class="text-xs text-gray-500">data:download</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              <p class="text-sm text-gray-600 mb-3">Permission to export and download data products</p>
+              <div class="flex items-center gap-2 mb-3">
+                <p-chip label="Team" [removable]="false"></p-chip>
+              </div>
+              <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                <span class="text-xs text-gray-500">12 roles assigned</span>
+                <div class="flex items-center gap-1">
+                  <p-button 
+                    icon="pi pi-pencil" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="secondary" 
+                    size="small">
+                  </p-button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Data Management Permission -->
+            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-orange-500">
+                    <i class="text-white text-sm pi pi-cog"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900">Manage Data</h4>
+                    <p class="text-xs text-gray-500">data:manage</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              <p class="text-sm text-gray-600 mb-3">Full data product management and configuration</p>
+              <div class="flex items-center gap-2 mb-3">
+                <p-chip label="Global" [removable]="false"></p-chip>
+              </div>
+              <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                <span class="text-xs text-gray-500">5 roles assigned</span>
+                <div class="flex items-center gap-1">
+                  <p-button 
+                    icon="pi pi-pencil" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="secondary" 
+                    size="small">
+                  </p-button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- System Administration Permissions -->
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-red-50">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-red-500">
+                <i class="text-white pi pi-cog"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">System Administration</h3>
+                <p class="text-sm text-gray-500">High-level system management permissions</p>
+              </div>
+            </div>
+            <p-tag value="5 permissions" severity="danger"></p-tag>
+          </div>
+        </div>
+        
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            
+            <!-- System Settings Permission -->
+            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-red-500">
+                    <i class="text-white text-sm pi pi-sliders-h"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900">System Settings</h4>
+                    <p class="text-xs text-gray-500">system:configure</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              <p class="text-sm text-gray-600 mb-3">Access to system configuration and settings</p>
+              <div class="flex items-center gap-2 mb-3">
+                <p-chip label="Global" [removable]="false"></p-chip>
+                <p-chip label="Critical" severity="danger" [removable]="false"></p-chip>
+              </div>
+              <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                <span class="text-xs text-gray-500">2 roles assigned</span>
+                <div class="flex items-center gap-1">
+                  <p-button 
+                    icon="pi pi-pencil" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="secondary" 
+                    size="small">
+                  </p-button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Audit Logs Permission -->
+            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-indigo-500">
+                    <i class="text-white text-sm pi pi-list"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900">View Audit Logs</h4>
+                    <p class="text-xs text-gray-500">audit:read</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              <p class="text-sm text-gray-600 mb-3">Access to system audit logs and security events</p>
+              <div class="flex items-center gap-2 mb-3">
+                <p-chip label="Organization" [removable]="false"></p-chip>
+                <p-chip label="Security" severity="warning" [removable]="false"></p-chip>
+              </div>
+              <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                <span class="text-xs text-gray-500">4 roles assigned</span>
+                <div class="flex items-center gap-1">
+                  <p-button 
+                    icon="pi pi-pencil" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="secondary" 
+                    size="small">
+                  </p-button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      
+      <!-- Empty State -->
+      <div class="bg-white rounded-xl border border-gray-200 p-12 text-center" *ngIf="false">
+        <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="pi pi-key text-orange-500 text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No permissions found</h3>
+        <p class="text-gray-500 mb-6">Create your first permission to define access controls for your system resources.</p>
+        <p-button 
+          label="Create First Permission" 
+          icon="pi pi-plus" 
+          severity="primary"
+          (click)="toggleCreateDialog()">
+        </p-button>
+      </div>
+    </div>
+  </div>
 </div>
 
-<app-permission #permissionDetail></app-permission>
+<!-- Create Permission Dialog -->
+<p-dialog 
+  header="Create New Permission" 
+  [(visible)]="showCreateDialog" 
+  [modal]="true" 
+  [style]="{width: '600px'}"
+  [draggable]="false">
+  
+  <div class="space-y-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Permission Name</label>
+      <input type="text" pInputText placeholder="Enter permission name" class="w-full" />
+    </div>
+    
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Permission Code</label>
+      <input type="text" pInputText placeholder="resource:action (e.g., users:create)" class="w-full" />
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Resource</label>
+        <p-dropdown 
+          [options]="resourceOptions" 
+          optionLabel="label" 
+          optionValue="value"
+          placeholder="Select resource"
+          class="w-full">
+        </p-dropdown>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Action</label>
+        <p-dropdown 
+          [options]="actionOptions" 
+          optionLabel="label" 
+          optionValue="value"
+          placeholder="Select action"
+          class="w-full">
+        </p-dropdown>
+      </div>
+    </div>
+    
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Scope</label>
+      <p-dropdown 
+        [options]="scopeOptions" 
+        optionLabel="label" 
+        optionValue="value"
+        placeholder="Select scope"
+        class="w-full">
+      </p-dropdown>
+    </div>
+    
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+      <textarea pInputTextarea placeholder="Describe what this permission allows" class="w-full h-24"></textarea>
+    </div>
+  </div>
+  
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3">
+      <p-button 
+        label="Cancel" 
+        [outlined]="true" 
+        (onClick)="showCreateDialog = false">
+      </p-button>
+      <p-button 
+        label="Create Permission" 
+        (onClick)="showCreateDialog = false">
+      </p-button>
+    </div>
+  </ng-template>
+  
+</p-dialog>

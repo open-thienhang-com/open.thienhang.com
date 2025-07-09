@@ -8,6 +8,10 @@ import {Textarea} from 'primeng/textarea';
 import {AppBaseComponent} from '../../../../core/base/app-base.component';
 import {GovernanceServices} from '../../../../core/services/governance.services';
 import {Select} from 'primeng/select';
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { ListboxModule } from 'primeng/listbox';
 
 @Component({
   selector: 'app-team',
@@ -19,7 +23,10 @@ import {Select} from 'primeng/select';
     ReactiveFormsModule,
     Textarea,
     FormsModule,
-    Select
+    Select,
+    ListboxModule,
+    CommonModule,
+    MultiSelectModule
   ],
   templateUrl: './team.component.html',
 })

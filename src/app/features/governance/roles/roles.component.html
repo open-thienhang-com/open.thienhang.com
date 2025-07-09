@@ -1,30 +1,303 @@
-<app-data-table-filter title="Roles" (onAddNew)="roleDetail.show()" (onRefresh)="dataTable.refresh()"></app-data-table-filter>
-
-<div class="card mt-3">
-  <app-data-table #dataTable [data]="roles" [rows]="tableRowsPerPage" [loading]="isTableLoading"
-                  (onPageChange)="getRoles($event)">
-    <ng-template #tableHeader>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Action</th>
-      </tr>
-    </ng-template>
-    <ng-template #tableBody let-role>
-      <tr>
-        <td>{{ role.name }}</td>
-        <td>{{ role.type }}</td>
-        <td>{{ role.description }}</td>
-        <td>
-          <div class="flex justify-around">
-            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" (click)="roleDetail.show(role._id)"/>
-            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (click)="onDeleteRole($event, role._id)"/>
+<!-- Roles Management - ACL Permission Groups -->
+<div class="min-h-screen bg-gray-50 p-6">
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Header Section -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
+            <i class="pi pi-shield text-white text-xl"></i>
           </div>
-        </td>
-      </tr>
-    </ng-template>
-  </app-data-table>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">Role Management</h1>
+            <p class="text-gray-600">Define roles and assign permissions for access control</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <p-button 
+            label="Role Matrix" 
+            icon="pi pi-th-large" 
+            severity="secondary" 
+            [outlined]="true"
+            (click)="showRoleMatrix()">
+          </p-button>
+          <p-button 
+            label="Create Role" 
+            icon="pi pi-plus" 
+            severity="primary"
+            (click)="roleDetail.show()">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-shield text-amber-600 text-xl"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-gray-900">{{ totalRoles || 0 }}</div>
+            <div class="text-sm text-gray-500">Total Roles</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-crown text-red-600 text-xl"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-gray-900">{{ adminRoles || 0 }}</div>
+            <div class="text-sm text-gray-500">Admin Roles</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-users text-blue-600 text-xl"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-gray-900">{{ assignedUsers || 0 }}</div>
+            <div class="text-sm text-gray-500">Users Assigned</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-check-circle text-green-600 text-xl"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-gray-900">{{ customRoles || 0 }}</div>
+            <div class="text-sm text-gray-500">Custom Roles</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Search Roles</label>
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-search"></i>
+            <input type="text" pInputText placeholder="Search by name, description..." 
+                   [(ngModel)]="searchTerm" (input)="filterRoles()" class="w-full" />
+          </span>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Role Level</label>
+          <p-dropdown 
+            [options]="levelOptions" 
+            [(ngModel)]="selectedLevel" 
+            placeholder="All Levels"
+            [showClear]="true"
+            (onChange)="filterRoles()"
+            class="w-full">
+          </p-dropdown>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Permission Scope</label>
+          <p-dropdown 
+            [options]="scopeOptions" 
+            [(ngModel)]="selectedScope" 
+            placeholder="All Scopes"
+            [showClear]="true"
+            (onChange)="filterRoles()"
+            class="w-full">
+          </p-dropdown>
+        </div>
+      </div>
+    </div>
+
+    <!-- Roles Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let role of filteredRoles" 
+           class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300">
+        
+        <!-- Role Header -->
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-lg flex items-center justify-center"
+                   [ngClass]="getRoleIconClass(role.level)">
+                <i class="text-white text-lg" [ngClass]="getRoleIcon(role.level)"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-900">{{ role.name }}</h3>
+                <p class="text-sm text-gray-500">{{ role.level || 'Standard' }} Level</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-badge 
+                [value]="role.type || 'Custom'" 
+                [severity]="getRoleTypeSeverity(role.type)"
+                class="text-xs">
+              </p-badge>
+            </div>
+          </div>
+          
+          <p class="text-sm text-gray-600 mb-4">{{ role.description || 'No description available' }}</p>
+          
+          <!-- Role Stats -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="text-center p-3 bg-gray-50 rounded-lg">
+              <div class="text-lg font-semibold text-gray-900">{{ role.permissions?.length || 0 }}</div>
+              <div class="text-xs text-gray-500">Permissions</div>
+            </div>
+            <div class="text-center p-3 bg-gray-50 rounded-lg">
+              <div class="text-lg font-semibold text-gray-900">{{ role.users?.length || 0 }}</div>
+              <div class="text-xs text-gray-500">Assigned Users</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Permissions Preview -->
+        <div class="p-4 border-b border-gray-200" *ngIf="role.permissions?.length > 0">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-sm font-medium text-gray-700">Key Permissions</h4>
+            <span class="text-xs text-gray-500">{{ role.permissions.length }} total</span>
+          </div>
+          
+          <div class="space-y-2">
+            <div *ngFor="let permission of role.permissions.slice(0, 4)" class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-green-500 text-xs"></i>
+              <span class="text-sm text-gray-700">{{ getPermissionLabel(permission) }}</span>
+            </div>
+            <div *ngIf="role.permissions.length > 4" class="text-xs text-gray-500 pl-5">
+              +{{ role.permissions.length - 4 }} more permissions
+            </div>
+          </div>
+        </div>
+        
+        <!-- Role Inheritance -->
+        <div class="p-4 border-b border-gray-200" *ngIf="role.inherits_from">
+          <h4 class="text-sm font-medium text-gray-700 mb-2">Inherits From</h4>
+          <p-badge 
+            [value]="role.inherits_from" 
+            severity="info" 
+            class="text-xs">
+          </p-badge>
+        </div>
+        
+        <!-- Risk Level -->
+        <div class="p-4 border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium text-gray-700">Risk Level</span>
+            <p-badge 
+              [value]="role.risk_level || 'Medium'" 
+              [severity]="getRiskSeverity(role.risk_level)"
+              class="text-xs">
+            </p-badge>
+          </div>
+        </div>
+        
+        <!-- Role Actions -->
+        <div class="p-4">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <p-button 
+                icon="pi pi-eye" 
+                [rounded]="true" 
+                [text]="true" 
+                severity="info" 
+                size="small"
+                (click)="viewRole(role)"
+                pTooltip="View Details">
+              </p-button>
+              <p-button 
+                icon="pi pi-users" 
+                [rounded]="true" 
+                [text]="true" 
+                severity="secondary" 
+                size="small"
+                (click)="manageAssignments(role)"
+                pTooltip="Manage Assignments">
+              </p-button>
+              <p-button 
+                icon="pi pi-shield" 
+                [rounded]="true" 
+                [text]="true" 
+                severity="warning" 
+                size="small"
+                (click)="editPermissions(role)"
+                pTooltip="Edit Permissions">
+              </p-button>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <p-button 
+                icon="pi pi-copy" 
+                [rounded]="true" 
+                [text]="true" 
+                severity="secondary" 
+                size="small"
+                (click)="cloneRole(role)"
+                pTooltip="Clone Role">
+              </p-button>
+              <p-button 
+                icon="pi pi-pencil" 
+                [rounded]="true" 
+                [text]="true" 
+                severity="secondary" 
+                size="small"
+                (click)="roleDetail.show(role._id)"
+                pTooltip="Edit Role">
+              </p-button>
+              <p-button 
+                icon="pi pi-trash" 
+                [rounded]="true" 
+                [text]="true" 
+                severity="danger" 
+                size="small"
+                (click)="deleteRole(role)"
+                pTooltip="Delete Role"
+                [disabled]="role.type === 'system'">
+              </p-button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Empty State -->
+      <div *ngIf="filteredRoles.length === 0" class="col-span-full">
+        <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="pi pi-shield text-gray-400 text-2xl"></i>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No roles found</h3>
+          <p class="text-gray-500 mb-6">Create your first role to define permissions and access levels.</p>
+          <p-button 
+            label="Create First Role" 
+            icon="pi pi-plus" 
+            severity="primary"
+            (click)="roleDetail.show()">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-8 flex justify-center" *ngIf="filteredRoles.length > 0">
+      <p-paginator 
+        [rows]="itemsPerPage" 
+        [totalRecords]="totalRecords"
+        (onPageChange)="onPageChange($event)">
+      </p-paginator>
+    </div>
+  </div>
 </div>
 
-<app-role #roleDetail></app-role>
+<!-- Role Detail Modal -->
+<app-role #roleDetail (onSave)="refreshRoles()"></app-role>

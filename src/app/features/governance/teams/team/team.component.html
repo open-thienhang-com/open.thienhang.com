@@ -17,14 +17,43 @@
       <input class="w-full" pInputText id="source" [(ngModel)]="team.type" autocomplete="off"/>
       <label for="source">Source</label>
     </p-floatlabel>
-    <p-floatlabel variant="on">
-      <p-select [(ngModel)]="team.members" id="members" [options]="members" optionLabel="name" styleClass="w-full" />
-      <label for="members">Members</label>
-    </p-floatlabel>
     <p-floatlabel variant="on" class="col-span-2">
       <textarea pTextarea id="description" [(ngModel)]="team.description" rows="3" cols="30" style="resize: none" class="w-full h-full"></textarea>
       <label for="description">Description</label>
     </p-floatlabel>
+    <p-floatlabel variant="on" class="col-span-2">
+      <p-listbox
+        [(ngModel)]="team.members"
+        [options]="members"
+        optionLabel="name"
+        [filter]="true"
+        filterPlaceholder="Search members"
+        multiple="true"
+        styleClass="w-full"
+        id="members"
+      >
+        <ng-template let-option pTemplate="item">
+          <li class="flex items-center gap-2">
+        <i class="pi pi-user"></i>
+        <span>{{ option.name }}</span>
+          </li>
+        </ng-template>
+      </p-listbox>
+        <ng-template let-option pTemplate="item">
+          <li class="flex items-center gap-2">
+            <i class="pi pi-user"></i>
+            <span>{{ option.name }}</span>
+          </li>
+        </ng-template>
+        <ng-template let-selected pTemplate="selectedItem">
+          <li class="flex items-center gap-2">
+            <i class="pi pi-user"></i>
+            <span>{{ selected.name }}</span>
+          </li>
+        </ng-template>
+      <label for="members">Members</label>
+    </p-floatlabel>
+    
   </div>
   <ng-template #footer>
     <p-button label="Cancel" [text]="true" severity="secondary" (click)="visible = false"/>

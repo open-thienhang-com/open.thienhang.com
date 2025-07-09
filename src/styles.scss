@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -12,40 +13,321 @@
   --border-color: var(--p-surface-200);
   --text-color: var(--p-surface-700);
   --overlay-background: #ffffff;
-  --p-datatable-header-cell-padding: 0.5rem !important;
-  --p-datatable-body-cell-padding: 0.5rem !important;
-  --p-datatable-header-cell-background: transparent !important;
-  --p-button-icon-only-width: 1.5rem !important;
+  --p-datatable-header-cell-padding: 0.75rem !important;
+  --p-datatable-body-cell-padding: 0.75rem !important;
+  --p-datatable-header-cell-background: var(--p-surface-50) !important;
+  --p-button-icon-only-width: 2rem !important;
+  --p-button-icon-only-height: 2rem !important;
+  --p-card-body-padding: 1.5rem !important;
+  --p-card-header-padding: 1.5rem !important;
+  --p-card-footer-padding: 1.5rem !important;
 }
 
 :root[class='p-dark'] {
   --body-bg: var(--p-surface-950);
   --body-text-color: var(--p-surface-50);
-  --card-border: 1px solid transparent;
+  --card-border: 1px solid var(--p-surface-800);
   --card-bg: var(--p-surface-900);
-  --border-color: rgba(255, 255, 255, 0.1);
-  --text-color: var(--p-surface-0);
+  --border-color: var(--p-surface-800);
+  --text-color: var(--p-surface-200);
   --overlay-background: var(--p-surface-900);
+  --p-datatable-header-cell-background: var(--p-surface-800) !important;
 }
 
 html {
-  font-size: 13px;
+  font-size: 14px;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
 }
 
 body {
   margin: 0px;
-  min-height: 100%;
+  min-height: 100vh;
   overflow-x: hidden;
   overflow-y: auto;
   background-color: var(--body-bg);
-  font-weight: normal;
+  font-weight: 400;
   color: var(--body-text-color);
+  line-height: 1.6;
+  letter-spacing: 0.015em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* Enhanced Card Styles */
 .card {
   background: var(--card-bg);
   border: var(--card-border);
-  border-radius: 5px;
-  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
-  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 25px -5px rgba(0, 0, 0, 0.1), 0 20px 25px -5px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
+
+/* Enhanced Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+  margin-bottom: 0.5rem;
+}
+
+h1 { font-size: 2.25rem; font-weight: 700; }
+h2 { font-size: 1.875rem; font-weight: 600; }
+h3 { font-size: 1.5rem; font-weight: 600; }
+h4 { font-size: 1.25rem; font-weight: 500; }
+h5 { font-size: 1.125rem; font-weight: 500; }
+h6 { font-size: 1rem; font-weight: 500; }
+
+/* Enhanced Button Styles */
+.p-button {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.025em;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.p-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.15);
+}
+
+.p-button.p-button-rounded {
+  border-radius: 50% !important;
+}
+
+/* Enhanced Table Styles */
+.p-datatable {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+  background: var(--p-datatable-header-cell-background);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--p-surface-600);
+  border-bottom: 2px solid var(--p-surface-200);
+}
+
+.p-datatable .p-datatable-tbody > tr {
+  transition: all 0.2s ease;
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+  background: var(--p-surface-50);
+  transform: scale(1.005);
+}
+
+/* Enhanced Form Elements */
+.p-inputtext,
+.p-dropdown,
+.p-multiselect {
+  font-family: 'Inter', sans-serif;
+  border-radius: 8px;
+  border: 1px solid var(--p-surface-300);
+  transition: all 0.2s ease;
+}
+
+.p-inputtext:focus,
+.p-dropdown:focus,
+.p-multiselect:focus {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  border-color: var(--p-primary-500);
+}
+
+/* Enhanced Badge Styles */
+.p-badge {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  letter-spacing: 0.025em;
+}
+
+/* Enhanced Toast Styles */
+.p-toast {
+  font-family: 'Inter', sans-serif;
+}
+
+.p-toast-message {
+  border-radius: 12px;
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.15), 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+}
+
+/* Enhanced Dialog Styles */
+.p-dialog {
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.p-dialog-header {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  padding: 1.5rem 1.5rem 1rem;
+}
+
+.p-dialog-content {
+  padding: 0 1.5rem 1.5rem;
+}
+
+/* Custom Utility Classes */
+.gradient-bg {
+  background: linear-gradient(135deg, var(--p-primary-500) 0%, var(--p-primary-600) 100%);
+}
+
+.glass-effect {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Icon Enhancements */
+.pi {
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+.pi-lg {
+  font-size: 1.5rem;
+}
+
+.pi-xl {
+  font-size: 1.875rem;
+}
+
+.pi-2xl {
+  font-size: 2.25rem;
+}
+
+/* Status Indicators */
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 0.5rem;
+}
+
+.status-indicator.active {
+  background-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.status-indicator.inactive {
+  background-color: #6b7280;
+  box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.2);
+}
+
+.status-indicator.pending {
+  background-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+}
+
+.status-indicator.danger {
+  background-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+/* Avatar Styles */
+.avatar-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.avatar-gradient.blue {
+  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+}
+
+.avatar-gradient.purple {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+.avatar-gradient.green {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.avatar-gradient.orange {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.avatar-gradient.red {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.avatar-gradient.pink {
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--p-surface-100);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--p-surface-400);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--p-surface-500);
+}
+
+/* Dark mode scrollbar */
+:root[class='p-dark'] ::-webkit-scrollbar-track {
+  background: var(--p-surface-800);
+}
+
+:root[class='p-dark'] ::-webkit-scrollbar-thumb {
+  background: var(--p-surface-600);
+}
+
+:root[class='p-dark'] ::-webkit-scrollbar-thumb:hover {
+  background: var(--p-surface-500);
 }

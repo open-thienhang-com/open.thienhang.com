@@ -1,34 +1,310 @@
-<app-data-table-filter title="Teams" (onAddNew)="teamDetail.show()" (onRefresh)="dataTable.refresh()"></app-data-table-filter>
-
-<div class="card mt-3">
-  <app-data-table #dataTable [data]="teams" [rows]="tableRowsPerPage" [loading]="isTableLoading"
-                  (onPageChange)="getTeams($event)">
-    <ng-template #tableHeader>
-      <tr>
-        <th>Name</th>
-        <th>Owner</th>
-        <th>Type</th>
-        <th>Members</th>
-        <th>Description</th>
-        <th>Action</th>
-      </tr>
-    </ng-template>
-    <ng-template #tableBody let-team>
-      <tr>
-        <td>{{ team.name }}</td>
-        <td>{{ team.owners }}</td>
-        <td>{{ team.type }}</td>
-        <td>{{ team.members }}</td>
-        <td>{{ team.description }}</td>
-        <td>
-          <div class="flex justify-around">
-            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" (click)="teamDetail.show(team._id)"/>
-            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (click)="onDeleteTeam($event, team._id)"/>
+<!-- Teams Management - ACL Groups -->
+<div class="min-h-screen bg-gray-50 p-6">
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Header Section -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+            <i class="pi pi-users text-white text-xl"></i>
           </div>
-        </td>
-      </tr>
-    </ng-template>
-  </app-data-table>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">Team Management</h1>
+            <p class="text-gray-600">Organize users into teams with shared roles and permissions</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <p-button 
+            label="Team Analytics" 
+            icon="pi pi-chart-bar" 
+            severity="secondary" 
+            [outlined]="true"
+            (click)="showAnalytics()">
+          </p-button>
+          <p-button 
+            label="Create Team" 
+            icon="pi pi-plus" 
+            severity="primary"
+            (click)="teamDetail.show()">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-users text-purple-600 text-xl"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-gray-900">{{ totalTeams || 0 }}</div>
+            <div class="text-sm text-gray-500">Total Teams</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-check-circle text-green-600 text-xl"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-gray-900">{{ activeTeams || 0 }}</div>
+            <div class="text-sm text-gray-500">Active Teams</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-user text-blue-600 text-xl"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-gray-900">{{ totalMembers || 0 }}</div>
+            <div class="text-sm text-gray-500">Team Members</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-briefcase text-orange-600 text-xl"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-gray-900">{{ projectTeams || 0 }}</div>
+            <div class="text-sm text-gray-500">Project Teams</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Search Teams</label>
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-search"></i>
+            <input type="text" pInputText placeholder="Search by name, description..." 
+                   [(ngModel)]="searchTerm" (input)="filterTeams()" class="w-full" />
+          </span>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Team Type</label>
+          <p-dropdown 
+            [options]="typeOptions" 
+            [(ngModel)]="selectedType" 
+            placeholder="All Types"
+            [showClear]="true"
+            (onChange)="filterTeams()"
+            class="w-full">
+          </p-dropdown>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+          <p-dropdown 
+            [options]="statusOptions" 
+            [(ngModel)]="selectedStatus" 
+            placeholder="All Status"
+            [showClear]="true"
+            (onChange)="filterTeams()"
+            class="w-full">
+          </p-dropdown>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Owner</label>
+          <p-dropdown 
+            [options]="ownerOptions" 
+            [(ngModel)]="selectedOwner" 
+            placeholder="All Owners"
+            [showClear]="true"
+            (onChange)="filterTeams()"
+            class="w-full">
+          </p-dropdown>
+        </div>
+      </div>
+    </div>
+
+    <!-- Teams Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let team of filteredTeams" 
+           class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300">
+        
+        <!-- Team Header -->
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                <i class="pi pi-users text-white text-lg"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-900">{{ team.name }}</h3>
+                <p class="text-sm text-gray-500">{{ team.type || 'General' }}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-badge 
+                [value]="team.status || 'Active'" 
+                [severity]="getStatusSeverity(team.status)"
+                class="text-xs">
+              </p-badge>
+            </div>
+          </div>
+          
+          <p class="text-sm text-gray-600 mb-4">{{ team.description || 'No description available' }}</p>
+          
+          <!-- Team Stats -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="text-center p-3 bg-gray-50 rounded-lg">
+              <div class="text-lg font-semibold text-gray-900">{{ team.members?.length || 0 }}</div>
+              <div class="text-xs text-gray-500">Members</div>
+            </div>
+            <div class="text-center p-3 bg-gray-50 rounded-lg">
+              <div class="text-lg font-semibold text-gray-900">{{ team.projects?.length || 0 }}</div>
+              <div class="text-xs text-gray-500">Projects</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Team Members Preview -->
+        <div class="p-4 border-b border-gray-200" *ngIf="team.members?.length > 0">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-sm font-medium text-gray-700">Team Members</h4>
+            <span class="text-xs text-gray-500">{{ team.members.length }} total</span>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <!-- Member Avatars -->
+            <div class="flex -space-x-2">
+              <div *ngFor="let member of team.members.slice(0, 4); let i = index"
+                   class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center border-2 border-white">
+                <span class="text-white text-xs font-medium">{{ getMemberInitials(member) }}</span>
+              </div>
+              <div *ngIf="team.members.length > 4"
+                   class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center border-2 border-white">
+                <span class="text-gray-600 text-xs">+{{ team.members.length - 4 }}</span>
+              </div>
+            </div>
+            
+            <!-- Owner Info -->
+            <div class="ml-auto" *ngIf="team.owner">
+              <p-badge value="Owner" severity="warning" class="text-xs"></p-badge>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Team Permissions -->
+        <div class="p-4 border-b border-gray-200" *ngIf="team.permissions?.length > 0">
+          <h4 class="text-sm font-medium text-gray-700 mb-3">Team Permissions</h4>
+          <div class="flex flex-wrap gap-1">
+            <p-badge 
+              *ngFor="let permission of team.permissions.slice(0, 3)" 
+              [value]="permission" 
+              severity="info" 
+              class="text-xs">
+            </p-badge>
+            <p-badge 
+              *ngIf="team.permissions.length > 3"
+              [value]="'+' + (team.permissions.length - 3)" 
+              severity="secondary" 
+              class="text-xs">
+            </p-badge>
+          </div>
+        </div>
+        
+        <!-- Team Actions -->
+        <div class="p-4">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <p-button 
+                icon="pi pi-eye" 
+                [rounded]="true" 
+                [text]="true" 
+                severity="info" 
+                size="small"
+                (click)="viewTeam(team)"
+                pTooltip="View Details">
+              </p-button>
+              <p-button 
+                icon="pi pi-users" 
+                [rounded]="true" 
+                [text]="true" 
+                severity="secondary" 
+                size="small"
+                (click)="manageMembers(team)"
+                pTooltip="Manage Members">
+              </p-button>
+              <p-button 
+                icon="pi pi-shield" 
+                [rounded]="true" 
+                [text]="true" 
+                severity="warning" 
+                size="small"
+                (click)="managePermissions(team)"
+                pTooltip="Manage Permissions">
+              </p-button>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <p-button 
+                icon="pi pi-pencil" 
+                [rounded]="true" 
+                [text]="true" 
+                severity="secondary" 
+                size="small"
+                (click)="teamDetail.show(team._id)"
+                pTooltip="Edit Team">
+              </p-button>
+              <p-button 
+                icon="pi pi-trash" 
+                [rounded]="true" 
+                [text]="true" 
+                severity="danger" 
+                size="small"
+                (click)="deleteTeam(team)"
+                pTooltip="Delete Team">
+              </p-button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Empty State -->
+      <div *ngIf="filteredTeams.length === 0" class="col-span-full">
+        <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="pi pi-users text-gray-400 text-2xl"></i>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No teams found</h3>
+          <p class="text-gray-500 mb-6">Create your first team to organize users and manage permissions.</p>
+          <p-button 
+            label="Create First Team" 
+            icon="pi pi-plus" 
+            severity="primary"
+            (click)="teamDetail.show()">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-8 flex justify-center" *ngIf="filteredTeams.length > 0">
+      <p-paginator 
+        [rows]="itemsPerPage" 
+        [totalRecords]="totalRecords"
+        (onPageChange)="onPageChange($event)">
+      </p-paginator>
+    </div>
+  </div>
 </div>
 
-<app-team #teamDetail></app-team>
+<!-- Team Detail Modal -->
+<app-team #teamDetail (onSave)="refreshTeams()"></app-team>

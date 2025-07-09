@@ -1,40 +1,615 @@
-<app-data-table-filter title="Assets" (onAddNew)="assetDetail.show()" (onRefresh)="dataTable.refresh()"></app-data-table-filter>
-
-<div class="card mt-3">
-  <app-data-table #dataTable [data]="assets" [rows]="tableRowsPerPage" [loading]="isTableLoading"
-                  (onPageChange)="getAssets($event)">
-    <ng-template #tableHeader>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Source</th>
-        <th>Location</th>
-        <th>Owner</th>
-        <th>Sensitivity</th>
-        <th>Status</th>
-        <th>Action</th>
-      </tr>
-    </ng-template>
-    <ng-template #tableBody let-asset>
-      <tr>
-        <td>{{ asset.name }}</td>
-        <td>{{ asset.type }}</td>
-        <td>{{ asset.source }}</td>
-        <td>{{ asset.location }}</td>
-        <td>{{ asset.owner }}</td>
-        <td>{{ asset.sensitivity }}</td>
-        <td>
-          <p-tag [value]="asset.status" [severity]="getSeverity(asset.status)" />
-        </td>
-        <td>
-          <div class="flex justify-around">
-            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" (click)="assetDetail.show(asset._id)"/>
-            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (click)="onDeleteAsset($event, asset._id)"/>
+<!-- Asset Management - Data Mesh Resources -->
+<div class="min-h-screen bg-gray-50 p-6">
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Header Section -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+            <i class="pi pi-database text-white text-xl"></i>
           </div>
-        </td>
-      </tr>
-    </ng-template>
-  </app-data-table>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">Asset Management</h1>
+            <p class="text-gray-600">Manage data assets, resources, and digital inventory</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <p-button 
+            label="Export Assets" 
+            icon="pi pi-download" 
+            severity="secondary" 
+            [outlined]="true"
+            (click)="exportAssets()">
+          </p-button>
+          <p-button 
+            label="Add Asset" 
+            icon="pi pi-plus" 
+            severity="primary"
+            (click)="assetDetail.show()">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Introduction Card -->
+    <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200 p-6 mb-8">
+      <div class="flex items-start gap-4">
+        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <i class="pi pi-info-circle text-green-600 text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Understanding Asset Management</h3>
+          <p class="text-gray-700 mb-4">
+            Assets are the core data resources in your organization. They include databases, files, APIs, 
+            and other digital resources that require access control and governance management.
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-database text-green-500"></i>
+              <span><strong>Data Sources:</strong> Databases and storage</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-file text-green-500"></i>
+              <span><strong>Files:</strong> Documents and media</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-globe text-green-500"></i>
+              <span><strong>APIs:</strong> Service endpoints</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Total Assets</p>
+            <p class="text-2xl font-bold text-gray-900">{{ stats.totalAssets }}</p>
+          </div>
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-database text-green-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Active Assets</p>
+            <p class="text-2xl font-bold text-green-600">{{ stats.activeAssets }}</p>
+          </div>
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-check-circle text-green-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Critical Assets</p>
+            <p class="text-2xl font-bold text-red-600">{{ stats.criticalAssets }}</p>
+          </div>
+          <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-exclamation-triangle text-red-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Pending Review</p>
+            <p class="text-2xl font-bold text-yellow-600">{{ stats.pendingAssets }}</p>
+          </div>
+          <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-clock text-yellow-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Panel -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6" *ngIf="showFilters">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Filter Assets</h3>
+      </div>
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-search"></i>
+              <input 
+                type="text" 
+                pInputText 
+                placeholder="Search assets..." 
+                [(ngModel)]="searchTerm"
+                (input)="filterAssets()"
+                class="w-full" />
+            </span>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
+            <p-dropdown 
+              [options]="typeOptions" 
+              [(ngModel)]="selectedType"
+              optionLabel="label" 
+              optionValue="value"
+              placeholder="All Types"
+              [showClear]="true"
+              (onChange)="filterAssets()"
+              class="w-full">
+            </p-dropdown>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Sensitivity</label>
+            <p-dropdown 
+              [options]="sensitivityOptions" 
+              [(ngModel)]="selectedSensitivity"
+              optionLabel="label" 
+              optionValue="value"
+              placeholder="All Levels"
+              [showClear]="true"
+              (onChange)="filterAssets()"
+              class="w-full">
+            </p-dropdown>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <p-dropdown 
+              [options]="statusOptions" 
+              [(ngModel)]="selectedStatus"
+              optionLabel="label" 
+              optionValue="value"
+              placeholder="All Status"
+              [showClear]="true"
+              (onChange)="filterAssets()"
+              class="w-full">
+            </p-dropdown>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-3 mt-6">
+          <p-button 
+            label="Apply Filters" 
+            icon="pi pi-check" 
+            (onClick)="applyFilters()">
+          </p-button>
+          <p-button 
+            label="Clear" 
+            icon="pi pi-times" 
+            [outlined]="true" 
+            (onClick)="clearFilters()">
+          </p-button>
+          <p-button 
+            icon="pi pi-filter" 
+            [outlined]="true" 
+            (onClick)="toggleFilters()"
+            pTooltip="Toggle Filters">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Default Assets Layout -->
+    <div class="space-y-8" *ngIf="!assets?.data?.length">
+      
+      <!-- Sample Assets by Category -->
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-blue-50">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-500">
+                <i class="text-white pi pi-database"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">Database Assets</h3>
+                <p class="text-sm text-gray-500">Core data storage and processing systems</p>
+              </div>
+            </div>
+            <p-tag value="High Priority" severity="danger"></p-tag>
+          </div>
+        </div>
+        
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <!-- Customer Database -->
+            <div class="border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <i class="text-white pi pi-database"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-gray-900">Customer Database</h4>
+                    <p class="text-sm text-gray-500">PostgreSQL</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              
+              <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-shield text-red-500 text-sm"></i>
+                  <span class="text-sm text-gray-600">High Sensitivity</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-map-marker text-gray-400 text-sm"></i>
+                  <span class="text-sm text-gray-600">us-east-1</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-user text-gray-400 text-sm"></i>
+                  <span class="text-sm text-gray-600">Data Team</span>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
+                <p-chip label="Production" severity="danger" [removable]="false"></p-chip>
+                <p-chip label="PII" severity="warning" [removable]="false"></p-chip>
+              </div>
+            </div>
+
+            <!-- Analytics Warehouse -->
+            <div class="border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                    <i class="text-white pi pi-chart-bar"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-gray-900">Analytics Warehouse</h4>
+                    <p class="text-sm text-gray-500">Snowflake</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              
+              <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-shield text-yellow-500 text-sm"></i>
+                  <span class="text-sm text-gray-600">Medium Sensitivity</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-map-marker text-gray-400 text-sm"></i>
+                  <span class="text-sm text-gray-600">us-west-2</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-user text-gray-400 text-sm"></i>
+                  <span class="text-sm text-gray-600">Analytics Team</span>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
+                <p-chip label="Analytics" [removable]="false"></p-chip>
+                <p-chip label="Aggregated" [removable]="false"></p-chip>
+              </div>
+            </div>
+
+            <!-- Document Store -->
+            <div class="border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                    <i class="text-white pi pi-file"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-gray-900">Document Store</h4>
+                    <p class="text-sm text-gray-500">MongoDB</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              
+              <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-shield text-green-500 text-sm"></i>
+                  <span class="text-sm text-gray-600">Low Sensitivity</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-map-marker text-gray-400 text-sm"></i>
+                  <span class="text-sm text-gray-600">eu-central-1</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-user text-gray-400 text-sm"></i>
+                  <span class="text-sm text-gray-600">Content Team</span>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
+                <p-chip label="Documents" [removable]="false"></p-chip>
+                <p-chip label="Public" [removable]="false"></p-chip>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- API Assets -->
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-green-50">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-green-500">
+                <i class="text-white pi pi-globe"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">API Endpoints</h3>
+                <p class="text-sm text-gray-500">Service interfaces and data access points</p>
+              </div>
+            </div>
+            <p-tag value="Medium Priority" severity="warning"></p-tag>
+          </div>
+        </div>
+        
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- REST API -->
+            <div class="border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
+                    <i class="text-white pi pi-globe"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-gray-900">Customer API</h4>
+                    <p class="text-sm text-gray-500">REST Endpoint</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              
+              <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-link text-blue-500 text-sm"></i>
+                  <span class="text-sm text-gray-600">api.company.com/v1/customers</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-shield text-yellow-500 text-sm"></i>
+                  <span class="text-sm text-gray-600">OAuth 2.0 Protected</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-clock text-gray-400 text-sm"></i>
+                  <span class="text-sm text-gray-600">99.9% Uptime</span>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
+                <p-chip label="REST" [removable]="false"></p-chip>
+                <p-chip label="Customer Data" [removable]="false"></p-chip>
+              </div>
+            </div>
+
+            <!-- GraphQL API -->
+            <div class="border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <i class="text-white pi pi-sitemap"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-gray-900">Data Gateway</h4>
+                    <p class="text-sm text-gray-500">GraphQL Endpoint</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              
+              <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-link text-purple-500 text-sm"></i>
+                  <span class="text-sm text-gray-600">api.company.com/graphql</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-shield text-green-500 text-sm"></i>
+                  <span class="text-sm text-gray-600">JWT Protected</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-clock text-gray-400 text-sm"></i>
+                  <span class="text-sm text-gray-600">99.8% Uptime</span>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
+                <p-chip label="GraphQL" [removable]="false"></p-chip>
+                <p-chip label="Unified Data" [removable]="false"></p-chip>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      
+      <!-- Empty State -->
+      <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="pi pi-database text-green-500 text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No assets found</h3>
+        <p class="text-gray-500 mb-6">Create your first asset to start managing your data resources.</p>
+        <p-button 
+          label="Create First Asset" 
+          icon="pi pi-plus" 
+          severity="primary"
+          (click)="assetDetail.show()">
+        </p-button>
+      </div>
+    </div>
+
+    <!-- Assets Table -->
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" *ngIf="assets?.data?.length">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900">Assets List</h2>
+          <div class="flex items-center gap-2">
+            <p-button 
+              icon="pi pi-refresh" 
+              [rounded]="true" 
+              [text]="true" 
+              severity="secondary"
+              (click)="refreshAssets()"
+              pTooltip="Refresh">
+            </p-button>
+            <p-button 
+              icon="pi pi-filter" 
+              [rounded]="true" 
+              [text]="true" 
+              severity="secondary"
+              (onClick)="toggleFilters()"
+              pTooltip="Toggle Filters">
+            </p-button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asset</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type & Source</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sensitivity</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let asset of filteredAssets" class="hover:bg-gray-50">
+              <!-- Asset Info -->
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+                    <i class="pi pi-database text-white"></i>
+                  </div>
+                  <div>
+                    <div class="font-medium text-gray-900">{{ asset.name }}</div>
+                    <div class="text-sm text-gray-500">{{ asset.description || 'No description' }}</div>
+                  </div>
+                </div>
+              </td>
+              
+              <!-- Type & Source -->
+              <td class="px-6 py-4">
+                <div>
+                  <div class="text-sm text-gray-900">{{ asset.type }}</div>
+                  <div class="text-sm text-gray-500">{{ asset.source || 'Unknown' }}</div>
+                </div>
+              </td>
+              
+              <!-- Location -->
+              <td class="px-6 py-4">
+                <div class="text-sm text-gray-900">{{ asset.location || 'Not specified' }}</div>
+              </td>
+              
+              <!-- Owner -->
+              <td class="px-6 py-4">
+                <div class="text-sm text-gray-900">{{ asset.owner || 'Unassigned' }}</div>
+              </td>
+              
+              <!-- Sensitivity -->
+              <td class="px-6 py-4">
+                <p-tag 
+                  [value]="asset.sensitivity || 'Low'" 
+                  [severity]="getSensitivitySeverity(asset.sensitivity)">
+                </p-tag>
+              </td>
+              
+              <!-- Status -->
+              <td class="px-6 py-4">
+                <p-tag 
+                  [value]="asset.status || 'Active'" 
+                  [severity]="getSeverity(asset.status)">
+                </p-tag>
+              </td>
+              
+              <!-- Actions -->
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <p-button 
+                    icon="pi pi-eye" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="info" 
+                    size="small"
+                    (click)="viewAsset(asset)"
+                    pTooltip="View Asset">
+                  </p-button>
+                  <p-button 
+                    icon="pi pi-pencil" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="secondary" 
+                    size="small"
+                    (click)="assetDetail.show(asset._id)"
+                    pTooltip="Edit Asset">
+                  </p-button>
+                  <p-button 
+                    icon="pi pi-shield" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="warning" 
+                    size="small"
+                    (click)="managePermissions(asset)"
+                    pTooltip="Manage Permissions">
+                  </p-button>
+                  <p-button 
+                    icon="pi pi-trash" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="danger" 
+                    size="small"
+                    (click)="onDeleteAsset($event, asset._id)"
+                    pTooltip="Delete Asset">
+                  </p-button>
+                </div>
+              </td>
+            </tr>
+            
+            <!-- Empty State -->
+            <tr *ngIf="filteredAssets.length === 0">
+              <td colspan="7" class="px-6 py-12 text-center">
+                <div class="flex flex-col items-center">
+                  <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="pi pi-database text-gray-400 text-2xl"></i>
+                  </div>
+                  <h3 class="text-lg font-medium text-gray-900 mb-2">No assets found</h3>
+                  <p class="text-gray-500 mb-4">Try adjusting your search criteria or create a new asset.</p>
+                  <p-button 
+                    label="Add First Asset" 
+                    icon="pi pi-plus" 
+                    severity="primary"
+                    (click)="assetDetail.show()">
+                  </p-button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Pagination -->
+      <div class="px-6 py-4 border-t border-gray-200" *ngIf="filteredAssets.length > 0">
+        <p-paginator 
+          [rows]="tableRowsPerPage" 
+          [totalRecords]="totalRecords"
+          (onPageChange)="onPageChange($event)">
+        </p-paginator>
+      </div>
+    </div>
+  </div>
 </div>
 
-<app-asset #assetDetail></app-asset>
+<!-- Asset Detail Modal -->
+<app-asset #assetDetail (onSave)="refreshAssets()"></app-asset>

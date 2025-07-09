@@ -1,30 +1,939 @@
-<app-data-table-filter title="Policies" (onAddNew)="policyDetail.show()" (onRefresh)="dataTable.refresh()"></app-data-table-filter>
-
-<div class="card mt-3">
-  <app-data-table #dataTable [data]="policies" [rows]="tableRowsPerPage" [loading]="isTableLoading"
-                  (onPageChange)="getPolicies($event)">
-    <ng-template #tableHeader>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Action</th>
-      </tr>
-    </ng-template>
-    <ng-template #tableBody let-policy>
-      <tr>
-        <td>{{ policy.name }}</td>
-        <td>{{ policy.type }}</td>
-        <td>{{ policy.description }}</td>
-        <td>
-          <div class="flex justify-around">
-            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" (click)="policyDetail.show(policy._id)"/>
-            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (click)="onDeletePolicy($event, policy._id)"/>
+<!-- Data Mesh Policies Management -->
+<div class="min-h-screen bg-gray-50 p-6">
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Header Section -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center">
+            <i class="pi pi-file-text text-white text-xl"></i>
           </div>
-        </td>
-      </tr>
-    </ng-template>
-  </app-data-table>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">Data Mesh Policies</h1>
+            <p class="text-gray-600">Manage data governance, quality, and compliance policies across domains</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <p-button 
+            label="Policy Matrix" 
+            icon="pi pi-table" 
+            severity="secondary" 
+            [outlined]="true"
+            (click)="showPolicyMatrix()">
+          </p-button>
+          <p-button 
+            label="Create Policy" 
+            icon="pi pi-plus" 
+            severity="primary"
+            (click)="toggleCreateDialog()">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Introduction Card -->
+    <div class="bg-gradient-to-r from-red-50 to-pink-50 rounded-xl border border-red-200 p-6 mb-8">
+      <div class="flex items-start gap-4">
+        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <i class="pi pi-info-circle text-red-600 text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Data Mesh Policy Framework</h3>
+          <p class="text-gray-700 mb-4">
+            Data Mesh policies define governance rules for decentralized data domains. They ensure data quality, 
+            compliance, and security across distributed data products while maintaining domain autonomy.
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-shield text-red-500"></i>
+              <span><strong>Data Quality:</strong> Standards & validation</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-verified text-red-500"></i>
+              <span><strong>Compliance:</strong> Regulatory requirements</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-lock text-red-500"></i>
+              <span><strong>Security:</strong> Access & encryption</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-sitemap text-red-500"></i>
+              <span><strong>Governance:</strong> Domain autonomy</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Total Policies</p>
+            <p class="text-2xl font-bold text-gray-900">{{ stats.totalPolicies }}</p>
+          </div>
+          <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-file-text text-red-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Active Policies</p>
+            <p class="text-2xl font-bold text-green-600">{{ stats.activePolicies }}</p>
+          </div>
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-check-circle text-green-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Domain Policies</p>
+            <p class="text-2xl font-bold text-blue-600">{{ stats.domainPolicies }}</p>
+          </div>
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-sitemap text-blue-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Global Policies</p>
+            <p class="text-2xl font-bold text-purple-600">{{ stats.globalPolicies }}</p>
+          </div>
+          <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-globe text-purple-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Panel -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6" *ngIf="showFilters">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Filter Policies</h3>
+      </div>
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-search"></i>
+              <input 
+                type="text" 
+                pInputText 
+                placeholder="Search policies..." 
+                [(ngModel)]="searchTerm"
+                class="w-full" />
+            </span>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Policy Type</label>
+            <p-dropdown 
+              [options]="typeOptions" 
+              [(ngModel)]="selectedType"
+              optionLabel="label" 
+              optionValue="value"
+              placeholder="All Types"
+              [showClear]="true"
+              (onChange)="filterPolicies()"
+              class="w-full">
+            </p-dropdown>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Domain</label>
+            <p-dropdown 
+              [options]="domainOptions" 
+              [(ngModel)]="selectedDomain"
+              optionLabel="label" 
+              optionValue="value"
+              placeholder="All Domains"
+              [showClear]="true"
+              (onChange)="filterPolicies()"
+              class="w-full">
+            </p-dropdown>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <p-dropdown 
+              [options]="statusOptions" 
+              [(ngModel)]="selectedStatus"
+              optionLabel="label" 
+              optionValue="value"
+              placeholder="All Status"
+              [showClear]="true"
+              (onChange)="filterPolicies()"
+              class="w-full">
+            </p-dropdown>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-3 mt-6">
+          <p-button 
+            label="Apply Filters" 
+            icon="pi pi-check" 
+            (onClick)="applyFilters()">
+          </p-button>
+          <p-button 
+            label="Clear" 
+            icon="pi pi-times" 
+            [outlined]="true" 
+            (onClick)="clearFilters()">
+          </p-button>
+          <p-button 
+            icon="pi pi-filter" 
+            [outlined]="true" 
+            (onClick)="toggleFilters()"
+            pTooltip="Toggle Filters">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Mesh Policy Categories -->
+    <div class="space-y-8">
+      
+      <!-- Data Quality Policies -->
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-blue-50">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-500">
+                <i class="text-white pi pi-shield"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">Data Quality Policies</h3>
+                <p class="text-sm text-gray-500">Standards and validation rules for data integrity</p>
+              </div>
+            </div>
+            <p-tag value="Core Domain" severity="info"></p-tag>
+          </div>
+        </div>
+        
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <!-- Schema Validation Policy -->
+            <div class="border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <i class="text-white pi pi-check-square"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-gray-900">Schema Validation</h4>
+                    <p class="text-sm text-gray-500">Enforce data structure standards</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              
+              <div class="space-y-3">
+                <p class="text-sm text-gray-600">
+                  Ensures all data products conform to predefined schemas and data types
+                </p>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-sitemap text-blue-500 text-sm"></i>
+                  <span class="text-sm text-gray-600">All Data Domains</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-clock text-gray-400 text-sm"></i>
+                  <span class="text-sm text-gray-600">Real-time validation</span>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
+                <p-chip label="Automated" [removable]="false"></p-chip>
+                <p-chip label="Critical" severity="danger" [removable]="false"></p-chip>
+              </div>
+            </div>
+
+            <!-- Data Completeness Policy -->
+            <div class="border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                    <i class="text-white pi pi-percentage"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-gray-900">Data Completeness</h4>
+                    <p class="text-sm text-gray-500">Minimum data completeness thresholds</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              
+              <div class="space-y-3">
+                <p class="text-sm text-gray-600">
+                  Enforces minimum 95% data completeness for critical data products
+                </p>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-chart-line text-green-500 text-sm"></i>
+                  <span class="text-sm text-gray-600">Customer & Product domains</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-calendar text-gray-400 text-sm"></i>
+                  <span class="text-sm text-gray-600">Daily monitoring</span>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
+                <p-chip label="Threshold: 95%" [removable]="false"></p-chip>
+                <p-chip label="Critical" severity="danger" [removable]="false"></p-chip>
+              </div>
+            </div>
+
+            <!-- Data Freshness Policy -->
+            <div class="border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                    <i class="text-white pi pi-clock"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-gray-900">Data Freshness</h4>
+                    <p class="text-sm text-gray-500">Maximum data age requirements</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              
+              <div class="space-y-3">
+                <p class="text-sm text-gray-600">
+                  Ensures data products are updated within specified time windows
+                </p>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-refresh text-purple-500 text-sm"></i>
+                  <span class="text-sm text-gray-600">Real-time & batch domains</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-hourglass text-gray-400 text-sm"></i>
+                  <span class="text-sm text-gray-600">SLA-based validation</span>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
+                <p-chip label="SLA Driven" [removable]="false"></p-chip>
+                <p-chip label="High" severity="warning" [removable]="false"></p-chip>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Compliance & Security Policies -->
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-red-50">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-red-500">
+                <i class="text-white pi pi-lock"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">Compliance & Security</h3>
+                <p class="text-sm text-gray-500">Regulatory compliance and data security policies</p>
+              </div>
+            </div>
+            <p-tag value="Critical" severity="danger"></p-tag>
+          </div>
+        </div>
+        
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <!-- GDPR Compliance -->
+            <div class="border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center">
+                    <i class="text-white pi pi-verified"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-gray-900">GDPR Compliance</h4>
+                    <p class="text-sm text-gray-500">EU data protection regulations</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              
+              <div class="space-y-3">
+                <p class="text-sm text-gray-600">
+                  Ensures personal data handling complies with GDPR requirements
+                </p>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-user text-red-500 text-sm"></i>
+                  <span class="text-sm text-gray-600">Personal data domains</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-shield text-gray-400 text-sm"></i>
+                  <span class="text-sm text-gray-600">Data subject rights</span>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
+                <p-chip label="GDPR" severity="danger" [removable]="false"></p-chip>
+                <p-chip label="Mandatory" severity="danger" [removable]="false"></p-chip>
+              </div>
+            </div>
+
+            <!-- Data Encryption -->
+            <div class="border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <i class="text-white pi pi-key"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-gray-900">Data Encryption</h4>
+                    <p class="text-sm text-gray-500">Encryption at rest and in transit</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              
+              <div class="space-y-3">
+                <p class="text-sm text-gray-600">
+                  Mandatory encryption for sensitive data across all domains
+                </p>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-lock text-indigo-500 text-sm"></i>
+                  <span class="text-sm text-gray-600">AES-256 encryption</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-globe text-gray-400 text-sm"></i>
+                  <span class="text-sm text-gray-600">All domains</span>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
+                <p-chip label="AES-256" [removable]="false"></p-chip>
+                <p-chip label="Security" severity="warning" [removable]="false"></p-chip>
+              </div>
+            </div>
+
+            <!-- Access Control -->
+            <div class="border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
+                    <i class="text-white pi pi-shield"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-gray-900">Access Control</h4>
+                    <p class="text-sm text-gray-500">Role-based data access policies</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              
+              <div class="space-y-3">
+                <p class="text-sm text-gray-600">
+                  Enforces role-based access control for all data products
+                </p>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-users text-orange-500 text-sm"></i>
+                  <span class="text-sm text-gray-600">RBAC implementation</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-eye text-gray-400 text-sm"></i>
+                  <span class="text-sm text-gray-600">Audit logging</span>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
+                <p-chip label="RBAC" [removable]="false"></p-chip>
+                <p-chip label="Audited" [removable]="false"></p-chip>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Domain Autonomy Policies -->
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-purple-50">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-500">
+                <i class="text-white pi pi-sitemap"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">Domain Autonomy</h3>
+                <p class="text-sm text-gray-500">Governance policies for domain independence</p>
+              </div>
+            </div>
+            <p-tag value="Governance" severity="info"></p-tag>
+          </div>
+        </div>
+        
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- API Contract Policy -->
+            <div class="border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <i class="text-white pi pi-globe"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-gray-900">API Contract Management</h4>
+                    <p class="text-sm text-gray-500">Standardized data product interfaces</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              
+              <div class="space-y-3">
+                <p class="text-sm text-gray-600">
+                  Ensures consistent API contracts across all data products
+                </p>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-code text-purple-500 text-sm"></i>
+                  <span class="text-sm text-gray-600">OpenAPI 3.0 standard</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-check text-gray-400 text-sm"></i>
+                  <span class="text-sm text-gray-600">Automated validation</span>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
+                <p-chip label="OpenAPI" [removable]="false"></p-chip>
+                <p-chip label="Standard" [removable]="false"></p-chip>
+              </div>
+            </div>
+
+            <!-- Data Product Metadata -->
+            <div class="border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-600 rounded-lg flex items-center justify-center">
+                    <i class="text-white pi pi-tags"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-gray-900">Metadata Standards</h4>
+                    <p class="text-sm text-gray-500">Required metadata for data products</p>
+                  </div>
+                </div>
+                <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+              </div>
+              
+              <div class="space-y-3">
+                <p class="text-sm text-gray-600">
+                  Mandates comprehensive metadata for all data products
+                </p>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-info-circle text-green-500 text-sm"></i>
+                  <span class="text-sm text-gray-600">Schema, lineage, SLA</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-search text-gray-400 text-sm"></i>
+                  <span class="text-sm text-gray-600">Discoverability</span>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
+                <p-chip label="Metadata" [removable]="false"></p-chip>
+                <p-chip label="Required" severity="warning" [removable]="false"></p-chip>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      
+      <!-- Empty State -->
+      <div class="bg-white rounded-xl border border-gray-200 p-12 text-center" *ngIf="false">
+        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="pi pi-file-text text-red-500 text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No policies found</h3>
+        <p class="text-gray-500 mb-6">Create your first policy to establish data governance rules.</p>
+        <p-button 
+          label="Create First Policy" 
+          icon="pi pi-plus" 
+          severity="primary"
+          (click)="toggleCreateDialog()">
+        </p-button>
+      </div>
+    </div>
+  </div>
 </div>
 
-<app-policy #policyDetail></app-policy>
+<!-- Create Policy Dialog -->
+<p-dialog 
+  header="Create Data Mesh Policy" 
+  [(visible)]="showCreateDialog" 
+  [modal]="true" 
+  [style]="{width: '700px'}"
+  [draggable]="false">
+  
+  <div class="space-y-4">
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Policy Name</label>
+        <input type="text" pInputText placeholder="Enter policy name" class="w-full" />
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Policy Type</label>
+        <p-dropdown 
+          [options]="typeOptions" 
+          optionLabel="label" 
+          optionValue="value"
+          placeholder="Select policy type"
+          class="w-full">
+        </p-dropdown>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Target Domain</label>
+        <p-dropdown 
+          [options]="domainOptions" 
+          optionLabel="label" 
+          optionValue="value"
+          placeholder="Select domain"
+          class="w-full">
+        </p-dropdown>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Enforcement Level</label>
+        <p-dropdown 
+          [options]="enforcementOptions" 
+          optionLabel="label" 
+          optionValue="value"
+          placeholder="Select enforcement level"
+          class="w-full">
+        </p-dropdown>
+      </div>
+    </div>
+    
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Policy Description</label>
+      <textarea pInputTextarea placeholder="Describe the policy purpose and requirements" class="w-full h-24"></textarea>
+    </div>
+    
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Policy Rules (JSON)</label>
+      <textarea pInputTextarea placeholder="Enter policy rules in JSON format" class="w-full h-32 font-mono text-sm"></textarea>
+    </div>
+  </div>
+  
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3">
+      <p-button 
+        label="Cancel" 
+        [outlined]="true" 
+        (onClick)="showCreateDialog = false">
+      </p-button>
+      <p-button 
+        label="Create Policy" 
+        (onClick)="showCreateDialog = false">
+      </p-button>
+    </div>
+  </ng-template>
+  
+</p-dialog>
+            </span>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
+            <p-dropdown 
+              [options]="typeOptions" 
+              [(ngModel)]="selectedType"
+              optionLabel="label" 
+              optionValue="value"
+              placeholder="Select type"
+              class="w-full">
+            </p-dropdown>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <p-dropdown 
+              [options]="statusOptions" 
+              [(ngModel)]="selectedStatus"
+              optionLabel="label" 
+              optionValue="value"
+              placeholder="Select status"
+              class="w-full">
+            </p-dropdown>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+            <p-dropdown 
+              [options]="priorityOptions" 
+              [(ngModel)]="selectedPriority"
+              optionLabel="label" 
+              optionValue="value"
+              placeholder="Select priority"
+              class="w-full">
+            </p-dropdown>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-3 mt-6">
+          <p-button 
+            label="Apply Filters" 
+            icon="pi pi-check" 
+            (onClick)="applyFilters()">
+          </p-button>
+          <p-button 
+            label="Clear" 
+            icon="pi pi-times" 
+            [outlined]="true" 
+            (onClick)="clearFilters()">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Policies Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      
+      <!-- Sample Policy Cards -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200">
+        <div class="p-6">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                <i class="pi pi-shield text-red-600"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-900">Password Policy</h3>
+                <p class="text-sm text-gray-500">Security • High Priority</p>
+              </div>
+            </div>
+            <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+          </div>
+          
+          <p class="text-gray-600 text-sm mb-4">
+            Enforces strong password requirements including minimum length, complexity, and rotation policies.
+          </p>
+          
+          <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
+            <span>Last updated: 2 days ago</span>
+            <span>Version 1.2</span>
+          </div>
+          
+          <div class="flex items-center gap-2 mb-4">
+            <p-chip label="Authentication" [removable]="false"></p-chip>
+            <p-chip label="Security" [removable]="false"></p-chip>
+          </div>
+          
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4 text-sm text-gray-600">
+              <span class="flex items-center gap-1">
+                <i class="pi pi-users text-xs"></i>
+                2,456 affected
+              </span>
+              <span class="flex items-center gap-1">
+                <i class="pi pi-check text-xs"></i>
+                98% compliance
+              </span>
+            </div>
+            <p-button 
+              icon="pi pi-ellipsis-v" 
+              [text]="true" 
+              [rounded]="true">
+            </p-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Access Policy -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200">
+        <div class="p-6">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="pi pi-database text-blue-600"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-900">Data Access Control</h3>
+                <p class="text-sm text-gray-500">Compliance • Critical</p>
+              </div>
+            </div>
+            <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+          </div>
+          
+          <p class="text-gray-600 text-sm mb-4">
+            Defines access controls for sensitive data based on classification levels and user clearance.
+          </p>
+          
+          <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
+            <span>Last updated: 1 week ago</span>
+            <span>Version 2.1</span>
+          </div>
+          
+          <div class="flex items-center gap-2 mb-4">
+            <p-chip label="Data Protection" [removable]="false"></p-chip>
+            <p-chip label="GDPR" [removable]="false"></p-chip>
+          </div>
+          
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4 text-sm text-gray-600">
+              <span class="flex items-center gap-1">
+                <i class="pi pi-database text-xs"></i>
+                156 assets
+              </span>
+              <span class="flex items-center gap-1">
+                <i class="pi pi-check text-xs"></i>
+                95% compliance
+              </span>
+            </div>
+            <p-button 
+              icon="pi pi-ellipsis-v" 
+              [text]="true" 
+              [rounded]="true">
+            </p-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Policy Cards -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200">
+        <div class="p-6">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="pi pi-clock text-green-600"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-900">Session Management</h3>
+                <p class="text-sm text-gray-500">Security • Medium Priority</p>
+              </div>
+            </div>
+            <p-tag [value]="'Active'" [severity]="'success'"></p-tag>
+          </div>
+          
+          <p class="text-gray-600 text-sm mb-4">
+            Controls session timeouts, concurrent sessions, and automatic logout for security.
+          </p>
+          
+          <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
+            <span>Last updated: 3 days ago</span>
+            <span>Version 1.5</span>
+          </div>
+          
+          <div class="flex items-center gap-2 mb-4">
+            <p-chip label="Session" [removable]="false"></p-chip>
+            <p-chip label="Timeout" [removable]="false"></p-chip>
+          </div>
+          
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4 text-sm text-gray-600">
+              <span class="flex items-center gap-1">
+                <i class="pi pi-users text-xs"></i>
+                All users
+              </span>
+              <span class="flex items-center gap-1">
+                <i class="pi pi-check text-xs"></i>
+                100% compliance
+              </span>
+            </div>
+            <p-button 
+              icon="pi pi-ellipsis-v" 
+              [text]="true" 
+              [rounded]="true">
+            </p-button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Empty State (show when no policies) -->
+    <div class="text-center py-12" *ngIf="false">
+      <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="pi pi-file-text text-gray-400 text-3xl"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">No policies found</h3>
+      <p class="text-gray-500 mb-6">Create your first security policy to get started with governance.</p>
+      <p-button 
+        label="Create Policy" 
+        icon="pi pi-plus" 
+        (onClick)="toggleCreateDialog()">
+      </p-button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Create Policy Dialog -->
+<p-dialog 
+  header="Create New Policy" 
+  [(visible)]="showCreateDialog" 
+  [modal]="true" 
+  [style]="{width: '600px'}"
+  [draggable]="false">
+  
+  <div class="space-y-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Policy Name</label>
+      <input type="text" pInputText placeholder="Enter policy name" class="w-full" />
+    </div>
+    
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
+      <p-dropdown 
+        [options]="typeOptions" 
+        optionLabel="label" 
+        optionValue="value"
+        placeholder="Select policy type"
+        class="w-full">
+      </p-dropdown>
+    </div>
+    
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+      <p-dropdown 
+        [options]="priorityOptions" 
+        optionLabel="label" 
+        optionValue="value"
+        placeholder="Select priority"
+        class="w-full">
+      </p-dropdown>
+    </div>
+    
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+      <textarea pInputTextarea placeholder="Enter policy description" class="w-full h-24"></textarea>
+    </div>
+  </div>
+  
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3">
+      <p-button 
+        label="Cancel" 
+        [outlined]="true" 
+        (onClick)="showCreateDialog = false">
+      </p-button>
+      <p-button 
+        label="Create Policy" 
+        (onClick)="showCreateDialog = false">
+      </p-button>
+    </div>
+  </ng-template>
+  
+</p-dialog>
