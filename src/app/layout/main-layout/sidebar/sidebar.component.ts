@@ -107,6 +107,20 @@ export class SidebarComponent {
     item.expanded = !item.expanded;
   }
 
+  handleMenuClick(event: Event, item: MenuItem): void {
+    // Prevent event bubbling to avoid conflicts
+    event.preventDefault();
+    event.stopPropagation();
+    
+    if (item.children && !this.collapsed) {
+      // Toggle submenu for items with children
+      this.toggleItem(item);
+    } else if (item.url) {
+      // Navigate for direct menu items
+      this.navigateTo(item.url);
+    }
+  }
+
   navigateTo(url?: string): void {
     if (url) {
       this.router.navigate([url]);

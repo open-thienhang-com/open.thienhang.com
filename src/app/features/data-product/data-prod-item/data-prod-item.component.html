@@ -13,7 +13,7 @@
         <div>
           <div class="text-xs font-medium text-gray-500 uppercase tracking-wide">{{ getDomainLabel(data.domain) }}</div>
           <h3 class="font-semibold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors" 
-              (click)="goToDetail()">{{ data.name }}</h3>
+              (click)="goToDetail(); $event.stopPropagation()">{{ data.name }}</h3>
         </div>
       </div>
       <p-badge 
@@ -90,7 +90,7 @@
         [text]="true" 
         severity="info" 
         size="small"
-        (click)="goToDetail()"
+        (click)="goToDetail(); $event.stopPropagation()"
         pTooltip="View Details">
       </p-button>
       <p-button 
@@ -197,7 +197,7 @@
           [text]="true" 
           severity="info" 
           size="small"
-          (click)="goToDetail()"
+          (click)="goToDetail(); $event.stopPropagation()"
           pTooltip="View Details">
         </p-button>
         <p-button 

@@ -176,9 +176,19 @@
 </div>
 
 <!-- Product Detail Modal -->
-<p-dialog [(visible)]="showDetailModal" [modal]="true" [style]="{ width: '90vw', maxWidth: '1200px' }" 
-          [closable]="true" [resizable]="false" header="Data Product Details">
+<p-dialog 
+  [(visible)]="showDetailModal" 
+  [modal]="true" 
+  [style]="{ width: '90vw', maxWidth: '1200px' }" 
+  [closable]="true" 
+  [resizable]="false" 
+  [dismissableMask]="true"
+  [blockScroll]="true"
+  [baseZIndex]="10000"
+  header="Data Product Details"
+  (onHide)="closeDetailModal()">
   <app-data-prod-detail 
+    *ngIf="selectedProduct"
     [product]="selectedProduct" 
     (onClose)="closeDetailModal()"
     (onSubscribe)="subscribeToProduct($event)"

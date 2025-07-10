@@ -48,12 +48,11 @@ export class DataProdItemComponent {
   }
 
   goToDetail() {
-    // Emit event for parent component to handle
+    // Emit event for parent component to handle (show modal instead of navigation)
     this.onProductClick.emit(this.data);
-
-    // Navigate to detail page
-    const { id, domain } = this.data;
-    this.router.navigate(['/data-product-detail', { id, domain }]);
+    
+    // Don't navigate directly - let parent handle the modal display
+    // This prevents conflicting navigation states
   }
 
   toggleSubscription() {

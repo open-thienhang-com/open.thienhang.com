@@ -36,6 +36,7 @@ export class DataProductComponent extends AppBaseComponent implements OnInit {
   filteredProducts: any[] = [];
   selectedProduct: any = null;
   showDetailModal: boolean = false;
+  isModalOpening: boolean = false; // Prevent rapid clicking
 
   // Stats
   totalProducts: number = 0;
@@ -346,13 +347,31 @@ export class DataProductComponent extends AppBaseComponent implements OnInit {
   }
 
   viewProductDetail(product: any) {
-    this.selectedProduct = product;
-    this.showDetailModal = true;
+    // Prevent rapid clicking and modal conflicts
+    if (this.isModalOpening || this.showDetailModal) {
+      return;
+    }
+    
+    this.isModalOpening = true;
+    
+    // Ensure clean state before opening new modal
+    this.closeDetailModal();
+    
+    // Set the selected product and show modal
+    setTimeout(() => {
+      this.selectedProduct = product;
+      this.showDetailModal = true;
+      this.isModalOpening = false;
+    }, 50); // Small delay to ensure previous modal is fully closed
   }
 
   closeDetailModal() {
     this.showDetailModal = false;
-    this.selectedProduct = null;
+    this.isModalOpening = false;
+    // Clear the selected product after a short delay to prevent flickering
+    setTimeout(() => {
+      this.selectedProduct = null;
+    }, 300);
   }
 
   subscribeToProduct(product: any) {

@@ -108,6 +108,7 @@ export class DataProdDetailComponent extends AppBaseComponent implements AfterVi
   }
 
   closeModal() {
+    // Emit close event to parent component
     this.onClose.emit();
   }
 
@@ -118,6 +119,11 @@ export class DataProdDetailComponent extends AppBaseComponent implements AfterVi
       this.onSubscribe.emit(this.dataProduct);
     }
     this.isSubscribed = !this.isSubscribed;
+  }
+
+  // Prevent event bubbling on modal content clicks
+  onModalContentClick(event: Event) {
+    event.stopPropagation();
   }
 
   getDomainLabel(domain: string): string {

@@ -34,7 +34,7 @@
               'bg-blue-50 dark:bg-blue-900/20': item.children && item.expanded && !collapsed
             }"
             [title]="collapsed ? item.label : ''"
-            (click)="item.children && !collapsed ? toggleItem(item) : navigateTo(item.url)">
+            (click)="handleMenuClick($event, item)">
 
             <div class="flex items-center gap-3 min-w-0 flex-1" [class.justify-center]="collapsed">
               <div class="flex-shrink-0 w-5 h-5 flex items-center justify-center">

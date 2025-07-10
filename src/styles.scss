@@ -201,6 +201,7 @@ h6 {
 .p-dialog {
   border-radius: 16px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  z-index: 10000 !important; /* Ensure proper layering */
 }
 
 .p-dialog-header {
@@ -211,6 +212,53 @@ h6 {
 
 .p-dialog-content {
   padding: 0 1.5rem 1.5rem;
+}
+
+/* Prevent menu disappearing by ensuring modal mask doesn't interfere */
+.p-dialog-mask {
+  z-index: 9999 !important;
+  position: fixed !important;
+}
+
+/* Ensure sidebar stays below modals */
+app-sidebar {
+  z-index: 40 !important;
+}
+
+/* Ensure main content doesn't interfere with modals */
+main {
+  z-index: 1 !important;
+}
+
+/* Enhanced modal transition */
+.p-dialog-enter {
+  animation: modal-fade-in 0.3s ease-out;
+}
+
+.p-dialog-leave {
+  animation: modal-fade-out 0.2s ease-in;
+}
+
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modal-fade-out {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9) translateY(-50px);
+  }
 }
 
 /* Custom Utility Classes */
