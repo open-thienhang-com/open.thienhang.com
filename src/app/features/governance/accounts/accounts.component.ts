@@ -92,8 +92,8 @@ export class AccountsComponent extends AppBaseComponent implements OnInit {
     this.isTableLoading = true;
     this.governanceServices.getAccounts({offset: page, size: this.tableRowsPerPage}).subscribe(res => {
       this.accounts = res;
-      this.filteredAccounts = res?.data || [];
-      this.totalRecords = res?.total || 0;
+      this.filteredAccounts = res.data;
+      this.totalRecords = res.total || 0;
       this.isTableLoading = false;
       this.updateStats();
     })

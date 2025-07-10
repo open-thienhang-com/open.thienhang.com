@@ -36,7 +36,12 @@ export class SignupComponent extends AppBaseComponent {
     if (!this.validateBeforeSignUp()) {
       return;
     }
-    this.authServices.signUp({email: this.email, full_name: this.fullName, password: this.password}).subscribe(res => {
+    this.authServices.signUp({
+      email: this.email, 
+      full_name: this.fullName, 
+      password: this.password,
+      terms_accepted: this.acceptTnC
+    }).subscribe(res => {
       if (!res) {
         return;
       }

@@ -77,7 +77,7 @@ export class TeamComponent extends AppBaseComponent {
 
   loadMembers() {
     this.governanceServices.getUsers({}).subscribe(res => {
-      this.members = (res.data || res).map(item => ({
+      this.members = res.data.map(item => ({
         ...item,
         name: `${item.first_name} ${item.last_name}`
       }));

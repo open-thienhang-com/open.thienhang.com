@@ -82,7 +82,7 @@ export class UsersComponent extends AppBaseComponent implements OnInit {
   getUsers = (page = 0) => {
     this.isTableLoading = true;
     this.governanceServices.getUsers({ offset: page, size: this.tableRowsPerPage }).subscribe(res => {
-      this.users = res.data || res;
+      this.users = res.data;
       this.filteredUsers = [...this.users];
       this.totalRecords = res.total || this.users.length;
       this.calculateStats();
@@ -93,7 +93,7 @@ export class UsersComponent extends AppBaseComponent implements OnInit {
   loadTeamOptions() {
     // Load teams for filter dropdown
     this.governanceServices.getTeams({}).subscribe(res => {
-      this.teamOptions = (res.data || res).map(team => ({
+      this.teamOptions = res.data.map(team => ({
         label: team.name,
         value: team._id
       }));
