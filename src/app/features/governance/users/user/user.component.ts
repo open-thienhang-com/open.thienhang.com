@@ -1,12 +1,12 @@
-import {Component, Injector} from '@angular/core';
-import {Button} from "primeng/button";
-import {Dialog} from "primeng/dialog";
-import {FloatLabel} from "primeng/floatlabel";
-import {InputText} from "primeng/inputtext";
-import {FormsModule, ReactiveFormsModule} from "@angular/forms";
-import {Textarea} from "primeng/textarea";
-import {AppBaseComponent} from '../../../../core/base/app-base.component';
-import {GovernanceServices} from '../../../../core/services/governance.services';
+import { Component, EventEmitter, Injector, Output } from '@angular/core';
+import { Button } from "primeng/button";
+import { Dialog } from "primeng/dialog";
+import { FloatLabel } from "primeng/floatlabel";
+import { InputText } from "primeng/inputtext";
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { Textarea } from "primeng/textarea";
+import { AppBaseComponent } from '../../../../core/base/app-base.component';
+import { GovernanceServices } from '../../../../core/services/governance.services';
 
 @Component({
   selector: 'app-user',
@@ -22,27 +22,37 @@ import {GovernanceServices} from '../../../../core/services/governance.services'
   templateUrl: './user.component.html',
 })
 export class UserComponent extends AppBaseComponent {
+  @Output() onSave = new EventEmitter<void>();
+
   user: any = {};
   title = 'Create User';
   visible = false;
 
   constructor(private injector: Injector,
-              private governanceServices: GovernanceServices) {
+    private governanceServices: GovernanceServices) {
     super(injector);
   }
 
   save() {
-    this.governanceServices.createUser(this.user).subscribe(res => {
+    const saveObservable = this.user._id ?
+      this.governanceServices.updateUser(this.user._id, this.user) :
+      this.governanceServices.createUser(this.user);
+
+    saveObservable.subscribe(res => {
       if (!res) {
         return;
       }
-      this.showSuccess('Create successfully');
+      this.showSuccess(this.user._id ? 'Updated successfully' : 'Created successfully');
       this.visible = false;
-    })
+      this.user = {};
+      this.onSave.emit();
+    });
   }
 
   show(id?) {
     this.visible = true;
+    this.user = {};
+
     if (id) {
       this.title = 'Edit User';
       this.governanceServices.getUser(id).subscribe(res => {
@@ -50,7 +60,9 @@ export class UserComponent extends AppBaseComponent {
           return;
         }
         this.user = res.data;
-      })
+      });
+    } else {
+      this.title = 'Create User';
     }
   }
 }

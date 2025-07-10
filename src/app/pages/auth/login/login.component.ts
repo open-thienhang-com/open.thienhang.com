@@ -1,12 +1,12 @@
-import {Component, EventEmitter, Injector, Output} from '@angular/core';
-import {Button} from "primeng/button";
-import {FloatLabel} from "primeng/floatlabel";
-import {InputText} from "primeng/inputtext";
-import {FormsModule, ReactiveFormsModule} from "@angular/forms";
-import {AuthServices} from '../../../core/services/auth.services';
-import {Router} from '@angular/router';
-import {AppBaseComponent} from '../../../core/base/app-base.component';
-import {Toast} from 'primeng/toast';
+import { Component, EventEmitter, Injector, Output } from '@angular/core';
+import { Button } from "primeng/button";
+import { FloatLabel } from "primeng/floatlabel";
+import { InputText } from "primeng/inputtext";
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { AuthServices } from '../../../core/services/auth.services';
+import { Router } from '@angular/router';
+import { AppBaseComponent } from '../../../core/base/app-base.component';
+import { Toast } from 'primeng/toast';
 
 @Component({
   selector: 'app-login',
@@ -21,8 +21,8 @@ import {Toast} from 'primeng/toast';
   templateUrl: './login.component.html',
 })
 export class LoginComponent extends AppBaseComponent {
-  email = 'thienthach@yopmail.com';
-  password = 'thien123';
+  email = 'admin@thienhang.com';
+  password = '12345678';
   remember = false;
   @Output() onSignUp: EventEmitter<any> = new EventEmitter();
   @Output() onForgotPassword: EventEmitter<any> = new EventEmitter();

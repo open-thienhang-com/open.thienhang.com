@@ -1,12 +1,12 @@
-import {Component, Injector} from '@angular/core';
-import {GovernanceServices} from '../../../../core/services/governance.services';
-import {AppBaseComponent} from '../../../../core/base/app-base.component';
-import {FormsModule} from '@angular/forms';
-import {Dialog} from 'primeng/dialog';
-import {FloatLabel} from 'primeng/floatlabel';
-import {InputText} from 'primeng/inputtext';
-import {Textarea} from 'primeng/textarea';
-import {Button} from 'primeng/button';
+import { Component, EventEmitter, Injector, Output } from '@angular/core';
+import { GovernanceServices } from '../../../../core/services/governance.services';
+import { AppBaseComponent } from '../../../../core/base/app-base.component';
+import { FormsModule } from '@angular/forms';
+import { Dialog } from 'primeng/dialog';
+import { FloatLabel } from 'primeng/floatlabel';
+import { InputText } from 'primeng/inputtext';
+import { Textarea } from 'primeng/textarea';
+import { Button } from 'primeng/button';
 
 @Component({
   selector: 'app-permission',
@@ -21,27 +21,37 @@ import {Button} from 'primeng/button';
   templateUrl: './permission.component.html',
 })
 export class PermissionComponent extends AppBaseComponent {
+  @Output() onSave = new EventEmitter<void>();
+
   permission: any = {};
   title = 'Create Permission';
   visible = false;
 
   constructor(private injector: Injector,
-              private governanceServices: GovernanceServices) {
+    private governanceServices: GovernanceServices) {
     super(injector);
   }
 
   save() {
-    this.governanceServices.createPermission(this.permission).subscribe(res => {
+    const saveObservable = this.permission._id ?
+      this.governanceServices.updatePermission(this.permission._id, this.permission) :
+      this.governanceServices.createPermission(this.permission);
+
+    saveObservable.subscribe(res => {
       if (!res) {
         return;
       }
-      this.showSuccess('Create successfully');
+      this.showSuccess(this.permission._id ? 'Updated successfully' : 'Created successfully');
       this.visible = false;
-    })
+      this.permission = {};
+      this.onSave.emit();
+    });
   }
 
   show(id?) {
     this.visible = true;
+    this.permission = {};
+
     if (id) {
       this.title = 'Edit Permission';
       this.governanceServices.getPermission(id).subscribe(res => {
@@ -49,7 +59,9 @@ export class PermissionComponent extends AppBaseComponent {
           return;
         }
         this.permission = res.data;
-      })
+      });
+    } else {
+      this.title = 'Create Permission';
     }
   }
 }

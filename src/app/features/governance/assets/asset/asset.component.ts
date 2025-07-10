@@ -1,13 +1,13 @@
-import {Component, Injector} from '@angular/core';
-import {Button} from 'primeng/button';
-import {FormsModule} from '@angular/forms';
-import {InputText} from 'primeng/inputtext';
-import {Dialog} from 'primeng/dialog';
-import {FloatLabel} from 'primeng/floatlabel';
-import {Textarea} from 'primeng/textarea';
-import {GovernanceServices} from '../../../../core/services/governance.services';
-import {AppBaseComponent} from '../../../../core/base/app-base.component';
-import {MessageService} from 'primeng/api';
+import { Component, EventEmitter, Injector, Output } from '@angular/core';
+import { Button } from 'primeng/button';
+import { FormsModule } from '@angular/forms';
+import { InputText } from 'primeng/inputtext';
+import { Dialog } from 'primeng/dialog';
+import { FloatLabel } from 'primeng/floatlabel';
+import { Textarea } from 'primeng/textarea';
+import { GovernanceServices } from '../../../../core/services/governance.services';
+import { AppBaseComponent } from '../../../../core/base/app-base.component';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-asset',
@@ -23,6 +23,8 @@ import {MessageService} from 'primeng/api';
   templateUrl: './asset.component.html',
 })
 export class AssetComponent extends AppBaseComponent {
+  @Output() onSave = new EventEmitter<void>();
+
   asset: any = {};
   title = 'Create Asset';
   visible = false;
@@ -33,17 +35,25 @@ export class AssetComponent extends AppBaseComponent {
   }
 
   save() {
-    this.governanceServices.createAsset(this.asset).subscribe(res => {
+    const saveObservable = this.asset._id ?
+      this.governanceServices.updateAsset(this.asset._id, this.asset) :
+      this.governanceServices.createAsset(this.asset);
+
+    saveObservable.subscribe(res => {
       if (!res) {
         return;
       }
-      this.showSuccess('Create successfully');
+      this.showSuccess(this.asset._id ? 'Updated successfully' : 'Created successfully');
       this.visible = false;
-    })
+      this.asset = {};
+      this.onSave.emit();
+    });
   }
 
   show(id?) {
     this.visible = true;
+    this.asset = {};
+
     if (id) {
       this.title = 'Edit Asset';
       this.governanceServices.getAsset(id).subscribe(res => {
@@ -51,7 +61,9 @@ export class AssetComponent extends AppBaseComponent {
           return;
         }
         this.asset = res.data;
-      })
+      });
+    } else {
+      this.title = 'Create Asset';
     }
   }
 }

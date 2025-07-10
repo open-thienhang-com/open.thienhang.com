@@ -1,9 +1,9 @@
-import {Component, Injector, OnInit} from '@angular/core';
-import {PolicyComponent} from '../policies/policy/policy.component';
-import {Button} from 'primeng/button';
-import {TableModule} from 'primeng/table';
-import {AppBaseComponent} from '../../../core/base/app-base.component';
-import {GovernanceServices} from '../../../core/services/governance.services';
+import { Component, Injector, OnInit } from '@angular/core';
+import { PolicyComponent } from '../policies/policy/policy.component';
+import { Button } from 'primeng/button';
+import { TableModule } from 'primeng/table';
+import { AppBaseComponent } from '../../../core/base/app-base.component';
+import { GovernanceServices } from '../../../core/services/governance.services';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
 import { CardModule } from 'primeng/card';
@@ -25,6 +25,7 @@ import { CommonModule } from '@angular/common';
   imports: [
     CommonModule,
     FormsModule,
+    PolicyComponent,
     Button,
     TableModule,
     DropdownModule,
@@ -44,28 +45,31 @@ import { CommonModule } from '@angular/common';
   templateUrl: './policies.component.html'
 })
 export class PoliciesComponent extends AppBaseComponent implements OnInit {
-  policies: any;
-  
+  policies: any[] = [];
+  loading: boolean = false;
+
   // Stats
   stats = {
     totalPolicies: 0,
     activePolicies: 0,
+    violations: 0,
+    enforcedPolicies: 0,
     securityPolicies: 0,
     compliancePolicies: 0,
     domainPolicies: 0,
     globalPolicies: 0
   };
-  
+
   // Filters
   showFilters: boolean = false;
   searchTerm: string = '';
   selectedType: any = null;
   selectedDomain: any = null;
   selectedStatus: any = null;
-  
+
   // Dialog
   showCreateDialog: boolean = false;
-  
+
   // Options for dropdowns
   typeOptions = [
     { label: 'Data Quality', value: 'data-quality' },
@@ -74,7 +78,7 @@ export class PoliciesComponent extends AppBaseComponent implements OnInit {
     { label: 'Governance', value: 'governance' },
     { label: 'Domain', value: 'domain' }
   ];
-  
+
   domainOptions = [
     { label: 'Customer Domain', value: 'customer' },
     { label: 'Product Domain', value: 'product' },
@@ -82,14 +86,14 @@ export class PoliciesComponent extends AppBaseComponent implements OnInit {
     { label: 'Analytics Domain', value: 'analytics' },
     { label: 'Global', value: 'global' }
   ];
-  
+
   statusOptions = [
     { label: 'Active', value: 'active' },
     { label: 'Draft', value: 'draft' },
     { label: 'Inactive', value: 'inactive' },
     { label: 'Deprecated', value: 'deprecated' }
   ];
-  
+
   enforcementOptions = [
     { label: 'Mandatory', value: 'mandatory' },
     { label: 'Recommended', value: 'recommended' },
@@ -105,26 +109,28 @@ export class PoliciesComponent extends AppBaseComponent implements OnInit {
 
   ngOnInit() {
     this.getPolicies();
-    this.loadStats();
   }
 
   getPolicies = (page = 0) => {
-    this.isTableLoading = true;
-    this.governanceServices.getPolicies({offset: page, size: this.tableRowsPerPage}).subscribe(res => {
-      this.policies = res;
-      this.isTableLoading = false;
+    this.loading = true;
+    this.governanceServices.getPolicies({ offset: page, size: this.tableRowsPerPage }).subscribe(res => {
+      this.policies = res.data || res;
+      this.loading = false;
+      this.loadStats();
     })
   }
 
   loadStats() {
-    // Mock stats - replace with actual API call
+    // Calculate stats from actual data or mock data
     this.stats = {
-      totalPolicies: 28,
-      activePolicies: 24,
-      securityPolicies: 15,
-      compliancePolicies: 13,
-      domainPolicies: 18,
-      globalPolicies: 10
+      totalPolicies: this.policies?.length || 28,
+      activePolicies: this.policies?.filter(p => p.status === 'active')?.length || 24,
+      violations: 5, // Mock data - replace with actual violations count
+      enforcedPolicies: this.policies?.filter(p => p.enforcement === 'mandatory')?.length || 18,
+      securityPolicies: this.policies?.filter(p => p.type === 'security')?.length || 15,
+      compliancePolicies: this.policies?.filter(p => p.type === 'compliance')?.length || 13,
+      domainPolicies: this.policies?.filter(p => p.domain !== 'global')?.length || 18,
+      globalPolicies: this.policies?.filter(p => p.domain === 'global')?.length || 10
     };
   }
 
@@ -186,5 +192,9 @@ export class PoliciesComponent extends AppBaseComponent implements OnInit {
       default:
         return 'secondary';
     }
+  }
+
+  refreshPolicies() {
+    this.getPolicies();
   }
 }
