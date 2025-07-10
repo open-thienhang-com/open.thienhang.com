@@ -1,13 +1,14 @@
-import {APP_INITIALIZER, ApplicationConfig, provideZoneChangeDetection} from '@angular/core';
-import {provideRouter} from '@angular/router';
+import { APP_INITIALIZER, ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { provideRouter } from '@angular/router';
 
-import {routes} from './app.routes';
-import {provideAnimationsAsync} from '@angular/platform-browser/animations/async';
-import {providePrimeNG} from 'primeng/config';
+import { routes } from './app.routes';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/lara';
-import {provideHttpClient, withInterceptors} from '@angular/common/http';
-import {credentialsInterceptor} from './core/interceptor/with-credentials.interceptor';
-import {AuthServices} from './core/services/auth.services';
+import { provideHttpClient, withInterceptors, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { credentialsInterceptor } from './core/interceptor/with-credentials.interceptor';
+import { AuthServices } from './core/services/auth.services';
+import { TimeoutInterceptor } from './core/interceptor/timeout.interceptor';
 
 export function initApp(authService: AuthServices) {
   return () => authService.getCurrentUser().toPromise();
@@ -16,7 +17,7 @@ export function initApp(authService: AuthServices) {
 // @ts-ignore
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideZoneChangeDetection({eventCoalescing: true}),
+    provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(
       withInterceptors([credentialsInterceptor])
@@ -30,6 +31,11 @@ export const appConfig: ApplicationConfig = {
       useFactory: initApp,
       deps: [AuthServices],
       multi: true
-    }
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: TimeoutInterceptor,
+      multi: true
+    },
   ],
 };

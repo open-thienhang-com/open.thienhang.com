@@ -1,72 +1,461 @@
-<div class="p-6 space-y-6 max-w-5xl mx-auto">
-  <!-- Tiêu đề -->
-  <div class="flex items-center justify-between">
-    <h1 class="text-2xl font-semibold text-gray-800">Settings</h1>
+<div class="min-h-screen bg-surface-50 dark:bg-surface-950 p-4">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-surface-900 dark:text-surface-50 mb-2">Settings</h1>
+      <p class="text-surface-600 dark:text-surface-400">Manage your account settings and preferences</p>
+    </div>
+
+    <!-- Settings Tabs -->
+    <p-tabView>
+      <!-- Profile Tab -->
+      <p-tabPanel header="Profile" leftIcon="pi pi-user">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <!-- Profile Picture -->
+          <div class="xl:col-span-1">
+            <p-card>
+              <div class="text-center">
+                <p-avatar 
+                  [image]="profile.avatar" 
+                  size="xlarge" 
+                  shape="circle"
+                  class="mb-4">
+                </p-avatar>
+                <h3 class="text-lg font-semibold mb-2">{{ profile.firstName }} {{ profile.lastName }}</h3>
+                <p class="text-surface-600 dark:text-surface-400 mb-4">{{ profile.role }}</p>
+                
+                <p-fileUpload 
+                  mode="basic" 
+                  chooseLabel="Change Avatar"
+                  accept="image/*"
+                  maxFileSize="5000000"
+                  (onUpload)="onAvatarUpload($event)"
+                  class="w-full">
+                </p-fileUpload>
+              </div>
+            </p-card>
+          </div>
+
+          <!-- Profile Form -->
+          <div class="xl:col-span-2">
+            <p-card>
+              <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <!-- First Name -->
+                  <div>
+                    <label class="block text-sm font-medium mb-2">First Name</label>
+                    <input 
+                      type="text" 
+                      pInputText 
+                      formControlName="firstName"
+                      class="w-full"
+                      [class.ng-invalid]="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched">
+                  </div>
+
+                  <!-- Last Name -->
+                  <div>
+                    <label class="block text-sm font-medium mb-2">Last Name</label>
+                    <input 
+                      type="text" 
+                      pInputText 
+                      formControlName="lastName"
+                      class="w-full"
+                      [class.ng-invalid]="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched">
+                  </div>
+
+                  <!-- Email -->
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-medium mb-2">Email</label>
+                    <input 
+                      type="email" 
+                      pInputText 
+                      formControlName="email"
+                      class="w-full"
+                      [class.ng-invalid]="profileForm.get('email')?.invalid && profileForm.get('email')?.touched">
+                  </div>
+
+                  <!-- Phone -->
+                  <div>
+                    <label class="block text-sm font-medium mb-2">Phone</label>
+                    <input 
+                      type="tel" 
+                      pInputText 
+                      formControlName="phone"
+                      class="w-full">
+                  </div>
+
+                  <!-- Department -->
+                  <div>
+                    <label class="block text-sm font-medium mb-2">Department</label>
+                    <p-dropdown 
+                      [options]="departmentOptions"
+                      formControlName="department"
+                      placeholder="Select Department"
+                      class="w-full">
+                    </p-dropdown>
+                  </div>
+
+                  <!-- Role -->
+                  <div>
+                    <label class="block text-sm font-medium mb-2">Role</label>
+                    <input 
+                      type="text" 
+                      pInputText 
+                      formControlName="role"
+                      class="w-full">
+                  </div>
+
+                  <!-- Timezone -->
+                  <div>
+                    <label class="block text-sm font-medium mb-2">Timezone</label>
+                    <p-dropdown 
+                      [options]="timezoneOptions"
+                      formControlName="timezone"
+                      placeholder="Select Timezone"
+                      class="w-full">
+                    </p-dropdown>
+                  </div>
+                </div>
+
+                <p-divider></p-divider>
+
+                <div class="flex justify-end gap-2">
+                  <button 
+                    pButton 
+                    type="button" 
+                    label="Cancel" 
+                    class="p-button-text">
+                  </button>
+                  <button 
+                    pButton 
+                    type="submit" 
+                    label="Save Profile" 
+                    class="p-button-primary"
+                    [disabled]="profileForm.invalid">
+                  </button>
+                </div>
+              </form>
+            </p-card>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Security Tab -->
+      <p-tabPanel header="Security" leftIcon="pi pi-shield">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Change Password -->
+          <div>
+            <p-card>
+              <ng-template pTemplate="header">
+                <div class="flex items-center gap-2 p-4">
+                  <i class="pi pi-lock text-primary-500"></i>
+                  <h3 class="text-lg font-semibold">Change Password</h3>
+                </div>
+              </ng-template>
+              
+              <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium mb-2">Current Password</label>
+                    <input 
+                      type="password" 
+                      pInputText 
+                      formControlName="currentPassword"
+                      class="w-full"
+                      [class.ng-invalid]="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched">
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium mb-2">New Password</label>
+                    <input 
+                      type="password" 
+                      pInputText 
+                      formControlName="newPassword"
+                      class="w-full"
+                      [class.ng-invalid]="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched">
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium mb-2">Confirm New Password</label>
+                    <input 
+                      type="password" 
+                      pInputText 
+                      formControlName="confirmPassword"
+                      class="w-full"
+                      [class.ng-invalid]="passwordForm.get('confirmPassword')?.invalid && passwordForm.get('confirmPassword')?.touched">
+                  </div>
+
+                  <button 
+                    pButton 
+                    type="submit" 
+                    label="Change Password" 
+                    class="p-button-warning w-full"
+                    [disabled]="passwordForm.invalid">
+                  </button>
+                </div>
+              </form>
+            </p-card>
+          </div>
+
+          <!-- Security Settings -->
+          <div>
+            <p-card>
+              <ng-template pTemplate="header">
+                <div class="flex items-center gap-2 p-4">
+                  <i class="pi pi-cog text-primary-500"></i>
+                  <h3 class="text-lg font-semibold">Security Settings</h3>
+                </div>
+              </ng-template>
+              
+              <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <label class="block text-sm font-medium">Two-Factor Authentication</label>
+                    <p class="text-xs text-surface-600 dark:text-surface-400">Add an extra layer of security</p>
+                  </div>
+                  <p-inputSwitch [(ngModel)]="securitySettings.twoFactorEnabled"></p-inputSwitch>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium mb-2">Session Timeout</label>
+                  <p-dropdown 
+                    [options]="sessionTimeoutOptions"
+                    [(ngModel)]="securitySettings.sessionTimeout"
+                    placeholder="Select timeout"
+                    class="w-full">
+                  </p-dropdown>
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <div>
+                    <label class="block text-sm font-medium">Login Notifications</label>
+                    <p class="text-xs text-surface-600 dark:text-surface-400">Get notified of new logins</p>
+                  </div>
+                  <p-inputSwitch [(ngModel)]="securitySettings.loginNotifications"></p-inputSwitch>
+                </div>
+
+                <button 
+                  pButton 
+                  type="button" 
+                  label="Save Security Settings" 
+                  class="p-button-primary w-full"
+                  (click)="saveSecuritySettings()">
+                </button>
+              </div>
+            </p-card>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Notifications Tab -->
+      <p-tabPanel header="Notifications" leftIcon="pi pi-bell">
+        <p-card>
+          <ng-template pTemplate="header">
+            <div class="flex items-center gap-2 p-4">
+              <i class="pi pi-bell text-primary-500"></i>
+              <h3 class="text-lg font-semibold">Notification Preferences</h3>
+            </div>
+          </ng-template>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <h4 class="font-medium text-surface-900 dark:text-surface-50">Communication</h4>
+              
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">Email Notifications</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Receive notifications via email</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="notificationSettings.emailNotifications"></p-inputSwitch>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">Push Notifications</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Receive browser notifications</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="notificationSettings.pushNotifications"></p-inputSwitch>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">SMS Notifications</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Receive text messages</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="notificationSettings.smsNotifications"></p-inputSwitch>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <h4 class="font-medium text-surface-900 dark:text-surface-50">Content</h4>
+              
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">Marketing Emails</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Product updates and newsletters</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="notificationSettings.marketingEmails"></p-inputSwitch>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">Security Alerts</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Important security notifications</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="notificationSettings.securityAlerts"></p-inputSwitch>
+              </div>
+            </div>
+          </div>
+
+          <p-divider></p-divider>
+
+          <div class="flex justify-end">
+            <button 
+              pButton 
+              type="button" 
+              label="Save Notification Settings" 
+              class="p-button-primary"
+              (click)="saveNotificationSettings()">
+            </button>
+          </div>
+        </p-card>
+      </p-tabPanel>
+
+      <!-- Appearance Tab -->
+      <p-tabPanel header="Appearance" leftIcon="pi pi-palette">
+        <p-card>
+          <ng-template pTemplate="header">
+            <div class="flex items-center gap-2 p-4">
+              <i class="pi pi-palette text-primary-500"></i>
+              <h3 class="text-lg font-semibold">Appearance Settings</h3>
+            </div>
+          </ng-template>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">Theme</label>
+                <p-dropdown 
+                  [options]="themeOptions"
+                  [(ngModel)]="appearanceSettings.theme"
+                  placeholder="Select theme"
+                  class="w-full">
+                </p-dropdown>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium mb-2">Language</label>
+                <p-dropdown 
+                  [options]="languageOptions"
+                  [(ngModel)]="appearanceSettings.language"
+                  placeholder="Select language"
+                  class="w-full">
+                </p-dropdown>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium mb-2">Date Format</label>
+                <p-dropdown 
+                  [options]="dateFormatOptions"
+                  [(ngModel)]="appearanceSettings.dateFormat"
+                  placeholder="Select date format"
+                  class="w-full">
+                </p-dropdown>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">Sidebar Collapsed</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Keep sidebar collapsed by default</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="appearanceSettings.sidebarCollapsed"></p-inputSwitch>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">Compact Mode</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Reduce spacing and padding</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="appearanceSettings.compactMode"></p-inputSwitch>
+              </div>
+            </div>
+          </div>
+
+          <p-divider></p-divider>
+
+          <div class="flex justify-end">
+            <button 
+              pButton 
+              type="button" 
+              label="Save Appearance Settings" 
+              class="p-button-primary"
+              (click)="saveAppearanceSettings()">
+            </button>
+          </div>
+        </p-card>
+      </p-tabPanel>
+
+      <!-- Data & Privacy Tab -->
+      <p-tabPanel header="Data & Privacy" leftIcon="pi pi-database">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Data Export -->
+          <div>
+            <p-card>
+              <ng-template pTemplate="header">
+                <div class="flex items-center gap-2 p-4">
+                  <i class="pi pi-download text-primary-500"></i>
+                  <h3 class="text-lg font-semibold">Export Data</h3>
+                </div>
+              </ng-template>
+              
+              <div class="space-y-4">
+                <p class="text-surface-600 dark:text-surface-400">
+                  Download a copy of your data including profile information, settings, and activity history.
+                </p>
+                
+                <button 
+                  pButton 
+                  type="button" 
+                  label="Export My Data" 
+                  class="p-button-outlined w-full"
+                  (click)="exportData()">
+                </button>
+              </div>
+            </p-card>
+          </div>
+
+          <!-- Delete Account -->
+          <div>
+            <p-card>
+              <ng-template pTemplate="header">
+                <div class="flex items-center gap-2 p-4">
+                  <i class="pi pi-trash text-red-500"></i>
+                  <h3 class="text-lg font-semibold text-red-600 dark:text-red-400">Delete Account</h3>
+                </div>
+              </ng-template>
+              
+              <div class="space-y-4">
+                <p class="text-surface-600 dark:text-surface-400">
+                  Permanently delete your account and all associated data. This action cannot be undone.
+                </p>
+                
+                <button 
+                  pButton 
+                  type="button" 
+                  label="Delete Account" 
+                  class="p-button-danger w-full"
+                  (click)="deleteAccount()">
+                </button>
+              </div>
+            </p-card>
+          </div>
+        </div>
+      </p-tabPanel>
+    </p-tabView>
   </div>
 
-  <!-- Tabs Settings -->
-  <p-tabView>
-    <!-- Tab 1: Profile -->
-    <p-tabPanel header="Profile">
-      <div class="space-y-4">
-        <!-- Họ tên -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">First Name</label>
-            <input type="text" pInputText class="w-full" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Last Name</label>
-            <input type="text" pInputText class="w-full" />
-          </div>
-        </div>
-
-        <!-- Email -->
-        <div>
-          <label class="block text-sm font-medium mb-1">Email</label>
-          <input type="email" pInputText class="w-full" />
-        </div>
-
-        <!-- Save Button -->
-        <div class="pt-4">
-          <!-- <button pButton type="button" label="Save Changes" class="p-button-primary" /> -->
-        </div>
-      </div>
-    </p-tabPanel>
-
-    <!-- Tab 2: Password -->
-    <p-tabPanel header="Password">
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium mb-1">Current Password</label>
-          <input type="password" pInputText class="w-full" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">New Password</label>
-          <input type="password" pInputText class="w-full" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Confirm Password</label>
-          <input type="password" pInputText class="w-full" />
-        </div>
-        <div class="pt-4">
-          <!-- <button pButton type="button" label="Change Password" class="p-button-warning"> -->
-        </div>
-      </div>
-    </p-tabPanel>
-
-    <!-- Tab 3: Preferences -->
-    <p-tabPanel header="Preferences">
-      <div class="space-y-4">
-        <div class="flex items-center space-x-4">
-          <p-inputSwitch [(ngModel)]="darkMode" />
-          <span>Dark Mode</span>
-        </div>
-        <div class="flex items-center space-x-4">
-          <p-inputSwitch [(ngModel)]="notifications" />
-          <span>Enable Notifications</span>
-        </div>
-      </div>
-    </p-tabPanel>
-  </p-tabView>
+  <!-- Toast Messages -->
+  <p-toast></p-toast>
 </div>

@@ -17,9 +17,14 @@ import { ProfileComponent } from './features/profile/profile.component';
 import { SettingsComponent } from './features/settings/setting.component';
 import { DataContractsComponent } from './features/data-contracts/data-contracts.component';
 import { PolicyDetailComponent } from './features/governance/policies/policy-detail.component';
+import { OfflineComponent } from './pages/error/offline.component';
 
 
 export const routes: Routes = [
+  {
+    path: 'offline',
+    component: OfflineComponent
+  },
   {
     path: '',
     component: MainLayoutComponent,
