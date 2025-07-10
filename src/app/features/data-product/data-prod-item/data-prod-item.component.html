@@ -1,20 +1,226 @@
-<p-card class="flex h-full" [style]="getStyle">
-  <div class="header">
-    <div class="flex items-center">
-      <p-avatar image="https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png" shape="circle"/>
-      <div class="flex flex-col ml-3">
-        <span class="text-stone-400 font-bold">DATA PRODUCT</span>
-        <span class="font-bold cursor-pointer" (click)="goToDetail()">{{data.name}}</span>
-        <span class="text-sm text-stone-600"><i class="pi pi-users mr-2"></i>{{data.team}}</span>
+<!-- Grid View -->
+<div *ngIf="viewMode === 'grid'" 
+     class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 h-full flex flex-col">
+  
+  <!-- Header -->
+  <div class="p-6 border-b border-gray-200 flex-shrink-0" [style]="getStyle">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+             [ngClass]="getDomainIconClass(data.domain)">
+          <i class="text-white text-lg" [ngClass]="getDomainIcon(data.domain)"></i>
+        </div>
+        <div>
+          <div class="text-xs font-medium text-gray-500 uppercase tracking-wide">{{ getDomainLabel(data.domain) }}</div>
+          <h3 class="font-semibold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors" 
+              (click)="goToDetail()">{{ data.name }}</h3>
+        </div>
+      </div>
+      <p-badge 
+        [value]="getStatusLabel(data.status)" 
+        [severity]="getStatusSeverity(data.status)"
+        class="text-xs">
+      </p-badge>
+    </div>
+    
+    <div class="flex items-center gap-4 text-sm text-gray-600">
+      <div class="flex items-center gap-1">
+        <i class="pi pi-users text-xs"></i>
+        <span>{{ data.team }}</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <i class="pi pi-user text-xs"></i>
+        <span>{{ data.owner }}</span>
       </div>
     </div>
   </div>
-  <div class="content">
-    <div class="mb-2 cursor-pointer" (click)="goToDetail()">
-      {{data.description}}
+  
+  <!-- Content -->
+  <div class="p-6 flex-grow">
+    <p class="text-sm text-gray-600 mb-4 line-clamp-3 cursor-pointer hover:text-gray-800 transition-colors" 
+       (click)="goToDetail()">{{ data.description }}</p>
+    
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 gap-4 mb-4">
+      <div class="text-center p-3 bg-gray-50 rounded-lg">
+        <div class="text-lg font-semibold text-gray-900">{{ data.subscribers || 0 }}</div>
+        <div class="text-xs text-gray-500">Subscribers</div>
+      </div>
+      <div class="text-center p-3 bg-gray-50 rounded-lg">
+        <div class="text-lg font-semibold text-gray-900">{{ data.quality_score || 0 }}%</div>
+        <div class="text-xs text-gray-500">Quality Score</div>
+      </div>
     </div>
-    @for (tag of data.tags; track tag) {
-      <p-tag severity="success" [value]="tag" />
-    }
+    
+    <!-- Tags -->
+    <div class="flex flex-wrap gap-2 mb-4">
+      <p-tag *ngFor="let tag of data.tags?.slice(0, 3)" 
+             [value]="tag" 
+             severity="info" 
+             class="text-xs">
+      </p-tag>
+      <span *ngIf="data.tags?.length > 3" class="text-xs text-gray-500 px-2 py-1">
+        +{{ data.tags.length - 3 }} more
+      </span>
+    </div>
+    
+    <!-- Metadata -->
+    <div class="space-y-2 text-xs text-gray-500">
+      <div class="flex justify-between">
+        <span>SLA:</span>
+        <span class="font-medium">{{ data.sla }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span>Freshness:</span>
+        <span class="font-medium">{{ data.freshness }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span>Version:</span>
+        <span class="font-medium">{{ data.version }}</span>
+      </div>
+    </div>
   </div>
-</p-card>
+  
+  <!-- Actions -->
+  <div class="p-4 border-t border-gray-200 flex items-center justify-between flex-shrink-0">
+    <div class="flex items-center gap-2">
+      <p-button 
+        icon="pi pi-eye" 
+        [rounded]="true" 
+        [text]="true" 
+        severity="info" 
+        size="small"
+        (click)="goToDetail()"
+        pTooltip="View Details">
+      </p-button>
+      <p-button 
+        icon="pi pi-chart-line" 
+        [rounded]="true" 
+        [text]="true" 
+        severity="secondary" 
+        size="small"
+        (click)="viewMetrics()"
+        pTooltip="View Metrics">
+      </p-button>
+      <p-button 
+        icon="pi pi-code" 
+        [rounded]="true" 
+        [text]="true" 
+        severity="secondary" 
+        size="small"
+        (click)="viewAPI()"
+        pTooltip="API Documentation">
+      </p-button>
+    </div>
+    
+    <p-button 
+      [label]="isSubscribed ? 'Unsubscribe' : 'Subscribe'" 
+      [icon]="isSubscribed ? 'pi pi-minus' : 'pi pi-plus'"
+      [severity]="isSubscribed ? 'danger' : 'primary'"
+      size="small"
+      [outlined]="isSubscribed"
+      (click)="toggleSubscription()">
+    </p-button>
+  </div>
+</div>
+
+<!-- List View -->
+<div *ngIf="viewMode === 'list'" 
+     class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-all duration-300">
+  
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-4 flex-grow">
+      <!-- Icon and Basic Info -->
+      <div class="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0"
+           [ngClass]="getDomainIconClass(data.domain)">
+        <i class="text-white text-xl" [ngClass]="getDomainIcon(data.domain)"></i>
+      </div>
+      
+      <div class="flex-grow min-w-0">
+        <div class="flex items-center gap-3 mb-2">
+          <h3 class="font-semibold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors truncate" 
+              (click)="goToDetail()">{{ data.name }}</h3>
+          <p-badge 
+            [value]="getStatusLabel(data.status)" 
+            [severity]="getStatusSeverity(data.status)"
+            class="text-xs flex-shrink-0">
+          </p-badge>
+          <span class="text-xs text-gray-500 flex-shrink-0">v{{ data.version }}</span>
+        </div>
+        
+        <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ data.description }}</p>
+        
+        <div class="flex items-center gap-6 text-xs text-gray-500">
+          <div class="flex items-center gap-1">
+            <i class="pi pi-building"></i>
+            <span>{{ getDomainLabel(data.domain) }}</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <i class="pi pi-users"></i>
+            <span>{{ data.team }}</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <i class="pi pi-user"></i>
+            <span>{{ data.owner }}</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <i class="pi pi-clock"></i>
+            <span>{{ data.freshness }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Stats and Actions -->
+    <div class="flex items-center gap-6 flex-shrink-0">
+      <!-- Quick Stats -->
+      <div class="grid grid-cols-3 gap-4 text-center">
+        <div>
+          <div class="text-lg font-semibold text-gray-900">{{ data.subscribers || 0 }}</div>
+          <div class="text-xs text-gray-500">Subscribers</div>
+        </div>
+        <div>
+          <div class="text-lg font-semibold text-gray-900">{{ data.quality_score || 0 }}%</div>
+          <div class="text-xs text-gray-500">Quality</div>
+        </div>
+        <div>
+          <div class="text-lg font-semibold text-gray-900">{{ data.sla }}</div>
+          <div class="text-xs text-gray-500">SLA</div>
+        </div>
+      </div>
+      
+      <!-- Actions -->
+      <div class="flex items-center gap-2">
+        <p-button 
+          icon="pi pi-eye" 
+          [rounded]="true" 
+          [text]="true" 
+          severity="info" 
+          size="small"
+          (click)="goToDetail()"
+          pTooltip="View Details">
+        </p-button>
+        <p-button 
+          [label]="isSubscribed ? 'Unsubscribe' : 'Subscribe'" 
+          [icon]="isSubscribed ? 'pi pi-minus' : 'pi pi-plus'"
+          [severity]="isSubscribed ? 'danger' : 'primary'"
+          size="small"
+          [outlined]="isSubscribed"
+          (click)="toggleSubscription()">
+        </p-button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Tags -->
+  <div class="flex flex-wrap gap-2 mt-4" *ngIf="data.tags?.length > 0">
+    <p-tag *ngFor="let tag of data.tags?.slice(0, 6)" 
+           [value]="tag" 
+           severity="info" 
+           class="text-xs">
+    </p-tag>
+    <span *ngIf="data.tags?.length > 6" class="text-xs text-gray-500 px-2 py-1">
+      +{{ data.tags.length - 6 }} more
+    </span>
+  </div>
+</div>

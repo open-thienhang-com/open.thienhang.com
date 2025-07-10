@@ -16,6 +16,7 @@ import { DataProdDetailComponent } from './features/data-product/data-prod-detai
 import { ProfileComponent } from './features/profile/profile.component';
 import { SettingsComponent } from './features/settings/setting.component';
 import { DataContractsComponent } from './features/data-contracts/data-contracts.component';
+import { PolicyDetailComponent } from './features/governance/policies/policy-detail.component';
 
 
 export const routes: Routes = [
@@ -30,6 +31,10 @@ export const routes: Routes = [
       {
         path: 'governance/policies',
         component: PoliciesComponent,
+      },
+      {
+        path: 'governance/policies/:id',
+        component: PolicyDetailComponent,
       },
       {
         path: 'governance/teams',

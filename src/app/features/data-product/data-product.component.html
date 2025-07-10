@@ -1,6 +1,188 @@
-<div class="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-4">
-  @for (data of dataProds; track data) {
-    <app-data-prod-item [data]="data"></app-data-prod-item>
-  }
+<!-- Data Products Management -->
+<div class="container mx-auto p-6">
+  <!-- Header Section -->
+  <div class="mb-8">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+          <i class="pi pi-database text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Data Products</h1>
+          <p class="text-gray-600">Discover and manage self-serve data products across your organization</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <p-button 
+          label="Product Catalog" 
+          icon="pi pi-book" 
+          severity="secondary" 
+          [outlined]="true"
+          (click)="showCatalog()">
+        </p-button>
+        <p-button 
+          label="Create Product" 
+          icon="pi pi-plus" 
+          severity="primary"
+          (click)="createProduct()">
+        </p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-database text-blue-600 text-xl"></i>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-gray-900">{{ totalProducts || 0 }}</div>
+          <div class="text-sm text-gray-500">Total Products</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-check-circle text-green-600 text-xl"></i>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-gray-900">{{ activeProducts || 0 }}</div>
+          <div class="text-sm text-gray-500">Active Products</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-users text-purple-600 text-xl"></i>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-gray-900">{{ totalSubscribers || 0 }}</div>
+          <div class="text-sm text-gray-500">Subscribers</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-chart-line text-orange-600 text-xl"></i>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-gray-900">{{ domains || 0 }}</div>
+          <div class="text-sm text-gray-500">Domains</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Search Products</label>
+        <span class="p-input-icon-left w-full">
+          <i class="pi pi-search"></i>
+          <input type="text" pInputText placeholder="Search by name, description..." 
+                 [(ngModel)]="searchTerm" (input)="filterProducts()" class="w-full" />
+        </span>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Domain</label>
+        <p-dropdown 
+          [options]="domainOptions" 
+          [(ngModel)]="selectedDomain" 
+          placeholder="All Domains"
+          [showClear]="true"
+          (onChange)="filterProducts()"
+          class="w-full">
+        </p-dropdown>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+        <p-dropdown 
+          [options]="statusOptions" 
+          [(ngModel)]="selectedStatus" 
+          placeholder="All Statuses"
+          [showClear]="true"
+          (onChange)="filterProducts()"
+          class="w-full">
+        </p-dropdown>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">View Mode</label>
+        <p-selectButton 
+          [options]="viewModeOptions" 
+          [(ngModel)]="viewMode" 
+          optionLabel="label" 
+          optionValue="value"
+          class="w-full">
+        </p-selectButton>
+      </div>
+    </div>
+  </div>
+
+  <!-- Products Grid/List View -->
+  <div [ngClass]="viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'">
+    <div *ngFor="let product of filteredProducts; trackBy: trackByProduct" 
+         [ngClass]="viewMode === 'grid' ? '' : 'w-full'">
+      <app-data-prod-item 
+        [data]="product" 
+        [viewMode]="viewMode"
+        (onProductClick)="viewProductDetail($event)"
+        (onSubscribe)="subscribeToProduct($event)"
+        (onUnsubscribe)="unsubscribeFromProduct($event)">
+      </app-data-prod-item>
+    </div>
+    
+    <!-- Empty State -->
+    <div *ngIf="filteredProducts.length === 0" class="col-span-full">
+      <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="pi pi-database text-gray-400 text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No data products found</h3>
+        <p class="text-gray-500 mb-6">
+          {{ searchTerm || selectedDomain || selectedStatus ? 'Try adjusting your filters' : 'Create your first data product to get started' }}
+        </p>
+        <p-button 
+          [label]="searchTerm || selectedDomain || selectedStatus ? 'Clear Filters' : 'Create Data Product'" 
+          [icon]="searchTerm || selectedDomain || selectedStatus ? 'pi pi-filter-slash' : 'pi pi-plus'" 
+          severity="primary"
+          (click)="searchTerm || selectedDomain || selectedStatus ? clearFilters() : createProduct()">
+        </p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="mt-8 flex justify-center" *ngIf="filteredProducts.length > 0">
+    <p-paginator 
+      [rows]="itemsPerPage" 
+      [totalRecords]="totalRecords"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+      (onPageChange)="onPageChange($event)">
+    </p-paginator>
+  </div>
 </div>
+
+<!-- Product Detail Modal -->
+<p-dialog [(visible)]="showDetailModal" [modal]="true" [style]="{ width: '90vw', maxWidth: '1200px' }" 
+          [closable]="true" [resizable]="false" header="Data Product Details">
+  <app-data-prod-detail 
+    [product]="selectedProduct" 
+    (onClose)="closeDetailModal()"
+    (onSubscribe)="subscribeToProduct($event)"
+    (onUnsubscribe)="unsubscribeFromProduct($event)">
+  </app-data-prod-detail>
+</p-dialog>
 

@@ -106,7 +106,7 @@ export class RolesComponent extends AppBaseComponent implements OnInit {
         scope: 'global',
         risk_level: 'High',
         permissions: [
-          'data_read_all', 'data_write_all', 'data_delete', 'user_management', 
+          'data_read_all', 'data_write_all', 'data_delete', 'user_management',
           'role_management', 'policy_management', 'governance_config'
         ],
         users: ['admin@company.com', 'data-lead@company.com'],

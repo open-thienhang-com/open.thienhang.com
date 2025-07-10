@@ -1,0 +1,75 @@
+<div class="policy-detail-container">
+  <button pButton type="button" icon="pi pi-arrow-left" label="Back" class="p-button-text mb-3" routerLink="../"></button>
+  <div class="p-card policy-header mb-4">
+    <div class="p-card-title flex items-center gap-3">
+      <span class="pi pi-shield text-2xl text-primary"></span>
+      <span class="text-2xl font-bold">{{ policy.name }}</span>
+      <p-tag [value]="policy.status" [severity]="policy.status === 'Active' ? 'success' : 'warning'" class="ml-2"></p-tag>
+    </div>
+    <div class="p-card-subtitle text-gray-600 mt-2">{{ policy.description }}</div>
+    <div class="flex flex-wrap gap-4 mt-3">
+      <div><b>Created by:</b> {{ policy.created_by }}</div>
+      <div><b>Created at:</b> {{ policy.created_at | date:'medium' }}</div>
+      <div><b>Updated at:</b> {{ policy.updated_at | date:'medium' }}</div>
+    </div>
+    <div class="mt-2">
+      <b>Tags:</b>
+      <ng-container *ngIf="policy.tags?.length; else noTags">
+        <p-chip *ngFor="let tag of policy.tags" [label]="tag" class="mr-2 mb-1"></p-chip>
+      </ng-container>
+      <ng-template #noTags><span class="text-gray-400">No tags</span></ng-template>
+    </div>
+  </div>
+
+  <div class="p-card mb-4">
+    <div class="p-card-title font-semibold text-lg mb-2">Policy Rules</div>
+    <p-table [value]="policy.rules" *ngIf="policy.rules?.length; else noRules" [tableStyle]="{ 'min-width': '50rem' }">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>#</th>
+          <th>Rule</th>
+          <th>Type</th>
+          <th>Condition</th>
+          <th>Effect</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-rule let-i="rowIndex">
+        <tr>
+          <td>{{ i + 1 }}</td>
+          <td>{{ rule.name }}</td>
+          <td>{{ rule.type }}</td>
+          <td>{{ rule.condition }}</td>
+          <td>
+            <p-tag [value]="rule.effect" [severity]="rule.effect === 'Allow' ? 'success' : 'danger'"></p-tag>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+    <ng-template #noRules>
+      <div class="text-gray-400">No rules defined for this policy.</div>
+    </ng-template>
+  </div>
+
+  <div class="p-card mb-4">
+    <div class="p-card-title font-semibold text-lg mb-2">Affected Data</div>
+    <p-table [value]="policy.affected_data" *ngIf="policy.affected_data?.length; else noData" [tableStyle]="{ 'min-width': '50rem' }">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Type</th>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-data>
+        <tr>
+          <td>{{ data.type }}</td>
+          <td>{{ data.name }}</td>
+          <td>{{ data.description }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+    <ng-template #noData>
+      <div class="text-gray-400">No affected data listed for this policy.</div>
+    </ng-template>
+  </div>
+</div>
