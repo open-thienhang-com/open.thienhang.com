@@ -1,0 +1,35 @@
+/* Policies Component Styles */
+
+.policy-card {
+    transition: all 0.2s ease-in-out;
+}
+
+.policy-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.status-badge {
+    position: relative;
+    z-index: 1;
+}
+
+.filter-section {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.dark .filter-section {
+    background: rgba(17, 24, 39, 0.9);
+}
+
+@media (max-width: 768px) {
+    .policy-table {
+        font-size: 0.875rem;
+    }
+
+    .policy-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}

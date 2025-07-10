@@ -7,7 +7,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Textarea } from 'primeng/textarea';
 import { AppBaseComponent } from '../../../../core/base/app-base.component';
 import { GovernanceServices } from '../../../../core/services/governance.services';
-import { Select } from 'primeng/select';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MultiSelectModule } from 'primeng/multiselect';
@@ -23,7 +22,6 @@ import { ListboxModule } from 'primeng/listbox';
     ReactiveFormsModule,
     Textarea,
     FormsModule,
-    Select,
     ListboxModule,
     CommonModule,
     MultiSelectModule

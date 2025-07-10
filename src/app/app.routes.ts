@@ -15,6 +15,7 @@ import { DataProductComponent } from './features/data-product/data-product.compo
 import { DataProdDetailComponent } from './features/data-product/data-prod-detail/data-prod-detail.component';
 import { ProfileComponent } from './features/profile/profile.component';
 import { SettingsComponent } from './features/settings/setting.component';
+import { DataContractsComponent } from './features/data-contracts/data-contracts.component';
 
 
 export const routes: Routes = [
@@ -49,6 +50,10 @@ export const routes: Routes = [
       {
         path: 'governance/permissions',
         component: PermissionsComponent,
+      },
+      {
+        path: 'data-contracts',
+        component: DataContractsComponent,
       },
       {
         path: 'dashboard',

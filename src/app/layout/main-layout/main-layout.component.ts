@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import {HeaderComponent} from "./header/header.component";
-import {RouterOutlet} from "@angular/router";
-import {SidebarComponent} from "./sidebar/sidebar.component";
-import {Toast} from 'primeng/toast';
-import {ConfirmDialog} from 'primeng/confirmdialog';
+import { HeaderComponent } from "./header/header.component";
+import { RouterOutlet } from "@angular/router";
+import { SidebarComponent } from "./sidebar/sidebar.component";
+import { Toast } from 'primeng/toast';
+import { ConfirmDialog } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-main-layout',
@@ -19,4 +19,13 @@ import {ConfirmDialog} from 'primeng/confirmdialog';
 })
 export class MainLayoutComponent {
   collapsed = false;
+  sidebarOpen = false;
+
+  toggleSidebar() {
+    if (window.innerWidth < 1024) {
+      this.sidebarOpen = !this.sidebarOpen;
+    } else {
+      this.collapsed = !this.collapsed;
+    }
+  }
 }

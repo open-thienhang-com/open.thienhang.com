@@ -1,25 +1,190 @@
-<p-dialog [(visible)]="visible" [modal]="true" [style]="{ width: '50rem' }">
+<p-dialog [(visible)]="visible" [modal]="true" [style]="{ width: '80rem', maxHeight: '90vh' }" [closable]="true" [resizable]="false">
   <ng-template #header>
-    <div class="inline-flex items-center justify-center gap-2">
-      <span class="font-bold whitespace-nowrap">{{ title }}</span>
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
+        <i class="pi pi-shield text-white text-lg"></i>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-gray-900">{{ title }}</h2>
+        <p class="text-sm text-gray-500">Configure role permissions and settings</p>
+      </div>
     </div>
   </ng-template>
-  <div class="grid grid-flow-row grid-cols-2 gap-4 mt-3">
-    <p-floatlabel variant="on">
-      <input class="w-full" pInputText id="name" [(ngModel)]="role.name" autocomplete="off"/>
-      <label for="name">Name</label>
-    </p-floatlabel>
-    <p-floatlabel variant="on">
-      <input class="w-full" pInputText id="type" [(ngModel)]="role.type" autocomplete="off"/>
-      <label for="type">Type</label>
-    </p-floatlabel>
-    <p-floatlabel variant="on" class="col-span-2">
-      <textarea pTextarea id="description" [(ngModel)]="role.description" rows="3" cols="30" style="resize: none" class="w-full h-full"></textarea>
-      <label for="description">Description</label>
-    </p-floatlabel>
+
+  <div class="space-y-6 p-1">
+    <!-- Basic Information -->
+    <div class="bg-gray-50 rounded-lg p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <p-floatlabel>
+          <input class="w-full" pInputText id="name" [(ngModel)]="role.name" autocomplete="off" required/>
+          <label for="name">Role Name *</label>
+        </p-floatlabel>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Role Type</label>
+          <p-dropdown 
+            [options]="typeOptions" 
+            [(ngModel)]="role.type" 
+            placeholder="Select type"
+            class="w-full">
+          </p-dropdown>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Access Level</label>
+          <p-dropdown 
+            [options]="levelOptions" 
+            [(ngModel)]="role.level" 
+            placeholder="Select level"
+            class="w-full">
+          </p-dropdown>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Scope</label>
+          <p-dropdown 
+            [options]="scopeOptions" 
+            [(ngModel)]="role.scope" 
+            placeholder="Select scope"
+            class="w-full">
+          </p-dropdown>
+        </div>
+
+        <div class="md:col-span-2">
+          <p-floatlabel>
+            <textarea pTextarea id="description" [(ngModel)]="role.description" rows="3" 
+                     style="resize: none" class="w-full"></textarea>
+            <label for="description">Description</label>
+          </p-floatlabel>
+        </div>
+      </div>
+    </div>
+
+    <!-- Role Inheritance -->
+    <div class="bg-gray-50 rounded-lg p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Role Inheritance</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Inherits From</label>
+          <p-dropdown 
+            [options]="inheritanceOptions" 
+            [(ngModel)]="role.inherits_from" 
+            placeholder="Select parent role (optional)"
+            [showClear]="true"
+            class="w-full">
+          </p-dropdown>
+          <small class="text-gray-500 mt-1">This role will inherit all permissions from the selected parent role</small>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Risk Level</label>
+          <p-dropdown 
+            [options]="riskOptions" 
+            [(ngModel)]="role.risk_level" 
+            placeholder="Select risk level"
+            class="w-full">
+          </p-dropdown>
+        </div>
+      </div>
+    </div>
+
+    <!-- Permissions -->
+    <div class="bg-gray-50 rounded-lg p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900">Permissions</h3>
+        <div class="flex items-center gap-2">
+          <p-button 
+            label="Select All" 
+            icon="pi pi-check" 
+            severity="secondary" 
+            size="small"
+            [text]="true"
+            (click)="selectAllPermissions()">
+          </p-button>
+          <p-button 
+            label="Clear All" 
+            icon="pi pi-times" 
+            severity="secondary" 
+            size="small"
+            [text]="true"
+            (click)="clearAllPermissions()">
+          </p-button>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div *ngFor="let category of permissionCategories" class="border border-gray-200 rounded-lg">
+          <div class="bg-white p-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <i class="text-lg text-gray-600" [ngClass]="category.icon"></i>
+                <div>
+                  <h4 class="font-medium text-gray-900">{{ category.name }}</h4>
+                  <p class="text-sm text-gray-500">{{ category.description }}</p>
+                </div>
+              </div>
+              <p-checkbox 
+                [ngModel]="isCategorySelected(category)"
+                (ngModelChange)="toggleCategory(category, $event)"
+                [binary]="true">
+              </p-checkbox>
+            </div>
+          </div>
+          
+          <div class="p-4 bg-gray-50">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div *ngFor="let permission of category.permissions" class="flex items-center gap-2">
+                <p-checkbox 
+                  [ngModel]="isPermissionSelected(permission.value)"
+                  (ngModelChange)="togglePermission(permission.value, $event)"
+                  [binary]="true">
+                </p-checkbox>
+                <label class="text-sm text-gray-700 cursor-pointer" 
+                       (click)="togglePermission(permission.value, !isPermissionSelected(permission.value))">
+                  {{ permission.label }}
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Assignment Preview -->
+    <div class="bg-gray-50 rounded-lg p-6" *ngIf="role.users && role.users.length > 0">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Current Assignments</h3>
+      <div class="flex flex-wrap gap-2">
+        <p-chip *ngFor="let user of role.users" [label]="user" [removable]="true" 
+                (onRemove)="removeUser(user)">
+        </p-chip>
+      </div>
+    </div>
   </div>
+
   <ng-template #footer>
-    <p-button label="Cancel" [text]="true" severity="secondary" (click)="visible = false"/>
-    <p-button label="Save" [outlined]="true" severity="secondary" (click)="save()"/>
+    <div class="flex items-center justify-between w-full">
+      <div class="flex items-center gap-2">
+        <i class="pi pi-info-circle text-blue-500"></i>
+        <span class="text-sm text-gray-600">
+          {{ getSelectedPermissionsCount() }} permissions selected
+        </span>
+      </div>
+      <div class="flex items-center gap-2">
+        <p-button 
+          label="Cancel" 
+          [text]="true" 
+          severity="secondary" 
+          (click)="visible = false">
+        </p-button>
+        <p-button 
+          label="Save Role" 
+          icon="pi pi-save"
+          severity="primary" 
+          (click)="save()"
+          [disabled]="!isFormValid()">
+        </p-button>
+      </div>
+    </div>
   </ng-template>
 </p-dialog>

@@ -95,14 +95,169 @@ export class RolesComponent extends AppBaseComponent implements OnInit {
   }
 
   loadRoles() {
-    this.governanceServices.getRoles({ offset: this.currentPage, size: this.itemsPerPage }).subscribe(res => {
-      if (res) {
-        this.roles = res.data || [];
-        this.totalRecords = res.total || 0;
-        this.filteredRoles = [...this.roles];
-        this.filterRoles();
+    // Mock data for roles - replace with actual service call
+    const mockRoles = [
+      {
+        _id: '1',
+        name: 'Data Administrator',
+        description: 'Full administrative access to all data governance features and platform management',
+        type: 'system',
+        level: 'admin',
+        scope: 'global',
+        risk_level: 'High',
+        permissions: [
+          'data_read_all', 'data_write_all', 'data_delete', 'user_management', 
+          'role_management', 'policy_management', 'governance_config'
+        ],
+        users: ['admin@company.com', 'data-lead@company.com'],
+        inherits_from: null,
+        created_at: '2024-01-15T10:00:00Z',
+        updated_at: '2024-01-20T14:30:00Z'
+      },
+      {
+        _id: '2',
+        name: 'Data Steward',
+        description: 'Manages data quality, metadata, and ensures compliance with data governance policies',
+        type: 'standard',
+        level: 'advanced',
+        scope: 'department',
+        risk_level: 'Medium',
+        permissions: [
+          'data_read_dept', 'data_write_dept', 'metadata_manage', 'quality_check',
+          'policy_view', 'lineage_view', 'catalog_manage'
+        ],
+        users: ['steward1@company.com', 'steward2@company.com', 'data-analyst@company.com'],
+        inherits_from: 'Data User',
+        created_at: '2024-01-16T09:00:00Z',
+        updated_at: '2024-01-22T11:15:00Z'
+      },
+      {
+        _id: '3',
+        name: 'Data Analyst',
+        description: 'Analyzes data and creates reports with read access to approved datasets',
+        type: 'standard',
+        level: 'standard',
+        scope: 'team',
+        risk_level: 'Low',
+        permissions: [
+          'data_read_team', 'report_create', 'dashboard_create', 'query_execute',
+          'export_limited', 'catalog_view'
+        ],
+        users: [
+          'analyst1@company.com', 'analyst2@company.com', 'analyst3@company.com',
+          'business-analyst@company.com', 'market-research@company.com'
+        ],
+        inherits_from: 'Data User',
+        created_at: '2024-01-17T08:30:00Z',
+        updated_at: '2024-01-21T16:45:00Z'
+      },
+      {
+        _id: '4',
+        name: 'Data Engineer',
+        description: 'Builds and maintains data pipelines, ETL processes, and data infrastructure',
+        type: 'custom',
+        level: 'advanced',
+        scope: 'project',
+        risk_level: 'Medium',
+        permissions: [
+          'pipeline_create', 'pipeline_manage', 'data_read_all', 'data_write_staging',
+          'schema_modify', 'connection_manage', 'job_schedule'
+        ],
+        users: ['engineer1@company.com', 'engineer2@company.com', 'devops@company.com'],
+        inherits_from: 'Data User',
+        created_at: '2024-01-18T07:00:00Z',
+        updated_at: '2024-01-23T13:20:00Z'
+      },
+      {
+        _id: '5',
+        name: 'Data User',
+        description: 'Basic read access to public datasets and self-service analytics',
+        type: 'standard',
+        level: 'basic',
+        scope: 'team',
+        risk_level: 'Low',
+        permissions: [
+          'data_read_public', 'report_view', 'dashboard_view', 'catalog_browse'
+        ],
+        users: [
+          'user1@company.com', 'user2@company.com', 'user3@company.com', 'user4@company.com',
+          'marketing@company.com', 'sales@company.com', 'support@company.com'
+        ],
+        inherits_from: null,
+        created_at: '2024-01-19T12:00:00Z',
+        updated_at: '2024-01-19T12:00:00Z'
+      },
+      {
+        _id: '6',
+        name: 'Compliance Officer',
+        description: 'Monitors data usage compliance and manages privacy-related policies',
+        type: 'custom',
+        level: 'advanced',
+        scope: 'global',
+        risk_level: 'High',
+        permissions: [
+          'audit_view_all', 'compliance_manage', 'privacy_manage', 'policy_enforce',
+          'data_classification', 'access_review', 'incident_manage'
+        ],
+        users: ['compliance@company.com', 'privacy-officer@company.com'],
+        inherits_from: 'Data User',
+        created_at: '2024-01-20T10:30:00Z',
+        updated_at: '2024-01-24T09:15:00Z'
+      },
+      {
+        _id: '7',
+        name: 'Business Intelligence Developer',
+        description: 'Creates and maintains BI reports, dashboards, and data visualizations',
+        type: 'custom',
+        level: 'standard',
+        scope: 'department',
+        risk_level: 'Low',
+        permissions: [
+          'bi_create', 'bi_manage', 'data_read_dept', 'dashboard_advanced',
+          'report_schedule', 'visualization_create'
+        ],
+        users: ['bi-dev1@company.com', 'bi-dev2@company.com'],
+        inherits_from: 'Data Analyst',
+        created_at: '2024-01-21T14:00:00Z',
+        updated_at: '2024-01-25T10:45:00Z'
+      },
+      {
+        _id: '8',
+        name: 'Data Scientist',
+        description: 'Advanced analytics, machine learning, and statistical modeling capabilities',
+        type: 'custom',
+        level: 'advanced',
+        scope: 'project',
+        risk_level: 'Medium',
+        permissions: [
+          'ml_create', 'ml_train', 'data_read_all', 'compute_resources',
+          'model_deploy', 'experiment_manage', 'feature_store'
+        ],
+        users: ['scientist1@company.com', 'ml-engineer@company.com', 'researcher@company.com'],
+        inherits_from: 'Data Analyst',
+        created_at: '2024-01-22T11:30:00Z',
+        updated_at: '2024-01-26T15:20:00Z'
       }
-    });
+    ];
+
+    // Simulate API response
+    setTimeout(() => {
+      this.roles = mockRoles;
+      this.totalRecords = mockRoles.length;
+      this.filteredRoles = [...this.roles];
+      this.filterRoles();
+      this.loadStats();
+    }, 500);
+
+    // Uncomment for actual API call:
+    // this.governanceServices.getRoles({ offset: this.currentPage, size: this.itemsPerPage }).subscribe(res => {
+    //   if (res) {
+    //     this.roles = res.data || [];
+    //     this.totalRecords = res.total || 0;
+    //     this.filteredRoles = [...this.roles];
+    //     this.filterRoles();
+    //   }
+    // });
   }
 
   loadStats() {

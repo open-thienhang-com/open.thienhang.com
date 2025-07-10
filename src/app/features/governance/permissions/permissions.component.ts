@@ -1,10 +1,9 @@
-import {Component, Injector, OnInit} from '@angular/core';
-import {PermissionComponent} from '../permissions/permission/permission.component';
-import {Button} from 'primeng/button';
-import {TableModule} from 'primeng/table';
-import {GovernanceServices} from '../../../core/services/governance.services';
-import {AppBaseComponent} from '../../../core/base/app-base.component';
-import {Tag} from "primeng/tag";
+import { Component, Injector, OnInit } from '@angular/core';
+import { Button } from 'primeng/button';
+import { TableModule } from 'primeng/table';
+import { GovernanceServices } from '../../../core/services/governance.services';
+import { AppBaseComponent } from '../../../core/base/app-base.component';
+import { Tag } from "primeng/tag";
 import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
 import { CardModule } from 'primeng/card';
@@ -22,7 +21,6 @@ import { TreeModule } from 'primeng/tree';
 @Component({
   selector: 'app-permissions',
   imports: [
-    PermissionComponent,
     Button,
     TableModule,
     DropdownModule,
@@ -103,7 +101,7 @@ export class PermissionsComponent extends AppBaseComponent implements OnInit {
 
   getPermissions = (page = 0) => {
     this.isTableLoading = true;
-    this.governanceServices.getPermissions({offset: page, size: this.tableRowsPerPage}).subscribe(res => {
+    this.governanceServices.getPermissions({ offset: page, size: this.tableRowsPerPage }).subscribe(res => {
       this.permissions = res;
       this.isTableLoading = false;
     })

@@ -1,200 +1,232 @@
-import { Component, Injector, OnInit } from '@angular/core';
-import { PolicyComponent } from '../policies/policy/policy.component';
-import { Button } from 'primeng/button';
-import { TableModule } from 'primeng/table';
-import { AppBaseComponent } from '../../../core/base/app-base.component';
-import { GovernanceServices } from '../../../core/services/governance.services';
-import { DropdownModule } from 'primeng/dropdown';
-import { InputTextModule } from 'primeng/inputtext';
-import { CardModule } from 'primeng/card';
-import { BadgeModule } from 'primeng/badge';
-import { TagModule } from 'primeng/tag';
-import { ChipModule } from 'primeng/chip';
-import { MenuModule } from 'primeng/menu';
-import { TooltipModule } from 'primeng/tooltip';
-import { DialogModule } from 'primeng/dialog';
-import { InputSwitchModule } from 'primeng/inputswitch';
-import { MultiSelectModule } from 'primeng/multiselect';
-import { OverlayPanelModule } from 'primeng/overlaypanel';
-import { InputTextarea } from 'primeng/inputtextarea';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { GovernanceServices } from '../../../core/services/governance.services';
+import { PolicyComponent } from './policy/policy.component';
+
+interface Policy {
+  id: string;
+  name: string;
+  description: string;
+  type: string;
+  status: string;
+  priority: string;
+  rules: any[];
+  domain: string;
+  tags: string[];
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+}
+
+interface PolicyStats {
+  totalPolicies: number;
+  activePolicies: number;
+  violations: number;
+  enforcedPolicies: number;
+}
 
 @Component({
   selector: 'app-policies',
-  imports: [
-    CommonModule,
-    FormsModule,
-    PolicyComponent,
-    Button,
-    TableModule,
-    DropdownModule,
-    InputTextModule,
-    CardModule,
-    BadgeModule,
-    TagModule,
-    ChipModule,
-    MenuModule,
-    TooltipModule,
-    DialogModule,
-    InputSwitchModule,
-    MultiSelectModule,
-    OverlayPanelModule,
-    InputTextarea
-  ],
-  templateUrl: './policies.component.html'
+  standalone: true,
+  imports: [CommonModule, FormsModule, PolicyComponent],
+  templateUrl: './policies.component.html',
+  styleUrls: ['./policies.component.scss']
 })
-export class PoliciesComponent extends AppBaseComponent implements OnInit {
-  policies: any[] = [];
-  loading: boolean = false;
+export class PoliciesComponent implements OnInit {
+  policies: Policy[] = [];
+  filteredPolicies: Policy[] = [];
+  loading = false;
+  showPolicyModal = false;
+  selectedPolicy: Policy | null = null;
 
-  // Stats
-  stats = {
+  searchTerm = '';
+  filters = {
+    status: '',
+    type: '',
+    priority: ''
+  };
+
+  stats: PolicyStats = {
     totalPolicies: 0,
     activePolicies: 0,
     violations: 0,
-    enforcedPolicies: 0,
-    securityPolicies: 0,
-    compliancePolicies: 0,
-    domainPolicies: 0,
-    globalPolicies: 0
+    enforcedPolicies: 0
   };
 
-  // Filters
-  showFilters: boolean = false;
-  searchTerm: string = '';
-  selectedType: any = null;
-  selectedDomain: any = null;
-  selectedStatus: any = null;
-
-  // Dialog
-  showCreateDialog: boolean = false;
-
-  // Options for dropdowns
-  typeOptions = [
-    { label: 'Data Quality', value: 'data-quality' },
-    { label: 'Security', value: 'security' },
-    { label: 'Compliance', value: 'compliance' },
-    { label: 'Governance', value: 'governance' },
-    { label: 'Domain', value: 'domain' }
-  ];
-
-  domainOptions = [
-    { label: 'Customer Domain', value: 'customer' },
-    { label: 'Product Domain', value: 'product' },
-    { label: 'Order Domain', value: 'order' },
-    { label: 'Analytics Domain', value: 'analytics' },
-    { label: 'Global', value: 'global' }
-  ];
-
-  statusOptions = [
-    { label: 'Active', value: 'active' },
-    { label: 'Draft', value: 'draft' },
-    { label: 'Inactive', value: 'inactive' },
-    { label: 'Deprecated', value: 'deprecated' }
-  ];
-
-  enforcementOptions = [
-    { label: 'Mandatory', value: 'mandatory' },
-    { label: 'Recommended', value: 'recommended' },
-    { label: 'Optional', value: 'optional' }
-  ];
-
-  constructor(
-    private injector: Injector,
-    private governanceServices: GovernanceServices
-  ) {
-    super(injector)
-  }
+  constructor(private governanceServices: GovernanceServices) { }
 
   ngOnInit() {
-    this.getPolicies();
+    this.loadPolicies();
+    this.loadStats();
   }
 
-  getPolicies = (page = 0) => {
+  loadPolicies() {
     this.loading = true;
-    this.governanceServices.getPolicies({ offset: page, size: this.tableRowsPerPage }).subscribe(res => {
-      this.policies = res.data || res;
+
+    // Mock data for demonstration
+    setTimeout(() => {
+      this.policies = [
+        {
+          id: '1',
+          name: 'PII Data Access Control',
+          description: 'Controls access to personally identifiable information',
+          type: 'ACCESS_CONTROL',
+          status: 'ACTIVE',
+          priority: 'HIGH',
+          rules: [],
+          domain: 'Customer Data',
+          tags: ['PII', 'Privacy', 'GDPR'],
+          createdAt: new Date('2024-01-15'),
+          updatedAt: new Date('2024-01-20'),
+          createdBy: 'admin'
+        },
+        {
+          id: '2',
+          name: 'Data Quality Standards',
+          description: 'Ensures data meets quality thresholds',
+          type: 'DATA_QUALITY',
+          status: 'ACTIVE',
+          priority: 'MEDIUM',
+          rules: [],
+          domain: 'Sales Data',
+          tags: ['Quality', 'Validation'],
+          createdAt: new Date('2024-01-10'),
+          updatedAt: new Date('2024-01-18'),
+          createdBy: 'data-steward'
+        },
+        {
+          id: '3',
+          name: 'Data Retention Policy',
+          description: 'Defines how long data should be retained',
+          type: 'RETENTION',
+          status: 'ACTIVE',
+          priority: 'HIGH',
+          rules: [],
+          domain: 'All Domains',
+          tags: ['Retention', 'Compliance'],
+          createdAt: new Date('2024-01-05'),
+          updatedAt: new Date('2024-01-15'),
+          createdBy: 'compliance-officer'
+        },
+        {
+          id: '4',
+          name: 'GDPR Compliance',
+          description: 'Ensures GDPR compliance across all data processing',
+          type: 'COMPLIANCE',
+          status: 'ACTIVE',
+          priority: 'HIGH',
+          rules: [],
+          domain: 'Customer Data',
+          tags: ['GDPR', 'Privacy', 'Legal'],
+          createdAt: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-10'),
+          createdBy: 'legal-team'
+        },
+        {
+          id: '5',
+          name: 'Data Masking for Dev',
+          description: 'Masks sensitive data in development environments',
+          type: 'PRIVACY',
+          status: 'DRAFT',
+          priority: 'MEDIUM',
+          rules: [],
+          domain: 'Development',
+          tags: ['Masking', 'Security', 'Development'],
+          createdAt: new Date('2024-01-22'),
+          updatedAt: new Date('2024-01-22'),
+          createdBy: 'dev-team'
+        }
+      ];
+
+      this.filteredPolicies = [...this.policies];
       this.loading = false;
-      this.loadStats();
-    })
+    }, 1000);
   }
 
   loadStats() {
-    // Calculate stats from actual data or mock data
+    // Mock stats
     this.stats = {
-      totalPolicies: this.policies?.length || 28,
-      activePolicies: this.policies?.filter(p => p.status === 'active')?.length || 24,
-      violations: 5, // Mock data - replace with actual violations count
-      enforcedPolicies: this.policies?.filter(p => p.enforcement === 'mandatory')?.length || 18,
-      securityPolicies: this.policies?.filter(p => p.type === 'security')?.length || 15,
-      compliancePolicies: this.policies?.filter(p => p.type === 'compliance')?.length || 13,
-      domainPolicies: this.policies?.filter(p => p.domain !== 'global')?.length || 18,
-      globalPolicies: this.policies?.filter(p => p.domain === 'global')?.length || 10
+      totalPolicies: 5,
+      activePolicies: 4,
+      violations: 2,
+      enforcedPolicies: 4
     };
   }
 
-  showPolicyMatrix() {
-    // Implementation for showing policy matrix
-    console.log('Showing policy matrix...');
-  }
-
-  filterPolicies() {
-    // Implementation for filtering policies
-    console.log('Filtering policies...');
+  onSearch() {
+    this.applyFilters();
   }
 
   applyFilters() {
-    this.filterPolicies();
+    this.filteredPolicies = this.policies.filter(policy => {
+      const matchesSearch = !this.searchTerm ||
+        policy.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        policy.description.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        policy.tags.some(tag => tag.toLowerCase().includes(this.searchTerm.toLowerCase()));
+
+      const matchesStatus = !this.filters.status || policy.status === this.filters.status;
+      const matchesType = !this.filters.type || policy.type === this.filters.type;
+
+      return matchesSearch && matchesStatus && matchesType;
+    });
   }
 
-  clearFilters() {
-    this.searchTerm = '';
-    this.selectedType = null;
-    this.selectedDomain = null;
-    this.selectedStatus = null;
-    this.filterPolicies();
+  openPolicyModal(policy?: Policy) {
+    this.selectedPolicy = policy || null;
+    this.showPolicyModal = true;
   }
 
-  toggleFilters() {
-    this.showFilters = !this.showFilters;
+  closePolicyModal() {
+    this.showPolicyModal = false;
+    this.selectedPolicy = null;
   }
 
-  toggleCreateDialog() {
-    this.showCreateDialog = !this.showCreateDialog;
+  onPolicySave(policy: Policy) {
+    if (this.selectedPolicy) {
+      // Update existing policy
+      const index = this.policies.findIndex(p => p.id === policy.id);
+      if (index !== -1) {
+        this.policies[index] = { ...policy };
+      }
+    } else {
+      // Add new policy
+      policy.id = (this.policies.length + 1).toString();
+      policy.createdAt = new Date();
+      policy.updatedAt = new Date();
+      this.policies.push(policy);
+    }
+
+    this.applyFilters();
+    this.loadStats();
+    this.closePolicyModal();
   }
 
-  onDeletePolicy(event: Event, id: string) {
-    this.confirmOnDelete(event, this.governanceServices.deletePolicy(id), this.getPolicies);
+  viewPolicy(policy: Policy) {
+    // Navigate to policy detail view or open read-only modal
+    console.log('Viewing policy:', policy);
   }
 
-  getPolicyTypeSeverity(type: string): string {
+  deletePolicy(policyId: string) {
+    if (confirm('Are you sure you want to delete this policy?')) {
+      this.policies = this.policies.filter(p => p.id !== policyId);
+      this.applyFilters();
+      this.loadStats();
+    }
+  }
+
+  trackByPolicyId(index: number, policy: Policy): string {
+    return policy.id;
+  }
+
+  getDisplayType(type: string): string {
     switch (type) {
-      case 'security':
-        return 'danger';
-      case 'compliance':
-        return 'warning';
-      case 'performance':
-        return 'info';
-      default:
-        return 'secondary';
+      case 'ACCESS_CONTROL': return 'Access Control';
+      case 'DATA_QUALITY': return 'Data Quality';
+      case 'PRIVACY': return 'Privacy';
+      case 'RETENTION': return 'Retention';
+      case 'COMPLIANCE': return 'Compliance';
+      default: return type;
     }
-  }
-
-  getPolicyStatusSeverity(status: string): string {
-    switch (status) {
-      case 'active':
-        return 'success';
-      case 'draft':
-        return 'warning';
-      case 'disabled':
-        return 'danger';
-      default:
-        return 'secondary';
-    }
-  }
-
-  refreshPolicies() {
-    this.getPolicies();
   }
 }

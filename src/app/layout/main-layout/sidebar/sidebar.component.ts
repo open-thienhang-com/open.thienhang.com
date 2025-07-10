@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
-import { Ripple } from 'primeng/ripple';
+import { Router, RouterModule } from '@angular/router';
 import {
   trigger,
   state,
@@ -9,15 +8,12 @@ import {
   transition,
   animate,
 } from '@angular/animations';
-import { CurrentUserComponent } from './current-user/current-user.component';
 
 @Component({
   selector: 'app-sidebar',
   imports: [
     CommonModule,
-    Ripple,
-    RouterLink,
-    CurrentUserComponent
+    RouterModule
   ],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
@@ -39,29 +35,86 @@ export class SidebarComponent {
 
   ngOnInit() {
     this.menu = [
-      { label: 'Dashboard', icon: 'pi pi-home', url: '/dashboard' },
-      { label: 'Profile', icon: 'pi pi-home', url: '/profile' },
-      { label: 'Marketplace', icon: 'pi pi-home', url: '/marketplace' },
-      { label: 'Data product', icon: 'pi pi-home', url: '/data-product' },
+      {
+        label: 'Dashboard',
+        icon: 'pi pi-objects-column',
+        url: '/dashboard'
+      },
+      {
+        label: 'Data Products',
+        icon: 'pi pi-database',
+        url: '/data-product'
+      },
+      {
+        label: 'Data Mesh',
+        icon: 'pi pi-sitemap',
+        children: [
+          { label: 'Data Contracts', icon: 'pi pi-file-check', url: '/data-contracts' },
+          { label: 'Domain Catalog', icon: 'pi pi-book', url: '/domain-catalog' },
+          { label: 'Lineage Explorer', icon: 'pi pi-share-alt', url: '/lineage' },
+          { label: 'Quality Metrics', icon: 'pi pi-chart-bar', url: '/quality-metrics' },
+        ],
+        expanded: false
+      },
       {
         label: 'Governance',
-        icon: 'pi pi-chart-line',
+        icon: 'pi pi-shield',
         children: [
-          { label: 'Assets', url: '/governance/assets' },
-          { label: 'Polices', url: '/governance/policies' },
-          { label: 'Permissions', url: '/governance/permissions' },
-          { label: 'Roles', url: '/governance/roles' },
-          { label: 'Accounts', url: '/governance/accounts' },
-          { label: 'Users', url: '/governance/users' },
-          { label: 'Teams', url: '/governance/teams' },
+          { label: 'Policies', icon: 'pi pi-file-text', url: '/governance/policies' },
+          { label: 'Assets', icon: 'pi pi-box', url: '/governance/assets' },
+          { label: 'Permissions', icon: 'pi pi-key', url: '/governance/permissions' },
+          { label: 'Roles', icon: 'pi pi-users', url: '/governance/roles' },
+          { label: 'Accounts', icon: 'pi pi-user', url: '/governance/accounts' },
+          { label: 'Users', icon: 'pi pi-user-plus', url: '/governance/users' },
+          { label: 'Teams', icon: 'pi pi-users', url: '/governance/teams' },
         ],
-        expanded: true
+        expanded: false
+      },
+      {
+        label: 'Discovery',
+        icon: 'pi pi-search',
+        children: [
+          { label: 'Data Catalog', icon: 'pi pi-list', url: '/catalog' },
+          { label: 'Schema Registry', icon: 'pi pi-code', url: '/schema-registry' },
+          { label: 'API Explorer', icon: 'pi pi-globe', url: '/api-explorer' },
+        ],
+        expanded: false
+      },
+      {
+        label: 'Observability',
+        icon: 'pi pi-eye',
+        children: [
+          { label: 'Monitoring', icon: 'pi pi-chart-line', url: '/monitoring' },
+          { label: 'Alerting', icon: 'pi pi-bell', url: '/alerting' },
+          { label: 'Audit Logs', icon: 'pi pi-history', url: '/audit-logs' },
+        ],
+        expanded: false
+      },
+      {
+        label: 'Profile',
+        icon: 'pi pi-user',
+        url: '/profile'
+      },
+      {
+        label: 'Settings',
+        icon: 'pi pi-cog',
+        url: '/settings'
       },
     ];
   }
 
-  too(item: MenuItem): void {
+  toggleItem(item: MenuItem): void {
     item.expanded = !item.expanded;
+  }
+
+  navigateTo(url?: string): void {
+    if (url) {
+      this.router.navigate([url]);
+      // Close sidebar on mobile after navigation
+      if (window.innerWidth < 1024) {
+        this.toggle.emit();
+      }
+    }
   }
 }
 
