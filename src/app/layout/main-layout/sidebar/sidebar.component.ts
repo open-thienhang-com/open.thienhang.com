@@ -50,9 +50,9 @@ export class SidebarComponent {
         icon: 'pi pi-sitemap',
         children: [
           { label: 'Data Contracts', icon: 'pi pi-file-check', url: '/data-contracts' },
-          { label: 'Domain Catalog', icon: 'pi pi-book', url: '/domain-catalog' },
-          { label: 'Lineage Explorer', icon: 'pi pi-share-alt', url: '/lineage' },
-          { label: 'Quality Metrics', icon: 'pi pi-chart-bar', url: '/quality-metrics' },
+          { label: 'Domain Catalog', icon: 'pi pi-book', url: '/domains' },
+          { label: 'Lineage Explorer', icon: 'pi pi-share-alt', url: '/data-mesh/lineage' },
+          { label: 'Quality Metrics', icon: 'pi pi-chart-bar', url: '/data-mesh/quality' },
         ],
         expanded: false
       },
@@ -74,7 +74,7 @@ export class SidebarComponent {
         label: 'Discovery',
         icon: 'pi pi-search',
         children: [
-          { label: 'Data Catalog', icon: 'pi pi-list', url: '/catalog' },
+          { label: 'Data Catalog', icon: 'pi pi-list', url: '/discovery/catalog' },
           { label: 'Schema Registry', icon: 'pi pi-code', url: '/schema-registry' },
           { label: 'API Explorer', icon: 'pi pi-globe', url: '/api-explorer' },
         ],
@@ -84,7 +84,7 @@ export class SidebarComponent {
         label: 'Observability',
         icon: 'pi pi-eye',
         children: [
-          { label: 'Monitoring', icon: 'pi pi-chart-line', url: '/monitoring' },
+          { label: 'Monitoring', icon: 'pi pi-chart-line', url: '/observability/monitoring' },
           { label: 'Alerting', icon: 'pi pi-bell', url: '/alerting' },
           { label: 'Audit Logs', icon: 'pi pi-history', url: '/audit-logs' },
         ],

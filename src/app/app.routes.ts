@@ -18,6 +18,12 @@ import { SettingsComponent } from './features/settings/setting.component';
 import { DataContractsComponent } from './features/data-contracts/data-contracts.component';
 import { PolicyDetailComponent } from './features/governance/policies/policy-detail.component';
 import { OfflineComponent } from './pages/error/offline.component';
+import { DomainCatalogComponent } from './features/domain-catalog/domain-catalog.component';
+import { DomainDetailComponent } from './features/domain-catalog/domain-detail/domain-detail.component';
+import { DataLineageComponent } from './features/data-mesh/data-lineage.component';
+import { QualityMetricsComponent } from './features/data-mesh/quality-metrics.component';
+import { DataCatalogComponent } from './features/discovery/data-catalog.component';
+import { MonitoringComponent } from './features/observability/monitoring.component';
 
 
 export const routes: Routes = [
@@ -84,6 +90,30 @@ export const routes: Routes = [
       {
         path: 'data-product-detail',
         component: DataProdDetailComponent,
+      },
+      {
+        path: 'domains',
+        component: DomainCatalogComponent,
+      },
+      {
+        path: 'domains/:id',
+        component: DomainDetailComponent,
+      },
+      {
+        path: 'data-mesh/lineage',
+        component: DataLineageComponent,
+      },
+      {
+        path: 'data-mesh/quality',
+        component: QualityMetricsComponent,
+      },
+      {
+        path: 'discovery/catalog',
+        component: DataCatalogComponent,
+      },
+      {
+        path: 'observability/monitoring',
+        component: MonitoringComponent,
       },
       {
         path: '',

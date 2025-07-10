@@ -323,26 +323,258 @@
 
       <!-- Appearance Tab -->
       <p-tabPanel header="Appearance" leftIcon="pi pi-palette">
-        <p-card>
-          <ng-template pTemplate="header">
-            <div class="flex items-center gap-2 p-4">
-              <i class="pi pi-palette text-primary-500"></i>
-              <h3 class="text-lg font-semibold">Appearance Settings</h3>
-            </div>
-          </ng-template>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Theme & Style -->
+          <p-card>
+            <ng-template pTemplate="header">
+              <div class="flex items-center gap-2 p-4">
+                <i class="pi pi-palette text-primary-500"></i>
+                <h3 class="text-lg font-semibold">Theme & Style</h3>
+              </div>
+            </ng-template>
+            
             <div class="space-y-4">
+              <!-- UI Style -->
+              <div>
+                <label class="block text-sm font-medium mb-2">UI Style</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <div *ngFor="let style of uiStyleOptions" 
+                       class="p-3 border rounded-lg cursor-pointer transition-all duration-200 hover:border-primary-500"
+                       [class.border-primary-500]="appearanceSettings.uiStyle === style.value"
+                       [class.bg-primary-50]="appearanceSettings.uiStyle === style.value"
+                       (click)="appearanceSettings.uiStyle = style.value; onUiStyleChange()">
+                    <div class="font-medium">{{ style.label }}</div>
+                    <div class="text-xs text-surface-600 dark:text-surface-400">{{ style.description }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Theme -->
               <div>
                 <label class="block text-sm font-medium mb-2">Theme</label>
-                <p-dropdown 
-                  [options]="themeOptions"
+                <p-selectButton 
+                  [options]="themeOptions" 
                   [(ngModel)]="appearanceSettings.theme"
-                  placeholder="Select theme"
+                  (onChange)="onThemeChange()"
+                  optionLabel="label" 
+                  optionValue="value"
+                  class="w-full">
+                </p-selectButton>
+              </div>
+
+              <!-- Layout Style -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Layout Style</label>
+                <p-dropdown 
+                  [options]="layoutStyleOptions"
+                  [(ngModel)]="appearanceSettings.layoutStyle"
+                  placeholder="Select layout style"
                   class="w-full">
                 </p-dropdown>
               </div>
 
+              <!-- Sidebar Style -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Sidebar Style</label>
+                <p-dropdown 
+                  [options]="sidebarStyleOptions"
+                  [(ngModel)]="appearanceSettings.sidebarStyle"
+                  placeholder="Select sidebar style"
+                  class="w-full">
+                </p-dropdown>
+              </div>
+            </div>
+          </p-card>
+
+          <!-- Colors -->
+          <p-card>
+            <ng-template pTemplate="header">
+              <div class="flex items-center gap-2 p-4">
+                <i class="pi pi-palette text-primary-500"></i>
+                <h3 class="text-lg font-semibold">Colors</h3>
+              </div>
+            </ng-template>
+            
+            <div class="space-y-4">
+              <!-- Primary Color -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Primary Color</label>
+                <div class="flex items-center gap-2 mb-2">
+                  <p-colorPicker 
+                    [(ngModel)]="appearanceSettings.primaryColor"
+                    format="hex"
+                    class="flex-shrink-0">
+                  </p-colorPicker>
+                  <input 
+                    type="text" 
+                    pInputText 
+                    [(ngModel)]="appearanceSettings.primaryColor"
+                    class="flex-1 text-sm">
+                </div>
+                <div class="flex gap-2 flex-wrap">
+                  <div *ngFor="let preset of colorPresets"
+                       class="w-8 h-8 rounded-full cursor-pointer border-2 border-surface-200 hover:border-surface-400 transition-colors"
+                       [style.backgroundColor]="preset.value"
+                       (click)="selectColorPreset(preset.value, 'primary')"
+                       [title]="preset.name">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Accent Color -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Accent Color</label>
+                <div class="flex items-center gap-2 mb-2">
+                  <p-colorPicker 
+                    [(ngModel)]="appearanceSettings.accentColor"
+                    format="hex"
+                    class="flex-shrink-0">
+                  </p-colorPicker>
+                  <input 
+                    type="text" 
+                    pInputText 
+                    [(ngModel)]="appearanceSettings.accentColor"
+                    class="flex-1 text-sm">
+                </div>
+                <div class="flex gap-2 flex-wrap">
+                  <div *ngFor="let preset of colorPresets"
+                       class="w-8 h-8 rounded-full cursor-pointer border-2 border-surface-200 hover:border-surface-400 transition-colors"
+                       [style.backgroundColor]="preset.value"
+                       (click)="selectColorPreset(preset.value, 'accent')"
+                       [title]="preset.name">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </p-card>
+
+          <!-- Typography -->
+          <p-card>
+            <ng-template pTemplate="header">
+              <div class="flex items-center gap-2 p-4">
+                <i class="pi pi-font text-primary-500"></i>
+                <h3 class="text-lg font-semibold">Typography</h3>
+              </div>
+            </ng-template>
+            
+            <div class="space-y-4">
+              <!-- Font Family -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Font Family</label>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                  <p-chip *ngFor="let font of fontPresets"
+                          [label]="font.name"
+                          [removable]="false"
+                          class="cursor-pointer"
+                          [class.bg-primary-100]="appearanceSettings.fontFamily === font.value"
+                          (click)="selectFontPreset(font.value)">
+                  </p-chip>
+                </div>
+                <input 
+                  type="text" 
+                  pInputText 
+                  [(ngModel)]="appearanceSettings.fontFamily"
+                  placeholder="Custom font family"
+                  class="w-full">
+              </div>
+
+              <!-- Font Size -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Font Size</label>
+                <p-selectButton 
+                  [options]="fontSizeOptions" 
+                  [(ngModel)]="appearanceSettings.fontSize"
+                  optionLabel="label" 
+                  optionValue="value"
+                  class="w-full">
+                </p-selectButton>
+              </div>
+
+              <!-- Border Radius -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Border Radius</label>
+                <p-selectButton 
+                  [options]="borderRadiusOptions" 
+                  [(ngModel)]="appearanceSettings.borderRadius"
+                  optionLabel="label" 
+                  optionValue="value"
+                  class="w-full">
+                </p-selectButton>
+              </div>
+            </div>
+          </p-card>
+
+          <!-- Visual Effects -->
+          <p-card>
+            <ng-template pTemplate="header">
+              <div class="flex items-center gap-2 p-4">
+                <i class="pi pi-sparkles text-primary-500"></i>
+                <h3 class="text-lg font-semibold">Visual Effects</h3>
+              </div>
+            </ng-template>
+            
+            <div class="space-y-4">
+              <!-- Background Pattern -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Background Pattern</label>
+                <p-dropdown 
+                  [options]="backgroundPatternOptions"
+                  [(ngModel)]="appearanceSettings.backgroundPattern"
+                  placeholder="Select background pattern"
+                  class="w-full">
+                </p-dropdown>
+              </div>
+
+              <!-- Animation Toggle -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">Animations</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Enable smooth transitions and animations</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="appearanceSettings.animationEnabled"></p-inputSwitch>
+              </div>
+
+              <!-- Shadow Toggle -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">Shadows</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Enable drop shadows and depth effects</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="appearanceSettings.shadowEnabled"></p-inputSwitch>
+              </div>
+
+              <!-- Sidebar Collapsed -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">Sidebar Collapsed</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Keep sidebar collapsed by default</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="appearanceSettings.sidebarCollapsed"></p-inputSwitch>
+              </div>
+
+              <!-- Compact Mode -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">Compact Mode</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Reduce spacing and padding</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="appearanceSettings.compactMode"></p-inputSwitch>
+              </div>
+            </div>
+          </p-card>
+        </div>
+
+        <!-- Legacy Settings -->
+        <div class="mt-6">
+          <p-card>
+            <ng-template pTemplate="header">
+              <div class="flex items-center gap-2 p-4">
+                <i class="pi pi-cog text-primary-500"></i>
+                <h3 class="text-lg font-semibold">Legacy Settings</h3>
+              </div>
+            </ng-template>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium mb-2">Language</label>
                 <p-dropdown 
@@ -363,38 +595,30 @@
                 </p-dropdown>
               </div>
             </div>
+          </p-card>
+        </div>
 
-            <div class="space-y-4">
-              <div class="flex items-center justify-between">
-                <div>
-                  <label class="block text-sm font-medium">Sidebar Collapsed</label>
-                  <p class="text-xs text-surface-600 dark:text-surface-400">Keep sidebar collapsed by default</p>
-                </div>
-                <p-inputSwitch [(ngModel)]="appearanceSettings.sidebarCollapsed"></p-inputSwitch>
-              </div>
+        <p-divider></p-divider>
 
-              <div class="flex items-center justify-between">
-                <div>
-                  <label class="block text-sm font-medium">Compact Mode</label>
-                  <p class="text-xs text-surface-600 dark:text-surface-400">Reduce spacing and padding</p>
-                </div>
-                <p-inputSwitch [(ngModel)]="appearanceSettings.compactMode"></p-inputSwitch>
-              </div>
-            </div>
-          </div>
-
-          <p-divider></p-divider>
-
-          <div class="flex justify-end">
-            <button 
-              pButton 
-              type="button" 
-              label="Save Appearance Settings" 
-              class="p-button-primary"
-              (click)="saveAppearanceSettings()">
-            </button>
-          </div>
-        </p-card>
+        <!-- Action Buttons -->
+        <div class="flex justify-between">
+          <button 
+            pButton 
+            type="button" 
+            label="Reset to Default" 
+            severity="secondary"
+            icon="pi pi-refresh"
+            (click)="resetAppearanceSettings()">
+          </button>
+          <button 
+            pButton 
+            type="button" 
+            label="Save Appearance Settings" 
+            class="p-button-primary"
+            icon="pi pi-check"
+            (click)="saveAppearanceSettings()">
+          </button>
+        </div>
       </p-tabPanel>
 
       <!-- Data & Privacy Tab -->

@@ -14,6 +14,11 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ProfileServices } from '../../core/services/profile.services';
+import { ThemeService, ThemeSettings } from '../../core/services/theme.service';
+import { SliderModule } from 'primeng/slider';
+import { ColorPickerModule } from 'primeng/colorpicker';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { ChipModule } from 'primeng/chip';
 
 interface UserProfile {
   firstName: string;
@@ -47,6 +52,18 @@ interface AppearanceSettings {
   compactMode: boolean;
   language: string;
   dateFormat: string;
+  // Extended appearance settings
+  uiStyle: string;
+  primaryColor: string;
+  accentColor: string;
+  fontFamily: string;
+  fontSize: string;
+  borderRadius: string;
+  layoutStyle: string;
+  sidebarStyle: string;
+  animationEnabled: boolean;
+  shadowEnabled: boolean;
+  backgroundPattern: string;
 }
 
 @Component({
@@ -65,7 +82,11 @@ interface AppearanceSettings {
     DividerModule,
     AvatarModule,
     FileUploadModule,
-    ToastModule
+    ToastModule,
+    SliderModule,
+    ColorPickerModule,
+    SelectButtonModule,
+    ChipModule
   ],
   templateUrl: './setting.component.html',
   styleUrls: ['./setting.component.scss'],
@@ -74,7 +95,7 @@ interface AppearanceSettings {
 export class SettingsComponent implements OnInit {
   profileForm: FormGroup;
   passwordForm: FormGroup;
-  
+
   profile: UserProfile = {
     firstName: 'John',
     lastName: 'Doe',
@@ -106,7 +127,18 @@ export class SettingsComponent implements OnInit {
     sidebarCollapsed: false,
     compactMode: false,
     language: 'en',
-    dateFormat: 'MM/dd/yyyy'
+    dateFormat: 'MM/dd/yyyy',
+    uiStyle: 'modern',
+    primaryColor: '#3B82F6',
+    accentColor: '#10B981',
+    fontFamily: 'Inter',
+    fontSize: 'medium',
+    borderRadius: 'medium',
+    layoutStyle: 'default',
+    sidebarStyle: 'default',
+    animationEnabled: true,
+    shadowEnabled: true,
+    backgroundPattern: 'none'
   };
 
   // Dropdown options
@@ -143,6 +175,74 @@ export class SettingsComponent implements OnInit {
     { label: 'yyyy-MM-dd', value: 'yyyy-MM-dd' }
   ];
 
+  // Extended appearance options
+  uiStyleOptions = [
+    { label: 'Modern', value: 'modern', description: 'Clean, contemporary design' },
+    { label: 'Vintage', value: 'vintage', description: 'Classic, retro aesthetic' },
+    { label: 'Flat', value: 'flat', description: 'Minimalist, flat design' },
+    { label: 'Material', value: 'material', description: 'Google Material Design' },
+    { label: 'Glass', value: 'glass', description: 'Glassmorphism effect' },
+    { label: 'Minimal', value: 'minimal', description: 'Ultra-clean, minimal' }
+  ];
+
+  fontSizeOptions = [
+    { label: 'Small', value: 'small' },
+    { label: 'Medium', value: 'medium' },
+    { label: 'Large', value: 'large' }
+  ];
+
+  borderRadiusOptions = [
+    { label: 'None', value: 'none' },
+    { label: 'Small', value: 'small' },
+    { label: 'Medium', value: 'medium' },
+    { label: 'Large', value: 'large' },
+    { label: 'Full', value: 'full' }
+  ];
+
+  layoutStyleOptions = [
+    { label: 'Default', value: 'default' },
+    { label: 'Compact', value: 'compact' },
+    { label: 'Comfortable', value: 'comfortable' },
+    { label: 'Spacious', value: 'spacious' }
+  ];
+
+  sidebarStyleOptions = [
+    { label: 'Default', value: 'default' },
+    { label: 'Overlay', value: 'overlay' },
+    { label: 'Push', value: 'push' },
+    { label: 'Static', value: 'static' }
+  ];
+
+  backgroundPatternOptions = [
+    { label: 'None', value: 'none' },
+    { label: 'Dots', value: 'dots' },
+    { label: 'Grid', value: 'grid' },
+    { label: 'Waves', value: 'waves' },
+    { label: 'Geometric', value: 'geometric' }
+  ];
+
+  colorPresets = [
+    { name: 'Blue', value: '#3B82F6', class: 'bg-blue-500' },
+    { name: 'Green', value: '#10B981', class: 'bg-green-500' },
+    { name: 'Purple', value: '#8B5CF6', class: 'bg-purple-500' },
+    { name: 'Pink', value: '#EC4899', class: 'bg-pink-500' },
+    { name: 'Red', value: '#EF4444', class: 'bg-red-500' },
+    { name: 'Orange', value: '#F59E0B', class: 'bg-orange-500' },
+    { name: 'Indigo', value: '#6366F1', class: 'bg-indigo-500' },
+    { name: 'Teal', value: '#14B8A6', class: 'bg-teal-500' }
+  ];
+
+  fontPresets = [
+    { name: 'Inter', value: 'Inter' },
+    { name: 'Roboto', value: 'Roboto' },
+    { name: 'Poppins', value: 'Poppins' },
+    { name: 'Source Sans Pro', value: 'Source Sans Pro' },
+    { name: 'Open Sans', value: 'Open Sans' },
+    { name: 'Lato', value: 'Lato' },
+    { name: 'Nunito', value: 'Nunito' },
+    { name: 'Montserrat', value: 'Montserrat' }
+  ];
+
   sessionTimeoutOptions = [
     { label: '15 minutes', value: 15 },
     { label: '30 minutes', value: 30 },
@@ -152,16 +252,40 @@ export class SettingsComponent implements OnInit {
   ];
 
   constructor(
-    private injector: Injector, 
+    private injector: Injector,
     private profileService: ProfileServices,
     private fb: FormBuilder,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private themeService: ThemeService
   ) {
     this.initializeForms();
   }
 
   ngOnInit(): void {
     this.loadUserProfile();
+    this.loadThemeSettings();
+  }
+
+  private loadThemeSettings(): void {
+    const currentTheme = this.themeService.currentSettings;
+    this.appearanceSettings = {
+      theme: currentTheme.theme,
+      sidebarCollapsed: this.appearanceSettings.sidebarCollapsed,
+      compactMode: this.appearanceSettings.compactMode,
+      language: this.appearanceSettings.language,
+      dateFormat: this.appearanceSettings.dateFormat,
+      uiStyle: currentTheme.uiStyle,
+      primaryColor: currentTheme.primaryColor,
+      accentColor: currentTheme.accentColor,
+      fontFamily: currentTheme.fontFamily,
+      fontSize: currentTheme.fontSize,
+      borderRadius: currentTheme.borderRadius,
+      layoutStyle: currentTheme.layoutStyle,
+      sidebarStyle: currentTheme.sidebarStyle,
+      animationEnabled: currentTheme.animationEnabled,
+      shadowEnabled: currentTheme.shadowEnabled,
+      backgroundPattern: currentTheme.backgroundPattern
+    };
   }
 
   private initializeForms(): void {
@@ -194,7 +318,7 @@ export class SettingsComponent implements OnInit {
     if (this.profileForm.valid) {
       const formData = this.profileForm.value;
       this.profile = { ...this.profile, ...formData };
-      
+
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
@@ -206,7 +330,7 @@ export class SettingsComponent implements OnInit {
   changePassword(): void {
     if (this.passwordForm.valid) {
       const { newPassword, confirmPassword } = this.passwordForm.value;
-      
+
       if (newPassword !== confirmPassword) {
         this.messageService.add({
           severity: 'error',
@@ -221,7 +345,7 @@ export class SettingsComponent implements OnInit {
         summary: 'Success',
         detail: 'Password changed successfully'
       });
-      
+
       this.passwordForm.reset();
     }
   }
@@ -243,10 +367,60 @@ export class SettingsComponent implements OnInit {
   }
 
   saveAppearanceSettings(): void {
+    // Update theme service with new settings
+    this.themeService.updateSettings({
+      theme: this.appearanceSettings.theme as any,
+      uiStyle: this.appearanceSettings.uiStyle as any,
+      primaryColor: this.appearanceSettings.primaryColor,
+      accentColor: this.appearanceSettings.accentColor,
+      fontFamily: this.appearanceSettings.fontFamily,
+      fontSize: this.appearanceSettings.fontSize as any,
+      borderRadius: this.appearanceSettings.borderRadius as any,
+      layoutStyle: this.appearanceSettings.layoutStyle as any,
+      sidebarStyle: this.appearanceSettings.sidebarStyle as any,
+      animationEnabled: this.appearanceSettings.animationEnabled,
+      shadowEnabled: this.appearanceSettings.shadowEnabled,
+      backgroundPattern: this.appearanceSettings.backgroundPattern as any
+    });
+
     this.messageService.add({
       severity: 'success',
       summary: 'Success',
-      detail: 'Appearance settings updated'
+      detail: 'Appearance settings updated and applied'
+    });
+  }
+
+  resetAppearanceSettings(): void {
+    this.themeService.resetToDefault();
+    this.loadThemeSettings();
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Reset',
+      detail: 'Appearance settings reset to default'
+    });
+  }
+
+  selectColorPreset(color: string, type: 'primary' | 'accent'): void {
+    if (type === 'primary') {
+      this.appearanceSettings.primaryColor = color;
+    } else {
+      this.appearanceSettings.accentColor = color;
+    }
+  }
+
+  selectFontPreset(font: string): void {
+    this.appearanceSettings.fontFamily = font;
+  }
+
+  onThemeChange(): void {
+    this.themeService.updateSettings({
+      theme: this.appearanceSettings.theme as any
+    });
+  }
+
+  onUiStyleChange(): void {
+    this.themeService.updateSettings({
+      uiStyle: this.appearanceSettings.uiStyle as any
     });
   }
 

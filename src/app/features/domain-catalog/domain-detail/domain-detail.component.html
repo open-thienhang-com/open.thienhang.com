@@ -1,0 +1,435 @@
+<div class="domain-detail-container" *ngIf="domain">
+  <!-- Header Section -->
+  <div class="detail-header">
+    <div class="header-nav">
+      <p-button 
+        icon="pi pi-arrow-left" 
+        class="p-button-text"
+        (click)="goBack()"
+        label="Back to Domains">
+      </p-button>
+    </div>
+    
+    <div class="header-content">
+      <div class="domain-info">
+        <h1 class="domain-title">{{domain.name}}</h1>
+        <p class="domain-description">{{domain.description}}</p>
+        
+        <div class="domain-meta">
+          <div class="meta-item">
+            <p-avatar 
+              [image]="domain.ownerAvatar"
+              shape="circle"
+              size="small">
+            </p-avatar>
+            <div class="owner-info">
+              <span class="owner-name">{{domain.owner}}</span>
+              <span class="owner-role">Domain Owner</span>
+            </div>
+          </div>
+          
+          <div class="meta-item">
+            <p-tag 
+              [value]="domain.status"
+              [severity]="getStatusSeverity(domain.status)"
+              class="status-tag">
+            </p-tag>
+          </div>
+          
+          <div class="meta-item">
+            <span class="meta-label">Last Updated:</span>
+            <span class="meta-value">{{domain.lastUpdated | date:'MMM d, y'}}</span>
+          </div>
+        </div>
+        
+        <div class="domain-tags">
+          <p-chip 
+            *ngFor="let tag of domain.tags"
+            [label]="tag"
+            class="domain-tag">
+          </p-chip>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <p-button 
+          label="Edit Domain" 
+          icon="pi pi-pencil"
+          class="p-button-outlined"
+          (click)="editDomain()">
+        </p-button>
+        <p-button 
+          label="Add Data Product" 
+          icon="pi pi-plus"
+          (click)="addDataProduct()">
+        </p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-section">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <p-card>
+          <div class="kpi-content">
+            <div class="kpi-icon">
+              <i class="pi pi-chart-line"></i>
+            </div>
+            <div class="kpi-details">
+              <h3>{{domain.kpis.quality}}%</h3>
+              <p>Data Quality</p>
+              <p-progressBar 
+                [value]="domain.kpis.quality"
+                [style]="{'height': '6px'}"
+                styleClass="quality-progress">
+              </p-progressBar>
+            </div>
+          </div>
+        </p-card>
+      </div>
+      
+      <div class="kpi-card">
+        <p-card>
+          <div class="kpi-content">
+            <div class="kpi-icon">
+              <i class="pi pi-users"></i>
+            </div>
+            <div class="kpi-details">
+              <h3>{{domain.kpis.usage}}%</h3>
+              <p>Usage Rate</p>
+              <p-progressBar 
+                [value]="domain.kpis.usage"
+                [style]="{'height': '6px'}"
+                styleClass="usage-progress">
+              </p-progressBar>
+            </div>
+          </div>
+        </p-card>
+      </div>
+      
+      <div class="kpi-card">
+        <p-card>
+          <div class="kpi-content">
+            <div class="kpi-icon">
+              <i class="pi pi-bolt"></i>
+            </div>
+            <div class="kpi-details">
+              <h3>{{domain.kpis.performance}}%</h3>
+              <p>Performance</p>
+              <p-progressBar 
+                [value]="domain.kpis.performance"
+                [style]="{'height': '6px'}"
+                styleClass="performance-progress">
+              </p-progressBar>
+            </div>
+          </div>
+        </p-card>
+      </div>
+      
+      <div class="kpi-card">
+        <p-card>
+          <div class="kpi-content">
+            <div class="kpi-icon">
+              <i class="pi pi-shield"></i>
+            </div>
+            <div class="kpi-details">
+              <h3>{{domain.maturityScore}}%</h3>
+              <p>Maturity Score</p>
+              <p-progressBar 
+                [value]="domain.maturityScore"
+                [style]="{'height': '6px'}"
+                [styleClass]="'maturity-' + getQualityColor(domain.maturityScore)">
+              </p-progressBar>
+            </div>
+          </div>
+        </p-card>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Tabs -->
+  <div class="content-tabs">
+    <p-tabView>
+      <!-- Overview Tab -->
+      <p-tabPanel header="Overview" leftIcon="pi pi-home">
+        <div class="overview-content">
+          <div class="content-grid">
+            <!-- Data Products Section -->
+            <div class="section-card">
+              <p-card>
+                <div class="card-header">
+                  <h3>Data Products</h3>
+                  <p-badge [value]="domain.dataProducts.length"></p-badge>
+                </div>
+                
+                <div class="data-products-list">
+                  <div 
+                    *ngFor="let product of domain.dataProducts"
+                    class="product-item"
+                    (click)="viewDataProduct(product)">
+                    <div class="product-info">
+                      <h4>{{product.name}}</h4>
+                      <p>{{product.description}}</p>
+                      <div class="product-meta">
+                        <span class="consumers">{{product.consumers}} consumers</span>
+                        <span class="quality-score">Quality: {{product.qualityScore}}%</span>
+                      </div>
+                    </div>
+                    <div class="product-actions">
+                      <p-tag 
+                        [value]="product.status"
+                        [severity]="getStatusSeverity(product.status)">
+                      </p-tag>
+                    </div>
+                  </div>
+                </div>
+              </p-card>
+            </div>
+            
+            <!-- Team Section -->
+            <div class="section-card">
+              <p-card>
+                <div class="card-header">
+                  <h3>Team</h3>
+                  <p-badge [value]="domain.team.length"></p-badge>
+                </div>
+                
+                <div class="team-list">
+                  <div *ngFor="let member of domain.team" class="team-member">
+                    <p-avatar 
+                      [image]="member.avatar"
+                      shape="circle"
+                      size="normal">
+                    </p-avatar>
+                    <div class="member-info">
+                      <h4>{{member.name}}</h4>
+                      <p>{{member.role}}</p>
+                      <span class="member-email">{{member.email}}</span>
+                    </div>
+                  </div>
+                </div>
+              </p-card>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Analytics Tab -->
+      <p-tabPanel header="Analytics" leftIcon="pi pi-chart-bar">
+        <div class="analytics-content">
+          <div class="charts-grid">
+            <div class="chart-card">
+              <p-card>
+                <div class="card-header">
+                  <h3>Quality Trend</h3>
+                </div>
+                <p-chart 
+                  type="line" 
+                  [data]="qualityTrendData"
+                  [options]="{responsive: true, maintainAspectRatio: false}"
+                  [style]="{'height': '300px'}">
+                </p-chart>
+              </p-card>
+            </div>
+            
+            <div class="chart-card">
+              <p-card>
+                <div class="card-header">
+                  <h3>Usage Metrics</h3>
+                </div>
+                <p-chart 
+                  type="bar" 
+                  [data]="usageMetricsData"
+                  [options]="{responsive: true, maintainAspectRatio: false}"
+                  [style]="{'height': '300px'}">
+                </p-chart>
+              </p-card>
+            </div>
+            
+            <div class="chart-card">
+              <p-card>
+                <div class="card-header">
+                  <h3>Performance Metrics</h3>
+                </div>
+                <p-chart 
+                  type="doughnut" 
+                  [data]="performanceData"
+                  [options]="{responsive: true, maintainAspectRatio: false}"
+                  [style]="{'height': '300px'}">
+                </p-chart>
+              </p-card>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Architecture Tab -->
+      <p-tabPanel header="Architecture" leftIcon="pi pi-sitemap">
+        <div class="architecture-content">
+          <div class="architecture-grid">
+            <div class="arch-section">
+              <p-card>
+                <div class="card-header">
+                  <h3>Data Flow</h3>
+                </div>
+                <p class="arch-description">{{domain.architecture.dataFlow}}</p>
+              </p-card>
+            </div>
+            
+            <div class="arch-section">
+              <p-card>
+                <div class="card-header">
+                  <h3>Technologies</h3>
+                </div>
+                <div class="tech-tags">
+                  <p-chip 
+                    *ngFor="let tech of domain.architecture.technologies"
+                    [label]="tech"
+                    class="tech-tag">
+                  </p-chip>
+                </div>
+              </p-card>
+            </div>
+            
+            <div class="arch-section">
+              <p-card>
+                <div class="card-header">
+                  <h3>Integrations</h3>
+                </div>
+                <div class="integration-list">
+                  <div *ngFor="let integration of domain.architecture.integrations" class="integration-item">
+                    <i class="pi pi-link"></i>
+                    <span>{{integration}}</span>
+                  </div>
+                </div>
+              </p-card>
+            </div>
+            
+            <div class="arch-section">
+              <p-card>
+                <div class="card-header">
+                  <h3>SLA Compliance</h3>
+                </div>
+                <div class="sla-metric">
+                  <h2>{{domain.architecture.slaCompliance}}%</h2>
+                  <p-progressBar 
+                    [value]="domain.architecture.slaCompliance"
+                    [style]="{'height': '8px'}"
+                    styleClass="sla-progress">
+                  </p-progressBar>
+                </div>
+              </p-card>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Governance Tab -->
+      <p-tabPanel header="Governance" leftIcon="pi pi-shield">
+        <div class="governance-content">
+          <div class="governance-grid">
+            <div class="gov-section">
+              <p-card>
+                <div class="card-header">
+                  <h3>Policies</h3>
+                </div>
+                <div class="policy-list">
+                  <div *ngFor="let policy of domain.governance.policies" class="policy-item">
+                    <i class="pi pi-file-o"></i>
+                    <span>{{policy}}</span>
+                  </div>
+                </div>
+              </p-card>
+            </div>
+            
+            <div class="gov-section">
+              <p-card>
+                <div class="card-header">
+                  <h3>Data Classification</h3>
+                </div>
+                <div class="classification-info">
+                  <p-tag 
+                    [value]="domain.governance.dataClassification"
+                    severity="warning"
+                    class="classification-tag">
+                  </p-tag>
+                </div>
+              </p-card>
+            </div>
+            
+            <div class="gov-section">
+              <p-card>
+                <div class="card-header">
+                  <h3>Retention Period</h3>
+                </div>
+                <div class="retention-info">
+                  <h4>{{domain.governance.retentionPeriod}}</h4>
+                </div>
+              </p-card>
+            </div>
+            
+            <div class="gov-section">
+              <p-card>
+                <div class="card-header">
+                  <h3>Access Controls</h3>
+                </div>
+                <div class="access-controls">
+                  <div *ngFor="let control of domain.governance.accessControls" class="control-item">
+                    <i class="pi pi-lock"></i>
+                    <span>{{control}}</span>
+                  </div>
+                </div>
+              </p-card>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Activity Tab -->
+      <p-tabPanel header="Activity" leftIcon="pi pi-history">
+        <div class="activity-content">
+          <p-card>
+            <div class="card-header">
+              <h3>Recent Activities</h3>
+            </div>
+            
+            <p-timeline 
+              [value]="domain.activities"
+              align="left"
+              styleClass="custom-timeline">
+              <ng-template pTemplate="marker" let-activity>
+                <div class="activity-marker" [style.background-color]="activity.color">
+                  <i [class]="'pi ' + activity.icon"></i>
+                </div>
+              </ng-template>
+              
+              <ng-template pTemplate="content" let-activity>
+                <div class="activity-content-item">
+                  <div class="activity-header">
+                    <h4>{{activity.description}}</h4>
+                    <span class="activity-time">{{activity.timestamp | date:'MMM d, y h:mm a'}}</span>
+                  </div>
+                  <div class="activity-meta">
+                    <p-tag [value]="activity.type" class="activity-type"></p-tag>
+                    <span class="activity-user">by {{activity.user}}</span>
+                  </div>
+                </div>
+              </ng-template>
+            </p-timeline>
+          </p-card>
+        </div>
+      </p-tabPanel>
+    </p-tabView>
+  </div>
+</div>
+
+<!-- Loading State -->
+<div class="loading-container" *ngIf="loading">
+  <div class="loading-content">
+    <i class="pi pi-spin pi-spinner loading-icon"></i>
+    <p>Loading domain details...</p>
+  </div>
+</div>
+
+<p-toast position="top-right"></p-toast>
