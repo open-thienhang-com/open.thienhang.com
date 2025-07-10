@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { GovernanceServices } from '../../../core/services/governance.services';
 import { PolicyComponent } from './policy/policy.component';
 
 interface Policy {
-  id: string;
+  _id?: string;
+  id?: string;
   name: string;
   description: string;
   type: string;
@@ -54,7 +56,10 @@ export class PoliciesComponent implements OnInit {
     enforcedPolicies: 0
   };
 
-  constructor(private governanceServices: GovernanceServices) { }
+  constructor(
+    private governanceServices: GovernanceServices,
+    private router: Router
+  ) { }
 
   ngOnInit() {
     this.loadPolicies();
@@ -203,8 +208,8 @@ export class PoliciesComponent implements OnInit {
   }
 
   viewPolicy(policy: Policy) {
-    // Navigate to policy detail view or open read-only modal
-    console.log('Viewing policy:', policy);
+    // Navigate to policy detail view
+    this.router.navigate(['/governance/policies', policy._id || policy.id]);
   }
 
   deletePolicy(policyId: string) {
