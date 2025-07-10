@@ -30,8 +30,8 @@ export class CurrentUserComponent extends AppBaseComponent {
 
   ngOnInit() {
     this.authServices.getUser().subscribe(user => {
-      if (user?.data) {
-        this.user = user.data;
+      if (user) {
+        this.user = user;
       }
     });
     this.menuItems = [
