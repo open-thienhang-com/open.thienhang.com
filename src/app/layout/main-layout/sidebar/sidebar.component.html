@@ -1,13 +1,13 @@
 <div class="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
   <!-- Header -->
-  <div class="flex header items-center px-4 py-4 border-b border-gray-200 dark:border-gray-700 shrink-0"
+  <div class="flex header items-center px-4 py-3 border-b border-gray-200 dark:border-gray-700 shrink-0"
        [class.justify-center]="collapsed"
        [class.justify-between]="!collapsed">
-    <div class="flex items-center gap-3" [class.justify-center]="collapsed">
-      <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-        <i class="pi pi-sitemap text-white text-sm"></i>
+    <div class="flex items-center gap-2" [class.justify-center]="collapsed">
+      <div class="w-7 h-7 bg-gradient-to-br from-blue-500 to-purple-600 rounded-md flex items-center justify-center">
+        <i class="pi pi-sitemap text-white text-xs"></i>
       </div>
-      <span class="text-lg lg:text-xl font-bold text-gray-900 dark:text-white" [class.hidden]="collapsed">
+      <span class="text-lg font-bold text-gray-900 dark:text-white" [class.hidden]="collapsed">
         DataMesh
       </span>
     </div>
@@ -20,36 +20,41 @@
   </div>
 
   <!-- Navigation Menu -->
-  <div class="overflow-y-auto flex-1 py-4" [class.px-2]="collapsed" [class.px-4]="!collapsed">
-    <ul class="list-none p-0 m-0 space-y-1">
+  <div class="overflow-y-auto flex-1 py-2" [class.px-1]="collapsed" [class.px-3]="!collapsed">
+    <ul class="list-none p-0 m-0 space-y-0.5">
       <li *ngFor="let item of menu">
         <div class="relative">
           <div 
             class="flex items-center rounded-lg text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group" 
             [class.justify-center]="collapsed"
             [class.justify-between]="!collapsed"
-            [class.p-2]="collapsed"
-            [class.p-3]="!collapsed"
+            [class.p-1.5]="collapsed"
+            [class.p-2]="!collapsed"
             [ngClass]="{
               'bg-blue-50 dark:bg-blue-900/20': item.children && item.expanded && !collapsed
             }"
             [title]="collapsed ? item.label : ''"
             (click)="handleMenuClick($event, item)">
 
-            <div class="flex items-center gap-3 min-w-0 flex-1" [class.justify-center]="collapsed">
-              <div class="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+            <div class="flex items-center gap-2 min-w-0 flex-1" [class.justify-center]="collapsed">
+              <div class="flex-shrink-0 w-4 h-4 flex items-center justify-center">
                 <i 
-                  [ngClass]="item.icon + ' text-sm'"
+                  [ngClass]="item.icon + ' text-xs'"
                   [class.text-blue-600]="item.children && item.expanded && !collapsed"
                   [class.dark:text-blue-400]="item.children && item.expanded && !collapsed">
                 </i>
               </div>
               <span 
-                class="font-medium text-sm truncate" 
+                class="font-medium text-xs truncate" 
                 [class.hidden]="collapsed"
                 [class.text-blue-600]="item.children && item.expanded"
                 [class.dark:text-blue-400]="item.children && item.expanded">
                 {{ item.label }}
+              </span>
+              <span 
+                *ngIf="item.badge && !collapsed" 
+                class="inline-flex items-center justify-center ml-auto px-1.5 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                {{ item.badge }}
               </span>
             </div>
 
@@ -68,16 +73,23 @@
           <div
             *ngIf="item.children && item.expanded && !collapsed"
             [@expandCollapse]
-            class="ml-8 mt-1 space-y-1 border-l-2 border-gray-200 dark:border-gray-700 pl-4">
-            <div *ngFor="let child of item.children">
-              <a
-                [routerLink]="child.url"
-                routerLinkActive="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                class="flex items-center gap-3 p-2.5 rounded-md text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-all duration-200 group">
+            class="ml-6 mt-0.5 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-2">
+            <a
+              *ngFor="let child of item.children"
+              [routerLink]="child.url"
+              [queryParams]="child.url && child.url.includes('?') ? getQueryParams(child.url) : null"
+              routerLinkActive="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+              class="flex items-center justify-between p-2 rounded-md text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-all duration-200 group">
+              <div class="flex items-center gap-2">
                 <i [ngClass]="child.icon + ' text-xs flex-shrink-0'"></i>
                 <span class="truncate">{{ child.label }}</span>
-              </a>
-            </div>
+              </div>
+              <span 
+                *ngIf="child.badge" 
+                class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                {{ child.badge }}
+              </span>
+            </a>
           </div>
         </div>
       </li>
@@ -85,15 +97,17 @@
   </div>
 
   <!-- User Section at Bottom -->
-  <div class="shrink-0 border-t border-gray-200 dark:border-gray-700 p-4" [class.hidden]="collapsed">
-    <div class="flex items-center gap-3">
-      <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-        <i class="pi pi-user text-gray-600 dark:text-gray-300 text-sm"></i>
+  <div class="shrink-0 border-t border-gray-200 dark:border-gray-700 p-3" [class.px-2]="collapsed" [class.text-center]="collapsed">
+    <a 
+      [routerLink]="'/profile'"
+      class="flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors p-2 rounded-lg cursor-pointer">
+      <div class="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
+        <i class="pi pi-user text-gray-600 dark:text-gray-300 text-xs"></i>
       </div>
-      <div class="flex-1 min-w-0">
-        <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Admin User</p>
+      <div class="flex-1 min-w-0" [class.hidden]="collapsed">
+        <p class="text-xs font-medium text-gray-900 dark:text-white truncate">Admin User</p>
         <p class="text-xs text-gray-500 dark:text-gray-400 truncate">admin&#64;datamesh.com</p>
       </div>
-    </div>
+    </a>
   </div>
 </div>

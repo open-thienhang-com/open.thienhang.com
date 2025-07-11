@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
+import { CacheService } from './cache.service';
 
 export interface ApiResponse<T> {
   data: T;
@@ -44,15 +45,22 @@ export interface Account {
 }
 
 export interface Asset {
-  id: string;
+  _id?: string;
+  id?: string;
+  kid?: string;
   name: string;
   type: string;
-  category: string;
-  owner: string;
-  tags: string[];
-  metadata: any;
-  createdAt: Date;
-  updatedAt: Date;
+  source?: string;
+  location?: string;
+  sensitivity?: string;
+  status?: string;
+  category?: string;
+  owner?: string;
+  tags?: string[];
+  metadata?: any;
+  description?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Role {
@@ -159,7 +167,10 @@ export interface RetentionPolicy {
 export class GovernanceServices {
   private baseUrl = 'https://api.thienhang.com';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private cacheService: CacheService
+  ) { }
 
   // Users Management
   getUsers(params?: any): Observable<ApiResponse<User[]>> {
@@ -305,28 +316,72 @@ export class GovernanceServices {
   // Assets Management
   getAssets(params?: any): Observable<ApiResponse<Asset[]>> {
     const httpParams = this.buildHttpParams(params);
-    return this.http.get<Asset[]>(`${this.baseUrl}/governance/assets`, { params: httpParams })
-      .pipe(map(response => this.wrapArrayResponse(response)));
+    const cacheKey = `assets_${JSON.stringify(params || {})}`;
+
+    // Create the HTTP observable
+    const httpObservable = this.http.get<any>(`${this.baseUrl}/governance/assets/assets`, { params: httpParams })
+      .pipe(map(response => {
+        // Handle the API response format from your example
+        if (response && response.data) {
+          return {
+            data: response.data as Asset[],
+            total: response.total,
+            message: response.message,
+            success: true
+          } as ApiResponse<Asset[]>;
+        }
+        return this.wrapArrayResponse(response) as ApiResponse<Asset[]>;
+      }));
+
+    // Return cached observable with 5-minute TTL
+    return this.cacheService.getCachedObservable<ApiResponse<Asset[]>>(cacheKey, httpObservable, 5 * 60 * 1000);
   }
 
   getAsset(id: string): Observable<ApiResponse<Asset>> {
-    return this.http.get<Asset>(`${this.baseUrl}/governance/asset/${id}`)
+    const cacheKey = `asset_${id}`;
+    const httpObservable = this.http.get<Asset>(`${this.baseUrl}/governance/assets/asset/${id}`)
       .pipe(map(response => this.wrapResponse(response)));
+
+    // Return cached observable with 5-minute TTL
+    return this.cacheService.getCachedObservable<ApiResponse<Asset>>(cacheKey, httpObservable, 5 * 60 * 1000);
   }
 
   createAsset(asset: Asset): Observable<ApiResponse<Asset>> {
-    return this.http.post<Asset>(`${this.baseUrl}/governance/asset`, asset)
+    // Clear assets cache when creating new asset
+    this.clearAssetsCache();
+
+    return this.http.post<Asset>(`${this.baseUrl}/governance/assets/asset`, asset)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   updateAsset(id: string, asset: Partial<Asset>): Observable<ApiResponse<Asset>> {
-    return this.http.put<Asset>(`${this.baseUrl}/governance/asset/${id}`, asset)
+    // Clear assets cache when updating asset
+    this.clearAssetsCache();
+    this.cacheService.delete(`asset_${id}`);
+
+    return this.http.patch<Asset>(`${this.baseUrl}/governance/assets/asset/${id}`, asset)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   deleteAsset(id: string): Observable<ApiResponse<any>> {
-    return this.http.delete<any>(`${this.baseUrl}/governance/asset/${id}`)
+    // Clear assets cache when deleting asset
+    this.clearAssetsCache();
+    this.cacheService.delete(`asset_${id}`);
+
+    return this.http.delete<any>(`${this.baseUrl}/governance/assets/asset/${id}`)
       .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  // Clear all assets-related cache
+  private clearAssetsCache(): void {
+    const cacheStats = this.cacheService.getStats();
+    const assetsKeys = cacheStats.keys.filter(key => key.startsWith('assets_'));
+    assetsKeys.forEach(key => this.cacheService.delete(key));
+  }
+
+  // Public method to clear cache
+  clearCache(): void {
+    this.cacheService.clear();
   }
 
   // Policies Management
@@ -582,10 +637,10 @@ export class GovernanceServices {
 
   // Helper method to wrap an array response to match the API response format
   private wrapArrayResponse<T>(data: T[]): ApiResponse<T[]> {
-    return { 
-      data: data || [], 
+    return {
+      data: data || [],
       total: Array.isArray(data) ? data.length : 0,
-      success: true 
+      success: true
     };
   }
 }

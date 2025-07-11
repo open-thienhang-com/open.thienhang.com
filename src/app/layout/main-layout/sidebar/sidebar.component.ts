@@ -81,6 +81,55 @@ export class SidebarComponent {
         expanded: false
       },
       {
+        label: 'Explore',
+        icon: 'pi pi-compass',
+        children: [
+          {
+            label: 'Database',
+            icon: 'pi pi-database',
+            url: '/explore/database',
+            badge: '8',
+          },
+          {
+            label: 'Pipelines',
+            icon: 'pi pi-directions',
+            url: '/explore/pipelines',
+            badge: '3',
+          },
+          {
+            label: 'Topics',
+            icon: 'pi pi-telegram',
+            url: '/explore/topics',
+            badge: '2',
+          },
+          {
+            label: 'ML Models',
+            icon: 'pi pi-chart-line',
+            url: '/explore/ml-models',
+            badge: '5'
+          },
+          {
+            label: 'Container',
+            icon: 'pi pi-box',
+            url: '/explore/container',
+            badge: '2',
+          },
+          {
+            label: 'Search Indexes',
+            icon: 'pi pi-search',
+            url: '/explore/search',
+            badge: '1',
+          },
+          {
+            label: 'APIs',
+            icon: 'pi pi-globe',
+            url: '/explore/apis',
+            badge: '4',
+          }
+        ],
+        expanded: false
+      },
+      {
         label: 'Observability',
         icon: 'pi pi-eye',
         children: [
@@ -91,27 +140,37 @@ export class SidebarComponent {
         expanded: false
       },
       {
-        label: 'Profile',
-        icon: 'pi pi-user',
-        url: '/profile'
-      },
-      {
         label: 'Settings',
         icon: 'pi pi-cog',
-        url: '/settings'
+        children: [
+          { label: 'User Profile', icon: 'pi pi-user', url: '/profile' },
+          { label: 'Preferences', icon: 'pi pi-sliders-h', url: '/settings' },
+          { label: 'Security', icon: 'pi pi-shield', url: '/settings?tab=security' },
+          { label: 'Notifications', icon: 'pi pi-bell', url: '/settings?tab=notifications' },
+        ],
+        expanded: false
       },
     ];
   }
 
   toggleItem(item: MenuItem): void {
-    item.expanded = !item.expanded;
+    // Nếu item có thuộc tính expanded, chỉ cần toggle
+    if ('expanded' in item) {
+      item.expanded = !item.expanded;
+    } else {
+      // Nếu item chưa có thuộc tính expanded, thêm vào và set giá trị true
+      item.expanded = true;
+    }
+
+    // Ngăn sự kiện click lan tỏa lên parent
+    event?.stopPropagation();
   }
 
   handleMenuClick(event: Event, item: MenuItem): void {
     // Prevent event bubbling to avoid conflicts
     event.preventDefault();
     event.stopPropagation();
-    
+
     if (item.children && !this.collapsed) {
       // Toggle submenu for items with children
       this.toggleItem(item);
@@ -123,12 +182,33 @@ export class SidebarComponent {
 
   navigateTo(url?: string): void {
     if (url) {
-      this.router.navigate([url]);
+      // Split URL and query params
+      const [basePath, queryString] = url.split('?');
+      const queryParams = this.getQueryParams(url);
+
+      this.router.navigate([basePath], { queryParams });
+
       // Close sidebar on mobile after navigation
       if (window.innerWidth < 1024) {
         this.toggle.emit();
       }
     }
+  }
+
+  getQueryParams(url: string): any {
+    if (!url || !url.includes('?')) {
+      return {};
+    }
+
+    const queryString = url.split('?')[1];
+    const params: any = {};
+
+    queryString.split('&').forEach(param => {
+      const [key, value] = param.split('=');
+      params[key] = value;
+    });
+
+    return params;
   }
 }
 
@@ -137,5 +217,6 @@ interface MenuItem {
   icon?: string;
   url?: string;
   children?: MenuItem[];
-  expanded?: boolean
+  expanded?: boolean;
+  badge?: string;
 }

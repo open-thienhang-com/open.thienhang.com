@@ -1,285 +1,285 @@
 :host {
-  display: block;
-  width: 100%;
+    display: block;
+    width: 100%;
 }
 
 // Tab customizations
 :host ::ng-deep {
-  .p-tabview {
-    .p-tabview-nav {
-      border-bottom: 1px solid var(--surface-200);
-      margin-bottom: 1.5rem;
-      
-      .p-tabview-nav-link {
-        padding: 1rem 1.5rem;
-        font-weight: 500;
-        color: var(--text-color);
-        border: none;
-        background: transparent;
+    .p-tabview {
+        .p-tabview-nav {
+            border-bottom: 1px solid var(--surface-200);
+            margin-bottom: 1.5rem;
+
+            .p-tabview-nav-link {
+                padding: 1rem 1.5rem;
+                font-weight: 500;
+                color: var(--text-color);
+                border: none;
+                background: transparent;
+                transition: all 0.2s ease;
+
+                &:hover {
+                    background: var(--surface-50);
+                }
+
+                &.p-tabview-nav-link-active {
+                    background: var(--primary-color);
+                    color: white;
+                    border-radius: 0.5rem;
+                }
+            }
+        }
+
+        .p-tabview-panels {
+            padding: 0;
+        }
+    }
+
+    // Card customizations
+    .p-card {
+        border: 1px solid var(--surface-200);
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         transition: all 0.2s ease;
-        
+
         &:hover {
-          background: var(--surface-50);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
-        
-        &.p-tabview-nav-link-active {
-          background: var(--primary-color);
-          color: white;
-          border-radius: 0.5rem;
+
+        .p-card-header {
+            background: var(--surface-50);
+            border-bottom: 1px solid var(--surface-200);
+            border-radius: 0.75rem 0.75rem 0 0;
         }
-      }
+
+        .p-card-content {
+            padding: 1.5rem;
+        }
     }
-    
-    .p-tabview-panels {
-      padding: 0;
+
+    // Form customizations
+    .p-inputtext,
+    .p-dropdown {
+        border: 1px solid var(--surface-300);
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        transition: all 0.2s ease;
+
+        &:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        &.ng-invalid.ng-touched {
+            border-color: var(--red-500);
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
+        }
     }
-  }
-  
-  // Card customizations
-  .p-card {
-    border: 1px solid var(--surface-200);
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease;
-    
-    &:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    
-    .p-card-header {
-      background: var(--surface-50);
-      border-bottom: 1px solid var(--surface-200);
-      border-radius: 0.75rem 0.75rem 0 0;
-    }
-    
-    .p-card-content {
-      padding: 1.5rem;
-    }
-  }
-  
-  // Form customizations
-  .p-inputtext,
-  .p-dropdown {
-    border: 1px solid var(--surface-300);
-    border-radius: 0.5rem;
-    padding: 0.75rem 1rem;
-    transition: all 0.2s ease;
-    
-    &:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-    }
-    
-    &.ng-invalid.ng-touched {
-      border-color: var(--red-500);
-      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
-    }
-  }
-  
-  // Button customizations
-  .p-button {
-    border-radius: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    
-    &:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-    
-    &.p-button-secondary {
-      background: var(--surface-100);
-      color: var(--text-color);
-      border: 1px solid var(--surface-300);
-      
-      &:hover {
-        background: var(--surface-200);
-      }
-    }
-  }
-  
-  // Avatar customizations
-  .p-avatar {
-    border: 3px solid var(--surface-200);
-    transition: all 0.2s ease;
-    
-    &:hover {
-      border-color: var(--primary-color);
-      transform: scale(1.05);
-    }
-  }
-  
-  // Switch customizations
-  .p-inputswitch {
-    .p-inputswitch-slider {
-      background: var(--surface-300);
-      border-radius: 1rem;
-      transition: all 0.2s ease;
-      
-      &:before {
-        background: white;
-        border-radius: 50%;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-    }
-    
-    &.p-inputswitch-checked .p-inputswitch-slider {
-      background: var(--primary-color);
-    }
-  }
-  
-  // Color picker customizations
-  .p-colorpicker {
-    border: 1px solid var(--surface-300);
-    border-radius: 0.5rem;
-    transition: all 0.2s ease;
-    
-    &:hover {
-      border-color: var(--primary-color);
-    }
-  }
-  
-  // Chip customizations
-  .p-chip {
-    border-radius: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: var(--surface-100);
-    color: var(--text-color);
-    border: 1px solid var(--surface-200);
-    transition: all 0.2s ease;
-    cursor: pointer;
-    
-    &:hover {
-      background: var(--surface-200);
-      transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-    
-    &.bg-primary-100 {
-      background: var(--primary-100);
-      color: var(--primary-800);
-      border-color: var(--primary-200);
-    }
-  }
-  
-  // Select button customizations
-  .p-selectbutton {
+
+    // Button customizations
     .p-button {
-      margin: 0;
-      border-radius: 0;
-      
-      &:first-child {
-        border-top-left-radius: 0.5rem;
-        border-bottom-left-radius: 0.5rem;
-      }
-      
-      &:last-child {
-        border-top-right-radius: 0.5rem;
-        border-bottom-right-radius: 0.5rem;
-      }
+        border-radius: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+
+        &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        &.p-button-secondary {
+            background: var(--surface-100);
+            color: var(--text-color);
+            border: 1px solid var(--surface-300);
+
+            &:hover {
+                background: var(--surface-200);
+            }
+        }
     }
-  }
-  
-  // File upload customizations
-  .p-fileupload {
-    .p-fileupload-choose {
-      border-radius: 0.5rem;
-      background: var(--primary-color);
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      transition: all 0.2s ease;
-      
-      &:hover {
-        background: var(--primary-600);
-        transform: translateY(-1px);
-      }
+
+    // Avatar customizations
+    .p-avatar {
+        border: 3px solid var(--surface-200);
+        transition: all 0.2s ease;
+
+        &:hover {
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+        }
     }
-  }
+
+    // Switch customizations
+    .p-inputswitch {
+        .p-inputswitch-slider {
+            background: var(--surface-300);
+            border-radius: 1rem;
+            transition: all 0.2s ease;
+
+            &:before {
+                background: white;
+                border-radius: 50%;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        &.p-inputswitch-checked .p-inputswitch-slider {
+            background: var(--primary-color);
+        }
+    }
+
+    // Color picker customizations
+    .p-colorpicker {
+        border: 1px solid var(--surface-300);
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+
+        &:hover {
+            border-color: var(--primary-color);
+        }
+    }
+
+    // Chip customizations
+    .p-chip {
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: var(--surface-100);
+        color: var(--text-color);
+        border: 1px solid var(--surface-200);
+        transition: all 0.2s ease;
+        cursor: pointer;
+
+        &:hover {
+            background: var(--surface-200);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        &.bg-primary-100 {
+            background: var(--primary-100);
+            color: var(--primary-800);
+            border-color: var(--primary-200);
+        }
+    }
+
+    // Select button customizations
+    .p-selectbutton {
+        .p-button {
+            margin: 0;
+            border-radius: 0;
+
+            &:first-child {
+                border-top-left-radius: 0.5rem;
+                border-bottom-left-radius: 0.5rem;
+            }
+
+            &:last-child {
+                border-top-right-radius: 0.5rem;
+                border-bottom-right-radius: 0.5rem;
+            }
+        }
+    }
+
+    // File upload customizations
+    .p-fileupload {
+        .p-fileupload-choose {
+            border-radius: 0.5rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.2s ease;
+
+            &:hover {
+                background: var(--primary-600);
+                transform: translateY(-1px);
+            }
+        }
+    }
 }
 
 // Custom styles for appearance settings
 .ui-style-card {
-  cursor: pointer;
-  transition: all 0.2s ease;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
-  
-  &.selected {
-    border-color: var(--primary-color);
-    background: var(--primary-50);
-  }
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    &.selected {
+        border-color: var(--primary-color);
+        background: var(--primary-50);
+    }
 }
 
 .color-preset {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid var(--surface-200);
-  transition: all 0.2s ease;
-  
-  &:hover {
-    border-color: var(--surface-400);
-    transform: scale(1.1);
-  }
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--surface-200);
+    transition: all 0.2s ease;
+
+    &:hover {
+        border-color: var(--surface-400);
+        transform: scale(1.1);
+    }
 }
 
 // Responsive design
 @media (max-width: 768px) {
-  :host ::ng-deep {
-    .p-tabview {
-      .p-tabview-nav {
-        flex-wrap: wrap;
-        
-        .p-tabview-nav-link {
-          padding: 0.75rem 1rem;
-          font-size: 0.875rem;
+    :host ::ng-deep {
+        .p-tabview {
+            .p-tabview-nav {
+                flex-wrap: wrap;
+
+                .p-tabview-nav-link {
+                    padding: 0.75rem 1rem;
+                    font-size: 0.875rem;
+                }
+            }
         }
-      }
+
+        .p-card {
+            .p-card-content {
+                padding: 1rem;
+            }
+        }
+
+        .grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
     }
-    
-    .p-card {
-      .p-card-content {
-        padding: 1rem;
-      }
-    }
-    
-    .grid {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-  }
 }
 
 // Dark mode adjustments
 @media (prefers-color-scheme: dark) {
-  :host ::ng-deep {
-    .p-card {
-      border-color: var(--surface-700);
-      background: var(--surface-800);
-      
-      .p-card-header {
-        background: var(--surface-700);
-        border-bottom-color: var(--surface-600);
-      }
+    :host ::ng-deep {
+        .p-card {
+            border-color: var(--surface-700);
+            background: var(--surface-800);
+
+            .p-card-header {
+                background: var(--surface-700);
+                border-bottom-color: var(--surface-600);
+            }
+        }
+
+        .p-inputtext,
+        .p-dropdown {
+            border-color: var(--surface-600);
+            background: var(--surface-700);
+            color: var(--surface-100);
+        }
+
+        .ui-style-card {
+            &.selected {
+                background: var(--primary-900);
+            }
+        }
     }
-    
-    .p-inputtext,
-    .p-dropdown {
-      border-color: var(--surface-600);
-      background: var(--surface-700);
-      color: var(--surface-100);
-    }
-    
-    .ui-style-card {
-      &.selected {
-        background: var(--primary-900);
-      }
-    }
-  }
 }

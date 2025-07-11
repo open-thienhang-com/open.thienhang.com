@@ -1,0 +1,222 @@
+/* Asset Management Component Styles */
+
+/* Asset card hover animation */
+.asset-card {
+    transition: all 0.3s ease;
+}
+
+.asset-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Asset icon animation */
+.asset-icon {
+    transition: transform 0.3s ease;
+}
+
+.asset-icon:hover {
+    transform: scale(1.1);
+}
+
+/* Loading animation */
+.loading-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Fade in animation */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Slide in animation */
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Custom button hover effects */
+.btn-hover {
+    transition: all 0.2s ease;
+}
+
+.btn-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Search input focus effect */
+.search-focus {
+    transition: all 0.2s ease;
+}
+
+.search-focus:focus {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+/* Asset type icons with specific colors */
+.asset-type-database {
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+}
+
+.asset-type-api {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.asset-type-cloud {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.asset-type-file {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.asset-type-func {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.asset-type-table {
+    background: linear-gradient(135deg, #eab308, #ca8a04);
+}
+
+.asset-type-default {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+}
+
+/* Responsive grid improvements */
+@media (max-width: 640px) {
+    .mobile-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mobile-padding {
+        padding: 0.75rem;
+    }
+}
+
+/* Status tags with custom colors */
+.status-active {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.status-inactive {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+.status-maintenance {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.status-deprecated {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+/* Sensitivity levels */
+.sensitivity-low {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.sensitivity-medium {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.sensitivity-high {
+    background-color: #fed7aa;
+    color: #c2410c;
+}
+
+.sensitivity-critical {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+/* Modal enhancements */
+.asset-dialog .p-dialog-header {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border-bottom: 1px solid #d1fae5;
+}
+
+.asset-dialog .p-dialog-content {
+    padding: 2rem;
+}
+
+/* Form field focus states */
+.form-field:focus {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Pulse animation for loading states */
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}

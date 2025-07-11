@@ -1,10 +1,10 @@
+@use 'styles/custom-styles';
+@use 'styles/theme-system';
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 @import "primeicons/primeicons.css";
-@import 'styles/custom-styles';
-@import 'styles/theme-system';
 
 :root {
   --body-bg: var(--p-surface-50);
@@ -201,7 +201,8 @@ h6 {
 .p-dialog {
   border-radius: 16px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  z-index: 10000 !important; /* Ensure proper layering */
+  z-index: 10000 !important;
+  /* Ensure proper layering */
 }
 
 .p-dialog-header {
@@ -244,6 +245,7 @@ main {
     opacity: 0;
     transform: scale(0.9) translateY(-50px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -255,6 +257,7 @@ main {
     opacity: 1;
     transform: scale(1) translateY(0);
   }
+
   to {
     opacity: 0;
     transform: scale(0.9) translateY(-50px);

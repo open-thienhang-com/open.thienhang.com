@@ -11,6 +11,7 @@
   - Quality Metrics (Chỉ số chất lượng)
 - **Governance**: Policies, Assets, Permissions, Roles, Users, Teams, Accounts
 - **Discovery**: Data Catalog, Schema Registry, API Explorer
+- **Explore Data Sources**: Database, Pipelines, Topics, ML Models, Container, Search Indexes, APIs
 - **Observability**: Monitoring, Alerting, Audit Logs
 - **Animation mượt mà**: Expandable menu với animation CSS
 - **Icons đẹp**: Sử dụng PrimeIcons với gradient background
@@ -132,6 +133,33 @@
   - Responsive design cho mọi device
   - Dark mode support
 
+### 14. ✅ Explore Data Sources & Assets
+
+**Thiết kế**:
+- **Dashboard chính**: Tổng quan về tất cả các data sources với status, health metrics, last synced
+- **Database Explorer**: Xem và quản lý các databases (MongoDB, PostgreSQL, MySQL, Trino, Oracle...)
+- **Pipeline Explorer**: Quản lý data pipelines (Airflow, Apache NiFi, Prefect) với status và success metrics
+- **Topic Explorer**: Quản lý message topics (Kafka, Pulsar) với throughput và consumer metrics
+- **ML Model Explorer**: Quản lý machine learning models với performance và versioning
+- **Container Explorer**: Quản lý storage containers (S3, GCS) với capacity và file metrics
+- **Search Index Explorer**: Quản lý search indexes (Elasticsearch) với query và indexing performance
+- **API Explorer**: Quản lý các API connections (OpenAI, REST, GraphQL, gRPC) với usage và performance
+
+**Tính năng**:
+- **Filtering & Searching**: Tìm kiếm theo tên, loại, trạng thái
+- **Status Monitoring**: Hiển thị trạng thái kết nối real-time
+- **Health Metrics**: Đo lường hiệu suất và sức khỏe của data sources
+- **Asset Management**: Quản lý các assets trong mỗi data source
+- **Action Controls**: Thực hiện các hành động như sync, refresh, configuration
+- **Responsive Design**: Hoạt động trên cả mobile và desktop
+- **Dark Mode Support**: Hỗ trợ dark mode đầy đủ
+
+**Công nghệ**:
+- **PrimeNG Tables**: Hiển thị dữ liệu với pagination, sorting
+- **PrimeNG Cards**: Layout cho các data source items
+- **Tailwind CSS**: Styling responsive và dark mode
+- **Angular Standalone Components**: Cấu trúc mô-đun hóa
+
 ## Cấu trúc file đã tạo/cập nhật
 
 ### Policy Management
@@ -250,6 +278,7 @@ npm test
 
 Đã hoàn thành đầy đủ tất cả yêu cầu:
 ✅ Menu đẹp và hiện đại với đầy đủ tính năng Data Mesh
+✅ Explore Data Sources với đầy đủ các loại: Database, Pipelines, Topics, ML Models, Container, Search Indexes, APIs
 ✅ Layout responsive hoạt động tốt trên mobile và desktop  
 ✅ Policy management screen chi tiết và professional
 ✅ Data Contract management screen với tính năng đầy đủ

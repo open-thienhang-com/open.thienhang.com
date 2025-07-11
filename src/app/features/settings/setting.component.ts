@@ -1,5 +1,6 @@
 import { Component, Injector, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { AppBaseComponent } from '../../core/base/app-base.component';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TabViewModule } from 'primeng/tabview';
@@ -95,6 +96,7 @@ interface AppearanceSettings {
 export class SettingsComponent implements OnInit {
   profileForm: FormGroup;
   passwordForm: FormGroup;
+  activeTabIndex: number = 0;
 
   profile: UserProfile = {
     firstName: 'John',
@@ -256,7 +258,8 @@ export class SettingsComponent implements OnInit {
     private profileService: ProfileServices,
     private fb: FormBuilder,
     private messageService: MessageService,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private route: ActivatedRoute
   ) {
     this.initializeForms();
   }
@@ -264,6 +267,28 @@ export class SettingsComponent implements OnInit {
   ngOnInit(): void {
     this.loadUserProfile();
     this.loadThemeSettings();
+
+    // Set active tab based on URL parameter
+    this.route.queryParams.subscribe(params => {
+      if (params['tab']) {
+        switch (params['tab']) {
+          case 'profile':
+            this.activeTabIndex = 0;
+            break;
+          case 'security':
+            this.activeTabIndex = 1;
+            break;
+          case 'notifications':
+            this.activeTabIndex = 2;
+            break;
+          case 'appearance':
+            this.activeTabIndex = 3;
+            break;
+          default:
+            this.activeTabIndex = 0;
+        }
+      }
+    });
   }
 
   private loadThemeSettings(): void {
