@@ -1,4 +1,5 @@
 <!-- Permissions Management - ACL Granular Rights -->
+<p-toast></p-toast>
 <div class="bg-gray-50 p-6">
   <div class="max-w-7xl mx-auto">
     
@@ -22,11 +23,19 @@
             pTooltip="Toggle Filters">
           </p-button>
           <p-button 
-            label="Permission Matrix" 
-            icon="pi pi-table" 
+            label="Test API" 
+            icon="pi pi-cog" 
+            severity="info" 
+            [outlined]="true"
+            (onClick)="testPermissionsAPI()"
+            pTooltip="Test API Response">
+          </p-button>
+          <p-button 
+            label="Card View" 
+            icon="pi pi-th-large" 
             severity="secondary" 
             [outlined]="true"
-            (click)="setViewMode('matrix')">
+            (click)="setViewMode('card')">
           </p-button>
           <p-button 
             label="Add Permission" 
@@ -188,6 +197,259 @@
             [outlined]="true" 
             (onClick)="clearFilters()">
           </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dynamic Permissions Table -->
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-8">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <h2 class="text-lg font-semibold text-gray-900">Permissions List</h2>
+            <p-tag 
+              [value]="(permissions?.data?.length || 0) + ' items'" 
+              severity="info"
+              *ngIf="permissions?.data">
+            </p-tag>
+          </div>
+          <div class="flex items-center gap-2">
+            <p-button 
+              [icon]="viewMode === 'list' ? 'pi pi-th-large' : 'pi pi-list'" 
+              [rounded]="true" 
+              [text]="true" 
+              severity="secondary"
+              (click)="toggleViewMode()"
+              [pTooltip]="viewMode === 'list' ? 'Card View' : 'List View'">
+            </p-button>
+            <p-button 
+              icon="pi pi-refresh" 
+              [rounded]="true" 
+              [text]="true" 
+              severity="secondary"
+              (click)="refreshPermissions()"
+              pTooltip="Refresh">
+            </p-button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Loading State -->
+      <div class="p-8 text-center" *ngIf="loading">
+        <div class="flex flex-col items-center gap-4">
+          <i class="pi pi-spin pi-spinner text-blue-500 text-2xl"></i>
+          <p class="text-gray-500">Loading permissions...</p>
+        </div>
+      </div>
+      
+      <!-- List View -->
+      <div class="overflow-x-auto" *ngIf="!loading && viewMode === 'list'">
+        <p-table 
+          [value]="permissions?.data || []" 
+          [loading]="isTableLoading"
+          [paginator]="true"
+          [rows]="tableRowsPerPage"
+          [totalRecords]="permissions?.total || 0"
+          [lazy]="true"
+          (onLazyLoad)="loadPermissions($event)"
+          responsiveLayout="scroll">
+          
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Permission</th>
+              <th>Code</th>
+              <th>Action</th>
+              <th>Description</th>
+              <th>Assets</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </ng-template>
+          
+          <ng-template pTemplate="body" let-permission>
+            <tr>
+              <!-- Permission Info -->
+              <td>
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-gradient-to-br rounded-lg flex items-center justify-center"
+                       [ngClass]="getPermissionColor(permission.action)">
+                    <i class="text-white" [ngClass]="getPermissionIcon(permission.action)"></i>
+                  </div>
+                  <div>
+                    <div class="font-medium text-gray-900">{{ permission.name || 'Unnamed Permission' }}</div>
+                    <div class="text-sm text-gray-500">{{ permission.kid || permission.id }}</div>
+                  </div>
+                </div>
+              </td>
+              
+              <!-- Code -->
+              <td>
+                <code class="text-sm bg-gray-100 px-2 py-1 rounded text-gray-700">{{ permission.code }}</code>
+              </td>
+              
+              <!-- Action -->
+              <td>
+                <p-tag 
+                  [value]="permission.action" 
+                  [severity]="getActionSeverity(permission.action)">
+                </p-tag>
+              </td>
+              
+              <!-- Description -->
+              <td>
+                <span class="text-sm text-gray-600">{{ permission.description || 'No description' }}</span>
+              </td>
+              
+              <!-- Assets -->
+              <td>
+                <div class="flex items-center gap-2">
+                  <p-tag 
+                    [value]="permission.asset_total || 0" 
+                    severity="info" 
+                    icon="pi pi-database">
+                  </p-tag>
+                  <span class="text-xs text-gray-500">assets</span>
+                </div>
+              </td>
+              
+              <!-- Status -->
+              <td>
+                <p-tag 
+                  [value]="getPermissionStatus(permission)" 
+                  [severity]="getPermissionStatusSeverity(permission)">
+                </p-tag>
+              </td>
+              
+              <!-- Actions -->
+              <td>
+                <div class="flex items-center gap-2">
+                  <p-button 
+                    icon="pi pi-eye" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="info" 
+                    size="small"
+                    (click)="viewPermission(permission)"
+                    pTooltip="View Permission">
+                  </p-button>
+                  <p-button 
+                    icon="pi pi-pencil" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="secondary" 
+                    size="small"
+                    (click)="editPermission(permission)"
+                    pTooltip="Edit Permission">
+                  </p-button>
+                  <p-button 
+                    icon="pi pi-trash" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="danger" 
+                    size="small"
+                    (click)="onDeletePermission($event, permission.kid || permission.id)"
+                    pTooltip="Delete Permission">
+                  </p-button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+          
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="7" class="text-center p-8">
+                <div class="flex flex-col items-center gap-4">
+                  <i class="pi pi-key text-gray-400 text-4xl"></i>
+                  <div>
+                    <h3 class="text-lg font-medium text-gray-900">No permissions found</h3>
+                    <p class="text-gray-500">Create your first permission to get started.</p>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+      
+      <!-- Card View -->
+      <div class="p-6" *ngIf="!loading && viewMode === 'card'">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" *ngIf="permissions?.data?.length > 0">
+          <div *ngFor="let permission of permissions?.data" 
+               class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gradient-to-br rounded-lg flex items-center justify-center"
+                     [ngClass]="getPermissionColor(permission.action)">
+                  <i class="text-white" [ngClass]="getPermissionIcon(permission.action)"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900">{{ permission.name || 'Unnamed Permission' }}</h3>
+                  <code class="text-sm bg-gray-100 px-2 py-1 rounded text-gray-700">{{ permission.code }}</code>
+                </div>
+              </div>
+              <p-tag 
+                [value]="getPermissionStatus(permission)" 
+                [severity]="getPermissionStatusSeverity(permission)">
+              </p-tag>
+            </div>
+            
+            <div class="space-y-3 mb-4">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-cog text-gray-400"></i>
+                <p-tag 
+                  [value]="permission.action" 
+                  [severity]="getActionSeverity(permission.action)">
+                </p-tag>
+              </div>
+              
+              <div class="flex items-center gap-2" *ngIf="permission.asset_total">
+                <i class="pi pi-database text-gray-400"></i>
+                <span class="text-sm text-gray-600">{{ permission.asset_total }} assets</span>
+              </div>
+              
+              <div *ngIf="permission.description">
+                <p class="text-sm text-gray-600">{{ permission.description }}</p>
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-2 pt-4 border-t border-gray-200">
+              <p-button 
+                icon="pi pi-eye" 
+                [text]="true" 
+                severity="info" 
+                size="small"
+                (click)="viewPermission(permission)"
+                pTooltip="View Permission">
+              </p-button>
+              <p-button 
+                icon="pi pi-pencil" 
+                [text]="true" 
+                severity="secondary" 
+                size="small"
+                (click)="editPermission(permission)"
+                pTooltip="Edit Permission">
+              </p-button>
+              <p-button 
+                icon="pi pi-trash" 
+                [text]="true" 
+                severity="danger" 
+                size="small"
+                (click)="onDeletePermission($event, permission.kid || permission.id)"
+                pTooltip="Delete Permission">
+              </p-button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Empty State for Card View -->
+        <div class="text-center p-8" *ngIf="permissions?.data?.length === 0">
+          <div class="flex flex-col items-center gap-4">
+            <i class="pi pi-key text-gray-400 text-4xl"></i>
+            <div>
+              <h3 class="text-lg font-medium text-gray-900">No permissions found</h3>
+              <p class="text-gray-500">Create your first permission to get started.</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

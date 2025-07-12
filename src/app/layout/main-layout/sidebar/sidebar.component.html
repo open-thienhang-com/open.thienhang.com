@@ -58,7 +58,18 @@
               </span>
             </div>
 
-            <div class="flex-shrink-0" [class.hidden]="collapsed">
+            <div class="flex items-center gap-1 flex-shrink-0" [class.hidden]="collapsed">
+              <!-- Info Button -->
+              <button 
+                *ngIf="item.info"
+                class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors opacity-0 group-hover:opacity-100"
+                (click)="showInfo($event, item)"
+                pTooltip="Show information"
+                tooltipPosition="top">
+                <i class="pi pi-info-circle text-xs text-gray-500 dark:text-gray-400"></i>
+              </button>
+              
+              <!-- Expand/Collapse Arrow -->
               <i 
                 *ngIf="item.children"
                 class="pi pi-chevron-right text-xs transition-transform duration-200"
@@ -74,22 +85,36 @@
             *ngIf="item.children && item.expanded && !collapsed"
             [@expandCollapse]
             class="ml-6 mt-0.5 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-2">
-            <a
+            <div
               *ngFor="let child of item.children"
-              [routerLink]="child.url"
-              [queryParams]="child.url && child.url.includes('?') ? getQueryParams(child.url) : null"
-              routerLinkActive="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-              class="flex items-center justify-between p-2 rounded-md text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-all duration-200 group">
-              <div class="flex items-center gap-2">
+              class="flex items-center justify-between p-2 rounded-md text-xs hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 group">
+              <a
+                [routerLink]="child.url"
+                [queryParams]="child.url && child.url.includes('?') ? getQueryParams(child.url) : null"
+                routerLinkActive="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                class="flex items-center gap-2 flex-1 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
                 <i [ngClass]="child.icon + ' text-xs flex-shrink-0'"></i>
                 <span class="truncate">{{ child.label }}</span>
+              </a>
+              
+              <div class="flex items-center gap-1 flex-shrink-0">
+                <span 
+                  *ngIf="child.badge" 
+                  class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                  {{ child.badge }}
+                </span>
+                
+                <!-- Info Button for Child -->
+                <button 
+                  *ngIf="child.info"
+                  class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors opacity-0 group-hover:opacity-100"
+                  (click)="showInfo($event, child)"
+                  pTooltip="Show information"
+                  tooltipPosition="top">
+                  <i class="pi pi-info-circle text-xs text-gray-500 dark:text-gray-400"></i>
+                </button>
               </div>
-              <span 
-                *ngIf="child.badge" 
-                class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
-                {{ child.badge }}
-              </span>
-            </a>
+            </div>
           </div>
         </div>
       </li>
@@ -111,3 +136,77 @@
     </a>
   </div>
 </div>
+
+<!-- Info Dialog -->
+<p-dialog 
+  header="{{ selectedInfo?.title }}" 
+  [(visible)]="infoDialogVisible" 
+  [modal]="true" 
+  [style]="{ width: '600px' }"
+  [draggable]="false" 
+  [resizable]="false"
+  styleClass="info-dialog">
+  
+  <div *ngIf="selectedInfo" class="info-content">
+    <!-- Description -->
+    <div class="mb-4">
+      <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+        {{ selectedInfo.description }}
+      </p>
+    </div>
+
+    <!-- Features -->
+    <div class="mb-4">
+      <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        <i class="pi pi-star text-blue-500 mr-2"></i>
+        Key Features
+      </h4>
+      <ul class="space-y-2">
+        <li *ngFor="let feature of selectedInfo.features" class="flex items-start gap-2">
+          <i class="pi pi-check text-green-500 mt-0.5 text-sm"></i>
+          <span class="text-gray-700 dark:text-gray-300 text-sm">{{ feature }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <p-divider></p-divider>
+
+    <!-- Usage -->
+    <div class="mb-4">
+      <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        <i class="pi pi-info-circle text-blue-500 mr-2"></i>
+        How to Use
+      </h4>
+      <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+        {{ selectedInfo.usage }}
+      </p>
+    </div>
+
+    <!-- Tips -->
+    <div *ngIf="selectedInfo.tips && selectedInfo.tips.length > 0" class="mb-4">
+      <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        <i class="pi pi-lightbulb text-yellow-500 mr-2"></i>
+        Pro Tips
+      </h4>
+      <ul class="space-y-2">
+        <li *ngFor="let tip of selectedInfo.tips" class="flex items-start gap-2">
+          <i class="pi pi-angle-right text-blue-500 mt-0.5 text-sm"></i>
+          <span class="text-gray-700 dark:text-gray-300 text-sm">{{ tip }}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button 
+        pButton 
+        pRipple 
+        label="Got it!" 
+        icon="pi pi-check"
+        class="p-button-primary"
+        (click)="hideInfo()">
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

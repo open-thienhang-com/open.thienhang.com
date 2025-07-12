@@ -9,6 +9,7 @@ import { provideHttpClient, withInterceptors, HTTP_INTERCEPTORS } from '@angular
 import { credentialsInterceptor } from './core/interceptor/with-credentials.interceptor';
 import { AuthServices } from './core/services/auth.services';
 import { TimeoutInterceptor } from './core/interceptor/timeout.interceptor';
+import { ErrorInterceptor } from './core/interceptor/error.interceptor';
 
 export function initApp(authService: AuthServices) {
   return () => authService.getCurrentUser().toPromise();
@@ -35,6 +36,11 @@ export const appConfig: ApplicationConfig = {
     {
       provide: HTTP_INTERCEPTORS,
       useClass: TimeoutInterceptor,
+      multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: ErrorInterceptor,
       multi: true
     },
   ],

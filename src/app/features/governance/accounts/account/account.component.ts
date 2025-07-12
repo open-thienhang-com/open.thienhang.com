@@ -34,15 +34,18 @@ export class AccountComponent extends AppBaseComponent {
   }
 
   save() {
-    const saveObservable = this.account._id ?
-      this.governanceServices.updateAccount(this.account._id, this.account) :
-      this.governanceServices.createAccount(this.account);
+    if (!this.account._id) {
+      this.showError('Account creation is not supported. Accounts can only be updated.');
+      return;
+    }
+
+    const saveObservable = this.governanceServices.updateAccount(this.account._id, this.account);
 
     saveObservable.subscribe(res => {
       if (!res) {
         return;
       }
-      this.showSuccess(this.account._id ? 'Updated successfully' : 'Created successfully');
+      this.showSuccess('Updated successfully');
       this.visible = false;
       this.account = {};
       this.onSave.emit();

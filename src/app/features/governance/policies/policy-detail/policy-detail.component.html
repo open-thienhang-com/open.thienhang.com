@@ -1,0 +1,375 @@
+<!-- Policy Detail Header -->
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="bg-gray-50 min-h-screen">
+  <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    
+    <!-- Loading State -->
+    <div *ngIf="loading" class="space-y-6">
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <p-skeleton height="2rem" width="300px" class="mb-4"></p-skeleton>
+        <p-skeleton height="1rem" width="500px" class="mb-2"></p-skeleton>
+        <p-skeleton height="1rem" width="400px"></p-skeleton>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <p-skeleton height="200px"></p-skeleton>
+        <p-skeleton height="200px"></p-skeleton>
+        <p-skeleton height="200px"></p-skeleton>
+      </div>
+    </div>
+
+    <!-- Policy Content -->
+    <div *ngIf="!loading && policy" class="space-y-6">
+      
+      <!-- Header Section -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-4">
+            <p-button 
+              icon="pi pi-arrow-left" 
+              severity="secondary" 
+              [outlined]="true"
+              (onClick)="goBack()"
+              pTooltip="Back to Policies">
+            </p-button>
+            <div>
+              <div class="flex items-center gap-3 mb-2">
+                <h1 class="text-3xl font-bold text-gray-900">{{ policy.name }}</h1>
+                <p-tag 
+                  [value]="policy.enabled ? 'Active' : 'Inactive'" 
+                  [severity]="getPolicyStatusSeverity(policy.enabled)">
+                </p-tag>
+              </div>
+              <p class="text-gray-600 mb-2">{{ policy.description }}</p>
+              <div class="flex items-center gap-2 text-sm text-gray-500">
+                <i class="pi pi-calendar"></i>
+                <span>Created {{ formatDate(policy.created_at) }}</span>
+                <span class="mx-2">•</span>
+                <i class="pi pi-refresh"></i>
+                <span>Updated {{ formatDate(policy.updated_at) }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-3">
+            <p-inputSwitch 
+              [(ngModel)]="policy.enabled" 
+              (onChange)="togglePolicyStatus()"
+              pTooltip="Toggle Policy Status">
+            </p-inputSwitch>
+            <p-button 
+              label="Edit" 
+              icon="pi pi-pencil" 
+              severity="secondary"
+              [outlined]="true"
+              (onClick)="editPolicy()">
+            </p-button>
+            <p-button 
+              label="Delete" 
+              icon="pi pi-trash" 
+              severity="danger"
+              [outlined]="true"
+              (onClick)="deletePolicy()">
+            </p-button>
+          </div>
+        </div>
+
+        <!-- Policy ID Badge -->
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-700">Policy ID:</span>
+              <code class="bg-gray-200 px-2 py-1 rounded text-sm">{{ policy.kid }}</code>
+            </div>
+            <p-button 
+              icon="pi pi-copy" 
+              severity="secondary" 
+              [outlined]="true"
+              size="small"
+              (onClick)="copyToClipboard(policy.kid)"
+              pTooltip="Copy Policy ID">
+            </p-button>
+          </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="bg-blue-50 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-blue-600">{{ policy.total_roles }}</div>
+            <div class="text-sm text-blue-700">Roles</div>
+          </div>
+          <div class="bg-green-50 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-green-600">{{ policy.total_permissions }}</div>
+            <div class="text-sm text-green-700">Permissions</div>
+          </div>
+          <div class="bg-purple-50 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-purple-600">{{ policy.total_resources }}</div>
+            <div class="text-sm text-purple-700">Resources</div>
+          </div>
+          <div class="bg-orange-50 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-orange-600">{{ policy.affected_assets_total }}</div>
+            <div class="text-sm text-orange-700">Affected Assets</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Policy Details Tabs -->
+      <div class="bg-white rounded-lg shadow-sm">
+        <p-tabView>
+          
+          <!-- Overview Tab -->
+          <p-tabPanel header="Overview" leftIcon="pi pi-info-circle">
+            <div class="p-6 space-y-6">
+              
+              <!-- Basic Information -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Policy Type</label>
+                    <p-tag 
+                      [value]="policy.type" 
+                      [severity]="getPolicyTypeSeverity(policy.type)">
+                    </p-tag>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Effect</label>
+                    <p-tag 
+                      [value]="policy.effect" 
+                      [severity]="getEffectSeverity(policy.effect)">
+                    </p-tag>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                    <div class="flex items-center gap-2">
+                      <p-progressBar 
+                        [value]="policy.priority" 
+                        [style]="{ width: '100px' }"
+                        [severity]="getPriorityColor(policy.priority)">
+                      </p-progressBar>
+                      <span class="text-sm text-gray-600">{{ policy.priority }}/100</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Domain</label>
+                    <span class="text-gray-600">{{ policy.domain_id || 'Global' }}</span>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Data Product</label>
+                    <span class="text-gray-600">{{ policy.data_product_id || 'All Products' }}</span>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <p-tag 
+                      [value]="policy.enabled ? 'Enabled' : 'Disabled'" 
+                      [severity]="getPolicyStatusSeverity(policy.enabled)">
+                    </p-tag>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tags -->
+              <div *ngIf="policy.tags && policy.tags.length > 0">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+                <div class="flex flex-wrap gap-2">
+                  <p-chip 
+                    *ngFor="let tag of policy.tags" 
+                    [label]="tag"
+                    icon="pi pi-tag">
+                  </p-chip>
+                </div>
+              </div>
+
+              <!-- Conditions -->
+              <div *ngIf="policy.conditions">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Conditions</label>
+                <div class="bg-gray-50 rounded-lg p-4">
+                  <pre class="text-sm">{{ policy.conditions | json }}</pre>
+                </div>
+              </div>
+            </div>
+          </p-tabPanel>
+
+          <!-- Roles Tab -->
+          <p-tabPanel header="Roles" leftIcon="pi pi-users">
+            <div class="p-6">
+              <div *ngIf="policy.role_details && policy.role_details.length > 0; else noRoles">
+                <p-table [value]="policy.role_details" styleClass="p-datatable-sm">
+                  <ng-template pTemplate="header">
+                    <tr>
+                      <th>Role Name</th>
+                      <th>Type</th>
+                      <th>Permissions</th>
+                      <th>Status</th>
+                      <th>Contact</th>
+                    </tr>
+                  </ng-template>
+                  <ng-template pTemplate="body" let-role>
+                    <tr>
+                      <td>
+                        <div class="flex flex-col">
+                          <span class="font-medium">{{ role.name }}</span>
+                          <span class="text-sm text-gray-500">{{ role.kid }}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <p-tag 
+                          [value]="role.type" 
+                          [severity]="role.type === 'system' ? 'danger' : 'info'">
+                        </p-tag>
+                      </td>
+                      <td>
+                        <p-badge 
+                          [value]="role.permissions.length" 
+                          severity="info">
+                        </p-badge>
+                      </td>
+                      <td>
+                        <p-tag 
+                          [value]="role.is_active ? 'Active' : 'Inactive'" 
+                          [severity]="role.is_active ? 'success' : 'secondary'">
+                        </p-tag>
+                      </td>
+                      <td>
+                        <div *ngIf="role.contact && role.contact.length > 0">
+                          <div class="text-sm">
+                            <div>{{ role.contact[0].name }}</div>
+                            <div class="text-gray-500">{{ role.contact[0].email }}</div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </ng-template>
+                </p-table>
+              </div>
+              <ng-template #noRoles>
+                <div class="text-center py-12">
+                  <i class="pi pi-users text-gray-400 text-4xl mb-4"></i>
+                  <h3 class="text-lg font-medium text-gray-900 mb-2">No Roles Assigned</h3>
+                  <p class="text-gray-500">This policy has no roles assigned to it.</p>
+                </div>
+              </ng-template>
+            </div>
+          </p-tabPanel>
+
+          <!-- Permissions Tab -->
+          <p-tabPanel header="Permissions" leftIcon="pi pi-key">
+            <div class="p-6">
+              <div *ngIf="policy.permissions && policy.permissions.length > 0; else noPermissions">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div *ngFor="let permission of policy.permissions" 
+                       class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-key text-blue-500"></i>
+                      <span class="font-medium text-gray-900">{{ permission }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <ng-template #noPermissions>
+                <div class="text-center py-12">
+                  <i class="pi pi-key text-gray-400 text-4xl mb-4"></i>
+                  <h3 class="text-lg font-medium text-gray-900 mb-2">No Permissions Defined</h3>
+                  <p class="text-gray-500">This policy has no specific permissions defined.</p>
+                </div>
+              </ng-template>
+            </div>
+          </p-tabPanel>
+
+          <!-- Resources Tab -->
+          <p-tabPanel header="Resources" leftIcon="pi pi-database">
+            <div class="p-6">
+              <div *ngIf="policy.resources && policy.resources.length > 0; else noResources">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div *ngFor="let resource of policy.resources" 
+                       class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-database text-green-500"></i>
+                      <span class="font-medium text-gray-900">{{ resource }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <ng-template #noResources>
+                <div class="text-center py-12">
+                  <i class="pi pi-database text-gray-400 text-4xl mb-4"></i>
+                  <h3 class="text-lg font-medium text-gray-900 mb-2">No Resources Specified</h3>
+                  <p class="text-gray-500">This policy applies to all resources.</p>
+                </div>
+              </ng-template>
+            </div>
+          </p-tabPanel>
+
+          <!-- Audit Tab -->
+          <p-tabPanel header="Audit" leftIcon="pi pi-clock">
+            <div class="p-6 space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Created</label>
+                    <div class="text-sm text-gray-600">
+                      <div>{{ formatDate(policy.created_at) }}</div>
+                      <div *ngIf="policy.created_by" class="text-xs text-gray-500">
+                        by {{ policy.created_by }}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Last Modified</label>
+                    <div class="text-sm text-gray-600">
+                      <div>{{ formatDate(policy.updated_at) }}</div>
+                      <div *ngIf="policy.updated_by" class="text-xs text-gray-500">
+                        by {{ policy.updated_by }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Policy Rules</label>
+                    <div class="text-2xl font-bold text-blue-600">{{ policy.policy_rules_total }}</div>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Total Subjects</label>
+                    <div class="text-2xl font-bold text-green-600">{{ policy.total_subjects }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Policy JSON -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Raw Policy Data</label>
+                <div class="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+                  <pre class="text-sm">{{ policy | json }}</pre>
+                </div>
+              </div>
+            </div>
+          </p-tabPanel>
+        </p-tabView>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="!loading && !policy" class="text-center py-12">
+      <i class="pi pi-exclamation-triangle text-red-500 text-4xl mb-4"></i>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">Policy Not Found</h3>
+      <p class="text-gray-500 mb-4">The policy you're looking for doesn't exist or has been deleted.</p>
+      <p-button 
+        label="Back to Policies" 
+        icon="pi pi-arrow-left" 
+        severity="secondary"
+        (onClick)="goBack()">
+      </p-button>
+    </div>
+  </div>
+</div>

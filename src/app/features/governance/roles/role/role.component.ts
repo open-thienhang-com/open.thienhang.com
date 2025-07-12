@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Injector, Output } from '@angular/core';
+import { Component, EventEmitter, Injector, Output, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
@@ -30,11 +30,10 @@ import { AppBaseComponent } from '../../../../core/base/app-base.component';
   templateUrl: './role.component.html',
 })
 export class RoleComponent extends AppBaseComponent {
-  @Output() onSave = new EventEmitter<void>();
+  @Input() role: any = null;
+  @Output() saveRole = new EventEmitter<void>();
+  @Output() cancelRole = new EventEmitter<void>();
 
-  role: any = {
-    permissions: []
-  };
   title = 'Create Role';
   visible = false;
 
@@ -200,7 +199,7 @@ export class RoleComponent extends AppBaseComponent {
       this.showSuccess(this.role._id ? 'Role updated successfully' : 'Role created successfully');
       this.visible = false;
       this.role = { permissions: [] };
-      this.onSave.emit();
+      this.saveRole.emit();
     }, 500);
 
     // Uncomment for actual API call:

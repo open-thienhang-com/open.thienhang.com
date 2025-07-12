@@ -2,3 +2,93 @@
   height: 41px;
   border-bottom: 1px solid var(--p-content-border-color)
 }
+
+// Info Dialog Styles
+:host ::ng-deep .info-dialog {
+  .p-dialog-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px 8px 0 0;
+    
+    .p-dialog-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    
+    .p-dialog-header-icon {
+      color: white;
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+    }
+  }
+
+  .p-dialog-content {
+    padding: 1.5rem;
+    background: white;
+    
+    .info-content {
+      h4 {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        
+        i {
+          margin-right: 0.5rem;
+        }
+      }
+      
+      ul {
+        margin-left: 0;
+        padding-left: 0;
+        
+        li {
+          list-style: none;
+          margin-bottom: 0.5rem;
+          
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+  }
+  
+  .p-dialog-footer {
+    background: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+    padding: 1rem 1.5rem;
+  }
+}
+
+// Dark mode support
+:host ::ng-deep .info-dialog {
+  .p-dialog-content {
+    @media (prefers-color-scheme: dark) {
+      background: #1f2937;
+      color: #f3f4f6;
+    }
+  }
+  
+  .p-dialog-footer {
+    @media (prefers-color-scheme: dark) {
+      background: #374151;
+    }
+  }
+}
+
+// Info button hover effects
+.group:hover .opacity-0 {
+  opacity: 1;
+}
+
+// Ensure proper spacing for info buttons
+.flex.items-center.gap-1 {
+  button {
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}

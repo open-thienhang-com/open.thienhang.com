@@ -16,7 +16,8 @@ import { DataProdDetailComponent } from './features/data-product/data-prod-detai
 import { ProfileComponent } from './features/profile/profile.component';
 import { SettingsComponent } from './features/settings/setting.component';
 import { DataContractsComponent } from './features/data-contracts/data-contracts.component';
-import { PolicyDetailComponent } from './features/governance/policies/policy-detail.component';
+import { PolicyDetailComponent } from './features/governance/policies/policy-detail/policy-detail.component';
+import { RoleDetailComponent } from './features/governance/roles/role-detail/role-detail.component';
 import { OfflineComponent } from './pages/error/offline.component';
 import { DomainCatalogComponent } from './features/domain-catalog/domain-catalog.component';
 import { DomainDetailComponent } from './features/domain-catalog/domain-detail/domain-detail.component';
@@ -32,9 +33,25 @@ import { MLModelsExplorerComponent } from './features/explore/ml-models/ml-model
 import { ContainerExplorerComponent } from './features/explore/container/container-explorer.component';
 import { SearchExplorerComponent } from './features/explore/search/search-explorer.component';
 import { ApisExplorerComponent } from './features/explore/apis/apis-explorer.component';
+import { MaintenanceComponent } from './pages/error/maintenance/maintenance.component';
+import { ForbiddenComponent } from './pages/error/forbidden/forbidden.component';
+import { NotFoundComponent } from './pages/error/not-found/not-found.component';
 
 
 export const routes: Routes = [
+  // Error pages (outside of auth guard)
+  {
+    path: 'maintenance',
+    component: MaintenanceComponent
+  },
+  {
+    path: 'forbidden',
+    component: ForbiddenComponent
+  },
+  {
+    path: 'not-found',
+    component: NotFoundComponent
+  },
   {
     path: 'offline',
     component: OfflineComponent
@@ -62,6 +79,10 @@ export const routes: Routes = [
       {
         path: 'governance/roles',
         component: RolesComponent,
+      },
+      {
+        path: 'governance/roles/:id',
+        component: RoleDetailComponent,
       },
       {
         path: 'governance/accounts',
@@ -194,6 +215,11 @@ export const routes: Routes = [
   {
     path: 'login',
     component: AuthComponent
+  },
+  // Wildcard route for 404 - must be last
+  {
+    path: '**',
+    component: NotFoundComponent
   }
 ];
 

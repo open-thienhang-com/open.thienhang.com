@@ -1,0 +1,525 @@
+/* Loading Component Styles */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  position: relative;
+  
+  &.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 50;
+    backdrop-filter: blur(2px);
+  }
+  
+  &.loading-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: white;
+    z-index: 50;
+    min-height: 100vh;
+    
+    .dark & {
+      background-color: #111827;
+    }
+  }
+  
+  &.loading-small {
+    min-height: 80px;
+    .loading-content {
+      transform: scale(0.7);
+    }
+  }
+  
+  &.loading-medium {
+    min-height: 120px;
+    .loading-content {
+      transform: scale(0.9);
+    }
+  }
+  
+  &.loading-large {
+    min-height: 200px;
+    .loading-content {
+      transform: scale(1.2);
+    }
+  }
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.loading-message {
+  color: #6B7280;
+  text-align: center;
+  font-weight: 500;
+  margin-top: 1rem;
+  animation: fadeInOut 2s ease-in-out infinite alternate;
+  
+  .dark & {
+    color: #D1D5DB;
+  }
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+/* Data Mesh Theme Loading */
+.data-mesh-loader {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.mesh-node {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #3B82F6, #1D4ED8);
+  animation: meshPulse 2s ease-in-out infinite;
+  
+  &.mesh-node-1 {
+    top: 10px;
+    left: 10px;
+    animation-delay: 0s;
+  }
+  
+  &.mesh-node-2 {
+    top: 10px;
+    right: 10px;
+    animation-delay: 0.5s;
+  }
+  
+  &.mesh-node-3 {
+    bottom: 10px;
+    left: 10px;
+    animation-delay: 1s;
+  }
+  
+  &.mesh-node-4 {
+    bottom: 10px;
+    right: 10px;
+    animation-delay: 1.5s;
+  }
+}
+
+.mesh-connections {
+  position: absolute;
+  inset: 0;
+}
+
+.connection {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #3B82F6, transparent);
+  animation: dataFlow 3s ease-in-out infinite;
+  
+  &.connection-1 {
+    top: 16px;
+    left: 22px;
+    width: 36px;
+    animation-delay: 0s;
+  }
+  
+  &.connection-2 {
+    top: 22px;
+    right: 16px;
+    width: 36px;
+    transform: rotate(90deg);
+    animation-delay: 0.75s;
+  }
+  
+  &.connection-3 {
+    bottom: 16px;
+    left: 22px;
+    width: 36px;
+    animation-delay: 1.5s;
+  }
+  
+  &.connection-4 {
+    bottom: 22px;
+    left: 16px;
+    width: 36px;
+    transform: rotate(90deg);
+    animation-delay: 2.25s;
+  }
+}
+
+@keyframes meshPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+}
+
+@keyframes dataFlow {
+  0% { opacity: 0; transform: translateX(-50%); }
+  50% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(50%); }
+}
+
+/* Dots Loading */
+.dots-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #3B82F6;
+  animation: dotBounce 1.4s ease-in-out infinite both;
+  
+  &.dot-1 { animation-delay: -0.32s; }
+  &.dot-2 { animation-delay: -0.16s; }
+  &.dot-3 { animation-delay: 0s; }
+  &.dot-4 { animation-delay: 0.16s; }
+  &.dot-5 { animation-delay: 0.32s; }
+}
+
+@keyframes dotBounce {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+  40% { transform: scale(1.2); opacity: 1; }
+}
+
+/* Spinner Loading */
+.spinner-container {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.spinner {
+  width: 100%;
+  height: 100%;
+  border: 3px solid #E5E7EB;
+  border-top: 3px solid #3B82F6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.spinner-inner {
+  width: 80%;
+  height: 80%;
+  border: 2px solid transparent;
+  border-top: 2px solid #1D4ED8;
+  border-radius: 50%;
+  margin: 6px;
+  animation: spin 1.5s linear infinite reverse;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Pulse Loading */
+.pulse-container {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.pulse-circle {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #3B82F6;
+  animation: pulse 1.5s ease-in-out infinite;
+  
+  &.pulse-1 { animation-delay: 0s; }
+  &.pulse-2 { animation-delay: 0.5s; opacity: 0.7; }
+  &.pulse-3 { animation-delay: 1s; opacity: 0.4; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(0); opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+/* Bounce Loading */
+.bounce-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.bounce-ball {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #3B82F6;
+  animation: bounce 1.4s ease-in-out infinite both;
+  
+  &.bounce-1 { animation-delay: -0.32s; }
+  &.bounce-2 { animation-delay: -0.16s; }
+  &.bounce-3 { animation-delay: 0s; }
+}
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0) translateY(0); }
+  40% { transform: scale(1) translateY(-30px); }
+}
+
+/* Wave Loading */
+.wave-container {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 0.25rem;
+  height: 40px;
+}
+
+.wave-bar {
+  width: 6px;
+  background: #3B82F6;
+  border-radius: 3px;
+  animation: wave 1.2s ease-in-out infinite;
+  
+  &.bar-1 { animation-delay: -0.4s; }
+  &.bar-2 { animation-delay: -0.3s; }
+  &.bar-3 { animation-delay: -0.2s; }
+  &.bar-4 { animation-delay: -0.1s; }
+  &.bar-5 { animation-delay: 0s; }
+}
+
+@keyframes wave {
+  0%, 40%, 100% { height: 10px; }
+  20% { height: 35px; }
+}
+
+/* Bars Loading */
+.bars-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.loading-bar {
+  width: 8px;
+  height: 30px;
+  background: #3B82F6;
+  border-radius: 4px;
+  animation: barScale 1s ease-in-out infinite;
+  
+  &.bar-1 { animation-delay: -0.3s; }
+  &.bar-2 { animation-delay: -0.2s; }
+  &.bar-3 { animation-delay: -0.1s; }
+  &.bar-4 { animation-delay: 0s; }
+}
+
+@keyframes barScale {
+  0%, 40%, 100% { transform: scaleY(0.4); }
+  20% { transform: scaleY(1); }
+}
+
+/* Data Flow Loading */
+.data-flow-container {
+  position: relative;
+  width: 100px;
+  height: 60px;
+}
+
+.data-packet {
+  position: absolute;
+  font-size: 1.5rem;
+  animation: dataPacketFlow 3s ease-in-out infinite;
+  
+  &.packet-1 {
+    top: 10px;
+    left: 10px;
+    animation-delay: 0s;
+  }
+  
+  &.packet-2 {
+    top: 10px;
+    right: 10px;
+    animation-delay: 0.75s;
+  }
+  
+  &.packet-3 {
+    bottom: 10px;
+    left: 10px;
+    animation-delay: 1.5s;
+  }
+  
+  &.packet-4 {
+    bottom: 10px;
+    right: 10px;
+    animation-delay: 2.25s;
+  }
+}
+
+.flow-path {
+  position: absolute;
+  inset: 0;
+}
+
+.flow-line {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(90deg, #3B82F6, #1D4ED8);
+  border-radius: 1px;
+  animation: flowLine 3s ease-in-out infinite;
+  
+  &.line-1 {
+    top: 16px;
+    left: 25px;
+    width: 50px;
+    animation-delay: 0s;
+  }
+  
+  &.line-2 {
+    top: 30px;
+    right: 15px;
+    width: 30px;
+    transform: rotate(90deg);
+    animation-delay: 1s;
+  }
+  
+  &.line-3 {
+    bottom: 16px;
+    left: 25px;
+    width: 50px;
+    animation-delay: 2s;
+  }
+}
+
+@keyframes dataPacketFlow {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+@keyframes flowLine {
+  0%, 100% { opacity: 0; transform: scaleX(0); }
+  50% { opacity: 1; transform: scaleX(1); }
+}
+
+/* Easter Egg Floating Emojis */
+.easter-egg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.floating-emoji {
+  position: absolute;
+  font-size: 2rem;
+  animation: floatAround 20s ease-in-out infinite;
+  opacity: 0.1;
+  
+  &:nth-child(1) {
+    top: 20%;
+    left: 20%;
+    animation-delay: 0s;
+  }
+  
+  &:nth-child(2) {
+    top: 30%;
+    right: 20%;
+    animation-delay: 5s;
+  }
+  
+  &:nth-child(3) {
+    bottom: 30%;
+    left: 30%;
+    animation-delay: 10s;
+  }
+  
+  &:nth-child(4) {
+    bottom: 20%;
+    right: 30%;
+    animation-delay: 15s;
+  }
+}
+
+@keyframes floatAround {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-20px) rotate(90deg); }
+  50% { transform: translateY(-40px) rotate(180deg); }
+  75% { transform: translateY(-20px) rotate(270deg); }
+}
+
+/* Dark mode adjustments */
+.dark {
+  .mesh-node {
+    background: linear-gradient(45deg, #60A5FA, #3B82F6);
+  }
+  
+  .connection {
+    background: linear-gradient(90deg, transparent, #60A5FA, transparent);
+  }
+  
+  .dot, .bounce-ball, .wave-bar, .loading-bar {
+    background: #60A5FA;
+  }
+  
+  .pulse-circle {
+    background: #60A5FA;
+  }
+  
+  .spinner {
+    border-color: #374151;
+    border-top-color: #60A5FA;
+  }
+  
+  .spinner-inner {
+    border-top-color: #3B82F6;
+  }
+  
+  .flow-line {
+    background: linear-gradient(90deg, #60A5FA, #3B82F6);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .loading-container {
+    &.loading-small {
+      min-height: 60px;
+      .loading-content {
+        transform: scale(0.6);
+      }
+    }
+    
+    &.loading-medium {
+      min-height: 100px;
+      .loading-content {
+        transform: scale(0.8);
+      }
+    }
+    
+    &.loading-large {
+      min-height: 150px;
+      .loading-content {
+        transform: scale(1);
+      }
+    }
+  }
+  
+  .floating-emoji {
+    font-size: 1.5rem;
+  }
+}

@@ -13,6 +13,13 @@ import { BadgeModule } from 'primeng/badge';
 import { PaginatorModule } from 'primeng/paginator';
 import { TooltipModule } from 'primeng/tooltip';
 import { ChipModule } from 'primeng/chip';
+import { CardModule } from 'primeng/card';
+import { SkeletonModule } from 'primeng/skeleton';
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { DataViewModule } from 'primeng/dataview';
+import { DividerModule } from 'primeng/divider';
+import { PanelModule } from 'primeng/panel';
 
 @Component({
   selector: 'app-accounts',
@@ -28,7 +35,14 @@ import { ChipModule } from 'primeng/chip';
     BadgeModule,
     PaginatorModule,
     TooltipModule,
-    ChipModule
+    ChipModule,
+    CardModule,
+    SkeletonModule,
+    InputGroupModule,
+    InputGroupAddonModule,
+    DataViewModule,
+    DividerModule,
+    PanelModule
   ],
   templateUrl: './accounts.component.html',
 })
@@ -36,6 +50,11 @@ export class AccountsComponent extends AppBaseComponent implements OnInit {
   accounts: any;
   filteredAccounts: any[] = [];
   totalRecords: number = 0;
+  currentPage: number = 0;
+  pageSize: number = 10;
+  
+  // View mode
+  viewMode: 'list' | 'card' = 'list';
   
   // Stats
   stats = {
@@ -51,6 +70,14 @@ export class AccountsComponent extends AppBaseComponent implements OnInit {
   selectedStatus: any = null;
   selectedType: any = null;
   selectedDepartment: any = null;
+  
+  // Page size options
+  pageSizeOptions = [
+    { label: '10', value: 10 },
+    { label: '25', value: 25 },
+    { label: '50', value: 50 },
+    { label: '100', value: 100 }
+  ];
   
   // Options for dropdowns
   statusOptions = [
@@ -90,7 +117,11 @@ export class AccountsComponent extends AppBaseComponent implements OnInit {
 
   getAccounts = (page = 0) => {
     this.isTableLoading = true;
-    this.governanceServices.getAccounts({offset: page, size: this.tableRowsPerPage}).subscribe(res => {
+    this.currentPage = page;
+    this.governanceServices.getAccounts({
+      offset: page * this.pageSize, 
+      size: this.pageSize
+    }).subscribe(res => {
       this.accounts = res;
       this.filteredAccounts = res.data;
       this.totalRecords = res.total || 0;
@@ -100,12 +131,21 @@ export class AccountsComponent extends AppBaseComponent implements OnInit {
   }
 
   refreshAccounts() {
-    this.getAccounts();
+    this.getAccounts(this.currentPage);
   }
 
   exportAccounts() {
     // Implementation for exporting accounts
     console.log('Exporting accounts...');
+  }
+
+  toggleViewMode() {
+    this.viewMode = this.viewMode === 'list' ? 'card' : 'list';
+  }
+
+  onPageSizeChange() {
+    this.currentPage = 0;
+    this.getAccounts(0);
   }
 
   updateStats() {
@@ -193,6 +233,7 @@ export class AccountsComponent extends AppBaseComponent implements OnInit {
   }
 
   onDeleteAccount(event: Event, id: string) {
-    this.confirmOnDelete(event, this.governanceServices.deleteAccount(id), this.getAccounts);
+    event.stopPropagation();
+    this.showError('Account deletion is not supported by the API.');
   }
 }

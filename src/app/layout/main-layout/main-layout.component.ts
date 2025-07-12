@@ -5,6 +5,8 @@ import { SidebarComponent } from "./sidebar/sidebar.component";
 import { Toast } from 'primeng/toast';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { ThemeService } from '../../core/services/theme.service';
+import { LoadingService, LoadingState } from '../../core/services/loading.service';
+import { LoadingComponent } from '../../shared/component/loading/loading.component';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -14,7 +16,8 @@ import { Subject, takeUntil } from 'rxjs';
     RouterOutlet,
     SidebarComponent,
     Toast,
-    ConfirmDialog
+    ConfirmDialog,
+    LoadingComponent
   ],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss'
@@ -22,9 +25,21 @@ import { Subject, takeUntil } from 'rxjs';
 export class MainLayoutComponent implements OnInit, OnDestroy {
   collapsed = false;
   sidebarOpen = false;
+  loadingState: LoadingState = {
+    isLoading: false,
+    message: 'Loading...',
+    type: 'default',
+    size: 'medium',
+    fullScreen: false,
+    overlay: false
+  };
+  
   private destroy$ = new Subject<void>();
 
-  constructor(private themeService: ThemeService) { }
+  constructor(
+    private themeService: ThemeService,
+    private loadingService: LoadingService
+  ) { }
 
   ngOnInit() {
     // Subscribe to theme changes and update sidebar state
@@ -32,6 +47,13 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(settings => {
         this.collapsed = settings.sidebarStyle === 'static' ? false : this.collapsed;
+      });
+
+    // Subscribe to loading state changes
+    this.loadingService.loading$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(loadingState => {
+        this.loadingState = loadingState;
       });
   }
 

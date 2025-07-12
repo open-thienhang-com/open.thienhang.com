@@ -1,0 +1,114 @@
+<div 
+  class="loading-container"
+  [class.loading-overlay]="overlay"
+  [class.loading-fullscreen]="fullScreen"
+  [class.loading-small]="size === 'small'"
+  [class.loading-medium]="size === 'medium'"
+  [class.loading-large]="size === 'large'">
+
+  <!-- Default Loading (Data Mesh Theme) -->
+  <div *ngIf="type === 'default'" class="loading-content loading-default">
+    <div class="data-mesh-loader">
+      <div class="mesh-node mesh-node-1"></div>
+      <div class="mesh-node mesh-node-2"></div>
+      <div class="mesh-node mesh-node-3"></div>
+      <div class="mesh-node mesh-node-4"></div>
+      <div class="mesh-connections">
+        <div class="connection connection-1"></div>
+        <div class="connection connection-2"></div>
+        <div class="connection connection-3"></div>
+        <div class="connection connection-4"></div>
+      </div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Dots Loading -->
+  <div *ngIf="type === 'dots'" class="loading-content loading-dots">
+    <div class="dots-container">
+      <div class="dot dot-1"></div>
+      <div class="dot dot-2"></div>
+      <div class="dot dot-3"></div>
+      <div class="dot dot-4"></div>
+      <div class="dot dot-5"></div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Spinner Loading -->
+  <div *ngIf="type === 'spinner'" class="loading-content loading-spinner">
+    <div class="spinner-container">
+      <div class="spinner">
+        <div class="spinner-inner"></div>
+      </div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Pulse Loading -->
+  <div *ngIf="type === 'pulse'" class="loading-content loading-pulse">
+    <div class="pulse-container">
+      <div class="pulse-circle pulse-1"></div>
+      <div class="pulse-circle pulse-2"></div>
+      <div class="pulse-circle pulse-3"></div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Bounce Loading -->
+  <div *ngIf="type === 'bounce'" class="loading-content loading-bounce">
+    <div class="bounce-container">
+      <div class="bounce-ball bounce-1"></div>
+      <div class="bounce-ball bounce-2"></div>
+      <div class="bounce-ball bounce-3"></div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Wave Loading -->
+  <div *ngIf="type === 'wave'" class="loading-content loading-wave">
+    <div class="wave-container">
+      <div class="wave-bar bar-1"></div>
+      <div class="wave-bar bar-2"></div>
+      <div class="wave-bar bar-3"></div>
+      <div class="wave-bar bar-4"></div>
+      <div class="wave-bar bar-5"></div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Bars Loading -->
+  <div *ngIf="type === 'bars'" class="loading-content loading-bars">
+    <div class="bars-container">
+      <div class="loading-bar bar-1"></div>
+      <div class="loading-bar bar-2"></div>
+      <div class="loading-bar bar-3"></div>
+      <div class="loading-bar bar-4"></div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Data Flow Loading -->
+  <div *ngIf="type === 'data-flow'" class="loading-content loading-data-flow">
+    <div class="data-flow-container">
+      <div class="data-packet packet-1">📊</div>
+      <div class="data-packet packet-2">📈</div>
+      <div class="data-packet packet-3">🔍</div>
+      <div class="data-packet packet-4">⚡</div>
+      <div class="flow-path">
+        <div class="flow-line line-1"></div>
+        <div class="flow-line line-2"></div>
+        <div class="flow-line line-3"></div>
+      </div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Fun Emoji Animation (Hidden Easter Egg) -->
+  <div class="easter-egg" *ngIf="fullScreen">
+    <div class="floating-emoji">🚀</div>
+    <div class="floating-emoji">✨</div>
+    <div class="floating-emoji">🎯</div>
+    <div class="floating-emoji">💫</div>
+  </div>
+</div>

@@ -29,7 +29,20 @@
       <router-outlet></router-outlet>
     </main>
   </div>
-</div>
 
-<p-toast />
-<p-confirmDialog />
+  <!-- Global Loading Component -->
+  <app-loading
+    *ngIf="loadingState.isLoading"
+    [type]="loadingState.type"
+    [message]="loadingState.message"
+    [size]="loadingState.size"
+    [overlay]="loadingState.overlay"
+    [fullScreen]="loadingState.fullScreen">
+  </app-loading>
+
+  <!-- Toast notifications -->
+  <p-toast></p-toast>
+  
+  <!-- Confirmation dialogs -->
+  <p-confirmDialog></p-confirmDialog>
+</div>

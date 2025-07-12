@@ -2,6 +2,8 @@ import {Component, EventEmitter, Injector, Output} from '@angular/core';
 import {Button} from "primeng/button";
 import {FloatLabel} from "primeng/floatlabel";
 import {InputText} from "primeng/inputtext";
+import {PasswordModule} from "primeng/password";
+import {CheckboxModule} from "primeng/checkbox";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {AppBaseComponent} from '../../../core/base/app-base.component';
 import {AuthServices} from '../../../core/services/auth.services';
@@ -12,8 +14,9 @@ import {Toast} from 'primeng/toast';
   selector: 'app-signup',
   imports: [
     Button,
-    FloatLabel,
     InputText,
+    PasswordModule,
+    CheckboxModule,
     ReactiveFormsModule,
     FormsModule,
     Toast
@@ -21,11 +24,12 @@ import {Toast} from 'primeng/toast';
   templateUrl: './signup.component.html',
 })
 export class SignupComponent extends AppBaseComponent {
-  confirmPassword: string;
-  fullName: string;
-  email: string;
-  password: string;
-  acceptTnC: boolean;
+  confirmPassword: string = '';
+  fullName: string = '';
+  email: string = '';
+  password: string = '';
+  acceptTnC: boolean = false;
+  isLoading: boolean = false;
   @Output() onLogIn: EventEmitter<any> = new EventEmitter();
 
   constructor(private injector: Injector, private authServices: AuthServices, private router: Router ) {
@@ -36,17 +40,28 @@ export class SignupComponent extends AppBaseComponent {
     if (!this.validateBeforeSignUp()) {
       return;
     }
+    
+    this.isLoading = true;
     this.authServices.signUp({
       email: this.email, 
       full_name: this.fullName, 
       password: this.password,
       terms_accepted: this.acceptTnC
-    }).subscribe(res => {
-      if (!res) {
-        return;
+    }).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.showSuccess('Account created successfully! Please sign in.');
+          this.onLogIn.emit();
+        } else {
+          this.showError(res.message || 'Sign up failed');
+        }
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.showError(error.error?.message || 'Sign up failed');
+        this.isLoading = false;
       }
-      this.onLogIn.emit();
-    })
+    });
   }
 
   validateBeforeSignUp() {

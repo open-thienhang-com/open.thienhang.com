@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, catchError, Observable, of, tap, map } from 'rxjs';
 import { ApiResponse } from './governance.services';
 import { UserProfile } from './profile.services';
+import * as XLSX from 'xlsx';
 
 export interface LoginRequest {
   email: string;
@@ -143,6 +144,97 @@ export class AuthServices {
     return this.userSubject.asObservable();
   }
 
+  // Excel export functionality
+  exportUsersToExcel(users: any[]): void {
+    const worksheet = XLSX.utils.json_to_sheet(users);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Users');
+    
+    // Auto-size columns
+    const range = XLSX.utils.decode_range(worksheet['!ref']!);
+    const columnWidths = [];
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      let maxWidth = 0;
+      for (let R = range.s.r; R <= range.e.r; ++R) {
+        const cell = worksheet[XLSX.utils.encode_cell({r: R, c: C})];
+        if (cell && cell.v) {
+          const cellLength = cell.v.toString().length;
+          if (cellLength > maxWidth) {
+            maxWidth = cellLength;
+          }
+        }
+      }
+      columnWidths.push({ wch: Math.min(maxWidth + 2, 50) });
+    }
+    worksheet['!cols'] = columnWidths;
+    
+    XLSX.writeFile(workbook, `users_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+  }
+
+  // Import users from Excel
+  importUsersFromExcel(file: File): Observable<ApiResponse<any>> {
+    return new Observable(observer => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = e.target?.result;
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const users = XLSX.utils.sheet_to_json(worksheet);
+          
+          // Validate and process users
+          const validUsers = users.filter((user: any) => user.email && user.password);
+          
+          if (validUsers.length === 0) {
+            observer.next({ data: null, success: false, message: 'No valid users found in Excel file' });
+            return;
+          }
+          
+          // Send bulk create request
+          const url = `${this.baseUrl}/authentication/bulk-register`;
+          this.http.post<any>(url, { users: validUsers }).subscribe({
+            next: (response) => {
+              observer.next(this.wrapResponse(response));
+            },
+            error: (error) => {
+              observer.next({ data: null, success: false, message: error.message });
+            }
+          });
+        } catch (error) {
+          observer.next({ data: null, success: false, message: 'Error reading Excel file' });
+        }
+      };
+      reader.readAsBinaryString(file);
+    });
+  }
+
+  // Session management
+  extendSession(): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/authentication/extend-session`;
+    return this.http.post<any>(url, {})
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  checkSessionStatus(): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/authentication/session-status`;
+    return this.http.get<any>(url)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  // Two-factor authentication
+  enableTwoFactor(): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/authentication/enable-2fa`;
+    return this.http.post<any>(url, {})
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  verifyTwoFactor(code: string): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/authentication/verify-2fa`;
+    return this.http.post<any>(url, { code })
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
   // Helper to check if a response is already wrapped in our ApiResponse format
   private isWrappedResponse(response: any): response is ApiResponse<any> {
     return response && 'data' in response && 'success' in response;
@@ -154,5 +246,30 @@ export class AuthServices {
       return data as unknown as ApiResponse<T>;
     }
     return { data, success: true };
+  }
+
+  // Helper method to wrap API calls with loading
+  private wrapWithLoading<T>(
+    observable: Observable<T>,
+    message: string = 'Loading...',
+    type: 'default' | 'dots' | 'spinner' | 'pulse' | 'bounce' | 'wave' | 'bars' | 'data-flow' = 'pulse'
+  ): Observable<T> {
+    return new Observable(subscriber => {
+      const subscription = observable.subscribe({
+        next: (value) => {
+          subscriber.next(value);
+        },
+        error: (error) => {
+          subscriber.error(error);
+        },
+        complete: () => {
+          subscriber.complete();
+        }
+      });
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    });
   }
 }

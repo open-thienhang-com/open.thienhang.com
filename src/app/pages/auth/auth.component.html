@@ -1,26 +1,43 @@
-<div class="min-h-screen auth-container flex items-center justify-center">
-  <div class="sign-in-container shadow-lg flex w-[900px] overflow-hidden">
-    @if (curMode === modes.login) {
-      <div class="w-2/3 flex items-center justify-center p-6">
-        <img src="assets/images/sign-in-img.png" alt="Login Visual" class="max-w-full h-auto"/>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-6">
+  <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+    <!-- Left Side - Visual/Branding -->
+    <div class="hidden lg:flex flex-col items-center justify-center text-center">
+      <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+        @if (curMode === modes.login) {
+          <img src="assets/images/sign-in-img.png" alt="Login Visual" class="w-full h-auto mb-6"/>
+          <h2 class="text-2xl font-bold text-gray-800 mb-4">Welcome Back!</h2>
+          <p class="text-gray-600">Access your data governance dashboard and manage your organization's data assets.</p>
+        }
+        @if (curMode === modes.signup) {
+          <img src="assets/images/sign-up.png" alt="Sign up Visual" class="w-full h-auto mb-6"/>
+          <h2 class="text-2xl font-bold text-gray-800 mb-4">Join Open Mesh</h2>
+          <p class="text-gray-600">Start your journey with comprehensive data governance and management tools.</p>
+        }
+        @if (curMode === modes.forgotPassword) {
+          <img src="assets/images/forgot-password.png" alt="Forgot password Visual" class="w-full h-auto mb-6"/>
+          <h2 class="text-2xl font-bold text-gray-800 mb-4">Reset Password</h2>
+          <p class="text-gray-600">Don't worry, we'll send you reset instructions to your email.</p>
+        }
       </div>
-      <app-login class="flex flex-col justify-center items-center w-1/2"
-                 (onForgotPassword)="setCurMode(modes.forgotPassword)"
-                 (onSignUp)="setCurMode(modes.signup)"></app-login>
-    }
-    @if (curMode === modes.signup) {
-      <div class="w-2/3 flex items-center justify-center p-6">
-        <img src="assets/images/sign-up.png" alt="Sign up Visual" class="max-w-full h-auto"/>
+    </div>
+
+    <!-- Right Side - Auth Forms -->
+    <div class="w-full max-w-md mx-auto">
+      <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+        @if (curMode === modes.login) {
+          <app-login class="block"
+                     (onForgotPassword)="setCurMode(modes.forgotPassword)"
+                     (onSignUp)="setCurMode(modes.signup)"></app-login>
+        }
+        @if (curMode === modes.signup) {
+          <app-signup class="block"
+                      (onLogIn)="setCurMode(modes.login)"></app-signup>
+        }
+        @if (curMode === modes.forgotPassword) {
+          <app-forgot-password class="block"
+                               (onLogIn)="setCurMode(modes.login)"></app-forgot-password>
+        }
       </div>
-      <app-signup class="flex flex-col justify-center items-center w-1/2"
-                  (onLogIn)="setCurMode(modes.login)"></app-signup>
-    }
-    @if (curMode === modes.forgotPassword) {
-      <div class="w-2/3 flex items-center justify-center p-6">
-        <img src="assets/images/forgot-password.png" alt="Forgot password Visual" class="max-w-full h-auto"/>
-      </div>
-      <app-forgot-password class="flex flex-col justify-center items-center w-1/2"
-                           (onLogIn)="setCurMode(modes.login)"></app-forgot-password>
-    }
+    </div>
   </div>
 </div>

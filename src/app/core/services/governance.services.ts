@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map, tap } from 'rxjs';
 import { CacheService } from './cache.service';
 
 export interface ApiResponse<T> {
@@ -63,25 +63,97 @@ export interface Asset {
   updatedAt?: Date;
 }
 
-export interface Role {
-  id: string;
+export interface PolicyRoleDetail {
+  _id: string;
+  kid: string;
   name: string;
   description: string;
+  type: 'system' | 'business' | 'governance';
   permissions: string[];
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  is_active: boolean;
+  contact: Array<{
+    email: string;
+    name: string;
+    phone: string;
+  }>;
+  created_at: string;
+  updated_at: string;
+  _created_at: string;
+  _updated_at: string;
 }
 
-export interface Permission {
-  id: string;
+export interface Policy {
+  _id: string | null;
+  kid: string;
   name: string;
   description: string;
-  resource: string;
-  action: string;
+  type: 'access_control' | 'data_protection' | 'compliance';
+  effect: 'allow' | 'deny' | null;
+  subjects: string[];
+  roles: string[];
+  permissions: string[];
+  resources: string[];
+  domain_id: string | null;
+  data_product_id: string | null;
   conditions: any;
-  createdAt: Date;
-  updatedAt: Date;
+  priority: number;
+  enabled: boolean;
+  tags: string[];
+  created_at: string;
+  updated_at: string;
+  created_by: string | null;
+  updated_by: string | null;
+  role_details: PolicyRoleDetail[];
+  permission_details: any[];
+  asset_details: any[];
+  user_details: any[];
+  team_details: any[];
+  affected_assets_total: number;
+  policy_rules_total: number;
+  total_subjects: number;
+  total_roles: number;
+  total_permissions: number;
+  total_resources: number;
+  domain_info: any;
+  data_product_info: any;
+}
+
+export interface Role {
+  _id: string;
+  kid: string;
+  name: string;
+  description: string;
+  type: 'system' | 'business' | 'governance';
+  permissions: number; // number of permissions for list view
+  is_active?: boolean;
+  contact?: Array<{
+    email: string;
+    name: string;
+    phone: string;
+  }>;
+  created_at?: string;
+  updated_at?: string;
+  _created_at?: string;
+  _updated_at?: string;
+}
+
+export interface RoleDetail extends Omit<Role, 'permissions'> {
+  permissions: Permission[]; // detailed permissions for detail view
+  policies?: Policy[];
+  users?: User[];
+  teams?: Team[];
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
+  search?: string;
 }
 
 export interface Team {
@@ -98,18 +170,6 @@ export interface Team {
   owner?: string;
   createdAt?: Date;
   updatedAt?: Date;
-}
-
-export interface Policy {
-  id: string;
-  name: string;
-  description: string;
-  type: string;
-  rules: any[];
-  isActive: boolean;
-  applicableResources: string[];
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface ComplianceRecord {
@@ -161,6 +221,21 @@ export interface RetentionPolicy {
   updatedAt: Date;
 }
 
+export interface Permission {
+  _id: string;
+  kid: string;
+  name: string;
+  description: string;
+  code: string;
+  resource: string;
+  action: string;
+  effect: 'allow' | 'deny';
+  conditions?: any;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -175,141 +250,121 @@ export class GovernanceServices {
   // Users Management
   getUsers(params?: any): Observable<ApiResponse<User[]>> {
     const httpParams = this.buildHttpParams(params);
-    return this.http.get<User[]>(`${this.baseUrl}/governance/users`, { params: httpParams })
+    return this.http.get<User[]>(`${this.baseUrl}/governance/users/users`, { params: httpParams })
       .pipe(map(response => this.wrapArrayResponse(response)));
   }
 
   getUser(id: string): Observable<ApiResponse<User>> {
-    return this.http.get<User>(`${this.baseUrl}/governance/user/${id}`)
+    return this.http.get<User>(`${this.baseUrl}/governance/users/user/${id}`)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   createUser(user: User): Observable<ApiResponse<User>> {
-    return this.http.post<User>(`${this.baseUrl}/governance/user`, user)
+    return this.http.post<User>(`${this.baseUrl}/governance/users/user`, user)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   updateUser(id: string, user: Partial<User>): Observable<ApiResponse<User>> {
-    return this.http.put<User>(`${this.baseUrl}/governance/user/${id}`, user)
+    return this.http.patch<User>(`${this.baseUrl}/governance/users/user/${id}`, user)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   deleteUser(id: string): Observable<ApiResponse<any>> {
-    return this.http.delete<any>(`${this.baseUrl}/governance/user/${id}`)
+    return this.http.delete<any>(`${this.baseUrl}/governance/users/user/${id}`)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   activateUser(id: string): Observable<ApiResponse<User>> {
-    return this.http.post<User>(`${this.baseUrl}/governance/user/${id}/activate`, {})
+    return this.http.post<User>(`${this.baseUrl}/governance/users/user/${id}/activate`, {})
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   deactivateUser(id: string): Observable<ApiResponse<User>> {
-    return this.http.post<User>(`${this.baseUrl}/governance/user/${id}/deactivate`, {})
+    return this.http.post<User>(`${this.baseUrl}/governance/users/user/${id}/deactivate`, {})
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   assignUserToTeam(userId: string, teamId: string): Observable<ApiResponse<any>> {
-    return this.http.post<any>(`${this.baseUrl}/governance/user/${userId}/team/${teamId}`, {})
+    return this.http.post<any>(`${this.baseUrl}/governance/users/user/${userId}/team/${teamId}`, {})
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   removeUserFromTeam(userId: string, teamId: string): Observable<ApiResponse<any>> {
-    return this.http.delete<any>(`${this.baseUrl}/governance/user/${userId}/team/${teamId}`)
+    return this.http.delete<any>(`${this.baseUrl}/governance/users/user/${userId}/team/${teamId}`)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   getUserTeams(userId: string): Observable<ApiResponse<Team[]>> {
-    return this.http.get<Team[]>(`${this.baseUrl}/governance/user/${userId}/teams`)
+    return this.http.get<Team[]>(`${this.baseUrl}/governance/users/user/${userId}/teams`)
       .pipe(map(response => this.wrapArrayResponse(response)));
   }
 
   // Teams Management
   getTeams(params?: any): Observable<ApiResponse<Team[]>> {
     const httpParams = this.buildHttpParams(params);
-    return this.http.get<Team[]>(`${this.baseUrl}/governance/teams`, { params: httpParams })
+    return this.http.get<Team[]>(`${this.baseUrl}/governance/teams/teams`, { params: httpParams })
       .pipe(map(response => this.wrapArrayResponse(response)));
   }
 
   getTeam(id: string): Observable<ApiResponse<Team>> {
-    return this.http.get<Team>(`${this.baseUrl}/governance/team/${id}`)
+    return this.http.get<Team>(`${this.baseUrl}/governance/teams/team/${id}`)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   createTeam(team: Team): Observable<ApiResponse<Team>> {
-    return this.http.post<Team>(`${this.baseUrl}/governance/team`, team)
+    return this.http.post<Team>(`${this.baseUrl}/governance/teams/team`, team)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   updateTeam(id: string, team: Partial<Team>): Observable<ApiResponse<Team>> {
-    return this.http.put<Team>(`${this.baseUrl}/governance/team/${id}`, team)
+    return this.http.patch<Team>(`${this.baseUrl}/governance/teams/team/${id}`, team)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   deleteTeam(id: string): Observable<ApiResponse<any>> {
-    return this.http.delete<any>(`${this.baseUrl}/governance/team/${id}`)
+    return this.http.delete<any>(`${this.baseUrl}/governance/teams/team/${id}`)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   activateTeam(id: string): Observable<ApiResponse<Team>> {
-    return this.http.post<Team>(`${this.baseUrl}/governance/team/${id}/activate`, {})
+    return this.http.post<Team>(`${this.baseUrl}/governance/teams/team/${id}/activate`, {})
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   deactivateTeam(id: string): Observable<ApiResponse<Team>> {
-    return this.http.post<Team>(`${this.baseUrl}/governance/team/${id}/deactivate`, {})
+    return this.http.post<Team>(`${this.baseUrl}/governance/teams/team/${id}/deactivate`, {})
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   getTeamMembers(teamId: string): Observable<ApiResponse<User[]>> {
-    return this.http.get<User[]>(`${this.baseUrl}/governance/team/${teamId}/members`)
+    return this.http.get<User[]>(`${this.baseUrl}/governance/teams/team/${teamId}/members`)
       .pipe(map(response => this.wrapArrayResponse(response)));
   }
 
   addTeamMember(teamId: string, userId: string): Observable<ApiResponse<any>> {
-    return this.http.post<any>(`${this.baseUrl}/governance/team/${teamId}/member/${userId}`, {})
+    return this.http.post<any>(`${this.baseUrl}/governance/teams/team/${teamId}/member/${userId}`, {})
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   removeTeamMember(teamId: string, userId: string): Observable<ApiResponse<any>> {
-    return this.http.delete<any>(`${this.baseUrl}/governance/team/${teamId}/member/${userId}`)
+    return this.http.delete<any>(`${this.baseUrl}/governance/teams/team/${teamId}/member/${userId}`)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   // Accounts Management
   getAccounts(params?: any): Observable<ApiResponse<Account[]>> {
     const httpParams = this.buildHttpParams(params);
-    return this.http.get<Account[]>(`${this.baseUrl}/governance/accounts`, { params: httpParams })
+    return this.http.get<Account[]>(`${this.baseUrl}/governance/accounts/accounts`, { params: httpParams })
       .pipe(map(response => this.wrapArrayResponse(response)));
   }
 
   getAccount(id: string): Observable<ApiResponse<Account>> {
-    return this.http.get<Account>(`${this.baseUrl}/governance/account/${id}`)
-      .pipe(map(response => this.wrapResponse(response)));
-  }
-
-  createAccount(account: Account): Observable<ApiResponse<Account>> {
-    return this.http.post<Account>(`${this.baseUrl}/governance/account`, account)
+    return this.http.get<Account>(`${this.baseUrl}/governance/accounts/account/${id}`)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   updateAccount(id: string, account: Partial<Account>): Observable<ApiResponse<Account>> {
-    return this.http.put<Account>(`${this.baseUrl}/governance/account/${id}`, account)
-      .pipe(map(response => this.wrapResponse(response)));
-  }
-
-  deleteAccount(id: string): Observable<ApiResponse<any>> {
-    return this.http.delete<any>(`${this.baseUrl}/governance/account/${id}`)
-      .pipe(map(response => this.wrapResponse(response)));
-  }
-
-  activateAccount(id: string): Observable<ApiResponse<Account>> {
-    return this.http.post<Account>(`${this.baseUrl}/governance/account/${id}/activate`, {})
-      .pipe(map(response => this.wrapResponse(response)));
-  }
-
-  deactivateAccount(id: string): Observable<ApiResponse<Account>> {
-    return this.http.post<Account>(`${this.baseUrl}/governance/account/${id}/deactivate`, {})
+    return this.http.patch<Account>(`${this.baseUrl}/governance/accounts/account/${id}`, account)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
@@ -385,94 +440,216 @@ export class GovernanceServices {
   }
 
   // Policies Management
-  getPolicies(params?: any): Observable<ApiResponse<Policy[]>> {
+  getPolicies(params?: any): Observable<ApiResponse<PaginatedResponse<Policy>>> {
+    const cacheKey = `policies_${JSON.stringify(params || {})}`;
     const httpParams = this.buildHttpParams(params);
-    return this.http.get<Policy[]>(`${this.baseUrl}/governance/policies`, { params: httpParams })
-      .pipe(map(response => this.wrapArrayResponse(response)));
+    const httpObservable = this.http.get<PaginatedResponse<Policy>>(`${this.baseUrl}/governance/policies/`, { params: httpParams })
+      .pipe(map(response => this.wrapResponse(response)));
+
+    // Return cached observable with 5-minute TTL
+    return this.cacheService.getCachedObservable<ApiResponse<PaginatedResponse<Policy>>>(cacheKey, httpObservable, 5 * 60 * 1000);
   }
 
   getPolicy(id: string): Observable<ApiResponse<Policy>> {
-    return this.http.get<Policy>(`${this.baseUrl}/governance/policy/${id}`)
-      .pipe(map(response => this.wrapResponse(response)));
+    console.log('Fetching policy with ID:', id);
+    const cacheKey = `policy_${id}`;
+    const httpObservable = this.http.get<Policy>(`${this.baseUrl}/governance/policies/${id}`)
+      .pipe(
+        tap(response => console.log('Raw policy API response:', response)),
+        map(response => this.wrapResponse(response)),
+        tap(wrappedResponse => console.log('Wrapped policy response:', wrappedResponse))
+      );
+
+    // Return cached observable with 5-minute TTL
+    return this.cacheService.getCachedObservable<ApiResponse<Policy>>(cacheKey, httpObservable, 5 * 60 * 1000);
   }
 
-  createPolicy(policy: Policy): Observable<ApiResponse<Policy>> {
-    return this.http.post<Policy>(`${this.baseUrl}/governance/policy`, policy)
+  createPolicy(policy: Partial<Policy>): Observable<ApiResponse<Policy>> {
+    return this.http.post<Policy>(`${this.baseUrl}/governance/policies`, policy)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   updatePolicy(id: string, policy: Partial<Policy>): Observable<ApiResponse<Policy>> {
-    return this.http.put<Policy>(`${this.baseUrl}/governance/policy/${id}`, policy)
+    return this.http.patch<Policy>(`${this.baseUrl}/governance/policies/${id}`, policy)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   deletePolicy(id: string): Observable<ApiResponse<any>> {
-    return this.http.delete<any>(`${this.baseUrl}/governance/policy/${id}`)
+    return this.http.delete<any>(`${this.baseUrl}/governance/policies/${id}`)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
-  activatePolicy(id: string): Observable<ApiResponse<Policy>> {
-    return this.http.post<Policy>(`${this.baseUrl}/governance/policy/${id}/activate`, {})
+  enablePolicy(id: string): Observable<ApiResponse<Policy>> {
+    return this.http.patch<Policy>(`${this.baseUrl}/governance/policies/${id}`, { enabled: true })
       .pipe(map(response => this.wrapResponse(response)));
   }
 
-  deactivatePolicy(id: string): Observable<ApiResponse<Policy>> {
-    return this.http.post<Policy>(`${this.baseUrl}/governance/policy/${id}/deactivate`, {})
+  disablePolicy(id: string): Observable<ApiResponse<Policy>> {
+    return this.http.patch<Policy>(`${this.baseUrl}/governance/policies/${id}`, { enabled: false })
       .pipe(map(response => this.wrapResponse(response)));
   }
 
-  // Roles Management
-  getRoles(params?: any): Observable<ApiResponse<Role[]>> {
+  assignRoleToPolicy(policyId: string, roleId: string): Observable<ApiResponse<any>> {
+    return this.http.post<any>(`${this.baseUrl}/governance/policies/${policyId}/roles/${roleId}`, {})
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  removeRoleFromPolicy(policyId: string, roleId: string): Observable<ApiResponse<any>> {
+    return this.http.delete<any>(`${this.baseUrl}/governance/policies/${policyId}/roles/${roleId}`)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  // Enhanced Roles Management
+  getRoles(params?: any): Observable<ApiResponse<PaginatedResponse<Role>>> {
+    const cacheKey = `roles_${JSON.stringify(params || {})}`;
     const httpParams = this.buildHttpParams(params);
-    return this.http.get<Role[]>(`${this.baseUrl}/governance/roles`, { params: httpParams })
-      .pipe(map(response => this.wrapArrayResponse(response)));
-  }
-
-  getRole(id: string): Observable<ApiResponse<Role>> {
-    return this.http.get<Role>(`${this.baseUrl}/governance/role/${id}`)
+    const httpObservable = this.http.get<PaginatedResponse<Role>>(`${this.baseUrl}/governance/roles/roles/`, { params: httpParams })
       .pipe(map(response => this.wrapResponse(response)));
+
+    // Return cached observable with 5-minute TTL
+    return this.cacheService.getCachedObservable<ApiResponse<PaginatedResponse<Role>>>(cacheKey, httpObservable, 5 * 60 * 1000);
   }
 
-  createRole(role: Role): Observable<ApiResponse<Role>> {
-    return this.http.post<Role>(`${this.baseUrl}/governance/role`, role)
+  getRoleDetail(id: string): Observable<ApiResponse<RoleDetail>> {
+    console.log('Fetching role detail with ID:', id);
+    const cacheKey = `role_detail_${id}`;
+    const httpObservable = this.http.get<RoleDetail>(`${this.baseUrl}/governance/roles/roles/${id}`)
+      .pipe(
+        tap(response => console.log('Raw role detail API response:', response)),
+        map(response => this.wrapResponse(response)),
+        tap(wrappedResponse => console.log('Wrapped role detail response:', wrappedResponse))
+      );
+
+    // Return cached observable with 5-minute TTL
+    return this.cacheService.getCachedObservable<ApiResponse<RoleDetail>>(cacheKey, httpObservable, 5 * 60 * 1000);
+  }
+
+  createRole(role: Partial<Role>): Observable<ApiResponse<Role>> {
+    return this.http.post<Role>(`${this.baseUrl}/governance/roles/role`, role)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   updateRole(id: string, role: Partial<Role>): Observable<ApiResponse<Role>> {
-    return this.http.put<Role>(`${this.baseUrl}/governance/role/${id}`, role)
+    return this.http.patch<Role>(`${this.baseUrl}/governance/roles/role/${id}`, role)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  updateRoleStatus(id: string, is_active: boolean): Observable<ApiResponse<Role>> {
+    return this.http.patch<Role>(`${this.baseUrl}/governance/roles/role/${id}/status`, { is_active })
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   deleteRole(id: string): Observable<ApiResponse<any>> {
-    return this.http.delete<any>(`${this.baseUrl}/governance/role/${id}`)
+    return this.http.delete<any>(`${this.baseUrl}/governance/roles/role/${id}`)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   // Permissions Management
   getPermissions(params?: any): Observable<ApiResponse<Permission[]>> {
+    const cacheKey = `permissions_${JSON.stringify(params || {})}`;
     const httpParams = this.buildHttpParams(params);
-    return this.http.get<Permission[]>(`${this.baseUrl}/governance/permissions`, { params: httpParams })
-      .pipe(map(response => this.wrapArrayResponse(response)));
+    const httpObservable = this.http.get<Permission[]>(`${this.baseUrl}/governance/permissions/permissions`, { params: httpParams })
+      .pipe(map(response => this.wrapArrayResponse<Permission>(response)));
+
+    // Return cached observable with 5-minute TTL
+    return this.cacheService.getCachedObservable<ApiResponse<Permission[]>>(cacheKey, httpObservable, 5 * 60 * 1000);
   }
 
   getPermission(id: string): Observable<ApiResponse<Permission>> {
-    return this.http.get<Permission>(`${this.baseUrl}/governance/permission/${id}`)
+    const cacheKey = `permission_${id}`;
+    const httpObservable = this.http.get<Permission>(`${this.baseUrl}/governance/permissions/permission/${id}`)
       .pipe(map(response => this.wrapResponse(response)));
+
+    // Return cached observable with 5-minute TTL
+    return this.cacheService.getCachedObservable<ApiResponse<Permission>>(cacheKey, httpObservable, 5 * 60 * 1000);
   }
 
   createPermission(permission: Permission): Observable<ApiResponse<Permission>> {
-    return this.http.post<Permission>(`${this.baseUrl}/governance/permission`, permission)
+    // Clear permissions cache when creating new permission
+    this.cacheService.clear();
+    return this.http.post<Permission>(`${this.baseUrl}/governance/permissions/permission`, permission)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   updatePermission(id: string, permission: Partial<Permission>): Observable<ApiResponse<Permission>> {
-    return this.http.put<Permission>(`${this.baseUrl}/governance/permission/${id}`, permission)
+    // Clear permissions cache when updating permission
+    this.cacheService.clear();
+    return this.http.patch<Permission>(`${this.baseUrl}/governance/permissions/permission/${id}`, permission)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   deletePermission(id: string): Observable<ApiResponse<any>> {
-    return this.http.delete<any>(`${this.baseUrl}/governance/permission/${id}`)
+    // Clear permissions cache when deleting permission
+    this.cacheService.clear();
+    return this.http.delete<any>(`${this.baseUrl}/governance/permissions/permission/${id}`)
       .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  // Bulk permissions operations
+  bulkCreatePermissions(permissions: Permission[]): Observable<ApiResponse<Permission[]>> {
+    this.cacheService.clear();
+    return this.http.post<Permission[]>(`${this.baseUrl}/governance/permissions/permissions/bulk`, { permissions })
+      .pipe(map(response => this.wrapArrayResponse(response)));
+  }
+
+  bulkUpdatePermissions(updates: Array<{ id: string; permission: Partial<Permission> }>): Observable<ApiResponse<Permission[]>> {
+    this.cacheService.clear();
+    return this.http.patch<Permission[]>(`${this.baseUrl}/governance/permissions/permissions/bulk`, { updates })
+      .pipe(map(response => this.wrapArrayResponse(response)));
+  }
+
+  bulkDeletePermissions(ids: string[]): Observable<ApiResponse<any>> {
+    this.cacheService.clear();
+    return this.http.delete<any>(`${this.baseUrl}/governance/permissions/permissions/bulk`, { body: { ids } })
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  // Permission assignment operations
+  assignPermissionToRole(permissionId: string, roleId: string): Observable<ApiResponse<any>> {
+    this.cacheService.clear();
+    return this.http.post<any>(`${this.baseUrl}/governance/permissions/assign`, { permissionId, roleId })
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  revokePermissionFromRole(permissionId: string, roleId: string): Observable<ApiResponse<any>> {
+    this.cacheService.clear();
+    return this.http.delete<any>(`${this.baseUrl}/governance/permissions/revoke`, { body: { permissionId, roleId } })
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  // Permission validation
+  validatePermission(code: string, assetId?: string): Observable<ApiResponse<{ valid: boolean; message?: string }>> {
+    const params = assetId ? { code, assetId } : { code };
+    const httpParams = this.buildHttpParams(params);
+    return this.http.get<{ valid: boolean; message?: string }>(`${this.baseUrl}/governance/permissions/validate`, { params: httpParams })
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  // Get permissions by role
+  getPermissionsByRole(roleId: string): Observable<ApiResponse<Permission[]>> {
+    const cacheKey = `permissions_role_${roleId}`;
+    const httpObservable = this.http.get<Permission[]>(`${this.baseUrl}/governance/permissions/role/${roleId}`)
+      .pipe(map(response => this.wrapArrayResponse<Permission>(response)));
+
+    return this.cacheService.getCachedObservable<ApiResponse<Permission[]>>(cacheKey, httpObservable, 5 * 60 * 1000);
+  }
+
+  // Get permissions by user
+  getPermissionsByUser(userId: string): Observable<ApiResponse<Permission[]>> {
+    const cacheKey = `permissions_user_${userId}`;
+    const httpObservable = this.http.get<Permission[]>(`${this.baseUrl}/governance/permissions/user/${userId}`)
+      .pipe(map(response => this.wrapArrayResponse<Permission>(response)));
+
+    return this.cacheService.getCachedObservable<ApiResponse<Permission[]>>(cacheKey, httpObservable, 5 * 60 * 1000);
+  }
+
+  // Get effective permissions (combined from all roles)
+  getEffectivePermissions(userId: string): Observable<ApiResponse<Permission[]>> {
+    const cacheKey = `effective_permissions_${userId}`;
+    const httpObservable = this.http.get<Permission[]>(`${this.baseUrl}/governance/permissions/effective/${userId}`)
+      .pipe(map(response => this.wrapArrayResponse<Permission>(response)));
+
+    return this.cacheService.getCachedObservable<ApiResponse<Permission[]>>(cacheKey, httpObservable, 2 * 60 * 1000); // 2 minutes TTL for effective permissions
   }
 
   // Classifications Management
@@ -617,8 +794,16 @@ export class GovernanceServices {
     if (params) {
       Object.keys(params).forEach(key => {
         if (params[key] !== null && params[key] !== undefined) {
+          // Check for NaN values and skip them
+          if (typeof params[key] === 'number' && isNaN(params[key])) {
+            return; // Skip NaN values
+          }
+          
           if (Array.isArray(params[key])) {
             params[key].forEach((value: any) => {
+              if (typeof value === 'number' && isNaN(value)) {
+                return; // Skip NaN values in arrays
+              }
               httpParams = httpParams.append(key, value.toString());
             });
           } else {
@@ -636,11 +821,32 @@ export class GovernanceServices {
   }
 
   // Helper method to wrap an array response to match the API response format
-  private wrapArrayResponse<T>(data: T[]): ApiResponse<T[]> {
+  private wrapArrayResponse<T = any>(response: any): ApiResponse<T[]> {
+    // If response is already in the correct format (has data property)
+    if (response && typeof response === 'object' && 'data' in response) {
+      return {
+        data: response.data || [],
+        total: response.total || (Array.isArray(response.data) ? response.data.length : 0),
+        success: response.success !== undefined ? response.success : true,
+        message: response.message
+      };
+    }
+    
+    // If response is a direct array
+    if (Array.isArray(response)) {
+      return {
+        data: response as T[],
+        total: response.length,
+        success: true
+      };
+    }
+    
+    // Fallback for other cases
     return {
-      data: data || [],
-      total: Array.isArray(data) ? data.length : 0,
-      success: true
+      data: [] as T[],
+      total: 0,
+      success: false,
+      message: 'Invalid response format'
     };
   }
 }

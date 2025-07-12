@@ -1,1 +1,10 @@
-<router-outlet></router-outlet>
+<!-- Loading Page (shown during initial app load/refresh) -->
+<app-loading-page *ngIf="showLoadingPage"></app-loading-page>
+
+<!-- Main App Content (shown after loading is complete) -->
+<div *ngIf="!showLoadingPage" class="app-container">
+  <router-outlet></router-outlet>
+</div>
+
+<!-- Global Toast notifications -->
+<app-toast></app-toast>

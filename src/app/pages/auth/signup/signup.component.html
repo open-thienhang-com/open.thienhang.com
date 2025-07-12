@@ -1,36 +1,153 @@
-<div class="w-full text-white p-8 flex flex-col justify-center items-center">
-  <div class="w-2/3">
-    <h2 class="text-2xl font-bold mb-2">Create your account</h2>
-    <p class="text-sm mb-6">Get Started For Free Today!</p>
-    <p-floatlabel variant="on">
-      <input class="w-full" pInputText id="fullName" [(ngModel)]="fullName" autocomplete="off" />
-      <label for="fullName">Full Name</label>
-    </p-floatlabel>
-    <p-floatlabel variant="on" class="mt-4">
-      <input class="w-full" pInputText id="email" [(ngModel)]="email" autocomplete="off" type="email" />
-      <label for="email">Email</label>
-    </p-floatlabel>
-    <p-floatlabel variant="on" class="mt-4">
-      <input class="w-full" pInputText id="password" [(ngModel)]="password" autocomplete="off" type="password" />
-      <label for="password">Password</label>
-    </p-floatlabel>
-    <p-floatlabel variant="on" class="mt-4">
-      <input class="w-full" pInputText id="confirmPassword" [(ngModel)]="confirmPassword" autocomplete="off" type="password" />
-      <label for="confirmPassword">Confirm Password</label>
-    </p-floatlabel>
+<div class="p-8">
+  <!-- Header -->
+  <div class="text-center mb-8">
+    <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="pi pi-user-plus text-white text-2xl"></i>
+    </div>
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
+    <p class="text-gray-600">Join Open Mesh to get started today</p>
+  </div>
 
-    <div class="flex items-center justify-between text-sm mt-2">
-      <label class="flex items-center gap-2">
-        <input [(ngModel)]="acceptTnC" name="accept-tnc" type="checkbox" class="accent-white" />
-        Accept Terms & Conditions
-      </label>
+  <!-- Signup Form -->
+  <form class="space-y-6">
+    <div>
+      <label for="fullName" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+      <span class="p-input-icon-left w-full">
+        <i class="pi pi-user"></i>
+        <input 
+          id="fullName" 
+          type="text" 
+          pInputText 
+          [(ngModel)]="fullName" 
+          name="fullName"
+          placeholder="Enter your full name"
+          class="w-full"
+          autocomplete="name" />
+      </span>
     </div>
-    <div class="w-full py-8">
-      <p-button label="Sign up" severity="success" class="w-full" styleClass="w-full" (click)="signUp()"/>
+
+    <div>
+      <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+      <span class="p-input-icon-left w-full">
+        <i class="pi pi-envelope"></i>
+        <input 
+          id="email" 
+          type="email" 
+          pInputText 
+          [(ngModel)]="email" 
+          name="email"
+          placeholder="Enter your email"
+          class="w-full"
+          autocomplete="email" />
+      </span>
     </div>
-    <p class="mt-4 text-sm text-center">
-      Already have an account? <a class="underline cursor-pointer" (click)="onLogIn.emit()">Log in</a>
-    </p>
+
+    <div>
+      <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+      <span class="p-input-icon-left w-full">
+        <i class="pi pi-lock"></i>
+        <p-password 
+          id="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="Create a password"
+          [feedback]="true"
+          [toggleMask]="true"
+          styleClass="w-full"
+          inputStyleClass="w-full"
+          autocomplete="new-password">
+        </p-password>
+      </span>
+    </div>
+
+    <div>
+      <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+      <span class="p-input-icon-left w-full">
+        <i class="pi pi-lock"></i>
+        <p-password 
+          id="confirmPassword"
+          [(ngModel)]="confirmPassword"
+          name="confirmPassword"
+          placeholder="Confirm your password"
+          [feedback]="false"
+          [toggleMask]="true"
+          styleClass="w-full"
+          inputStyleClass="w-full"
+          autocomplete="new-password">
+        </p-password>
+      </span>
+    </div>
+
+    <div class="flex items-start">
+      <div class="flex items-center h-5">
+        <p-checkbox 
+          [(ngModel)]="acceptTnC" 
+          name="acceptTnC"
+          inputId="acceptTnC"
+          binary="true">
+        </p-checkbox>
+      </div>
+      <div class="ml-3 text-sm">
+        <label for="acceptTnC" class="text-gray-700">
+          I agree to the 
+          <a href="#" class="text-blue-600 hover:text-blue-500">Terms and Conditions</a>
+          and 
+          <a href="#" class="text-blue-600 hover:text-blue-500">Privacy Policy</a>
+        </label>
+      </div>
+    </div>
+
+    <div>
+      <p-button 
+        label="Create Account" 
+        icon="pi pi-user-plus"
+        severity="success" 
+        styleClass="w-full" 
+        size="large"
+        (onClick)="signUp()"
+        [loading]="isLoading">
+      </p-button>
+    </div>
+
+    <div class="text-center">
+      <p class="text-sm text-gray-600">
+        Already have an account? 
+        <a class="text-blue-600 hover:text-blue-500 cursor-pointer font-medium" (click)="onLogIn.emit()">
+          Sign in now
+        </a>
+      </p>
+    </div>
+  </form>
+
+  <!-- Divider -->
+  <div class="mt-8 mb-8">
+    <div class="relative">
+      <div class="absolute inset-0 flex items-center">
+        <div class="w-full border-t border-gray-300"></div>
+      </div>
+      <div class="relative flex justify-center text-sm">
+        <span class="px-2 bg-white text-gray-500">Or continue with</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Social Login Options -->
+  <div class="grid grid-cols-2 gap-3">
+    <p-button 
+      label="Google" 
+      icon="pi pi-google"
+      severity="secondary" 
+      [outlined]="true"
+      styleClass="w-full">
+    </p-button>
+    <p-button 
+      label="Microsoft" 
+      icon="pi pi-microsoft"
+      severity="secondary" 
+      [outlined]="true"
+      styleClass="w-full">
+    </p-button>
   </div>
 </div>
-<p-toast />
+
+<p-toast></p-toast>

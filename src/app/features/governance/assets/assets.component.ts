@@ -16,6 +16,15 @@ import { ChipModule } from 'primeng/chip';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
+import { CardModule } from 'primeng/card';
+import { DialogModule } from 'primeng/dialog';
+import { SkeletonModule } from 'primeng/skeleton';
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { DataViewModule } from 'primeng/dataview';
+import { DividerModule } from 'primeng/divider';
+import { PanelModule } from 'primeng/panel';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import * as XLSX from 'xlsx';
 
 @Component({
@@ -33,7 +42,16 @@ import * as XLSX from 'xlsx';
     PaginatorModule,
     TooltipModule,
     ChipModule,
-    ToastModule
+    ToastModule,
+    CardModule,
+    DialogModule,
+    SkeletonModule,
+    InputGroupModule,
+    InputGroupAddonModule,
+    DataViewModule,
+    DividerModule,
+    PanelModule,
+    ProgressSpinnerModule
   ],
   templateUrl: './assets.component.html',
   styleUrls: ['./assets.component.scss']
@@ -451,6 +469,10 @@ export class AssetsComponent extends AppBaseComponent implements OnInit, OnDestr
     this.showFilters = !this.showFilters;
   }
 
+  // Asset detail modal
+  selectedAsset: any = null;
+  showAssetDetailModal: boolean = false;
+
   // View asset details
   viewAsset(asset: any) {
     this.loading = true;
@@ -458,24 +480,60 @@ export class AssetsComponent extends AppBaseComponent implements OnInit, OnDestr
       next: (res) => {
         this.loading = false;
         if (res?.data) {
-          // Show asset detail modal (you can create a separate detailed view component)
-          this.messageService.add({
-            severity: 'info',
-            summary: 'Asset Detail',
-            detail: `Viewing details for ${res.data.name}`
-          });
-          console.log('Asset details:', res.data);
+          this.selectedAsset = res.data;
+          this.showAssetDetailModal = true;
+        } else {
+          // Fallback to showing the asset data we have
+          this.selectedAsset = asset;
+          this.showAssetDetailModal = true;
         }
       },
       error: (error) => {
         this.loading = false;
         console.error('Error fetching asset detail:', error);
+        // Show modal with available data
+        this.selectedAsset = asset;
+        this.showAssetDetailModal = true;
         this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load asset details'
+          severity: 'warn',
+          summary: 'Limited Data',
+          detail: 'Showing available asset information'
         });
       }
+    });
+  }
+
+  // Close asset detail modal
+  closeAssetDetailModal() {
+    this.showAssetDetailModal = false;
+    this.selectedAsset = null;
+  }
+
+  // Truncate location text for better display
+  truncateLocation(location: string, maxLength: number = 30): string {
+    if (!location) return 'Not specified';
+    return location.length > maxLength ? location.substring(0, maxLength) + '...' : location;
+  }
+
+  // Get full location for tooltip
+  getFullLocation(location: string): string {
+    return location || 'Location not specified';
+  }
+
+  // Copy text to clipboard
+  copyToClipboard(text: string) {
+    navigator.clipboard.writeText(text).then(() => {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Copied',
+        detail: 'Text copied to clipboard'
+      });
+    }).catch(() => {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to copy text'
+      });
     });
   }
 

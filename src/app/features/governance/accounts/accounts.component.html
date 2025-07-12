@@ -23,11 +23,13 @@
             (click)="exportAccounts()">
           </p-button>
           <p-button 
-            label="Add Account" 
-            icon="pi pi-plus" 
-            severity="primary"
-            (click)="accountDetail.show()">
+            [icon]="viewMode === 'list' ? 'pi pi-th-large' : 'pi pi-list'" 
+            [pTooltip]="viewMode === 'list' ? 'Card View' : 'List View'"
+            severity="secondary" 
+            [outlined]="true"
+            (click)="toggleViewMode()">
           </p-button>
+          <!-- Account creation is not supported by the API -->
         </div>
       </div>
     </div>
@@ -350,6 +352,46 @@
       </div>
     </div>
 
+    <!-- Search and Controls -->
+    <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6" *ngIf="accounts?.data?.length">
+      <div class="flex flex-col lg:flex-row gap-4 items-center justify-between">
+        <div class="flex-1 w-full lg:w-auto">
+          <p-inputGroup>
+            <p-inputGroupAddon>
+              <i class="pi pi-search"></i>
+            </p-inputGroupAddon>
+            <input 
+              type="text" 
+              pInputText 
+              placeholder="Search accounts by name, email, or username..." 
+              [(ngModel)]="searchTerm"
+              (input)="filterAccounts()"
+              class="w-full lg:w-96" />
+          </p-inputGroup>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-gray-600">Show:</span>
+          <p-dropdown 
+            [options]="pageSizeOptions" 
+            [(ngModel)]="pageSize"
+            optionLabel="label" 
+            optionValue="value"
+            (onChange)="onPageSizeChange()"
+            class="w-20">
+          </p-dropdown>
+          <span class="text-sm text-gray-600">per page</span>
+          <p-button 
+            icon="pi pi-filter" 
+            [rounded]="true" 
+            [text]="true" 
+            severity="secondary"
+            (onClick)="toggleFilters()"
+            pTooltip="Toggle Filters">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
     <!-- Accounts Table -->
     <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" *ngIf="accounts?.data?.length">
       <div class="px-6 py-4 border-b border-gray-200">
@@ -473,8 +515,9 @@
                     [text]="true" 
                     severity="danger" 
                     size="small"
+                    [disabled]="true"
                     (click)="onDeleteAccount($event, account._id)"
-                    pTooltip="Delete Account">
+                    pTooltip="Delete Account (Not Supported)">
                   </p-button>
                 </div>
               </td>
