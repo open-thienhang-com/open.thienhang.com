@@ -10,7 +10,6 @@ import { Router } from '@angular/router';
 import { AppBaseComponent } from '../../../core/base/app-base.component';
 import { Toast } from 'primeng/toast';
 import { LoadingService } from '../../../core/services/loading.service';
-import { LoadingComponent } from '../../../shared/component/loading/loading.component';
 
 @Component({
   selector: 'app-login',
@@ -21,8 +20,7 @@ import { LoadingComponent } from '../../../shared/component/loading/loading.comp
     CheckboxModule,
     ReactiveFormsModule,
     FormsModule,
-    Toast,
-    LoadingComponent
+    Toast
   ],
   templateUrl: './login.component.html',
 })

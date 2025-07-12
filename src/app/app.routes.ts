@@ -37,6 +37,15 @@ import { MaintenanceComponent } from './pages/error/maintenance/maintenance.comp
 import { ForbiddenComponent } from './pages/error/forbidden/forbidden.component';
 import { NotFoundComponent } from './pages/error/not-found/not-found.component';
 
+// Data Mesh Components
+import { DomainCatalogComponent as DataMeshDomainCatalogComponent } from './features/data-mesh/domain-catalog/domain-catalog.component';
+import { DomainDetailComponent as DataMeshDomainDetailComponent } from './features/data-mesh/domain-detail/domain-detail.component';
+import { DataProductsComponent } from './features/data-mesh/data-products/data-products.component';
+import { ApiExplorerComponent } from './features/data-mesh/api-explorer/api-explorer.component';
+import { ApiDocumentationComponent } from './features/data-mesh/api-documentation/api-documentation.component';
+import { LoadingDemoComponent } from './pages/loading-demo/loading-demo.component';
+import { DataProductDetailComponent } from './features/data-mesh/data-product-detail/data-product-detail.component';
+
 
 export const routes: Routes = [
   // Error pages (outside of auth guard)
@@ -137,6 +146,34 @@ export const routes: Routes = [
         component: QualityMetricsComponent,
       },
       {
+        path: 'data-mesh/domains',
+        component: DataMeshDomainCatalogComponent,
+      },
+      {
+        path: 'data-mesh/domain/:domainKey',
+        component: DataMeshDomainDetailComponent,
+      },
+      {
+        path: 'data-mesh/data-products',
+        component: DataProductsComponent,
+      },
+      {
+        path: 'data-mesh/data-products/:domain/:id',
+        component: DataProductDetailComponent,
+      },
+      {
+        path: 'data-mesh/data-products/:name',
+        component: DataProductDetailComponent,
+      },
+      {
+        path: 'data-mesh/api-explorer',
+        component: ApiExplorerComponent,
+      },
+      {
+        path: 'data-mesh/api-documentation',
+        component: ApiDocumentationComponent,
+      },
+      {
         path: 'discovery/catalog',
         component: DataCatalogComponent,
       },
@@ -203,6 +240,10 @@ export const routes: Routes = [
       {
         path: 'explore/apis/:type',
         component: ApisExplorerComponent,
+      },
+      {
+        path: 'loading-demo',
+        component: LoadingDemoComponent,
       },
       {
         path: '',

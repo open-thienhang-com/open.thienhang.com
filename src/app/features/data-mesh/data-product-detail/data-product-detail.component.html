@@ -1,0 +1,490 @@
+<div class="data-product-detail-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner">
+      <div class="animate-spin inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mb-4"></div>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">
+        <i class="pi pi-database mr-2"></i>
+        Loading Data Product Details
+      </h3>
+      <p class="text-gray-600">Please wait while we fetch the data product information...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="error-card">
+      <div class="error-icon">
+        <i class="pi pi-exclamation-triangle text-red-500 text-4xl"></i>
+      </div>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">
+        <i class="pi pi-times-circle mr-2"></i>
+        Error Loading Data Product
+      </h3>
+      <p class="text-gray-600 mb-4">{{ error }}</p>
+      <div class="flex gap-3">
+        <p-button 
+          label="Try Again" 
+          icon="pi pi-refresh" 
+          (click)="ngOnInit()"
+          [loading]="loading">
+        </p-button>
+        <p-button 
+          label="Go Back" 
+          icon="pi pi-arrow-left" 
+          severity="secondary"
+          (click)="navigateBack()">
+        </p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="dataProduct && !loading" class="main-content">
+    <!-- Header -->
+    <div class="detail-header">
+      <div class="header-actions">
+        <p-button 
+          icon="pi pi-arrow-left" 
+          label="Back to Marketplace"
+          severity="secondary"
+          (click)="navigateBack()">
+        </p-button>
+      </div>
+      
+      <div class="header-info">
+        <div class="product-title">
+          <div class="title-with-icon">
+            <i [class]="'pi ' + getDomainConfig().icon + ' domain-icon'" 
+               [style.color]="getDomainConfig().color"></i>
+            <h1>{{ dataProduct.name }}</h1>
+          </div>
+          <div class="title-tags">
+            <p-tag 
+              [value]="dataProduct.domain || 'Unknown'" 
+              severity="info"
+              icon="pi pi-tag">
+            </p-tag>
+            <p-tag 
+              [value]="dataProduct.status || 'Active'" 
+              [severity]="getStatusColor(dataProduct.status)"
+              icon="pi pi-circle-fill">
+            </p-tag>
+          </div>
+        </div>
+        <p class="product-description">
+          <i class="pi pi-info-circle mr-2 text-gray-500"></i>
+          {{ getDefaultValue(dataProduct.description, 'No description available') }}
+        </p>
+        
+        <div class="product-meta">
+          <div class="meta-grid">
+            <div class="meta-item">
+              <i class="pi pi-user meta-icon"></i>
+              <div class="meta-content">
+                <span class="meta-label">Owner:</span>
+                <span class="meta-value">{{ getOwnerDisplayName() }}</span>
+              </div>
+            </div>
+            <div class="meta-item">
+              <i class="pi pi-envelope meta-icon"></i>
+              <div class="meta-content">
+                <span class="meta-label">Email:</span>
+                <span class="meta-value">{{ getOwnerEmail() }}</span>
+              </div>
+            </div>
+            <div class="meta-item">
+              <i class="pi pi-building meta-icon"></i>
+              <div class="meta-content">
+                <span class="meta-label">Company:</span>
+                <span class="meta-value">{{ getCompanyName() }}</span>
+              </div>
+            </div>
+            <div class="meta-item">
+              <i class="pi pi-calendar-plus meta-icon"></i>
+              <div class="meta-content">
+                <span class="meta-label">Created:</span>
+                <span class="meta-value">{{ formatDate(dataProduct.created_at || '') }}</span>
+              </div>
+            </div>
+            <div class="meta-item">
+              <i class="pi pi-calendar meta-icon"></i>
+              <div class="meta-content">
+                <span class="meta-label">Updated:</span>
+                <span class="meta-value">{{ formatDate(dataProduct.updated_at || '') }}</span>
+              </div>
+            </div>
+            <div class="meta-item">
+              <i class="pi pi-flag meta-icon"></i>
+              <div class="meta-content">
+                <span class="meta-label">Purpose:</span>
+                <span class="meta-value">{{ getDefaultValue(dataProduct.purpose, 'Not specified') }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-actions-right">
+          <p-button 
+            label="Subscribe" 
+            icon="pi pi-plus"
+            severity="success"
+            (click)="subscribeToProduct()">
+          </p-button>
+          <p-button 
+            label="Unsubscribe" 
+            icon="pi pi-minus"
+            severity="danger"
+            (click)="unsubscribeFromProduct()">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs Content -->
+    <div class="detail-tabs">
+      <p-tabView (onChange)="onTabChange($event)" [activeIndex]="activeTab">
+        
+        <!-- Overview Tab -->
+        <p-tabPanel header="Overview" leftIcon="pi pi-info-circle">
+          <div class="tab-content">
+            <div class="overview-grid">
+              
+              <!-- Purpose Card -->
+              <p-card header="Purpose" styleClass="overview-card">
+                <div class="card-icon">
+                  <i class="pi pi-flag"></i>
+                </div>
+                <div class="card-content">
+                  <p>{{ getDefaultValue(dataProduct.purpose, 'No purpose specified') }}</p>
+                </div>
+              </p-card>
+
+              <!-- Assets Card -->
+              <p-card header="Assets" styleClass="overview-card">
+                <div class="card-icon">
+                  <i class="pi pi-database"></i>
+                </div>
+                <div class="card-content">
+                  <div *ngIf="hasValue(dataProduct.assets); else noAssets">
+                    <div class="asset-list">
+                      <div *ngFor="let asset of dataProduct.assets" class="asset-item">
+                        <i class="pi pi-file-o"></i>
+                        <span>{{ asset.name || asset }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <ng-template #noAssets>
+                    <p class="no-data">
+                      <i class="pi pi-info-circle mr-2"></i>
+                      No assets configured
+                    </p>
+                  </ng-template>
+                </div>
+              </p-card>
+
+              <!-- APIs Card -->
+              <p-card header="APIs" styleClass="overview-card">
+                <div class="card-icon">
+                  <i class="pi pi-globe"></i>
+                </div>
+                <div class="card-content">
+                  <div *ngIf="hasValue(dataProduct.apis); else noApis">
+                    <div class="api-list">
+                      <div *ngFor="let api of dataProduct.apis" class="api-item">
+                        <p-badge [value]="api.method" [severity]="getSeverity(api.method)"></p-badge>
+                        <span class="api-path">{{ api.path }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <ng-template #noApis>
+                    <p class="no-data">
+                      <i class="pi pi-info-circle mr-2"></i>
+                      No APIs configured
+                    </p>
+                  </ng-template>
+                </div>
+              </p-card>
+
+              <!-- Tags Card -->
+              <p-card header="Tags" styleClass="overview-card">
+                <div class="card-icon">
+                  <i class="pi pi-tags"></i>
+                </div>
+                <div class="card-content">
+                  <div *ngIf="hasValue(dataProduct.tags); else noTags">
+                    <div class="tag-list">
+                      <p-chip *ngFor="let tag of dataProduct.tags" [label]="tag"></p-chip>
+                    </div>
+                  </div>
+                  <ng-template #noTags>
+                    <p class="no-data">
+                      <i class="pi pi-info-circle mr-2"></i>
+                      No tags assigned
+                    </p>
+                  </ng-template>
+                </div>
+              </p-card>
+            </div>
+          </div>
+        </p-tabPanel>
+
+        <!-- Schema Tab -->
+        <p-tabPanel header="Schema" leftIcon="pi pi-code">
+          <div class="tab-content">
+            <div class="schema-section">
+              <h3>
+                <i class="pi pi-sign-in mr-2"></i>
+                Input Ports
+              </h3>
+              <div class="schema-card">
+                <div *ngIf="hasValue(dataProduct.input_ports); else noInputPorts">
+                  <pre class="json-display">{{ dataProduct.input_ports | json }}</pre>
+                </div>
+                <ng-template #noInputPorts>
+                  <p class="no-data">
+                    <i class="pi pi-info-circle mr-2"></i>
+                    No input ports defined
+                  </p>
+                </ng-template>
+              </div>
+            </div>
+
+            <p-divider></p-divider>
+
+            <div class="schema-section">
+              <h3>
+                <i class="pi pi-sign-out mr-2"></i>
+                Output Ports
+              </h3>
+              <div class="schema-card">
+                <div *ngIf="hasValue(dataProduct.output_ports); else noOutputPorts">
+                  <pre class="json-display">{{ dataProduct.output_ports | json }}</pre>
+                </div>
+                <ng-template #noOutputPorts>
+                  <p class="no-data">
+                    <i class="pi pi-info-circle mr-2"></i>
+                    No output ports defined
+                  </p>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+        </p-tabPanel>
+
+        <!-- Policies Tab -->
+        <p-tabPanel header="Policies" leftIcon="pi pi-shield">
+          <div class="tab-content">
+            <div *ngIf="hasValue(dataProduct.policies); else noPolicies">
+              <div class="policy-list">
+                <div *ngFor="let policy of dataProduct.policies" class="policy-item">
+                  <p-card>
+                    <div class="policy-header">
+                      <div class="policy-title">
+                        <i class="pi pi-shield mr-2"></i>
+                        <h4>{{ policy.name || 'Unnamed Policy' }}</h4>
+                      </div>
+                      <p-tag [value]="policy.type || 'Policy'" severity="info"></p-tag>
+                    </div>
+                    <p>{{ getDefaultValue(policy.description, 'No description available') }}</p>
+                  </p-card>
+                </div>
+              </div>
+            </div>
+            <ng-template #noPolicies>
+              <div class="empty-state">
+                <i class="pi pi-shield text-gray-400 text-6xl mb-4"></i>
+                <p class="no-data">No policies defined</p>
+              </div>
+            </ng-template>
+          </div>
+        </p-tabPanel>
+
+        <!-- Permissions Tab -->
+        <p-tabPanel header="Permissions" leftIcon="pi pi-lock">
+          <div class="tab-content">
+            <div *ngIf="hasValue(dataProduct.permissions); else noPermissions">
+              <div class="permission-list">
+                <div *ngFor="let permission of dataProduct.permissions" class="permission-item">
+                  <p-card>
+                    <div class="permission-header">
+                      <div class="permission-title">
+                        <i class="pi pi-lock mr-2"></i>
+                        <h4>{{ permission.name || 'Unnamed Permission' }}</h4>
+                      </div>
+                      <p-tag [value]="permission.level || 'Standard'" [severity]="getSeverity(permission.level)"></p-tag>
+                    </div>
+                    <p>{{ getDefaultValue(permission.description, 'No description available') }}</p>
+                  </p-card>
+                </div>
+              </div>
+            </div>
+            <ng-template #noPermissions>
+              <div class="empty-state">
+                <i class="pi pi-lock text-gray-400 text-6xl mb-4"></i>
+                <p class="no-data">No permissions defined</p>
+              </div>
+            </ng-template>
+          </div>
+        </p-tabPanel>
+
+        <!-- Quality Tab -->
+        <p-tabPanel header="Quality" leftIcon="pi pi-chart-line">
+          <div class="tab-content">
+            <div class="quality-metrics">
+              <div *ngIf="hasValue(dataProduct.quality_metrics); else noQualityMetrics">
+                <div class="quality-header">
+                  <i class="pi pi-chart-line mr-2"></i>
+                  <h3>Quality Metrics</h3>
+                </div>
+                <div class="quality-card">
+                  <pre class="json-display">{{ dataProduct.quality_metrics | json }}</pre>
+                </div>
+              </div>
+              <ng-template #noQualityMetrics>
+                <div class="empty-state">
+                  <i class="pi pi-chart-line text-gray-400 text-6xl mb-4"></i>
+                  <p class="no-data">No quality metrics available</p>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </p-tabPanel>
+
+        <!-- Documentation Tab -->
+        <p-tabPanel header="Documentation" leftIcon="pi pi-book">
+          <div class="tab-content">
+            <div class="documentation-section">
+              
+              <!-- Swagger UI -->
+              <div class="swagger-section">
+                <h3>
+                  <i class="pi pi-file-code mr-2"></i>
+                  API Documentation
+                </h3>
+                <div class="swagger-container">
+                  <div *ngIf="swaggerLoading" class="swagger-loading">
+                    <i class="pi pi-spin pi-spinner mr-2"></i>
+                    Loading documentation...
+                  </div>
+                  <div *ngIf="swaggerError && !swaggerLoading" class="swagger-error">
+                    <i class="pi pi-exclamation-triangle mr-2"></i>
+                    Documentation not available (404)
+                  </div>
+                  <div *ngIf="swaggerUrl && !swaggerLoading && !swaggerError" class="swagger-frame-container">
+                    <iframe 
+                      [src]="swaggerUrl" 
+                      class="swagger-frame"
+                      frameborder="0">
+                    </iframe>
+                  </div>
+                  <div *ngIf="!swaggerUrl && !swaggerLoading" class="no-swagger">
+                    <i class="pi pi-info-circle mr-2"></i>
+                    No Swagger documentation URL provided
+                  </div>
+                </div>
+              </div>
+
+              <!-- OpenAPI -->
+              <div *ngIf="openapiUrl" class="openapi-section">
+                <h3>
+                  <i class="pi pi-file-o mr-2"></i>
+                  OpenAPI Documentation
+                </h3>
+                <div class="openapi-container">
+                  <iframe 
+                    [src]="openapiUrl" 
+                    class="openapi-frame"
+                    frameborder="0">
+                  </iframe>
+                </div>
+              </div>
+
+              <!-- Additional Documentation -->
+              <div *ngIf="hasValue(dataProduct.documentation)" class="additional-docs">
+                <h3>
+                  <i class="pi pi-book mr-2"></i>
+                  Additional Documentation
+                </h3>
+                <div class="documentation-card">
+                  <div>{{ dataProduct.documentation }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </p-tabPanel>
+
+        <!-- Lifecycle Tab -->
+        <p-tabPanel header="Lifecycle" leftIcon="pi pi-history">
+          <div class="tab-content">
+            <div class="lifecycle-info">
+              <div *ngIf="hasValue(dataProduct.lifecycle); else noLifecycle">
+                <div class="lifecycle-header">
+                  <i class="pi pi-history mr-2"></i>
+                  <h3>Lifecycle Information</h3>
+                </div>
+                <div class="lifecycle-card">
+                  <pre class="json-display">{{ dataProduct.lifecycle | json }}</pre>
+                </div>
+              </div>
+              <ng-template #noLifecycle>
+                <div class="empty-state">
+                  <i class="pi pi-history text-gray-400 text-6xl mb-4"></i>
+                  <p class="no-data">No lifecycle information available</p>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </p-tabPanel>
+
+        <!-- Cost Tab -->
+        <p-tabPanel header="Cost" leftIcon="pi pi-dollar">
+          <div class="tab-content">
+            <div class="cost-info">
+              <div *ngIf="hasValue(dataProduct.cost); else noCost">
+                <div class="cost-header">
+                  <i class="pi pi-dollar mr-2"></i>
+                  <h3>Cost Information</h3>
+                </div>
+                <div class="cost-card">
+                  <pre class="json-display">{{ dataProduct.cost | json }}</pre>
+                </div>
+              </div>
+              <ng-template #noCost>
+                <div class="empty-state">
+                  <i class="pi pi-dollar text-gray-400 text-6xl mb-4"></i>
+                  <p class="no-data">No cost information available</p>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </p-tabPanel>
+
+        <!-- Domain-Specific Tabs -->
+        <p-tabPanel *ngFor="let tab of domainTabs" 
+                   [header]="tab.label" 
+                   [leftIcon]="tab.icon">
+          <div class="tab-content">
+            <div class="domain-specific-content">
+              <div class="domain-header">
+                <i [class]="'pi ' + tab.icon + ' mr-2'"></i>
+                <h3>{{ tab.label }}</h3>
+              </div>
+              <div class="domain-card">
+                <p class="text-gray-600">
+                  Domain-specific functionality for {{ tab.label.toLowerCase() }} is coming soon!
+                </p>
+                <p class="text-sm text-gray-500 mt-2">
+                  This tab will contain tools and insights specific to {{ dataProduct.domain }} domain operations.
+                </p>
+              </div>
+            </div>
+          </div>
+        </p-tabPanel>
+      </p-tabView>
+    </div>
+  </div>
+
+  <!-- Toast Messages -->
+  <p-toast position="top-right" [life]="5000"></p-toast>
+</div>

@@ -1,0 +1,386 @@
+<!-- API Explorer - Data Mesh API Discovery -->
+<p-toast></p-toast>
+
+<div class="bg-gray-50 min-h-screen p-6">
+  <div class="max-w-7xl mx-auto space-y-6">
+    
+    <!-- Loading Component -->
+    <div *ngIf="loading" class="w-full">
+      <app-loading 
+        type="data-flow" 
+        message="Loading API endpoints..." 
+        size="large">
+      </app-loading>
+    </div>
+
+    <!-- Main Content (shown when not loading) -->
+    <div *ngIf="!loading">
+      
+      <!-- Header Section -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+              <i class="pi pi-code text-white text-xl"></i>
+            </div>
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900">API Explorer</h1>
+              <p class="text-gray-600">Discover and explore all available Data Mesh APIs</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <p-button 
+              label="Grouped View" 
+              icon="pi pi-sitemap" 
+              [outlined]="viewMode !== 'grouped'"
+              (onClick)="setViewMode('grouped')"
+              size="small">
+            </p-button>
+            <p-button 
+              label="Table View" 
+              icon="pi pi-table" 
+              [outlined]="viewMode !== 'table'"
+              (onClick)="setViewMode('table')"
+              size="small">
+            </p-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-600">Total APIs</p>
+              <p class="text-3xl font-bold text-gray-900">{{ totalRecords }}</p>
+            </div>
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+              <i class="pi pi-code text-purple-600 text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-600">Domains</p>
+              <p class="text-3xl font-bold text-blue-600">{{ getDomainKeys().length }}</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <i class="pi pi-sitemap text-blue-600 text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-600">Filtered Results</p>
+              <p class="text-3xl font-bold text-green-600">{{ filteredApis.length }}</p>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <i class="pi pi-filter text-green-600 text-xl"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters Section -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="flex-1 min-w-64">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search APIs</label>
+            <p-inputText 
+              [(ngModel)]="searchTerm"
+              placeholder="Search by path, description, or data product..."
+              (input)="onSearch()"
+              class="w-full"
+              styleClass="w-full">
+            </p-inputText>
+          </div>
+          
+          <div class="min-w-44">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Domain</label>
+            <p-dropdown 
+              [(ngModel)]="filters.domain"
+              [options]="domainOptions"
+              optionLabel="label"
+              optionValue="value"
+              (onChange)="onFilterChange()"
+              styleClass="w-full">
+            </p-dropdown>
+          </div>
+          
+          <div class="min-w-36">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Method</label>
+            <p-dropdown 
+              [(ngModel)]="filters.method"
+              [options]="methodOptions"
+              optionLabel="label"
+              optionValue="value"
+              (onChange)="onFilterChange()"
+              styleClass="w-full">
+            </p-dropdown>
+          </div>
+          
+          <div class="min-w-36">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Source</label>
+            <p-dropdown 
+              [(ngModel)]="filters.source"
+              [options]="sourceOptions"
+              optionLabel="label"
+              optionValue="value"
+              (onChange)="onFilterChange()"
+              styleClass="w-full">
+            </p-dropdown>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <p-checkbox 
+              [(ngModel)]="filters.includeDynamic"
+              (onChange)="onFilterChange()"
+              inputId="includeDynamic">
+            </p-checkbox>
+            <label for="includeDynamic" class="text-sm text-gray-700">Include Dynamic</label>
+          </div>
+          
+          <div class="flex items-end">
+            <p-button 
+              label="Clear Filters"
+              icon="pi pi-times"
+              severity="secondary"
+              (onClick)="clearFilters()"
+              size="small">
+            </p-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grouped View -->
+      <div *ngIf="viewMode === 'grouped'" class="space-y-6">
+        <div *ngFor="let domain of getDomainKeys(); trackBy: trackByApiPath" 
+             class="bg-white rounded-lg shadow-sm">
+          
+          <p-accordion>
+            <p-accordionTab>
+              <ng-template pTemplate="header">
+                <div class="flex items-center justify-between w-full">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                      <i class="pi pi-sitemap text-white text-sm"></i>
+                    </div>
+                    <div>
+                      <h3 class="text-lg font-semibold text-gray-900">{{ formatDomainName(domain) }}</h3>
+                      <p class="text-sm text-gray-500">{{ domain }}</p>
+                    </div>
+                  </div>
+                  <p-badge 
+                    [value]="groupedApis[domain]?.length || 0" 
+                    severity="info">
+                  </p-badge>
+                </div>
+              </ng-template>
+              
+              <div class="space-y-4">
+                <div *ngFor="let api of groupedApis[domain]; trackBy: trackByApiPath" 
+                     class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                  
+                  <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                      <div class="flex items-center gap-3 mb-2">
+                        <p-tag 
+                          [value]="api.method" 
+                          [severity]="getMethodSeverity(api.method)">
+                        </p-tag>
+                        <code class="bg-gray-100 px-2 py-1 rounded text-sm font-mono">{{ api.path }}</code>
+                        <p-chip 
+                          [label]="api.source"
+                          [style]="{'background-color': getSourceColor(api.source)}"
+                          styleClass="text-white text-xs">
+                        </p-chip>
+                        <p-chip 
+                          *ngIf="api.auth_required"
+                          label="Auth Required"
+                          styleClass="text-xs bg-red-100 text-red-800">
+                        </p-chip>
+                      </div>
+                      
+                      <p class="text-sm text-gray-600 mb-2">{{ api.description || 'No description available' }}</p>
+                      
+                      <div class="flex items-center gap-4 text-sm text-gray-500">
+                        <div class="flex items-center gap-1">
+                          <i class="pi pi-database"></i>
+                          <span>{{ api.data_product || 'N/A' }}</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                          <i class="pi pi-globe"></i>
+                          <span>{{ api.domain || 'N/A' }}</span>
+                        </div>
+                        <div class="flex items-center gap-1" *ngIf="api.full_path">
+                          <i class="pi pi-link"></i>
+                          <span>{{ api.full_path.length > 50 ? api.full_path.substring(0, 50) + '...' : api.full_path }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                      <p-button 
+                        icon="pi pi-copy" 
+                        severity="secondary" 
+                        size="small"
+                        (onClick)="copyToClipboard(api.full_path)"
+                        pTooltip="Copy full path">
+                      </p-button>
+                      <p-button 
+                        icon="pi pi-external-link" 
+                        severity="secondary" 
+                        size="small"
+                        (onClick)="openApiInNewTab(api)"
+                        pTooltip="Open in new tab">
+                      </p-button>
+                      <p-button 
+                        icon="pi pi-info-circle" 
+                        severity="info" 
+                        size="small"
+                        (onClick)="viewApiDetails(api)"
+                        pTooltip="View details">
+                      </p-button>
+                    </div>
+                  </div>
+                  
+                  <div class="mt-3 pt-3 border-t border-gray-100">
+                    <p class="text-xs text-gray-500">
+                      <strong>Full Path:</strong> 
+                      <code class="bg-gray-100 px-1 py-0.5 rounded text-xs">{{ api.full_path }}</code>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </p-accordionTab>
+          </p-accordion>
+        </div>
+      </div>
+
+      <!-- Table View -->
+      <div *ngIf="viewMode === 'table'" class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-semibold text-gray-900">
+            API Endpoints ({{ filteredApis.length }})
+          </h2>
+        </div>
+
+        <div *ngIf="filteredApis.length > 0; else noApis">
+          <p-table 
+            [value]="filteredApis" 
+            [scrollable]="true" 
+            scrollHeight="600px"
+            styleClass="p-datatable-striped">
+            
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Method</th>
+                <th>Path</th>
+                <th>Description</th>
+                <th>Domain</th>
+                <th>Data Product</th>
+                <th>Source</th>
+                <th>Actions</th>
+              </tr>
+            </ng-template>
+            
+            <ng-template pTemplate="body" let-api>
+              <tr>
+                <td>
+                  <p-tag 
+                    [value]="api.method" 
+                    [severity]="getMethodSeverity(api.method)">
+                  </p-tag>
+                </td>
+                <td>
+                  <code class="bg-gray-100 px-2 py-1 rounded text-sm">{{ api.path }}</code>
+                </td>
+                <td>
+                  <p class="text-sm text-gray-600 max-w-xs">{{ api.description || 'No description available' }}</p>
+                </td>
+                <td>
+                  <p-chip 
+                    [label]="formatDomainName(api.domain)"
+                    styleClass="text-xs bg-blue-100 text-blue-800">
+                  </p-chip>
+                </td>
+                <td>
+                  <p class="text-sm text-gray-900">{{ api.data_product || 'N/A' }}</p>
+                </td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <p-chip 
+                      [label]="api.source"
+                      [style]="{'background-color': getSourceColor(api.source)}"
+                      styleClass="text-white text-xs">
+                    </p-chip>
+                    <p-chip 
+                      *ngIf="api.auth_required"
+                      label="Auth"
+                      styleClass="text-xs bg-red-100 text-red-800">
+                    </p-chip>
+                  </div>
+                </td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <p-button 
+                      icon="pi pi-copy" 
+                      severity="secondary" 
+                      size="small"
+                      (onClick)="copyToClipboard(api.full_path)"
+                      pTooltip="Copy full path">
+                    </p-button>
+                    <p-button 
+                      icon="pi pi-external-link" 
+                      severity="secondary" 
+                      size="small"
+                      (onClick)="openApiInNewTab(api)"
+                      pTooltip="Open in new tab">
+                    </p-button>
+                    <p-button 
+                      icon="pi pi-info-circle" 
+                      severity="info" 
+                      size="small"
+                      (onClick)="viewApiDetails(api)"
+                      pTooltip="View details">
+                    </p-button>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="totalRecords > pageSize" class="bg-white rounded-lg shadow-sm p-6">
+        <p-paginator 
+          [rows]="pageSize" 
+          [totalRecords]="totalRecords"
+          [rowsPerPageOptions]="[10, 25, 50, 100]"
+          (onPageChange)="onPageChange($event)">
+        </p-paginator>
+      </div>
+
+      <!-- Empty State -->
+      <ng-template #noApis>
+        <div class="text-center py-12">
+          <i class="pi pi-code text-gray-300 text-6xl mb-4"></i>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No APIs found</h3>
+          <p class="text-gray-500 mb-4">Try adjusting your search or filter criteria</p>
+          <p-button 
+            label="Clear Filters"
+            icon="pi pi-times"
+            severity="secondary"
+            (onClick)="clearFilters()">
+          </p-button>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, catchError, Observable, of, tap, map } from 'rxjs';
 import { ApiResponse } from './governance.services';
 import { UserProfile } from './profile.services';
+import { LoadingService } from './loading.service';
 import * as XLSX from 'xlsx';
 
 export interface LoginRequest {
@@ -44,7 +45,7 @@ export class AuthServices {
   private baseUrl = 'https://api.thienhang.com';
   private userSubject = new BehaviorSubject<UserProfile | null>(null);
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private loadingService: LoadingService) {
     if (this.isLoggedIn()) {
       this.getCurrentUser().subscribe();
     }
@@ -249,27 +250,15 @@ export class AuthServices {
   }
 
   // Helper method to wrap API calls with loading
-  private wrapWithLoading<T>(
+  wrapWithLoading<T>(
     observable: Observable<T>,
     message: string = 'Loading...',
-    type: 'default' | 'dots' | 'spinner' | 'pulse' | 'bounce' | 'wave' | 'bars' | 'data-flow' = 'pulse'
+    type: 'default' | 'dots' | 'spinner' | 'pulse' | 'bounce' | 'wave' | 'bars' | 'data-flow' | 'cat-running' | 'dog-running' | 'rabbit-hopping' | 'penguin-walking' | 'hamster-wheel' | 'fox-trotting' = 'pulse'
   ): Observable<T> {
-    return new Observable(subscriber => {
-      const subscription = observable.subscribe({
-        next: (value) => {
-          subscriber.next(value);
-        },
-        error: (error) => {
-          subscriber.error(error);
-        },
-        complete: () => {
-          subscriber.complete();
-        }
-      });
-
-      return () => {
-        subscription.unsubscribe();
-      };
+    return this.loadingService.wrapWithLoading(observable, {
+      message,
+      type,
+      size: 'medium'
     });
   }
 }

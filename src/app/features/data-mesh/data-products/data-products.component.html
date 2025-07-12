@@ -1,0 +1,338 @@
+<!-- Data Products - Modern Marketplace Interface -->
+<p-toast></p-toast>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div class="container mx-auto px-4 py-6 max-w-7xl">
+    
+    <!-- Header Section -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+            <i class="pi pi-shopping-cart text-white text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Data Products</h1>
+            <p class="text-gray-600 dark:text-gray-300 mt-1">
+              Discover and manage data products across all domains
+            </p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <p-button 
+            [icon]="'pi pi-th-large'"
+            [severity]="viewMode === 'grid' ? 'primary' : 'secondary'"
+            [outlined]="viewMode !== 'grid'"
+            (onClick)="setViewMode('grid')"
+            pTooltip="Grid View"
+            tooltipPosition="bottom"
+            size="small">
+          </p-button>
+          <p-button 
+            [icon]="'pi pi-list'"
+            [severity]="viewMode === 'table' ? 'primary' : 'secondary'" 
+            [outlined]="viewMode !== 'table'"
+            (onClick)="setViewMode('table')"
+            pTooltip="Table View"
+            tooltipPosition="bottom"
+            size="small">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats & Search Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+      <!-- Stats Cards -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+        <div class="flex items-center">
+          <div class="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+            <i class="pi pi-database text-blue-600 dark:text-blue-400 text-xl"></i>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Products</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ totalRecords }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="lg:col-span-3">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <p-inputGroup>
+            <p-inputGroupAddon>
+              <i class="pi pi-search"></i>
+            </p-inputGroupAddon>
+            <input 
+              pInputText 
+              [(ngModel)]="searchTerm"
+              placeholder="Search products by name, description, or domain..."
+              (input)="onSearch()"
+              class="w-full">
+          </p-inputGroup>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="flex-1 min-w-48">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <i class="pi pi-filter mr-2"></i>Domain
+          </label>
+          <p-select 
+            [(ngModel)]="filters.domain"
+            [options]="domainOptions"
+            optionLabel="label"
+            optionValue="value"
+            (onChange)="onFilterChange()"
+            placeholder="Select domain"
+            styleClass="w-full"
+            [class.p-invalid]="filters.domain">
+          </p-select>
+        </div>
+        
+        <div class="flex-1 min-w-48">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <i class="pi pi-tag mr-2"></i>Status
+          </label>
+          <p-select 
+            [(ngModel)]="filters.status"
+            [options]="statusOptions"
+            optionLabel="label"
+            optionValue="value"
+            (onChange)="onFilterChange()"
+            placeholder="Select status"
+            styleClass="w-full"
+            [class.p-invalid]="filters.status">
+          </p-select>
+        </div>
+        
+        <div class="flex items-end gap-2">
+          <p-button 
+            label="Clear Filters"
+            icon="pi pi-times"
+            severity="secondary"
+            (onClick)="clearFilters()"
+            size="small"
+            [disabled]="!hasSearchOrFilters">
+          </p-button>
+          <p-badge 
+            *ngIf="hasSearchOrFilters"
+            [value]="(isSearchActive ? 1 : 0) + (isFiltersActive ? 1 : 0)"
+            severity="info"
+            size="small">
+          </p-badge>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="text-center py-12">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12">
+        <div class="loading-spinner">
+          <i class="pi pi-spin pi-spinner text-4xl text-blue-600 mb-4"></i>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Loading Data Products</h3>
+        <p class="text-gray-600 dark:text-gray-300">
+          Please wait while we fetch the latest data products...
+        </p>
+      </div>
+    </div>
+
+    <!-- Grid View -->
+    <div *ngIf="!loading && viewMode === 'grid'" class="space-y-6">
+      
+      <!-- Products Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div 
+          *ngFor="let product of dataProducts; trackBy: trackByProductId"
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group"
+          (click)="viewProductDetails(product)">
+          
+          <!-- Product Image/Icon -->
+          <div class="p-6 pb-4">
+            <div class="w-full h-32 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg flex items-center justify-center mb-4">
+              <span class="text-4xl">{{ getDomainImage(product.domain || '') }}</span>
+            </div>
+            
+            <!-- Product Info -->
+            <div class="space-y-3">
+              <div class="flex items-start justify-between">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-600 transition-colors">
+                  {{ product.name }}
+                </h3>
+                <p-tag 
+                  [value]="product.status || 'Active'"
+                  [severity]="getStatusSeverity(product.status || 'active')"
+                  styleClass="ml-2">
+                </p-tag>
+              </div>
+              
+              <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                {{ product.description || 'No description available' }}
+              </p>
+              
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-gray-500 dark:text-gray-400">Domain:</span>
+                  <p-chip 
+                    [label]="getDomainDisplayName(product.domain || '')"
+                    styleClass="text-xs">
+                  </p-chip>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                  <p-button 
+                    icon="pi pi-eye"
+                    size="small"
+                    [outlined]="true"
+                    severity="info"
+                    (onClick)="viewProductDetails(product); $event.stopPropagation()"
+                    pTooltip="View Details"
+                    tooltipPosition="bottom">
+                  </p-button>
+                  <p-button 
+                    icon="pi pi-plus"
+                    size="small"
+                    severity="success"
+                    (onClick)="subscribeToProduct(product); $event.stopPropagation()"
+                    pTooltip="Subscribe"
+                    tooltipPosition="bottom">
+                  </p-button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
+        <p-paginator 
+          [first]="first"
+          [rows]="pageSize"
+          [totalRecords]="totalRecords"
+          [rowsPerPageOptions]="[12, 24, 48]"
+          (onPageChange)="onPageChange($event)"
+          styleClass="border-0">
+        </p-paginator>
+      </div>
+    </div>
+
+    <!-- Table View -->
+    <div *ngIf="!loading && viewMode === 'table'" class="space-y-6">
+      
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+        <p-table 
+          [value]="dataProducts"
+          [paginator]="true"
+          [rows]="pageSize"
+          [totalRecords]="totalRecords"
+          [lazy]="true"
+          (onLazyLoad)="onPageChange($event)"
+          [loading]="loading"
+          [trackBy]="trackByProductId"
+          styleClass="p-datatable-striped">
+          
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width: 60px;">Icon</th>
+              <th>Name</th>
+              <th>Domain</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Owner</th>
+              <th style="width: 120px;">Actions</th>
+            </tr>
+          </ng-template>
+          
+          <ng-template pTemplate="body" let-product>
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" (click)="viewProductDetails(product)">
+              <td>
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg flex items-center justify-center">
+                  <span class="text-lg">{{ getDomainImage(product.domain || '') }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="font-medium text-gray-900 dark:text-white">{{ product.name }}</div>
+              </td>
+              <td>
+                <p-chip 
+                  [label]="getDomainDisplayName(product.domain || '')"
+                  styleClass="text-xs">
+                </p-chip>
+              </td>
+              <td>
+                <span class="text-gray-600 dark:text-gray-300">
+                  {{ product.description || 'No description available' }}
+                </span>
+              </td>
+              <td>
+                <p-tag 
+                  [value]="product.status || 'Active'"
+                  [severity]="getStatusSeverity(product.status || 'active')">
+                </p-tag>
+              </td>
+              <td>
+                <span class="text-gray-600 dark:text-gray-300">
+                  {{ product.owner || 'Not assigned' }}
+                </span>
+              </td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <p-button 
+                    icon="pi pi-eye"
+                    size="small"
+                    [outlined]="true"
+                    severity="info"
+                    (onClick)="viewProductDetails(product); $event.stopPropagation()"
+                    pTooltip="View Details">
+                  </p-button>
+                  <p-button 
+                    icon="pi pi-plus"
+                    size="small"
+                    severity="success"
+                    (onClick)="subscribeToProduct(product); $event.stopPropagation()"
+                    pTooltip="Subscribe">
+                  </p-button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+          
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="7" class="text-center py-12">
+                <div class="text-gray-500 dark:text-gray-400">
+                  <i class="pi pi-info-circle text-2xl mb-2"></i>
+                  <p>No data products found</p>
+                  <p class="text-sm">Try adjusting your search or filters</p>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && dataProducts.length === 0" class="text-center py-12">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12">
+        <i class="pi pi-info-circle text-4xl text-gray-400 mb-4"></i>
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Data Products Found</h3>
+        <p class="text-gray-600 dark:text-gray-300 mb-6">
+          There are no data products available at the moment.
+        </p>
+        <p-button 
+          label="Clear Filters"
+          icon="pi pi-refresh"
+          (onClick)="clearFilters()"
+          severity="secondary">
+        </p-button>
+      </div>
+    </div>
+  </div>
+</div>

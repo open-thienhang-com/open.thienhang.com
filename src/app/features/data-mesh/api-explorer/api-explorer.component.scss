@@ -1,0 +1,406 @@
+// API Explorer Component Styles
+.api-explorer {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  
+  .explorer-header {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .api-card {
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    
+    &:hover {
+      border-color: #8b5cf6;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(139, 92, 246, 0.15);
+    }
+  }
+  
+  .stats-card {
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  .filter-section {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .domain-section {
+    .domain-header {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      
+      &:hover {
+        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+      }
+    }
+  }
+}
+
+// Method tag styling
+.method-tag {
+  &.get {
+    background: #10b981;
+    color: white;
+  }
+  
+  &.post {
+    background: #3b82f6;
+    color: white;
+  }
+  
+  &.put {
+    background: #f59e0b;
+    color: white;
+  }
+  
+  &.delete {
+    background: #ef4444;
+    color: white;
+  }
+  
+  &.patch {
+    background: #6b7280;
+    color: white;
+  }
+}
+
+// Source indicators
+.source-indicator {
+  &.config {
+    background: #3b82f6;
+    color: white;
+  }
+  
+  &.router {
+    background: #10b981;
+    color: white;
+  }
+}
+
+// API endpoint styling
+.api-endpoint {
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(139, 92, 246, 0.02);
+    border-left: 4px solid #8b5cf6;
+  }
+  
+  .endpoint-path {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    background: rgba(139, 92, 246, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+  }
+  
+  .endpoint-description {
+    color: #6b7280;
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+}
+
+// Custom PrimeNG overrides
+::ng-deep {
+  .p-accordion .p-accordion-header .p-accordion-header-link {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background: rgba(139, 92, 246, 0.05);
+    }
+  }
+  
+  .p-accordion .p-accordion-content {
+    padding: 1.5rem;
+    border-radius: 0 0 8px 8px;
+  }
+  
+  .p-inputtext:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.2);
+  }
+  
+  .p-dropdown:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.2);
+  }
+  
+  .p-button.p-button-outlined:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: #8b5cf6;
+  }
+  
+  .p-tag {
+    font-weight: 600;
+    
+    &.p-tag-success {
+      background: #10b981;
+    }
+    
+    &.p-tag-info {
+      background: #3b82f6;
+    }
+    
+    &.p-tag-warning {
+      background: #f59e0b;
+    }
+    
+    &.p-tag-danger {
+      background: #ef4444;
+    }
+    
+    &.p-tag-secondary {
+      background: #6b7280;
+    }
+  }
+  
+  .p-chip {
+    font-weight: 500;
+    font-size: 0.75rem;
+  }
+  
+  .p-table .p-table-tbody > tr:hover {
+    background: rgba(139, 92, 246, 0.02);
+  }
+  
+  .p-paginator {
+    .p-paginator-pages .p-paginator-page.p-highlight {
+      background: #8b5cf6;
+      border-color: #8b5cf6;
+    }
+  }
+  
+  .p-checkbox .p-checkbox-box.p-highlight {
+    border-color: #8b5cf6;
+    background: #8b5cf6;
+  }
+}
+
+// Animation keyframes
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+// Apply animations
+.api-card {
+  animation: fadeInUp 0.6s ease-out;
+  animation-delay: calc(var(--card-index) * 0.1s);
+}
+
+.stats-card {
+  animation: slideInRight 0.6s ease-out;
+  animation-delay: calc(var(--stat-index) * 0.2s);
+}
+
+.domain-section {
+  animation: fadeInUp 0.8s ease-out;
+  animation-delay: calc(var(--domain-index) * 0.1s);
+}
+
+// Loading state
+.loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f3f4f6 25%,
+    #e5e7eb 50%,
+    #f3f4f6 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// Empty state
+.empty-state {
+  animation: fadeInUp 0.8s ease-out;
+  
+  .empty-icon {
+    animation: pulse 2s infinite;
+  }
+}
+
+// Code highlighting
+.code-snippet {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 1rem;
+  border-radius: 8px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  
+  .method {
+    color: #fbbf24;
+    font-weight: 600;
+  }
+  
+  .path {
+    color: #60a5fa;
+  }
+  
+  .param {
+    color: #34d399;
+  }
+}
+
+// Responsive design
+@media (max-width: 1024px) {
+  .api-explorer {
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .api-explorer {
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .filter-section {
+      .flex-wrap {
+        flex-direction: column;
+        gap: 1rem;
+      }
+    }
+    
+    .explorer-header {
+      .flex {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+    }
+    
+    .api-endpoint {
+      .endpoint-path {
+        font-size: 0.75rem;
+        word-break: break-all;
+      }
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .api-explorer {
+    .explorer-header,
+    .filter-section {
+      background: rgba(31, 41, 55, 0.95);
+      border-color: rgba(75, 85, 99, 0.2);
+    }
+    
+    .api-card {
+      background: rgba(31, 41, 55, 0.95);
+      border-color: rgba(75, 85, 99, 0.2);
+      
+      &:hover {
+        border-color: #a855f7;
+      }
+    }
+  }
+}
+
+// Utility classes
+.truncate-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.break-words {
+  word-break: break-word;
+}
+
+.font-mono {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+// Hover effects
+.hover-lift {
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+  }
+}
+
+.hover-shadow {
+  transition: box-shadow 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+  }
+}
+
+// Custom scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #8b5cf6;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #7c3aed;
+}

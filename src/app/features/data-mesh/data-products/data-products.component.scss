@@ -1,0 +1,266 @@
+// Data Products Component Styles
+.data-products {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  
+  .products-header {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .product-card {
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    
+    &:hover {
+      border-color: #3b82f6;
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px rgba(59, 130, 246, 0.15);
+      cursor: pointer;
+    }
+  }
+  
+  .stats-card {
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  .filter-section {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .view-toggle {
+    .p-button {
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-1px);
+      }
+    }
+  }
+}
+
+// Loading spinner animation
+.loading-spinner {
+  .pi-spinner {
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+// Grid and Table view styles
+.grid-view {
+  .product-card {
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+}
+
+.table-view {
+  .p-datatable {
+    .p-datatable-tbody > tr:hover {
+      background: rgba(16, 185, 129, 0.05);
+    }
+  }
+}
+
+// Custom PrimeNG overrides
+::ng-deep {
+  .p-inputtext:focus {
+    border-color: #10b981;
+    box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.2);
+  }
+  
+  .p-dropdown:focus {
+    border-color: #10b981;
+    box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.2);
+  }
+  
+  .p-button.p-button-outlined:hover {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: #10b981;
+  }
+  
+  .p-chip {
+    font-weight: 600;
+    background: rgba(16, 185, 129, 0.1);
+    color: #065f46;
+  }
+  
+  .p-paginator {
+    .p-paginator-pages .p-paginator-page.p-highlight {
+      background: #10b981;
+      border-color: #10b981;
+    }
+  }
+  
+  .p-datatable.p-datatable-striped .p-datatable-tbody > tr:nth-child(odd) {
+    background: rgba(16, 185, 129, 0.02);
+  }
+  
+  .pi-spinner {
+    animation: spin 1s linear infinite;
+  }
+}
+
+// Animation keyframes
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+// Apply animations
+.product-card {
+  animation: fadeInUp 0.6s ease-out;
+  animation-delay: calc(var(--card-index) * 0.1s);
+}
+
+.stats-card {
+  animation: slideInRight 0.6s ease-out;
+}
+
+// Loading state
+.loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f3f4f6 25%,
+    #e5e7eb 50%,
+    #f3f4f6 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// Empty state
+.empty-state {
+  animation: fadeInUp 0.8s ease-out;
+  
+  .empty-icon {
+    animation: pulse 2s infinite;
+  }
+}
+
+// Responsive design
+@media (max-width: 1024px) {
+  .data-products {
+    .grid-view {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .data-products {
+    .grid-view {
+      grid-template-columns: 1fr;
+    }
+    
+    .filter-section {
+      .flex-wrap {
+        flex-direction: column;
+        gap: 1rem;
+      }
+    }
+    
+    .products-header {
+      .flex {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+    }
+  }
+}
+
+// Text truncation utility
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// Hover effects
+.hover-scale {
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: scale(1.02);
+  }
+}
+
+.hover-shadow {
+  transition: box-shadow 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Custom scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #10b981;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #059669;
+}

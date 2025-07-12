@@ -104,11 +104,288 @@
     <p class="loading-message">{{ getCurrentMessage() }}</p>
   </div>
 
+  <!-- Cat Running Animation -->
+  <div *ngIf="type === 'cat-running'" class="loading-content loading-animal">
+    <div class="animal-container">
+      <div class="running-track">
+        <div class="animal-runner cat-runner">
+          <div class="animal-body">🐱</div>
+          <div class="animal-shadow"></div>
+        </div>
+        <div class="track-elements">
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+        </div>
+      </div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Dog Running Animation -->
+  <div *ngIf="type === 'dog-running'" class="loading-content loading-animal">
+    <div class="animal-container">
+      <div class="running-track">
+        <div class="animal-runner dog-runner">
+          <div class="animal-body">🐕</div>
+          <div class="animal-shadow"></div>
+        </div>
+        <div class="track-elements">
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+        </div>
+      </div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Rabbit Hopping Animation -->
+  <div *ngIf="type === 'rabbit-hopping'" class="loading-content loading-animal">
+    <div class="animal-container">
+      <div class="running-track">
+        <div class="animal-runner rabbit-runner">
+          <div class="animal-body">🐰</div>
+          <div class="animal-shadow"></div>
+        </div>
+        <div class="track-elements">
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+        </div>
+      </div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Penguin Walking Animation -->
+  <div *ngIf="type === 'penguin-walking'" class="loading-content loading-animal">
+    <div class="animal-container">
+      <div class="running-track">
+        <div class="animal-runner penguin-runner">
+          <div class="animal-body">🐧</div>
+          <div class="animal-shadow"></div>
+        </div>
+        <div class="track-elements">
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+        </div>
+      </div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Hamster Wheel Animation -->
+  <div *ngIf="type === 'hamster-wheel'" class="loading-content loading-animal">
+    <div class="animal-container">
+      <div class="hamster-wheel-container">
+        <div class="hamster-wheel">
+          <div class="wheel-spokes">
+            <div class="spoke"></div>
+            <div class="spoke"></div>
+            <div class="spoke"></div>
+            <div class="spoke"></div>
+            <div class="spoke"></div>
+            <div class="spoke"></div>
+            <div class="spoke"></div>
+            <div class="spoke"></div>
+          </div>
+        </div>
+        <div class="hamster-runner">
+          <div class="animal-body">🐹</div>
+        </div>
+      </div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Fox Trotting Animation -->
+  <div *ngIf="type === 'fox-trotting'" class="loading-content loading-animal">
+    <div class="animal-container">
+      <div class="running-track">
+        <div class="animal-runner fox-runner">
+          <div class="animal-body">🦊</div>
+          <div class="animal-shadow"></div>
+        </div>
+        <div class="track-elements">
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+          <div class="track-dot"></div>
+        </div>
+      </div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Unicorn Flying Animation -->
+  <div *ngIf="type === 'unicorn-flying'" class="loading-content loading-animal">
+    <div class="animal-container">
+      <div class="flying-track">
+        <div class="animal-flyer unicorn-flyer">
+          <div class="animal-body">🦄</div>
+          <div class="sparkles">
+            <div class="sparkle sparkle-1">✨</div>
+            <div class="sparkle sparkle-2">⭐</div>
+            <div class="sparkle sparkle-3">💫</div>
+          </div>
+        </div>
+        <div class="cloud-elements">
+          <div class="cloud cloud-1">☁️</div>
+          <div class="cloud cloud-2">☁️</div>
+          <div class="cloud cloud-3">☁️</div>
+        </div>
+      </div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Owl Flying Animation -->
+  <div *ngIf="type === 'owl-flying'" class="loading-content loading-animal">
+    <div class="animal-container">
+      <div class="flying-track">
+        <div class="animal-flyer owl-flyer">
+          <div class="animal-body">🦉</div>
+          <div class="night-elements">
+            <div class="star star-1">⭐</div>
+            <div class="star star-2">✨</div>
+            <div class="star star-3">🌟</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Butterfly Floating Animation -->
+  <div *ngIf="type === 'butterfly-floating'" class="loading-content loading-animal">
+    <div class="animal-container">
+      <div class="floating-track">
+        <div class="animal-floater butterfly-floater">
+          <div class="animal-body">🦋</div>
+          <div class="flower-elements">
+            <div class="flower flower-1">🌸</div>
+            <div class="flower flower-2">🌺</div>
+            <div class="flower flower-3">🌻</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Fish Swimming Animation -->
+  <div *ngIf="type === 'fish-swimming'" class="loading-content loading-animal">
+    <div class="animal-container">
+      <div class="swimming-track">
+        <div class="animal-swimmer fish-swimmer">
+          <div class="animal-body">🐠</div>
+          <div class="bubble-elements">
+            <div class="bubble bubble-1">💧</div>
+            <div class="bubble bubble-2">💙</div>
+            <div class="bubble bubble-3">🫧</div>
+          </div>
+        </div>
+        <div class="wave-elements">
+          <div class="wave-line wave-1"></div>
+          <div class="wave-line wave-2"></div>
+          <div class="wave-line wave-3"></div>
+        </div>
+      </div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
   <!-- Fun Emoji Animation (Hidden Easter Egg) -->
   <div class="easter-egg" *ngIf="fullScreen">
     <div class="floating-emoji">🚀</div>
     <div class="floating-emoji">✨</div>
     <div class="floating-emoji">🎯</div>
     <div class="floating-emoji">💫</div>
+  </div>
+
+  <!-- Panda Rolling Animation -->
+  <div *ngIf="type === 'panda-rolling'" class="loading-content loading-animal">
+    <div class="animal-container">
+      <div class="running-track">
+        <div class="animal-runner panda-runner">
+          <div class="animal-body">🐼</div>
+          <div class="animal-shadow"></div>
+        </div>
+        <div class="bamboo-elements">
+          <div class="bamboo bamboo-1">🎋</div>
+          <div class="bamboo bamboo-2">🎋</div>
+          <div class="bamboo bamboo-3">🎋</div>
+        </div>
+      </div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Koala Climbing Animation -->
+  <div *ngIf="type === 'koala-climbing'" class="loading-content loading-animal">
+    <div class="animal-container">
+      <div class="running-track">
+        <div class="animal-runner koala-runner">
+          <div class="animal-body">🐨</div>
+          <div class="animal-shadow"></div>
+        </div>
+        <div class="eucalyptus-elements">
+          <div class="eucalyptus eucalyptus-1">🌿</div>
+          <div class="eucalyptus eucalyptus-2">🌿</div>
+          <div class="eucalyptus eucalyptus-3">🌿</div>
+        </div>
+      </div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Sloth Hanging Animation -->
+  <div *ngIf="type === 'sloth-hanging'" class="loading-content loading-animal">
+    <div class="animal-container">
+      <div class="running-track">
+        <div class="animal-runner sloth-runner">
+          <div class="animal-body">🦥</div>
+          <div class="animal-shadow"></div>
+        </div>
+        <div class="tree-elements">
+          <div class="tree-branch branch-1">🌳</div>
+          <div class="tree-branch branch-2">🌳</div>
+        </div>
+      </div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
+  </div>
+
+  <!-- Duck Swimming Animation -->
+  <div *ngIf="type === 'duck-swimming'" class="loading-content loading-animal">
+    <div class="animal-container">
+      <div class="swimming-track">
+        <div class="animal-swimmer duck-swimmer">
+          <div class="animal-body">🦆</div>
+          <div class="ripple-elements">
+            <div class="ripple ripple-1"></div>
+            <div class="ripple ripple-2"></div>
+            <div class="ripple ripple-3"></div>
+          </div>
+        </div>
+        <div class="water-elements">
+          <div class="water-line water-1"></div>
+          <div class="water-line water-2"></div>
+          <div class="water-line water-3"></div>
+        </div>
+      </div>
+    </div>
+    <p class="loading-message">{{ getCurrentMessage() }}</p>
   </div>
 </div>

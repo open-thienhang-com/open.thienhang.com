@@ -6,7 +6,6 @@ import { GovernanceServices, Role, RoleDetail, PaginatedResponse } from '../../.
 import { RoleComponent } from './role/role.component';
 import { ToastService } from '../../../core/services/toast.service';
 import { LoadingService } from '../../../core/services/loading.service';
-import { LoadingComponent } from '../../../shared/component/loading/loading.component';
 import { MessageService } from 'primeng/api';
 
 // PrimeNG imports
@@ -47,7 +46,6 @@ interface RoleStats {
     CommonModule, 
     FormsModule, 
     RoleComponent,
-    LoadingComponent,
     ButtonModule,
     TableModule,
     TagModule,

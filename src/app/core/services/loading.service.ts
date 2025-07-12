@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 export interface LoadingState {
   isLoading: boolean;
   message?: string;
-  type?: 'default' | 'dots' | 'spinner' | 'pulse' | 'bounce' | 'wave' | 'bars' | 'data-flow';
+  type?: 'default' | 'dots' | 'spinner' | 'pulse' | 'bounce' | 'wave' | 'bars' | 'data-flow' | 'cat-running' | 'dog-running' | 'rabbit-hopping' | 'penguin-walking' | 'hamster-wheel' | 'fox-trotting' | 'unicorn-flying' | 'owl-flying' | 'butterfly-floating' | 'fish-swimming' | 'panda-rolling' | 'koala-climbing' | 'sloth-hanging' | 'duck-swimming';
   size?: 'small' | 'medium' | 'large';
   fullScreen?: boolean;
   overlay?: boolean;

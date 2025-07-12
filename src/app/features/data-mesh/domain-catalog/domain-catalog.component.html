@@ -1,0 +1,355 @@
+<!-- Domain Catalog - Beautiful Data Mesh Interface -->
+<p-toast></p-toast>
+
+<div class="bg-gray-50 min-h-screen p-6">
+  <div class="max-w-7xl mx-auto space-y-6">
+    
+    <!-- Loading Component -->
+    <div *ngIf="loading" class="w-full">
+      <app-loading 
+        type="data-flow" 
+        message="Loading domain catalog..." 
+        size="large">
+      </app-loading>
+    </div>
+
+    <!-- Main Content (shown when not loading) -->
+    <div *ngIf="!loading">
+      
+      <!-- Header Section -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <i class="pi pi-sitemap text-white text-xl"></i>
+            </div>
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900">Data Mesh Domain Catalog</h1>
+              <p class="text-gray-600">Discover and explore data domains across your organization</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <p-button 
+              label="Grid View" 
+              icon="pi pi-th-large" 
+              [outlined]="viewMode !== 'grid'"
+              (onClick)="setViewMode('grid')"
+              size="small">
+            </p-button>
+            <p-button 
+              label="List View" 
+              icon="pi pi-list" 
+              [outlined]="viewMode !== 'list'"
+              (onClick)="setViewMode('list')"
+              size="small">
+            </p-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-600">Total Domains</p>
+              <p class="text-3xl font-bold text-gray-900">{{ totalDomains }}</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <i class="pi pi-sitemap text-blue-600 text-xl"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <p class="text-xs text-gray-500">From health check</p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-600">Active Domains</p>
+              <p class="text-3xl font-bold text-green-600">{{ activeDomains }}</p>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <i class="pi pi-check-circle text-green-600 text-xl"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <p class="text-xs text-gray-500">Platform status: healthy</p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-600">Available Domains</p>
+              <p class="text-3xl font-bold text-purple-600">{{ filteredDomains.length }}</p>
+            </div>
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+              <i class="pi pi-database text-purple-600 text-xl"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <p class="text-xs text-gray-500">Filtered results</p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-600">Platform Health</p>
+              <p class="text-3xl font-bold text-green-600">Healthy</p>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <i class="pi pi-heart-fill text-green-600 text-xl"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <p class="text-xs text-gray-500">All systems operational</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters Section -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="flex-1 min-w-64">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search Domains</label>
+            <p-inputText 
+              [(ngModel)]="searchTerm"
+              placeholder="Search by name, description, or tags..."
+              (input)="onSearch()"
+              class="w-full"
+              styleClass="w-full">
+            </p-inputText>
+          </div>
+          
+          <div class="min-w-48">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <p-dropdown 
+              [(ngModel)]="filters.status"
+              [options]="statusOptions"
+              optionLabel="label"
+              optionValue="value"
+              (onChange)="onFilterChange()"
+              styleClass="w-full">
+            </p-dropdown>
+          </div>
+          
+          <div class="min-w-48">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Team</label>
+            <p-dropdown 
+              [(ngModel)]="filters.team"
+              [options]="teamOptions"
+              optionLabel="label"
+              optionValue="value"
+              (onChange)="onFilterChange()"
+              styleClass="w-full">
+            </p-dropdown>
+          </div>
+          
+          <div class="flex items-end">
+            <p-button 
+              label="Clear Filters"
+              icon="pi pi-times"
+              severity="secondary"
+              (onClick)="clearFilters()"
+              size="small">
+            </p-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Domains Grid/List View -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-semibold text-gray-900">
+            Data Domains ({{ filteredDomains.length }})
+          </h2>
+        </div>
+
+        <!-- Grid View -->
+        <div *ngIf="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div *ngFor="let domain of filteredDomains; trackBy: trackByDomainKey" 
+               class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer"
+               (click)="viewDomainDetails(domain)">              <!-- Domain Header -->
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex-1">
+                  <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ domain.display_name || domain.name }}</h3>
+                  <p class="text-sm text-gray-500 mb-2">{{ domain.domain_key }}</p>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <p-tag 
+                      [value]="domain.status"
+                      [severity]="getStatusSeverity(domain.status)">
+                    </p-tag>
+                    <p-chip 
+                      label="Data Mesh Domain"
+                      styleClass="text-xs bg-blue-100 text-blue-800">
+                    </p-chip>
+                    <p-chip 
+                      [label]="domain.team || 'No Team'"
+                      styleClass="text-xs bg-purple-100 text-purple-800">
+                    </p-chip>
+                  </div>
+                </div>
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <i class="pi pi-sitemap text-white text-xl"></i>
+                </div>
+              </div>
+
+              <!-- Domain Description -->
+              <p class="text-sm text-gray-600 mb-4 line-clamp-3">{{ domain.description }}</p>
+
+              <!-- Domain Info -->
+              <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                  <div class="flex items-center gap-2">
+                    <i class="pi pi-user text-gray-500"></i>
+                    <span class="text-gray-600">Owner:</span>
+                    <span class="font-medium">{{ domain.owner || 'Not Set' }}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i class="pi pi-users text-gray-500"></i>
+                    <span class="text-gray-600">Team:</span>
+                    <span class="font-medium">{{ domain.team || 'Not Set' }}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i class="pi pi-database text-gray-500"></i>
+                    <span class="text-gray-600">Data Products:</span>
+                    <span class="font-medium">{{ domain.data_products?.length || 0 }}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i class="pi pi-chart-line text-gray-500"></i>
+                    <span class="text-gray-600">Quality:</span>
+                    <span class="font-medium">{{ domain.metrics?.quality_score || 'N/A' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Domain Tags -->
+              <div class="flex flex-wrap gap-2 mb-4" *ngIf="domain.tags && domain.tags.length > 0">
+                <p-chip 
+                  *ngFor="let tag of domain.tags" 
+                  [label]="tag"
+                  styleClass="text-xs bg-gray-100 text-gray-700">
+                </p-chip>
+              </div>
+
+              <!-- Domain Actions -->
+              <div class="flex items-center gap-2 pt-3 border-t border-gray-200">
+                <p-button 
+                  label="View Details"
+                  icon="pi pi-eye"
+                  severity="secondary"
+                  size="small"
+                  (onClick)="viewDomainDetails(domain)"
+                  class="flex-1">
+                </p-button>
+                <p-button 
+                  label="Data Products"
+                  icon="pi pi-database"
+                  severity="info"
+                  size="small"
+                  (onClick)="viewDataProducts(domain)"
+                  class="flex-1">
+                </p-button>
+              </div>
+          </div>
+        </div>
+
+        <!-- List View -->
+        <div *ngIf="viewMode === 'list'" class="space-y-4">
+          <div *ngFor="let domain of filteredDomains; trackBy: trackByDomainKey" 
+               class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <i class="pi pi-sitemap text-white text-lg"></i>
+                  </div>
+                  <div class="flex-1">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ domain.display_name || domain.name }}</h3>
+                    <p class="text-sm text-gray-500 mb-2">{{ domain.domain_key }}</p>
+                    <p class="text-sm text-gray-600 mb-3">{{ domain.description }}</p>
+                    
+                    <!-- Domain Status and Tags -->
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <p-tag 
+                        [value]="domain.status"
+                        [severity]="getStatusSeverity(domain.status)">
+                      </p-tag>
+                      <p-chip 
+                        [label]="domain.team || 'No Team'"
+                        styleClass="text-xs bg-purple-100 text-purple-800">
+                      </p-chip>
+                      <p-chip 
+                        *ngFor="let tag of domain.tags?.slice(0, 2)" 
+                        [label]="tag"
+                        styleClass="text-xs bg-gray-100 text-gray-700">
+                      </p-chip>
+                      <span *ngIf="domain.tags && domain.tags.length > 2" 
+                            class="text-xs text-gray-500">
+                        +{{ domain.tags.length - 2 }} more
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Domain Stats -->
+              <div class="hidden md:flex items-center gap-6 text-sm">
+                <div class="text-center">
+                  <div class="text-lg font-semibold text-blue-600">{{ domain.data_products?.length || 0 }}</div>
+                  <div class="text-gray-500">Data Products</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-lg font-semibold text-green-600">{{ domain.metrics?.quality_score || 'N/A' }}</div>
+                  <div class="text-gray-500">Quality</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-lg font-semibold text-purple-600">{{ domain.metrics?.subscribers || 0 }}</div>
+                  <div class="text-gray-500">Subscribers</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-lg font-semibold text-indigo-600">{{ domain.sla?.availability || 'N/A' }}</div>
+                  <div class="text-gray-500">Availability</div>
+                </div>
+              </div>
+              
+              <!-- Actions -->
+              <div class="flex items-center gap-2 ml-4">
+                <p-button 
+                  label="View Details"
+                  icon="pi pi-eye"
+                  severity="secondary"
+                  size="small"
+                  (onClick)="viewDomainDetails(domain)">
+                </p-button>
+                <p-button 
+                  label="Data Products"
+                  icon="pi pi-database"
+                  severity="info"
+                  size="small"
+                  (onClick)="viewDataProducts(domain)">
+                </p-button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="filteredDomains.length === 0" class="text-center py-12">
+          <i class="pi pi-sitemap text-gray-300 text-6xl mb-4"></i>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No domains found</h3>
+          <p class="text-gray-500 mb-4">Try adjusting your search or filter criteria</p>
+          <p-button 
+            label="Clear Filters"
+            icon="pi pi-times"
+            severity="secondary"
+            (onClick)="clearFilters()">
+          </p-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

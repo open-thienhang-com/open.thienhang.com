@@ -24,12 +24,33 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: white;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
     z-index: 50;
     min-height: 100vh;
     
     .dark & {
-      background-color: #111827;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(147, 51, 234, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+      animation: gradientFloat 10s ease-in-out infinite;
+      
+      .dark & {
+        background: 
+          radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+          radial-gradient(circle at 80% 70%, rgba(147, 51, 234, 0.05) 0%, transparent 50%),
+          radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
+      }
     }
   }
   
@@ -67,17 +88,44 @@
   color: #6B7280;
   text-align: center;
   font-weight: 500;
-  margin-top: 1rem;
+  font-size: 1.1rem;
+  margin-top: 1.5rem;
   animation: fadeInOut 2s ease-in-out infinite alternate;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   
   .dark & {
     color: #D1D5DB;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+  
+  .loading-fullscreen & {
+    font-size: 1.3rem;
+    margin-top: 2rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    
+    .dark & {
+      background: linear-gradient(135deg, #60A5FA, #A78BFA);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
   }
 }
 
 @keyframes fadeInOut {
   0% { opacity: 0.7; }
   100% { opacity: 1; }
+}
+
+@keyframes gradientFloat {
+  0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); }
+  25% { transform: translateX(5px) translateY(-3px) rotate(1deg); }
+  50% { transform: translateX(-3px) translateY(5px) rotate(-1deg); }
+  75% { transform: translateX(-5px) translateY(-3px) rotate(1deg); }
 }
 
 /* Data Mesh Theme Loading */
@@ -421,45 +469,414 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: -1;
-}
-
-.floating-emoji {
-  position: absolute;
-  font-size: 2rem;
-  animation: floatAround 20s ease-in-out infinite;
-  opacity: 0.1;
+  overflow: hidden;
   
-  &:nth-child(1) {
-    top: 20%;
-    left: 20%;
-    animation-delay: 0s;
-  }
-  
-  &:nth-child(2) {
-    top: 30%;
-    right: 20%;
-    animation-delay: 5s;
-  }
-  
-  &:nth-child(3) {
-    bottom: 30%;
-    left: 30%;
-    animation-delay: 10s;
-  }
-  
-  &:nth-child(4) {
-    bottom: 20%;
-    right: 30%;
-    animation-delay: 15s;
+  .floating-emoji {
+    position: absolute;
+    font-size: 1.5rem;
+    animation: floatAround 8s ease-in-out infinite;
+    opacity: 0.6;
+    
+    &:nth-child(1) {
+      top: 20%;
+      left: 10%;
+      animation-delay: 0s;
+      animation-duration: 7s;
+    }
+    
+    &:nth-child(2) {
+      top: 70%;
+      left: 80%;
+      animation-delay: 2s;
+      animation-duration: 9s;
+    }
+    
+    &:nth-child(3) {
+      top: 40%;
+      left: 70%;
+      animation-delay: 4s;
+      animation-duration: 6s;
+    }
+    
+    &:nth-child(4) {
+      top: 80%;
+      left: 20%;
+      animation-delay: 6s;
+      animation-duration: 8s;
+    }
   }
 }
 
 @keyframes floatAround {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  25% { transform: translateY(-20px) rotate(90deg); }
-  50% { transform: translateY(-40px) rotate(180deg); }
-  75% { transform: translateY(-20px) rotate(270deg); }
+  0%, 100% { 
+    transform: translateX(0) translateY(0) rotate(0deg); 
+    opacity: 0.3; 
+  }
+  25% { 
+    transform: translateX(30px) translateY(-20px) rotate(90deg); 
+    opacity: 0.7; 
+  }
+  50% { 
+    transform: translateX(-20px) translateY(-40px) rotate(180deg); 
+    opacity: 1; 
+  }
+  75% { 
+    transform: translateX(-40px) translateY(-10px) rotate(270deg); 
+    opacity: 0.5; 
+  }
+}
+
+/* New Animal Animations */
+
+/* Unicorn Flying Animation */
+.flying-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+  
+  .dark & {
+    background: linear-gradient(135deg, #312e81 0%, #581c87 100%);
+  }
+}
+
+.animal-flyer {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: flyAround 3s ease-in-out infinite;
+}
+
+.unicorn-flyer {
+  .animal-body {
+    font-size: 2.5rem;
+    animation: unicornFloat 2s ease-in-out infinite;
+  }
+  
+  .sparkles {
+    position: absolute;
+    inset: 0;
+    
+    .sparkle {
+      position: absolute;
+      font-size: 1rem;
+      animation: sparkleAnimation 1.5s ease-in-out infinite;
+      
+      &.sparkle-1 {
+        top: -10px;
+        left: -20px;
+        animation-delay: 0s;
+      }
+      
+      &.sparkle-2 {
+        top: -15px;
+        right: -15px;
+        animation-delay: 0.5s;
+      }
+      
+      &.sparkle-3 {
+        bottom: -10px;
+        left: 10px;
+        animation-delay: 1s;
+      }
+    }
+  }
+}
+
+.cloud-elements {
+  position: absolute;
+  inset: 0;
+  
+  .cloud {
+    position: absolute;
+    font-size: 1.5rem;
+    animation: cloudFloat 4s ease-in-out infinite;
+    opacity: 0.7;
+    
+    &.cloud-1 {
+      top: 10px;
+      left: 20px;
+      animation-delay: 0s;
+    }
+    
+    &.cloud-2 {
+      top: 60px;
+      right: 30px;
+      animation-delay: 1.5s;
+    }
+    
+    &.cloud-3 {
+      bottom: 20px;
+      left: 50%;
+      animation-delay: 3s;
+    }
+  }
+}
+
+@keyframes flyAround {
+  0%, 100% { transform: translateX(-50px) translateY(0); }
+  25% { transform: translateX(0) translateY(-10px); }
+  50% { transform: translateX(50px) translateY(0); }
+  75% { transform: translateX(0) translateY(10px); }
+}
+
+@keyframes unicornFloat {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-8px) rotate(2deg); }
+}
+
+@keyframes sparkleAnimation {
+  0%, 100% { transform: scale(0) rotate(0deg); opacity: 0; }
+  50% { transform: scale(1) rotate(180deg); opacity: 1; }
+}
+
+@keyframes cloudFloat {
+  0%, 100% { transform: translateX(0) translateY(0); opacity: 0.5; }
+  50% { transform: translateX(-10px) translateY(-5px); opacity: 0.8; }
+}
+
+/* Owl Flying Animation */
+.owl-flyer {
+  .animal-body {
+    font-size: 2.3rem;
+    animation: owlFly 2.5s ease-in-out infinite;
+  }
+  
+  .night-elements {
+    position: absolute;
+    inset: 0;
+    
+    .star {
+      position: absolute;
+      font-size: 0.8rem;
+      animation: starTwinkle 2s ease-in-out infinite;
+      
+      &.star-1 {
+        top: -15px;
+        left: -25px;
+        animation-delay: 0s;
+      }
+      
+      &.star-2 {
+        top: -20px;
+        right: -20px;
+        animation-delay: 0.7s;
+      }
+      
+      &.star-3 {
+        bottom: -15px;
+        left: 15px;
+        animation-delay: 1.4s;
+      }
+    }
+  }
+}
+
+@keyframes owlFly {
+  0%, 100% { transform: translateX(-40px) rotate(-3deg); }
+  25% { transform: translateX(-10px) translateY(-5px) rotate(1deg); }
+  50% { transform: translateX(40px) rotate(3deg); }
+  75% { transform: translateX(10px) translateY(5px) rotate(-1deg); }
+}
+
+@keyframes starTwinkle {
+  0%, 100% { transform: scale(0.5) rotate(0deg); opacity: 0.4; }
+  50% { transform: scale(1.2) rotate(180deg); opacity: 1; }
+}
+
+/* Butterfly Floating Animation */
+.floating-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  
+  .dark & {
+    background: linear-gradient(135deg, #451a03 0%, #78350f 100%);
+  }
+}
+
+.animal-floater {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: butterflyFloat 4s ease-in-out infinite;
+}
+
+.butterfly-floater {
+  .animal-body {
+    font-size: 2rem;
+    animation: butterflyWings 1s ease-in-out infinite;
+  }
+  
+  .flower-elements {
+    position: absolute;
+    inset: 0;
+    
+    .flower {
+      position: absolute;
+      font-size: 1.2rem;
+      animation: flowerSway 3s ease-in-out infinite;
+      
+      &.flower-1 {
+        bottom: -20px;
+        left: -30px;
+        animation-delay: 0s;
+      }
+      
+      &.flower-2 {
+        bottom: -25px;
+        right: -25px;
+        animation-delay: 1s;
+      }
+      
+      &.flower-3 {
+        bottom: -15px;
+        left: 50%;
+        animation-delay: 2s;
+      }
+    }
+  }
+}
+
+@keyframes butterflyFloat {
+  0%, 100% { transform: translateX(-30px) translateY(0); }
+  25% { transform: translateX(0) translateY(-15px); }
+  50% { transform: translateX(30px) translateY(-5px); }
+  75% { transform: translateX(0) translateY(10px); }
+}
+
+@keyframes butterflyWings {
+  0%, 100% { transform: scale(1) rotate(-1deg); }
+  50% { transform: scale(1.1) rotate(1deg); }
+}
+
+@keyframes flowerSway {
+  0%, 100% { transform: rotate(-5deg) scale(1); }
+  50% { transform: rotate(5deg) scale(1.05); }
+}
+
+/* Fish Swimming Animation */
+.swimming-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+  
+  .dark & {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+  }
+}
+
+.animal-swimmer {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: fishSwim 3s ease-in-out infinite;
+}
+
+.fish-swimmer {
+  .animal-body {
+    font-size: 2.2rem;
+    animation: fishWiggle 1.5s ease-in-out infinite;
+  }
+  
+  .bubble-elements {
+    position: absolute;
+    inset: 0;
+    
+    .bubble {
+      position: absolute;
+      font-size: 0.8rem;
+      animation: bubbleRise 2s ease-in-out infinite;
+      
+      &.bubble-1 {
+        top: -10px;
+        left: -15px;
+        animation-delay: 0s;
+      }
+      
+      &.bubble-2 {
+        top: -20px;
+        left: 10px;
+        animation-delay: 0.7s;
+      }
+      
+      &.bubble-3 {
+        top: -15px;
+        right: -10px;
+        animation-delay: 1.4s;
+      }
+    }
+  }
+}
+
+.wave-elements {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  
+  .wave-line {
+    position: absolute;
+    height: 2px;
+    background: rgba(59, 130, 246, 0.3);
+    border-radius: 1px;
+    animation: waveMove 2s ease-in-out infinite;
+    
+    &.wave-1 {
+      left: 10px;
+      width: 40px;
+      animation-delay: 0s;
+    }
+    
+    &.wave-2 {
+      left: 50%;
+      width: 30px;
+      animation-delay: 0.7s;
+    }
+    
+    &.wave-3 {
+      right: 10px;
+      width: 35px;
+      animation-delay: 1.4s;
+    }
+  }
+}
+
+@keyframes fishSwim {
+  0%, 100% { transform: translateX(-50px) translateY(0); }
+  25% { transform: translateX(-10px) translateY(-8px); }
+  50% { transform: translateX(50px) translateY(0); }
+  75% { transform: translateX(10px) translateY(8px); }
+}
+
+@keyframes fishWiggle {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+
+@keyframes bubbleRise {
+  0% { transform: translateY(0) scale(0.5); opacity: 0; }
+  50% { transform: translateY(-15px) scale(1); opacity: 1; }
+  100% { transform: translateY(-30px) scale(1.2); opacity: 0; }
+}
+
+@keyframes waveMove {
+  0%, 100% { transform: translateY(0) scaleX(1); opacity: 0.3; }
+  50% { transform: translateY(-3px) scaleX(1.1); opacity: 0.7; }
 }
 
 /* Dark mode adjustments */
@@ -492,34 +909,630 @@
   .flow-line {
     background: linear-gradient(90deg, #60A5FA, #3B82F6);
   }
+  
+  .loading-animal {
+    .track-dot {
+      background: #64748b;
+    }
+  }
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .loading-container {
-    &.loading-small {
-      min-height: 60px;
-      .loading-content {
-        transform: scale(0.6);
-      }
+/* Cute Animal Loading Animations */
+
+/* Common Animal Animation Styles */
+.loading-animal {
+  .animal-container {
+    width: 200px;
+    height: 100px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 50px;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 2px solid #bae6fd;
+    box-shadow: 
+      0 4px 15px rgba(59, 130, 246, 0.1),
+      0 10px 30px rgba(59, 130, 246, 0.05);
+    
+    .dark & {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border-color: #334155;
+      box-shadow: 
+        0 4px 15px rgba(59, 130, 246, 0.05),
+        0 10px 30px rgba(59, 130, 246, 0.02);
     }
     
-    &.loading-medium {
-      min-height: 100px;
-      .loading-content {
-        transform: scale(0.8);
-      }
+    .loading-fullscreen & {
+      width: 300px;
+      height: 150px;
+      border-radius: 75px;
+      border-width: 3px;
+      box-shadow: 
+        0 8px 25px rgba(59, 130, 246, 0.15),
+        0 20px 50px rgba(59, 130, 246, 0.1);
+    }
+  }
+
+  .running-track {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .animal-runner {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: animalRun 2s ease-in-out infinite;
+  }
+
+  .animal-body {
+    font-size: 2rem;
+    animation: animalBounce 0.6s ease-in-out infinite;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    
+    .loading-fullscreen & {
+      font-size: 3rem;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+    }
+  }
+
+  .animal-shadow {
+    width: 20px;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+    animation: shadowMove 0.6s ease-in-out infinite;
+    margin-top: 2px;
+    
+    .loading-fullscreen & {
+      width: 30px;
+      height: 12px;
+      margin-top: 4px;
+    }
+  }
+
+  .track-elements {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-around;
+    padding: 0 20px;
+    
+    .loading-fullscreen & {
+      bottom: 30px;
+      padding: 0 30px;
+    }
+  }
+
+  .track-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #94a3b8;
+    animation: trackDotMove 2s ease-in-out infinite;
+    
+    .loading-fullscreen & {
+      width: 6px;
+      height: 6px;
     }
     
-    &.loading-large {
-      min-height: 150px;
-      .loading-content {
-        transform: scale(1);
-      }
+    &:nth-child(1) { animation-delay: 0s; }
+    &:nth-child(2) { animation-delay: 0.2s; }
+    &:nth-child(3) { animation-delay: 0.4s; }
+    &:nth-child(4) { animation-delay: 0.6s; }
+    &:nth-child(5) { animation-delay: 0.8s; }
+  }
+}
+
+/* Cat Running Animation */
+.cat-runner {
+  .animal-body {
+    animation: catRun 1s ease-in-out infinite;
+  }
+}
+
+@keyframes catRun {
+  0%, 100% { transform: translateX(-60px) rotate(-5deg); }
+  50% { transform: translateX(60px) rotate(5deg); }
+}
+
+@keyframes animalBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.05); }
+}
+
+@keyframes shadowMove {
+  0%, 100% { transform: scaleX(1); opacity: 0.3; }
+  50% { transform: scaleX(1.2); opacity: 0.2; }
+}
+
+@keyframes trackDotMove {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.5; }
+  50% { transform: translateY(-2px) scale(1.1); opacity: 0.8; }
+}
+
+/* Dog Running Animation */
+.dog-runner {
+  .animal-body {
+    animation: dogRun 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes dogRun {
+  0%, 100% { transform: translateX(-50px) rotate(-3deg); }
+  50% { transform: translateX(50px) rotate(3deg); }
+}
+
+/* Rabbit Hopping Animation */
+.rabbit-runner {
+  .animal-body {
+    animation: rabbitHop 0.8s ease-in-out infinite;
+  }
+}
+
+@keyframes rabbitHop {
+  0%, 100% { transform: translateX(-40px) translateY(0) rotate(0deg); }
+  25% { transform: translateX(-20px) translateY(-15px) rotate(-10deg); }
+  50% { transform: translateX(0) translateY(-8px) rotate(0deg); }
+  75% { transform: translateX(20px) translateY(-15px) rotate(10deg); }
+}
+
+/* Penguin Walking Animation */
+.penguin-runner {
+  .animal-body {
+    animation: penguinWalk 1.5s ease-in-out infinite;
+  }
+}
+
+@keyframes penguinWalk {
+  0%, 100% { transform: translateX(-45px) rotate(-8deg); }
+  25% { transform: translateX(-15px) rotate(8deg); }
+  50% { transform: translateX(15px) rotate(-8deg); }
+  75% { transform: translateX(45px) rotate(8deg); }
+}
+
+/* Hamster Wheel Animation */
+.hamster-wheel-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hamster-wheel {
+  width: 60px;
+  height: 60px;
+  border: 3px solid #64748b;
+  border-radius: 50%;
+  position: relative;
+  animation: wheelSpin 1s linear infinite;
+  
+  .dark & {
+    border-color: #94a3b8;
+  }
+}
+
+.wheel-spokes {
+  position: absolute;
+  inset: 0;
+  
+  .spoke {
+    position: absolute;
+    width: 2px;
+    height: 25px;
+    background: #94a3b8;
+    left: 50%;
+    top: 50%;
+    transform-origin: bottom center;
+    
+    .dark & {
+      background: #64748b;
+    }
+    
+    &:nth-child(1) { transform: translateX(-50%) rotate(0deg); }
+    &:nth-child(2) { transform: translateX(-50%) rotate(45deg); }
+    &:nth-child(3) { transform: translateX(-50%) rotate(90deg); }
+    &:nth-child(4) { transform: translateX(-50%) rotate(135deg); }
+    &:nth-child(5) { transform: translateX(-50%) rotate(180deg); }
+    &:nth-child(6) { transform: translateX(-50%) rotate(225deg); }
+    &:nth-child(7) { transform: translateX(-50%) rotate(270deg); }
+    &:nth-child(8) { transform: translateX(-50%) rotate(315deg); }
+  }
+}
+
+.hamster-runner {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: hamsterRun 1s linear infinite;
+  
+  .animal-body {
+    animation: hamsterBounce 0.25s ease-in-out infinite;
+  }
+}
+
+@keyframes wheelSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes hamsterRun {
+  0%, 100% { transform: translateX(-50%) rotate(0deg); }
+  50% { transform: translateX(-50%) rotate(10deg); }
+}
+
+@keyframes hamsterBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-2px) scale(1.02); }
+}
+
+/* Fox Trotting Animation */
+.fox-runner {
+  .animal-body {
+    animation: foxTrot 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes foxTrot {
+  0%, 100% { transform: translateX(-55px) rotate(-4deg) scaleX(1); }
+  25% { transform: translateX(-18px) rotate(2deg) scaleX(1.05); }
+  50% { transform: translateX(18px) rotate(-2deg) scaleX(1); }
+  75% { transform: translateX(55px) rotate(4deg) scaleX(1.05); }
+}
+
+/* New Cute Animal Animations */
+
+/* Sloth Hanging Animation */
+.sloth-runner {
+  .animal-body {
+    animation: slothHang 2s ease-in-out infinite;
+  }
+}
+
+@keyframes slothHang {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(-2deg); }
+}
+
+/* Koala Climbing Animation */
+.koala-runner {
+  .animal-body {
+    animation: koalaClimb 1.8s ease-in-out infinite;
+  }
+}
+
+@keyframes koalaClimb {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-5px) rotate(-2deg); }
+  50% { transform: translateY(-10px) rotate(0deg); }
+  75% { transform: translateY(-5px) rotate(2deg); }
+}
+
+/* Squirrel Gathering Animation */
+.squirrel-runner {
+  .animal-body {
+    animation: squirrelGather 2.2s ease-in-out infinite;
+  }
+}
+
+@keyframes squirrelGather {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(-10px) rotate(-5deg); }
+  50% { transform: translateX(10px) rotate(5deg); }
+  75% { transform: translateX(-5px) rotate(0deg); }
+}
+
+/* Otter Sliding Animation */
+.otter-runner {
+  .animal-body {
+    animation: otterSlide 2.5s ease-in-out infinite;
+  }
+}
+
+@keyframes otterSlide {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  50% { transform: translateX(20px) rotate(10deg); }
+}
+
+/* Seal Flopping Animation */
+.seal-runner {
+  .animal-body {
+    animation: sealFlop 2.8s ease-in-out infinite;
+  }
+}
+
+@keyframes sealFlop {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(-3deg); }
+}
+
+/* Hover effects for interactive feel */
+.loading-animal:hover {
+  .animal-container {
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.15);
+    
+    .dark & {
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.1);
     }
   }
   
-  .floating-emoji {
-    font-size: 1.5rem;
+  .animal-body {
+    animation-duration: 0.4s;
   }
+  
+  .hamster-wheel {
+    animation-duration: 0.7s;
+  }
+}
+
+/* Responsive adjustments for animals */
+@media (max-width: 768px) {
+  .loading-animal {
+    .animal-container {
+      width: 150px;
+      height: 75px;
+    }
+    
+    .animal-body {
+      font-size: 1.5rem;
+    }
+    
+    .hamster-wheel-container {
+      width: 60px;
+      height: 60px;
+    }
+    
+    .hamster-wheel {
+      width: 45px;
+      height: 45px;
+    }
+  }
+}
+
+/* Dark mode adjustments */
+.dark {
+  .loading-animal {
+    .track-dot {
+      background: #64748b;
+    }
+  }
+}
+
+/* New Cute Animal Animations */
+
+/* Panda Rolling Animation */
+.panda-runner {
+  .animal-body {
+    animation: pandaRoll 2s ease-in-out infinite;
+  }
+}
+
+.bamboo-elements {
+  position: absolute;
+  inset: 0;
+  
+  .bamboo {
+    position: absolute;
+    font-size: 1rem;
+    animation: bambooSway 3s ease-in-out infinite;
+    
+    &.bamboo-1 {
+      top: 10px;
+      left: 10px;
+      animation-delay: 0s;
+    }
+    
+    &.bamboo-2 {
+      top: 20px;
+      right: 10px;
+      animation-delay: 1s;
+    }
+    
+    &.bamboo-3 {
+      bottom: 10px;
+      left: 50%;
+      animation-delay: 2s;
+    }
+  }
+}
+
+@keyframes pandaRoll {
+  0%, 100% { transform: translateX(-40px) rotate(0deg); }
+  25% { transform: translateX(-10px) rotate(90deg); }
+  50% { transform: translateX(10px) rotate(180deg); }
+  75% { transform: translateX(40px) rotate(270deg); }
+}
+
+@keyframes bambooSway {
+  0%, 100% { transform: rotate(-3deg) scale(1); opacity: 0.7; }
+  50% { transform: rotate(3deg) scale(1.05); opacity: 1; }
+}
+
+/* Koala Climbing Animation */
+.koala-runner {
+  .animal-body {
+    animation: koalaClimb 2.5s ease-in-out infinite;
+  }
+}
+
+.eucalyptus-elements {
+  position: absolute;
+  inset: 0;
+  
+  .eucalyptus {
+    position: absolute;
+    font-size: 1.2rem;
+    animation: eucalyptusRustle 2s ease-in-out infinite;
+    
+    &.eucalyptus-1 {
+      top: 5px;
+      left: 15px;
+      animation-delay: 0s;
+    }
+    
+    &.eucalyptus-2 {
+      top: 15px;
+      right: 15px;
+      animation-delay: 0.7s;
+    }
+    
+    &.eucalyptus-3 {
+      bottom: 5px;
+      left: 50%;
+      animation-delay: 1.4s;
+    }
+  }
+}
+
+@keyframes koalaClimb {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-8px) rotate(-2deg); }
+  50% { transform: translateY(-15px) rotate(0deg); }
+  75% { transform: translateY(-8px) rotate(2deg); }
+}
+
+@keyframes eucalyptusRustle {
+  0%, 100% { transform: rotate(-2deg) scale(1); opacity: 0.8; }
+  50% { transform: rotate(2deg) scale(1.02); opacity: 1; }
+}
+
+/* Sloth Hanging Animation */
+.sloth-runner {
+  .animal-body {
+    animation: slothHang 3s ease-in-out infinite;
+  }
+}
+
+.tree-elements {
+  position: absolute;
+  inset: 0;
+  
+  .tree-branch {
+    position: absolute;
+    font-size: 1.5rem;
+    animation: branchSway 4s ease-in-out infinite;
+    
+    &.branch-1 {
+      top: 0px;
+      left: 20px;
+      animation-delay: 0s;
+    }
+    
+    &.branch-2 {
+      top: 10px;
+      right: 20px;
+      animation-delay: 2s;
+    }
+  }
+}
+
+@keyframes slothHang {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-3px) rotate(-1deg); }
+  66% { transform: translateY(-6px) rotate(1deg); }
+}
+
+@keyframes branchSway {
+  0%, 100% { transform: rotate(-1deg) scale(1); opacity: 0.9; }
+  50% { transform: rotate(1deg) scale(1.01); opacity: 1; }
+}
+
+/* Duck Swimming Animation */
+.duck-swimmer {
+  .animal-body {
+    animation: duckSwim 2.2s ease-in-out infinite;
+  }
+  
+  .ripple-elements {
+    position: absolute;
+    inset: 0;
+    
+    .ripple {
+      position: absolute;
+      width: 20px;
+      height: 8px;
+      border: 2px solid rgba(59, 130, 246, 0.3);
+      border-radius: 50%;
+      animation: rippleExpand 1.5s ease-in-out infinite;
+      
+      &.ripple-1 {
+        bottom: -5px;
+        left: -10px;
+        animation-delay: 0s;
+      }
+      
+      &.ripple-2 {
+        bottom: -8px;
+        left: 5px;
+        animation-delay: 0.5s;
+      }
+      
+      &.ripple-3 {
+        bottom: -3px;
+        right: -5px;
+        animation-delay: 1s;
+      }
+    }
+  }
+}
+
+.water-elements {
+  position: absolute;
+  bottom: 5px;
+  left: 0;
+  right: 0;
+  
+  .water-line {
+    position: absolute;
+    height: 2px;
+    background: rgba(59, 130, 246, 0.4);
+    border-radius: 1px;
+    animation: waterFlow 2s ease-in-out infinite;
+    
+    &.water-1 {
+      left: 5px;
+      width: 30px;
+      animation-delay: 0s;
+    }
+    
+    &.water-2 {
+      left: 50%;
+      width: 25px;
+      animation-delay: 0.7s;
+    }
+    
+    &.water-3 {
+      right: 5px;
+      width: 35px;
+      animation-delay: 1.4s;
+    }
+  }
+}
+
+@keyframes duckSwim {
+  0%, 100% { transform: translateX(-30px) translateY(0) rotate(0deg); }
+  25% { transform: translateX(-10px) translateY(-2px) rotate(-1deg); }
+  50% { transform: translateX(10px) translateY(0) rotate(0deg); }
+  75% { transform: translateX(30px) translateY(-2px) rotate(1deg); }
+}
+
+@keyframes rippleExpand {
+  0% { transform: scale(0.5); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 0.4; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+@keyframes waterFlow {
+  0%, 100% { transform: translateX(0) scaleX(1); opacity: 0.4; }
+  50% { transform: translateX(5px) scaleX(1.1); opacity: 0.8; }
 }

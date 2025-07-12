@@ -5,18 +5,43 @@ import { ApiResponse } from './governance.services';
 
 export interface DataProduct {
   id: string;
+  kid?: string | null;
   name: string;
   description?: string;
   domain?: string;
-  owner?: string;
+  owner?: {
+    _id?: string | null;
+    kid?: string;
+    first_name?: string;
+    email?: string;
+    company?: string;
+    last_name?: string;
+  };
+  teams?: any[];
+  purpose?: string;
+  consumers?: any;
+  input_ports?: any;
+  output_ports?: any;
+  assets?: any[];
+  policies?: any[];
+  permissions?: any[];
+  tags?: string[];
+  quality_metrics?: any;
+  lifecycle?: any;
+  cost?: any;
+  discoverability?: any;
+  documentation?: any;
+  apis?: any[];
+  swagger?: string;
+  openapi?: string;
   status?: string;
   type?: string;
   version?: string;
-  tags?: string[];
   schema?: any;
   api_endpoint?: string;
-  documentation?: string;
   metrics?: any;
+  created_at?: string;
+  updated_at?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -49,18 +74,54 @@ export class DataProductServices {
 
   // Data Products
   getDataProducts(params?: any): Observable<ApiResponse<DataProduct[]>> {
-    const url = `${this.baseUrl}/data-product`;
+    const url = `${this.baseUrl}/data-mesh/data-mesh/data-products`;
     const httpParams = this.buildHttpParams(params);
-    return this.http.get<DataProduct[]>(url, { params: httpParams })
-      .pipe(map(response => this.wrapArrayResponse(response)));
+    return this.http.get<any>(url, { params: httpParams })
+      .pipe(
+        map(response => {
+          // Handle the actual API response structure
+          if (response && response.data && Array.isArray(response.data)) {
+            return {
+              data: response.data,
+              total: response.total || response.data.length,
+              success: true,
+              message: response.message
+            };
+          } else {
+            return {
+              data: [],
+              total: 0,
+              success: false,
+              message: response?.message || 'No data found'
+            };
+          }
+        })
+      );
   }
 
   getDataProductDetail(id: string, domain?: string): Observable<ApiResponse<DataProduct>> {
     const url = domain 
-      ? `${this.baseUrl}/data-product/${domain}/${id}`
-      : `${this.baseUrl}/data-product/${id}`;
+      ? `${this.baseUrl}/data-mesh/data-mesh/data-products/${domain}/${id}`
+      : `${this.baseUrl}/data-mesh/data-mesh/data-products/${id}`;
     return this.http.get<DataProduct>(url)
-      .pipe(map(response => this.wrapResponse(response)));
+      .pipe(
+        map(response => {
+          // Handle the actual API response structure
+          if (response) {
+            return {
+              data: response,
+              success: true,
+              message: 'Data product loaded successfully'
+            };
+          } else {
+            return {
+              data: null,
+              success: false,
+              message: 'Data product not found'
+            };
+          }
+        })
+      );
   }
 
   createDataProduct(data: DataProduct): Observable<ApiResponse<DataProduct>> {

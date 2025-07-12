@@ -17,17 +17,169 @@ export interface DataContract {
   updatedAt?: Date;
 }
 
+// Updated interfaces to match the new API structure
+export interface DataProduct {
+  name: string;
+  description: string;
+  endpoints_count?: number;
+  endpoints?: ApiEndpoint[];
+}
+
+export interface ApiEndpoint {
+  path: string;
+  method: string;
+  description: string;
+  full_path: string;
+}
+
+export interface DomainMetrics {
+  subscribers: number;
+  quality_score: string;
+}
+
+export interface DomainSLA {
+  availability: string;
+  freshness: string;
+  version: string;
+}
+
+export interface DomainContact {
+  email: string;
+  slack: string;
+  support: string;
+}
+
 export interface Domain {
+  domain_key: string;
+  name: string;
+  display_name: string;
+  status: string;
+  team: string;
+  owner: string;
+  description: string;
+  metrics: DomainMetrics;
+  tags: string[];
+  sla: DomainSLA;
+  data_products: DataProduct[];
+  contact: DomainContact;
+}
+
+export interface DomainCatalogResponse {
+  data: Domain[];
+  message: string;
+  total: number;
+}
+
+export interface DomainsListResponse {
+  data: string[];
+  message: string;
+  total: number;
+}
+
+export interface DomainDetailsResponse {
+  data: Domain;
+  message: string;
+  total: number;
+}
+
+// New interfaces for data products
+export interface DataProductSummary {
   id: string;
   name: string;
-  description?: string;
-  owner?: string;
-  team?: string;
-  data_products?: number;
-  status?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  domain: string;
+  description: string;
+  owner: any;
 }
+
+export interface DataProductDetail {
+  id: string;
+  kid: string | null;
+  name: string;
+  description: string;
+  domain: string;
+  owner: {
+    _id: string | null;
+    kid: string;
+    first_name: string;
+    email: string;
+    company: string;
+    last_name: string;
+  };
+  teams: any[];
+  purpose: string;
+  consumers: any;
+  input_ports: any;
+  output_ports: any;
+  assets: any[];
+  policies: any[];
+  permissions: any[];
+  tags: any[];
+  quality_metrics: any;
+  lifecycle: any;
+  cost: any;
+  discoverability: any;
+  documentation: any;
+  apis: any[];
+  swagger: string;
+  openapi: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DataProductsResponse {
+  data: DataProductSummary[];
+  message: string;
+  total: number;
+}
+
+export interface DataProductsByDomainResponse {
+  data: DataProductSummary[];
+  message: string;
+  total: number;
+}
+
+// New interfaces for APIs
+export interface ApiInfo {
+  domain: string;
+  data_product: string;
+  path: string;
+  method: string;
+  description: string;
+  full_path: string;
+  source: string;
+}
+
+export interface ApiResponse_DataMesh {
+  data: {
+    apis: ApiInfo[];
+    grouped_by_domain: { [key: string]: ApiInfo[] };
+    pagination: {
+      offset: number;
+      limit: number;
+      total: number;
+      has_next: boolean;
+    };
+  };
+  message: string;
+  total: number;
+}
+
+// Health check interface
+export interface DataMeshHealth {
+  platform_status: string;
+  total_domains: number;
+  active_domains: number;
+  domains: string[];
+  timestamp: string;
+}
+
+export interface DataMeshHealthResponse {
+  data: DataMeshHealth;
+  message: string;
+  total: number;
+}
+
+// ...existing interfaces...
 
 export interface LineageNode {
   id: string;
@@ -130,48 +282,349 @@ export class DataMeshServices {
       .pipe(map(response => this.wrapResponse(response)));
   }
 
-  // Domain Catalog
-  getDomains(params?: any): Observable<ApiResponse<Domain[]>> {
-    const url = `${this.baseUrl}/data-mesh/domains`;
+  // Domain Catalog - Updated for new API structure
+  getDomainCatalog(params?: any): Observable<ApiResponse<Domain[]>> {
+    // Since there's no catalog endpoint, we'll get the list of domains and fetch details for each
+    return this.getDomainsList().pipe(
+      map(domainsResponse => {
+        if (domainsResponse.success && domainsResponse.data) {
+          // For now, return basic domain info - in a real implementation, you'd fetch details for each domain
+          const basicDomains: Domain[] = domainsResponse.data.map(domainKey => ({
+            domain_key: domainKey,
+            name: domainKey.charAt(0).toUpperCase() + domainKey.slice(1).replace('_', ' '),
+            display_name: domainKey.charAt(0).toUpperCase() + domainKey.slice(1).replace('_', ' '),
+            status: 'Active',
+            team: 'Unknown Team',
+            owner: 'Unknown Owner',
+            description: `${domainKey} domain services`,
+            metrics: { subscribers: 0, quality_score: '0%' },
+            tags: [],
+            sla: { availability: '0%', freshness: 'Unknown', version: '1.0.0' },
+            data_products: [],
+            contact: { email: '', slack: '', support: '' }
+          }));
+          
+          return {
+            data: basicDomains,
+            total: basicDomains.length,
+            success: true,
+            message: `Retrieved ${basicDomains.length} domains`
+          };
+        }
+        return {
+          data: [],
+          success: false,
+          message: 'Failed to retrieve domain catalog'
+        };
+      })
+    );
+  }
+
+  // Get list of domain names only
+  getDomainsList(): Observable<ApiResponse<string[]>> {
+    const url = `${this.baseUrl}/data-mesh/data-mesh/domains`;
+    return this.http.get<DomainsListResponse>(url)
+      .pipe(map(response => {
+        if (response && response.data) {
+          return {
+            data: response.data,
+            total: response.total,
+            success: true,
+            message: response.message
+          };
+        }
+        return {
+          data: [],
+          success: false,
+          message: 'Failed to retrieve domains list'
+        };
+      }));
+  }
+
+  // Get detailed information about a specific domain
+  getDomainDetails(domainKey: string): Observable<ApiResponse<Domain>> {
+    const url = `${this.baseUrl}/data-mesh/data-mesh/domains/${domainKey}`;
+    return this.http.get<DomainDetailsResponse>(url)
+      .pipe(map(response => {
+        if (response && response.data) {
+          return {
+            data: response.data,
+            success: true,
+            message: response.message
+          };
+        }
+        return {
+          data: null as any,
+          success: false,
+          message: `Failed to retrieve domain ${domainKey}`
+        };
+      }));
+  }
+
+  // Get data products for a specific domain
+  getDomainDataProducts(domainKey: string): Observable<ApiResponse<DataProduct[]>> {
+    const url = `${this.baseUrl}/data-mesh/data-mesh/domains/${domainKey}/data-products`;
+    return this.http.get<{ data: DataProduct[], message: string, total: number }>(url)
+      .pipe(map(response => {
+        if (response && response.data) {
+          return {
+            data: response.data,
+            total: response.total,
+            success: true,
+            message: response.message
+          };
+        }
+        return {
+          data: [],
+          success: false,
+          message: `Failed to get data products for domain ${domainKey}`
+        };
+      }));
+  }
+
+  // Data Products APIs
+  getDataProducts(params?: { size?: number; offset?: number; domain?: string }): Observable<ApiResponse<DataProductSummary[]>> {
+    const url = `${this.baseUrl}/data-mesh/data-mesh/data-products`;
     const httpParams = this.buildHttpParams(params);
-    return this.http.get<Domain[]>(url, { params: httpParams })
-      .pipe(map(response => this.wrapArrayResponse(response)));
+    return this.http.get<DataProductsResponse>(url, { params: httpParams })
+      .pipe(map(response => {
+        if (response && response.data) {
+          return {
+            data: response.data,
+            total: response.total,
+            success: true,
+            message: response.message
+          };
+        }
+        return {
+          data: [],
+          success: false,
+          message: 'Failed to retrieve data products'
+        };
+      }));
   }
 
-  getDomain(id: string): Observable<ApiResponse<Domain>> {
-    const url = `${this.baseUrl}/data-mesh/domain/${id}`;
-    return this.http.get<Domain>(url)
+  // Get data products by domain
+  getDataProductsByDomain(domain: string): Observable<ApiResponse<DataProductSummary[]>> {
+    const url = `${this.baseUrl}/data-mesh/data-mesh/data-products/${domain}`;
+    return this.http.get<DataProductsByDomainResponse>(url)
+      .pipe(map(response => {
+        if (response && response.data) {
+          return {
+            data: response.data,
+            total: response.total,
+            success: true,
+            message: response.message
+          };
+        }
+        return {
+          data: [],
+          success: false,
+          message: `Failed to retrieve data products for domain ${domain}`
+        };
+      }));
+  }
+
+  // Get specific data product details
+  getDataProductDetails(domain: string, id: string): Observable<ApiResponse<DataProductDetail>> {
+    const url = `${this.baseUrl}/data-mesh/data-mesh/data-products/${domain}/${id}`;
+    return this.http.get<DataProductDetail>(url)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
-  createDomain(data: Partial<Domain>): Observable<ApiResponse<Domain>> {
-    const url = `${this.baseUrl}/data-mesh/domain`;
-    return this.http.post<Domain>(url, data)
+  // Get specific data product details by name (for the new hotel endpoint)
+  getDataProductDetailsByName(name: string): Observable<ApiResponse<DataProductDetail>> {
+    const url = `${this.baseUrl}/data-mesh/data-mesh/data-products/${name}`;
+    return this.http.get<DataProductDetail>(url)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
-  updateDomain(id: string, data: Partial<Domain>): Observable<ApiResponse<Domain>> {
-    const url = `${this.baseUrl}/data-mesh/domain/${id}`;
-    return this.http.put<Domain>(url, data)
-      .pipe(map(response => this.wrapResponse(response)));
+  // Get all APIs with pagination and filtering
+  getApis(params?: { 
+    include_dynamic?: boolean; 
+    size?: number; 
+    offset?: number; 
+    domain?: string;
+    search?: string;
+  }): Observable<ApiResponse<ApiResponse_DataMesh['data']>> {
+    const url = `${this.baseUrl}/data-mesh/data-mesh/apis`;
+    const httpParams = this.buildHttpParams(params);
+    return this.http.get<ApiResponse_DataMesh>(url, { params: httpParams })
+      .pipe(map(response => {
+        if (response && response.data) {
+          return {
+            data: response.data,
+            total: response.total,
+            success: true,
+            message: response.message
+          };
+        }
+        return {
+          data: null as any,
+          success: false,
+          message: 'Failed to retrieve APIs'
+        };
+      }));
   }
 
-  deleteDomain(id: string): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/data-mesh/domain/${id}`;
-    return this.http.delete<any>(url)
-      .pipe(map(response => this.wrapResponse(response)));
+  // Health check
+  getDataMeshHealth(): Observable<ApiResponse<DataMeshHealth>> {
+    const url = `${this.baseUrl}/data-mesh/data-mesh/health`;
+    return this.http.get<DataMeshHealthResponse>(url)
+      .pipe(map(response => {
+        if (response && response.data) {
+          return {
+            data: response.data,
+            success: true,
+            message: response.message
+          };
+        }
+        return {
+          data: null as any,
+          success: false,
+          message: 'Failed to retrieve health status'
+        };
+      }));
   }
 
-  getDomainDataProducts(domainId: string): Observable<ApiResponse<any[]>> {
-    const url = `${this.baseUrl}/data-mesh/domain/${domainId}/data-products`;
-    return this.http.get<any[]>(url)
-      .pipe(map(response => this.wrapArrayResponse(response)));
+  // Legacy methods for backward compatibility
+  getDomains(params?: any): Observable<ApiResponse<Domain[]>> {
+    return this.getDomainCatalog(params);
   }
 
-  getDomainMetrics(domainId: string): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/data-mesh/domain/${domainId}/metrics`;
-    return this.http.get<any>(url)
-      .pipe(map(response => this.wrapResponse(response)));
+  getDomain(domainKey: string): Observable<ApiResponse<Domain>> {
+    return this.getDomainDetails(domainKey);
+  }
+
+  getDomainByKey(domainKey: string): Observable<ApiResponse<Domain>> {
+    return this.getDomainDetails(domainKey);
+  }
+
+  // Domain statistics and metrics
+  getDomainMetrics(domainKey: string): Observable<ApiResponse<DomainMetrics>> {
+    return this.getDomainDetails(domainKey).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return {
+            data: response.data.metrics,
+            success: true,
+            message: `Metrics for domain ${domainKey} retrieved`
+          };
+        }
+        return {
+          data: null as any,
+          success: false,
+          message: `Failed to get metrics for domain ${domainKey}`
+        };
+      })
+    );
+  }
+
+  getDomainSLA(domainKey: string): Observable<ApiResponse<DomainSLA>> {
+    return this.getDomainDetails(domainKey).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return {
+            data: response.data.sla,
+            success: true,
+            message: `SLA for domain ${domainKey} retrieved`
+          };
+        }
+        return {
+          data: null as any,
+          success: false,
+          message: `Failed to get SLA for domain ${domainKey}`
+        };
+      })
+    );
+  }
+
+  // Search and filter domains
+  searchDomains(searchTerm: string): Observable<ApiResponse<Domain[]>> {
+    return this.getDomainCatalog().pipe(
+      map(response => {
+        if (response.success && response.data) {
+          const filteredDomains = response.data.filter(domain => 
+            domain.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            domain.display_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            domain.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            domain.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+          );
+          return {
+            data: filteredDomains,
+            success: true,
+            message: `Found ${filteredDomains.length} domains matching "${searchTerm}"`
+          };
+        }
+        return response;
+      })
+    );
+  }
+
+  filterDomainsByStatus(status: string): Observable<ApiResponse<Domain[]>> {
+    return this.getDomainCatalog().pipe(
+      map(response => {
+        if (response.success && response.data) {
+          const filteredDomains = response.data.filter(domain => 
+            domain.status.toLowerCase() === status.toLowerCase()
+          );
+          return {
+            data: filteredDomains,
+            success: true,
+            message: `Found ${filteredDomains.length} domains with status "${status}"`
+          };
+        }
+        return response;
+      })
+    );
+  }
+
+  filterDomainsByTeam(team: string): Observable<ApiResponse<Domain[]>> {
+    return this.getDomainCatalog().pipe(
+      map(response => {
+        if (response.success && response.data) {
+          const filteredDomains = response.data.filter(domain => 
+            domain.team.toLowerCase().includes(team.toLowerCase())
+          );
+          return {
+            data: filteredDomains,
+            success: true,
+            message: `Found ${filteredDomains.length} domains for team "${team}"`
+          };
+        }
+        return response;
+      })
+    );
+  }
+
+  // Search APIs
+  searchApis(searchTerm: string, params?: { include_dynamic?: boolean; size?: number; offset?: number }): Observable<ApiResponse<ApiResponse_DataMesh['data']>> {
+    const searchParams = {
+      ...params,
+      search: searchTerm
+    };
+    return this.getApis(searchParams);
+  }
+
+  // Filter APIs by domain
+  getApisByDomain(domain: string, params?: { include_dynamic?: boolean; size?: number; offset?: number }): Observable<ApiResponse<ApiInfo[]>> {
+    return this.getApis({ ...params, domain }).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          const domainApis = response.data.grouped_by_domain[domain] || [];
+          return {
+            data: domainApis,
+            success: true,
+            message: `Found ${domainApis.length} APIs for domain ${domain}`
+          };
+        }
+        return {
+          data: [],
+          success: false,
+          message: `Failed to get APIs for domain ${domain}`
+        };
+      })
+    );
   }
 
   // Data Lineage
