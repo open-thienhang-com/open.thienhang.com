@@ -1,0 +1,149 @@
+<!-- Marketplace Page for Hotel Owners -->
+<div class="marketplace-container">
+  <!-- Header Section -->
+  <div class="marketplace-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <i class="pi pi-store"></i>
+        {{ t('marketplace.title') }}
+      </h1>
+      <p class="page-subtitle">
+        {{ t('marketplace.subtitle') }}
+      </p>
+    </div>
+    
+    <!-- Search and Filters -->
+    <div class="marketplace-filters">
+      <div class="search-container">
+        <span class="p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input 
+            type="text" 
+            pInputText 
+            [(ngModel)]="searchQuery" 
+            placeholder="{{ t('marketplace.search') }}"
+            class="search-input">
+        </span>
+      </div>
+      
+      <div class="domain-filter">
+        <p-dropdown 
+          [options]="domainOptions" 
+          [(ngModel)]="selectedDomain" 
+          placeholder="Filter by domain"
+          [showClear]="true"
+          (onChange)="onDomainChange()"
+          styleClass="domain-dropdown">
+        </p-dropdown>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-spinner">
+      <i class="pi pi-spinner pi-spin"></i>
+      <p>{{ t('marketplace.loading') }}</p>
+    </div>
+  </div>
+
+  <!-- Products Grid -->
+  <div *ngIf="!loading" class="products-grid">
+    <div *ngFor="let product of getFilteredProducts()" class="product-card">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="product-header">
+            <div class="domain-badge" [ngClass]="getDomainColor(product.domain)">
+              <i [class]="getDomainIcon(product.domain)"></i>
+            </div>
+            <div class="product-status">
+              <p-badge value="Active" severity="success"></p-badge>
+            </div>
+          </div>
+        </ng-template>
+        
+        <ng-template pTemplate="content">
+          <div class="product-content">
+            <h3 class="product-name">{{ product.name }}</h3>
+            <p class="product-description">{{ product.description }}</p>
+            
+            <div class="product-meta">
+              <div class="meta-item">
+                <i class="pi pi-tag"></i>
+                <span>{{ getDomainLabel(product.domain) }}</span>
+              </div>
+              <div class="meta-item" *ngIf="product.owner">
+                <i class="pi pi-user"></i>
+                <span>{{ product.owner }}</span>
+              </div>
+            </div>
+            
+            <!-- Features Preview -->
+            <div class="features-preview">
+              <h4>{{ t('marketplace.features') }}</h4>
+              <div class="features-list">
+                <div class="feature-item" *ngFor="let feature of getDomainFeatures(product.domain)">
+                  <i class="pi pi-check-circle"></i>
+                  <span>{{ feature }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+        
+        <ng-template pTemplate="footer">
+          <div class="product-actions">
+            <p-button 
+              label="{{ t('marketplace.viewDetails') }}" 
+              icon="pi pi-eye" 
+              severity="info"
+              [outlined]="true"
+              (click)="openProductDetail(product)"
+              class="action-btn">
+            </p-button>
+            
+            <p-button 
+              label="{{ t('marketplace.getStarted') }}" 
+              icon="pi pi-play" 
+              severity="primary"
+              (click)="openProductDetail(product)"
+              class="primary-btn">
+            </p-button>
+          </div>
+        </ng-template>
+      </p-card>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && getFilteredProducts().length === 0" class="empty-state">
+    <div class="empty-content">
+      <i class="pi pi-search"></i>
+      <h3>{{ t('marketplace.noResults') }}</h3>
+      <p>{{ t('marketplace.noResultsDesc') }}</p>
+    </div>
+  </div>
+
+<!-- Product Detail Modal -->
+<p-dialog 
+  [(visible)]="showProductDetail" 
+  [modal]="true" 
+  [closable]="true"
+  [dismissableMask]="true"
+  styleClass="product-detail-modal"
+  [style]="{ width: '90vw', maxWidth: '1200px' }">
+  
+  <ng-template pTemplate="header">
+    <div class="modal-header">
+      <h2>{{ selectedProduct?.name }}</h2>
+      <p-badge [value]="getDomainLabel(selectedProduct?.domain || '')" severity="success"></p-badge>
+    </div>
+  </ng-template>
+  
+  <app-data-prod-detail 
+    *ngIf="selectedProduct"
+    [product]="selectedProduct"
+    (onClose)="closeProductDetail()"
+    (onSubscribe)="onSubscribe($event)"
+    (onUnsubscribe)="onUnsubscribe($event)">
+  </app-data-prod-detail>
+</p-dialog>

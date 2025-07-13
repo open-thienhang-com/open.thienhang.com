@@ -36,6 +36,7 @@ import { ApisExplorerComponent } from './features/explore/apis/apis-explorer.com
 import { MaintenanceComponent } from './pages/error/maintenance/maintenance.component';
 import { ForbiddenComponent } from './pages/error/forbidden/forbidden.component';
 import { NotFoundComponent } from './pages/error/not-found/not-found.component';
+import { MarketplaceComponent } from './features/marketplace/marketplace.component';
 
 // Data Mesh Components
 import { DomainCatalogComponent as DataMeshDomainCatalogComponent } from './features/data-mesh/domain-catalog/domain-catalog.component';
@@ -244,6 +245,10 @@ export const routes: Routes = [
       {
         path: 'loading-demo',
         component: LoadingDemoComponent,
+      },
+      {
+        path: 'marketplace',
+        component: MarketplaceComponent,
       },
       {
         path: '',

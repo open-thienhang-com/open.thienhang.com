@@ -1,4 +1,3 @@
-
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {Component, computed, effect, EventEmitter, inject, Output, PLATFORM_ID, signal} from '@angular/core';
@@ -12,7 +11,7 @@ import { SelectButtonModule } from 'primeng/selectbutton';
 import { StyleClassModule } from 'primeng/styleclass';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { LanguageSelectorComponent } from '../../../shared/component/language-selector/language-selector.component';
+import { I18nService } from '../../../core/services/i18n.service';
 
 const presets = {
   Aura,
@@ -29,7 +28,7 @@ export interface ThemeState {
 }
 @Component({
   selector: 'app-header',
-  imports: [CommonModule, FormsModule, StyleClassModule, SelectButtonModule, ToggleSwitchModule, LanguageSelectorComponent],
+  imports: [CommonModule, FormsModule, StyleClassModule, SelectButtonModule, ToggleSwitchModule],
     templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
@@ -48,6 +47,10 @@ export class HeaderComponent {
   platformId = inject(PLATFORM_ID);
 
   config: PrimeNG = inject(PrimeNG);
+
+  i18nService = inject(I18nService);
+
+  currentLanguage = computed(() => this.i18nService.getCurrentLanguage());
 
   themeState = signal<ThemeState>(null);
 
@@ -530,5 +533,9 @@ export class HeaderComponent {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(state));
     }
+  }
+
+  changeLanguage(lang: string): void {
+    this.i18nService.setLanguage(lang);
   }
 }

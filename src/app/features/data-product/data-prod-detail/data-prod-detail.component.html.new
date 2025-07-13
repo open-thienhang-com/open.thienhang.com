@@ -1,4 +1,4 @@
-<!-- Redesigned Data Product Detail Page -->
+<!-- Hotel Data Product Detail - Modern Layout -->
 <div class="hotel-data-product-detail">
   <!-- Header Section -->
   <div class="product-header">
@@ -14,7 +14,7 @@
           <div class="breadcrumb">
             <span class="domain-label">{{ getDomainLabel(dataProduct.domain || product.domain) }}</span>
             <i class="pi pi-chevron-right"></i>
-            <span class="product-type">{{ (dataProduct.domain || product.domain) === 'hotel' ? 'Hotel Data Product' : 'Data Product' }}</span>
+            <span class="product-type">Hotel Data Product</span>
           </div>
           
           <h1 class="product-title">{{ dataProduct.name || product.name }}</h1>
@@ -35,7 +35,7 @@
       
       <div class="header-actions">
         <p-button 
-          [label]="t('hotel.dataProduct.actions.downloadSchema')"
+          label="Download Schema"
           icon="pi pi-download" 
           severity="secondary" 
           [outlined]="true"
@@ -44,16 +44,7 @@
         </p-button>
         
         <p-button 
-          [label]="t('hotel.dataProduct.actions.assets')"
-          icon="pi pi-box" 
-          severity="info"
-          [outlined]="true"
-          (click)="viewAssets()"
-          class="action-btn">
-        </p-button>
-        
-        <p-button 
-          [label]="t('hotel.dataProduct.actions.viewSwagger')"
+          label="View Swagger"
           icon="pi pi-code" 
           severity="info"
           [outlined]="true"
@@ -62,22 +53,12 @@
         </p-button>
         
         <p-button 
-          [label]="isSubscribed ? t('hotel.dataProduct.actions.unsubscribe') : t('hotel.dataProduct.actions.subscribe')" 
+          [label]="isSubscribed ? 'Unsubscribe' : 'Subscribe'" 
           [icon]="isSubscribed ? 'pi pi-minus' : 'pi pi-plus'"
           [severity]="isSubscribed ? 'danger' : 'success'"
           [outlined]="isSubscribed"
           (click)="toggleSubscription()"
           class="subscribe-btn">
-        </p-button>
-
-        <!-- Demo Button -->
-        <p-button 
-          [label]="t('hotel.dataProduct.actions.demo')"
-          icon="pi pi-play" 
-          severity="primary" 
-          [outlined]="true" 
-          (click)="startDemo()" 
-          class="action-btn">
         </p-button>
       </div>
     </div>
@@ -173,12 +154,11 @@
       </p-tabPanel>
 
       <!-- API Documentation Tab -->
-      <p-tabPanel header="API Documentation" leftIcon="pi pi-code" *ngIf="(dataProduct.domain || product.domain) === 'hotel'">
+      <p-tabPanel header="API Documentation" leftIcon="pi pi-code">
         <div class="api-documentation">
           <div class="api-header">
             <h3>Hotel Management API</h3>
             <p>Comprehensive API for hotel management operations</p>
-            <p-button label="Access Swagger" icon="pi pi-external-link" severity="info" (click)="openSwagger()"></p-button>
           </div>
 
           <!-- API Endpoints by Category -->
@@ -446,358 +426,79 @@
         </div>
       </p-tabPanel>
 
-      <!-- Room Management Tab -->
-      <p-tabPanel header="Room Management" leftIcon="pi pi-home" *ngIf="(dataProduct.domain || product.domain) === 'hotel'">
-        <div class="demo-section">
-          <div class="demo-header">
-            <h3>Room Management</h3>
-            <p>Manage hotel rooms and occupancy rates</p>
+      <!-- Schema Tab -->
+      <p-tabPanel header="Schema" leftIcon="pi pi-database">
+        <div class="schema-section">
+          <div class="schema-header">
+            <h3>Database Schema</h3>
+            <p-button 
+              label="Download Schema"
+              icon="pi pi-download" 
+              severity="secondary"
+              (click)="downloadSchema()">
+            </p-button>
           </div>
 
-          <div class="room-types-grid">
-            <div class="room-type-card">
-              <img src="assets/images/room-standard.jpg" alt="Standard Room" class="room-image" 
-                   onerror="this.src='assets/images/room-placeholder.svg'">
-              <div class="room-type-info">
-                <h5>{{ t('hotel.dataProduct.roomTypes.standard') }}</h5>
-                <p>{{ t('hotel.dataProduct.roomTypes.standardDesc') }}</p>
-                <div class="room-stats">
-                  <span><i class="pi pi-users"></i> 2 guests</span>
-                  <span><i class="pi pi-dollar"></i> $120/night</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="room-type-card">
-              <img src="assets/images/room-deluxe.jpg" alt="Deluxe Room" class="room-image"
-                   onerror="this.src='assets/images/room-placeholder.svg'">
-              <div class="room-type-info">
-                <h5>{{ t('hotel.dataProduct.roomTypes.deluxe') }}</h5>
-                <p>{{ t('hotel.dataProduct.roomTypes.deluxeDesc') }}</p>
-                <div class="room-stats">
-                  <span><i class="pi pi-users"></i> 4 guests</span>
-                  <span><i class="pi pi-dollar"></i> $200/night</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="room-type-card">
-              <img src="assets/images/room-suite.jpg" alt="Suite Room" class="room-image"
-                   onerror="this.src='assets/images/room-placeholder.svg'">
-              <div class="room-type-info">
-                <h5>{{ t('hotel.dataProduct.roomTypes.suite') }}</h5>
-                <p>{{ t('hotel.dataProduct.roomTypes.suiteDesc') }}</p>
-                <div class="room-stats">
-                  <span><i class="pi pi-users"></i> 6 guests</span>
-                  <span><i class="pi pi-dollar"></i> $350/night</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </p-tabPanel>
-
-      <!-- Asset Management Tab -->
-      <p-tabPanel header="Asset Management" leftIcon="pi pi-box" *ngIf="(dataProduct.domain || product.domain) === 'hotel'">
-        <div class="demo-section">
-          <div class="demo-header">
-            <h3>Asset Management</h3>
-            <p>Track and manage hotel assets</p>
-          </div>
-
-          <div class="assets-grid">
-            <div class="asset-category">
-              <div class="asset-category-header">
-                <i class="pi pi-cog"></i>
-                <h4>{{ t('hotel.dataProduct.assets.equipment.title') }}</h4>
-              </div>
-              <div class="asset-items">
-                <div class="asset-item">
-                  <i class="pi pi-desktop"></i>
-                  <span>{{ t('hotel.dataProduct.assets.equipment.computers') }}</span>
-                  <p-badge value="45" severity="info"></p-badge>
-                </div>
-                <div class="asset-item">
-                  <i class="pi pi-phone"></i>
-                  <span>{{ t('hotel.dataProduct.assets.equipment.phones') }}</span>
-                  <p-badge value="120" severity="info"></p-badge>
-                </div>
-                <div class="asset-item">
-                  <i class="pi pi-video"></i>
-                  <span>{{ t('hotel.dataProduct.assets.equipment.tvs') }}</span>
-                  <p-badge value="180" severity="info"></p-badge>
-                </div>
-              </div>
-            </div>
-
-            <div class="asset-category">
-              <div class="asset-category-header">
-                <i class="pi pi-home"></i>
-                <h4>{{ t('hotel.dataProduct.assets.furniture.title') }}</h4>
-              </div>
-              <div class="asset-items">
-                <div class="asset-item">
-                  <i class="pi pi-stop"></i>
-                  <span>{{ t('hotel.dataProduct.assets.furniture.beds') }}</span>
-                  <p-badge value="200" severity="success"></p-badge>
-                </div>
-                <div class="asset-item">
-                  <i class="pi pi-table"></i>
-                  <span>{{ t('hotel.dataProduct.assets.furniture.tables') }}</span>
-                  <p-badge value="150" severity="success"></p-badge>
-                </div>
-                <div class="asset-item">
-                  <i class="pi pi-bookmark"></i>
-                  <span>{{ t('hotel.dataProduct.assets.furniture.chairs') }}</span>
-                  <p-badge value="400" severity="success"></p-badge>
-                </div>
-              </div>
-            </div>
-
-            <div class="asset-category">
-              <div class="asset-category-header">
-                <i class="pi pi-wrench"></i>
-                <h4>{{ t('hotel.dataProduct.assets.maintenance.title') }}</h4>
-              </div>
-              <div class="asset-items">
-                <div class="asset-item">
-                  <i class="pi pi-check-circle"></i>
-                  <span>{{ t('hotel.dataProduct.assets.maintenance.scheduled') }}</span>
-                  <p-badge value="12" severity="warning"></p-badge>
-                </div>
-                <div class="asset-item">
-                  <i class="pi pi-exclamation-triangle"></i>
-                  <span>{{ t('hotel.dataProduct.assets.maintenance.pending') }}</span>
-                  <p-badge value="3" severity="danger"></p-badge>
-                </div>
-                <div class="asset-item">
-                  <i class="pi pi-thumbs-up"></i>
-                  <span>{{ t('hotel.dataProduct.assets.maintenance.completed') }}</span>
-                  <p-badge value="89" severity="success"></p-badge>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </p-tabPanel>
-
-      <!-- Booking Management Tab -->
-      <p-tabPanel header="Booking Management" leftIcon="pi pi-calendar" *ngIf="(dataProduct.domain || product.domain) === 'hotel'">
-        <div class="demo-section">
-          <div class="demo-header">
-            <h3>Booking Management</h3>
-            <p>Manage bookings and reservations</p>
-          </div>
-
-          <div class="booking-overview">
-            <div class="booking-stats">
-              <div class="booking-stat">
-                <i class="pi pi-calendar-plus"></i>
+          <div class="schema-overview">
+            <div class="schema-stats">
+              <div class="schema-stat">
+                <i class="pi pi-table"></i>
                 <div class="stat-content">
-                  <div class="stat-value">1,250</div>
-                  <div class="stat-label">{{ t('hotel.dataProduct.bookings.stats.total') }}</div>
+                  <div class="stat-value">{{ (dataProduct.schema?.tables || product.schema?.tables) || 6 }}</div>
+                  <div class="stat-label">Tables</div>
                 </div>
               </div>
-              <div class="booking-stat">
-                <i class="pi pi-check-circle"></i>
+              
+              <div class="schema-stat">
+                <i class="pi pi-sitemap"></i>
                 <div class="stat-content">
-                  <div class="stat-value">1,180</div>
-                  <div class="stat-label">{{ t('hotel.dataProduct.bookings.stats.confirmed') }}</div>
+                  <div class="stat-value">{{ (dataProduct.schema?.columns || product.schema?.columns) || 48 }}</div>
+                  <div class="stat-label">Columns</div>
                 </div>
               </div>
-              <div class="booking-stat">
-                <i class="pi pi-clock"></i>
+              
+              <div class="schema-stat">
+                <i class="pi pi-link"></i>
                 <div class="stat-content">
-                  <div class="stat-value">45</div>
-                  <div class="stat-label">{{ t('hotel.dataProduct.bookings.stats.pending') }}</div>
-                </div>
-              </div>
-              <div class="booking-stat">
-                <i class="pi pi-times-circle"></i>
-                <div class="stat-content">
-                  <div class="stat-value">25</div>
-                  <div class="stat-label">{{ t('hotel.dataProduct.bookings.stats.cancelled') }}</div>
+                  <div class="stat-value">{{ (dataProduct.schema?.relationships || product.schema?.relationships) || 12 }}</div>
+                  <div class="stat-label">Relationships</div>
                 </div>
               </div>
             </div>
 
-            <div class="booking-channels">
-              <h4>{{ t('hotel.dataProduct.bookings.channels.title') }}</h4>
-              <div class="channels-grid">
-                <div class="channel-card">
-                  <i class="pi pi-globe"></i>
-                  <h5>{{ t('hotel.dataProduct.bookings.channels.direct') }}</h5>
-                  <div class="channel-stats">
-                    <span class="bookings-count">650</span>
-                    <span class="percentage">52%</span>
-                  </div>
+            <!-- Schema Tables -->
+            <div class="schema-tables">
+              <h4>Database Tables</h4>
+              <div class="tables-grid">
+                <div class="table-card">
+                  <i class="pi pi-building"></i>
+                  <h5>apartments</h5>
+                  <p>Apartment information and details</p>
                 </div>
-                <div class="channel-card">
-                  <i class="pi pi-tablet"></i>
-                  <h5>{{ t('hotel.dataProduct.bookings.channels.ota') }}</h5>
-                  <div class="channel-stats">
-                    <span class="bookings-count">400</span>
-                    <span class="percentage">32%</span>
-                  </div>
+                <div class="table-card">
+                  <i class="pi pi-home"></i>
+                  <h5>rooms</h5>
+                  <p>Room data and availability</p>
                 </div>
-                <div class="channel-card">
-                  <i class="pi pi-phone"></i>
-                  <h5>{{ t('hotel.dataProduct.bookings.channels.phone') }}</h5>
-                  <div class="channel-stats">
-                    <span class="bookings-count">200</span>
-                    <span class="percentage">16%</span>
-                  </div>
+                <div class="table-card">
+                  <i class="pi pi-calendar"></i>
+                  <h5>bookings</h5>
+                  <p>Booking records and history</p>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </p-tabPanel>
-
-      <!-- Customer Management Tab -->
-      <p-tabPanel header="Customer Management" leftIcon="pi pi-users" *ngIf="(dataProduct.domain || product.domain) === 'hotel'">
-        <div class="demo-section">
-          <div class="demo-header">
-            <h3>Customer Management</h3>
-            <p>Analyze and manage customer data</p>
-          </div>
-
-          <div class="customer-overview">
-            <div class="customer-stats">
-              <div class="customer-stat">
-                <i class="pi pi-users"></i>
-                <div class="stat-content">
-                  <div class="stat-value">15,430</div>
-                  <div class="stat-label">{{ t('hotel.dataProduct.customers.stats.total') }}</div>
+                <div class="table-card">
+                  <i class="pi pi-star"></i>
+                  <h5>ratings</h5>
+                  <p>User ratings and scores</p>
                 </div>
-              </div>
-              <div class="customer-stat">
-                <i class="pi pi-user-plus"></i>
-                <div class="stat-content">
-                  <div class="stat-value">1,250</div>
-                  <div class="stat-label">{{ t('hotel.dataProduct.customers.stats.newThisMonth') }}</div>
+                <div class="table-card">
+                  <i class="pi pi-comments"></i>
+                  <h5>reviews</h5>
+                  <p>Customer reviews and feedback</p>
                 </div>
-              </div>
-              <div class="customer-stat">
-                <i class="pi pi-heart"></i>
-                <div class="stat-content">
-                  <div class="stat-value">8,950</div>
-                  <div class="stat-label">{{ t('hotel.dataProduct.customers.stats.loyal') }}</div>
-                </div>
-              </div>
-              <div class="customer-stat">
-                <i class="pi pi-star"></i>
-                <div class="stat-content">
-                  <div class="stat-value">4.7</div>
-                  <div class="stat-label">{{ t('hotel.dataProduct.customers.stats.satisfaction') }}</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="customer-segments">
-              <h4>{{ t('hotel.dataProduct.customers.segments.title') }}</h4>
-              <div class="segments-grid">
-                <div class="segment-card">
-                  <i class="pi pi-briefcase"></i>
-                  <h5>{{ t('hotel.dataProduct.customers.segments.business') }}</h5>
-                  <div class="segment-stats">
-                    <span class="percentage">35%</span>
-                    <span class="count">5,400 customers</span>
-                  </div>
-                </div>
-                <div class="segment-card">
-                  <i class="pi pi-sun"></i>
-                  <h5>{{ t('hotel.dataProduct.customers.segments.leisure') }}</h5>
-                  <div class="segment-stats">
-                    <span class="percentage">50%</span>
-                    <span class="count">7,715 customers</span>
-                  </div>
-                </div>
-                <div class="segment-card">
+                <div class="table-card">
                   <i class="pi pi-users"></i>
-                  <h5>{{ t('hotel.dataProduct.customers.segments.group') }}</h5>
-                  <div class="segment-stats">
-                    <span class="percentage">15%</span>
-                    <span class="count">2,315 customers</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </p-tabPanel>
-
-      <!-- Online Booking Channels Tab -->
-      <p-tabPanel header="Online Booking Channels" leftIcon="pi pi-share-alt" *ngIf="(dataProduct.domain || product.domain) === 'hotel'">
-        <div class="demo-section">
-          <div class="demo-header">
-            <h3>Online Booking Channels</h3>
-            <p>Integrate with online booking platforms</p>
-          </div>
-
-          <div class="online-channels">
-            <div class="channel-platform facebook">
-              <div class="platform-header">
-                <i class="pi pi-facebook"></i>
-                <h4>{{ t('hotel.dataProduct.onlineChannels.facebook.title') }}</h4>
-                <p-badge value="Active" severity="success"></p-badge>
-              </div>
-              <div class="platform-stats">
-                <div class="stat">
-                  <span class="stat-value">2,450</span>
-                  <span class="stat-label">{{ t('hotel.dataProduct.onlineChannels.facebook.followers') }}</span>
-                </div>
-                <div class="stat">
-                  <span class="stat-value">185</span>
-                  <span class="stat-label">{{ t('hotel.dataProduct.onlineChannels.facebook.bookings') }}</span>
-                </div>
-                <div class="stat">
-                  <span class="stat-value">4.6</span>
-                  <span class="stat-label">{{ t('hotel.dataProduct.onlineChannels.facebook.rating') }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="channel-platform zalo">
-              <div class="platform-header">
-                <i class="pi pi-comments"></i>
-                <h4>{{ t('hotel.dataProduct.onlineChannels.zalo.title') }}</h4>
-                <p-badge value="Active" severity="success"></p-badge>
-              </div>
-              <div class="platform-stats">
-                <div class="stat">
-                  <span class="stat-value">1,850</span>
-                  <span class="stat-label">{{ t('hotel.dataProduct.onlineChannels.zalo.followers') }}</span>
-                </div>
-                <div class="stat">
-                  <span class="stat-value">120</span>
-                  <span class="stat-label">{{ t('hotel.dataProduct.onlineChannels.zalo.bookings') }}</span>
-                </div>
-                <div class="stat">
-                  <span class="stat-value">4.5</span>
-                  <span class="stat-label">{{ t('hotel.dataProduct.onlineChannels.zalo.rating') }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="channel-platform google">
-              <div class="platform-header">
-                <i class="pi pi-google"></i>
-                <h4>{{ t('hotel.dataProduct.onlineChannels.google.title') }}</h4>
-                <p-badge value="Active" severity="success"></p-badge>
-              </div>
-              <div class="platform-stats">
-                <div class="stat">
-                  <span class="stat-value">450</span>
-                  <span class="stat-label">{{ t('hotel.dataProduct.onlineChannels.google.reviews') }}</span>
-                </div>
-                <div class="stat">
-                  <span class="stat-value">320</span>
-                  <span class="stat-label">{{ t('hotel.dataProduct.onlineChannels.google.bookings') }}</span>
-                </div>
-                <div class="stat">
-                  <span class="stat-value">4.8</span>
-                  <span class="stat-label">{{ t('hotel.dataProduct.onlineChannels.google.rating') }}</span>
+                  <h5>users</h5>
+                  <p>User account information</p>
                 </div>
               </div>
             </div>
@@ -806,7 +507,7 @@
       </p-tabPanel>
 
       <!-- Swagger Documentation Tab -->
-      <p-tabPanel header="Swagger" leftIcon="pi pi-code">
+      <p-tabPanel header="Swagger Documentation" leftIcon="pi pi-file-code">
         <div class="swagger-section">
           <div class="swagger-header">
             <h3>API Documentation</h3>

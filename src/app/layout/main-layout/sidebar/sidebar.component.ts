@@ -97,7 +97,7 @@ export class SidebarComponent {
       },
       {
         label: 'Marketplace',
-        icon: 'pi pi-shopping-cart',
+        icon: 'pi pi-store',
         url: '/marketplace',
         highlighted: true,
         info: {
@@ -582,75 +582,6 @@ export class SidebarComponent {
             'Set up alerts for critical metrics',
             'Regular monitoring prevents issues',
             'Use audit logs for compliance'
-          ]
-        }
-      },
-      {
-        label: 'separator',
-        type: 'separator'
-      },
-      {
-        label: 'Settings',
-        icon: 'pi pi-cog',
-        children: [
-          { 
-            label: 'Profile', 
-            icon: 'pi pi-user', 
-            url: '/profile',
-            info: {
-              title: 'User Profile',
-              description: 'Manage your personal profile, preferences, and account settings.',
-              features: [
-                'Personal Information - Update your profile details',
-                'Preferences - Customize your experience',
-                'Security Settings - Manage account security',
-                'Notification Settings - Configure alerts and notifications'
-              ],
-              usage: 'Customize your account and preferences for a personalized experience.',
-              tips: [
-                'Keep your profile information current',
-                'Review security settings regularly',
-                'Customize notifications to reduce noise'
-              ]
-            }
-          },
-          { 
-            label: 'Preferences', 
-            icon: 'pi pi-sliders-h', 
-            url: '/settings',
-            info: {
-              title: 'System Preferences',
-              description: 'Configure system-wide settings and preferences for your organization.',
-              features: [
-                'Theme Settings - Customize the interface theme',
-                'Language Settings - Change interface language',
-                'Default Settings - Set system defaults',
-                'Integration Settings - Configure external integrations'
-              ],
-              usage: 'Configure system preferences and default settings.',
-              tips: [
-                'Set themes that work well for your team',
-                'Configure defaults to speed up common tasks',
-                'Test integration settings before deploying'
-              ]
-            }
-          }
-        ],
-        expanded: false,
-        info: {
-          title: 'System Settings',
-          description: 'Configure personal preferences and system settings.',
-          features: [
-            'User Profile - Manage your profile settings',
-            'Preferences - Customize your experience',
-            'Security - Configure security settings',
-            'Notifications - Manage notification preferences'
-          ],
-          usage: 'Customize your account settings and system preferences.',
-          tips: [
-            'Keep your profile updated',
-            'Review security settings regularly',
-            'Customize notifications to reduce noise'
           ]
         }
       }
