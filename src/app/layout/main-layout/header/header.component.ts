@@ -12,6 +12,7 @@ import { SelectButtonModule } from 'primeng/selectbutton';
 import { StyleClassModule } from 'primeng/styleclass';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { LanguageSelectorComponent } from '../../../shared/component/language-selector/language-selector.component';
 
 const presets = {
   Aura,
@@ -28,7 +29,7 @@ export interface ThemeState {
 }
 @Component({
   selector: 'app-header',
-  imports: [CommonModule, FormsModule, StyleClassModule, SelectButtonModule, ToggleSwitchModule],
+  imports: [CommonModule, FormsModule, StyleClassModule, SelectButtonModule, ToggleSwitchModule, LanguageSelectorComponent],
     templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })

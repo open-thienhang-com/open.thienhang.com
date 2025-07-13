@@ -71,6 +71,31 @@ export class SidebarComponent {
         }
       },
       {
+        label: 'Explore',
+        icon: 'pi pi-compass',
+        url: '/explore',
+        info: {
+          title: 'Data Discovery & Exploration',
+          description: 'Discover and explore data products, schemas, and relationships across your organization.',
+          features: [
+            'Data Catalog - Browse comprehensive data inventory',
+            'Advanced Search - Find data using smart filters and keywords',
+            'Schema Explorer - Examine data structures and relationships',
+            'Data Preview - Sample and preview data before consuming',
+            'Lineage Discovery - Understand data flow and dependencies',
+            'Usage Analytics - See how data is being used across teams'
+          ],
+          usage: 'Your starting point for data discovery - find, explore, and understand data before using it.',
+          tips: [
+            'Use advanced filters to narrow down your search results',
+            'Preview data samples to understand structure and quality',
+            'Check data lineage to understand dependencies',
+            'Bookmark frequently used datasets for quick access',
+            'Use the schema explorer to understand data relationships'
+          ]
+        }
+      },
+      {
         label: 'Marketplace',
         icon: 'pi pi-shopping-cart',
         url: '/marketplace',

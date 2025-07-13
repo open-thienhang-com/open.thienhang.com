@@ -1,36 +1,156 @@
 import { Component, Injector, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AppBaseComponent } from '../../core/base/app-base.component';
 import { ProfileServices } from '../../core/services/profile.services';
+import { UserService } from '../../core/services/user.service';
+import { I18nService } from '../../core/services/i18n.service';
+import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { AvatarModule } from 'primeng/avatar';
 import { BadgeModule } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
+import { TableModule } from 'primeng/table';
+import { InputTextModule } from 'primeng/inputtext';
+import { DropdownModule } from 'primeng/dropdown';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
+import { CardModule } from 'primeng/card';
+import { DividerModule } from 'primeng/divider';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
+    TranslatePipe,
     AvatarModule,
     BadgeModule,
-    ButtonModule
+    ButtonModule,
+    TableModule,
+    InputTextModule,
+    DropdownModule,
+    TagModule,
+    TooltipModule,
+    CardModule,
+    DividerModule
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
 })
 export class ProfileComponent extends AppBaseComponent implements OnInit {
   profile: any = {};
+  allUsers: any[] = [];
+  filteredUsers: any[] = [];
   currentDate = new Date();
+  loading = false;
+  userSearchText = '';
+  
+  // Table columns for users
+  userColumns = [
+    { field: 'full_name', header: 'profile.users.fullName' },
+    { field: 'email', header: 'profile.users.email' },
+    { field: 'role', header: 'profile.users.role' },
+    { field: 'is_active', header: 'profile.users.status' },
+    { field: 'created_at', header: 'profile.users.joinedDate' }
+  ];
 
-  constructor(private injector: Injector, private dataProdServices: ProfileServices) {
+  constructor(
+    private injector: Injector, 
+    private dataProdServices: ProfileServices,
+    private userService: UserService,
+    public i18nService: I18nService
+  ) {
     super(injector);
   }
 
   ngOnInit() {
-    this.dataProdServices.getProfile().subscribe(res => {
-      this.profile = res.data;
-      console.log(this.profile);
-    })
+    this.loadProfileData();
+  }
+
+  loadProfileData() {
+    this.loading = true;
+    
+    // Load both current user profile and all users
+    forkJoin({
+      profile: this.dataProdServices.getProfile(),
+      users: this.userService.getAllUsers()
+    }).subscribe({
+      next: (responses) => {
+        this.profile = responses.profile.data;
+        this.allUsers = responses.users.data || [];
+        this.filteredUsers = [...this.allUsers];
+        this.loading = false;
+        console.log('Profile loaded:', this.profile);
+        console.log('All users loaded:', this.allUsers);
+      },
+      error: (error) => {
+        console.error('Error loading profile data:', error);
+        this.loading = false;
+      }
+    });
+  }
+
+  // Filter users based on search text
+  filterUsers() {
+    if (!this.userSearchText) {
+      this.filteredUsers = [...this.allUsers];
+      return;
+    }
+    
+    const searchTerm = this.userSearchText.toLowerCase();
+    this.filteredUsers = this.allUsers.filter(user => 
+      user.full_name?.toLowerCase().includes(searchTerm) ||
+      user.email?.toLowerCase().includes(searchTerm) ||
+      user.role?.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  // Get user avatar initials
+  getUserInitials(user: any): string {
+    if (!user?.full_name) return 'U';
+    return user.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  // Get user status for display
+  getUserStatus(user: any): string {
+    return user.is_active ? 'profile.users.active' : 'profile.users.inactive';
+  }
+
+  // Get user status severity for styling
+  getUserStatusSeverity(user: any): string {
+    return user.is_active ? 'success' : 'danger';
+  }
+
+  // Get role display text
+  getRoleDisplayText(role: string): string {
+    const roleMap: { [key: string]: string } = {
+      'admin': 'profile.roles.admin',
+      'manager': 'profile.roles.manager',
+      'analyst': 'profile.roles.analyst',
+      'viewer': 'profile.roles.viewer',
+      'user': 'profile.roles.user'
+    };
+    return roleMap[role] || 'profile.roles.user';
+  }
+
+  // Get role severity for styling
+  getRoleSeverity(role: string): string {
+    const severityMap: { [key: string]: string } = {
+      'admin': 'danger',
+      'manager': 'warning',
+      'analyst': 'info',
+      'viewer': 'success',
+      'user': 'secondary'
+    };
+    return severityMap[role] || 'secondary';
+  }
+
+  // Format date for display
+  formatDate(dateString: string): string {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString();
   }
 
   terminateSession(sessionId: string) {
@@ -56,6 +176,10 @@ export class ProfileComponent extends AppBaseComponent implements OnInit {
   downloadData() {
     console.log('Download data clicked');
     // Add download data logic here
+  }
+
+  refreshData() {
+    this.loadProfileData();
   }
 
   formatRemainingTime(seconds: number): string {
@@ -107,16 +231,6 @@ export class ProfileComponent extends AppBaseComponent implements OnInit {
       case 'active': return 'success';
       case 'inactive': return 'danger';
       case 'pending': return 'warning';
-      default: return 'secondary';
-    }
-  }
-
-  getRoleSeverity(role: string): string {
-    switch (role) {
-      case 'admin': return 'danger';
-      case 'manager': return 'warning';
-      case 'analyst': return 'info';
-      case 'user': return 'success';
       default: return 'secondary';
     }
   }

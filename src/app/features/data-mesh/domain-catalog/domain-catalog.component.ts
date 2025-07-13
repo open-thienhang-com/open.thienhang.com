@@ -4,7 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DataMeshServices, Domain } from '../../../core/services/data-mesh.services';
 import { LoadingService } from '../../../core/services/loading.service';
+import { I18nService } from '../../../core/services/i18n.service';
 import { LoadingComponent } from '../../../shared/component/loading/loading.component';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { MessageService } from 'primeng/api';
 
 // PrimeNG imports
@@ -32,6 +34,7 @@ import { DividerModule } from 'primeng/divider';
     CommonModule,
     FormsModule,
     LoadingComponent,
+    TranslatePipe,
     ButtonModule,
     CardModule,
     TagModule,
@@ -65,14 +68,10 @@ export class DomainCatalogComponent implements OnInit {
   };
 
   viewMode: 'grid' | 'list' = 'grid';
+  lastUpdated = new Date();
 
   // Filter options
-  statusOptions = [
-    { label: 'All Status', value: '' },
-    { label: 'Active', value: 'Active' },
-    { label: 'Inactive', value: 'Inactive' }
-  ];
-
+  statusOptions: any[] = [];
   teamOptions: any[] = [];
 
   // Stats
@@ -85,11 +84,21 @@ export class DomainCatalogComponent implements OnInit {
     private dataMeshServices: DataMeshServices,
     private router: Router,
     private messageService: MessageService,
-    private loadingService: LoadingService
+    private loadingService: LoadingService,
+    private i18nService: I18nService
   ) {}
 
   ngOnInit(): void {
+    this.setupFilterOptions();
     this.loadDomainsAndHealth();
+  }
+
+  setupFilterOptions(): void {
+    this.statusOptions = [
+      { label: this.i18nService.translate('domainCatalog.allStatus'), value: '' },
+      { label: this.i18nService.translate('status.active'), value: 'Active' },
+      { label: this.i18nService.translate('status.inactive'), value: 'Inactive' }
+    ];
   }
 
   loadDomainsAndHealth(): void {
@@ -182,7 +191,7 @@ export class DomainCatalogComponent implements OnInit {
   extractTeamOptions(): void {
     const teams = [...new Set(this.domains.map(d => d.team))];
     this.teamOptions = [
-      { label: 'All Teams', value: '' },
+      { label: this.i18nService.translate('domainCatalog.allTeams'), value: '' },
       ...teams.map(team => ({ label: team, value: team }))
     ];
   }
@@ -262,5 +271,47 @@ export class DomainCatalogComponent implements OnInit {
 
   trackByDomainKey(index: number, domain: Domain): string {
     return domain.domain_key;
+  }
+
+  // Helper methods for the redesigned UI
+  getDomainIcon(domainKey: string): string {
+    const iconMap: { [key: string]: string } = {
+      'hotel': 'pi-building',
+      'finance': 'pi-dollar',
+      'retail': 'pi-shopping-cart',
+      'healthcare': 'pi-heart',
+      'logistics': 'pi-truck',
+      'marketing': 'pi-megaphone',
+      'hr': 'pi-users',
+      'it': 'pi-cog',
+      'sales': 'pi-chart-line'
+    };
+    
+    const key = domainKey.toLowerCase().split('_')[0];
+    return iconMap[key] || 'pi-sitemap';
+  }
+
+  getStatusIcon(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'active': return 'check-circle';
+      case 'inactive': return 'times-circle';
+      case 'maintenance': return 'wrench';
+      case 'deprecated': return 'exclamation-triangle';
+      default: return 'info-circle';
+    }
+  }
+
+  getStatusClass(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'active': return 'bg-emerald-100 text-emerald-800';
+      case 'inactive': return 'bg-slate-100 text-slate-800';
+      case 'maintenance': return 'bg-yellow-100 text-yellow-800';
+      case 'deprecated': return 'bg-red-100 text-red-800';
+      default: return 'bg-blue-100 text-blue-800';
+    }
+  }
+
+  getTotalDataProducts(): number {
+    return this.domains.reduce((total, domain) => total + (domain.data_products?.length || 0), 0);
   }
 }
