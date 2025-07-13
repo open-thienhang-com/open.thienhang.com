@@ -50,54 +50,8 @@ export class SidebarComponent {
   ngOnInit() {
     this.menu = [
       {
-        label: 'Dashboard',
-        icon: 'pi pi-home',
-        url: '/dashboard',
-        info: {
-          title: 'Dashboard',
-          description: 'Get an overview of your data mesh ecosystem with key metrics and insights.',
-          features: [
-            'Real-time Metrics - Monitor system health and performance',
-            'Quick Access - Navigate to frequently used features',
-            'Recent Activity - View latest changes and updates',
-            'System Status - Check overall platform health'
-          ],
-          usage: 'Use the dashboard to get a quick overview of your data mesh and access key features.',
-          tips: [
-            'Check the dashboard daily for system health updates',
-            'Use quick access tiles to navigate faster',
-            'Monitor recent activity for awareness of changes'
-          ]
-        }
-      },
-      {
-        label: 'Explore',
-        icon: 'pi pi-compass',
-        url: '/explore',
-        info: {
-          title: 'Data Discovery & Exploration',
-          description: 'Discover and explore data products, schemas, and relationships across your organization.',
-          features: [
-            'Data Catalog - Browse comprehensive data inventory',
-            'Advanced Search - Find data using smart filters and keywords',
-            'Schema Explorer - Examine data structures and relationships',
-            'Data Preview - Sample and preview data before consuming',
-            'Lineage Discovery - Understand data flow and dependencies',
-            'Usage Analytics - See how data is being used across teams'
-          ],
-          usage: 'Your starting point for data discovery - find, explore, and understand data before using it.',
-          tips: [
-            'Use advanced filters to narrow down your search results',
-            'Preview data samples to understand structure and quality',
-            'Check data lineage to understand dependencies',
-            'Bookmark frequently used datasets for quick access',
-            'Use the schema explorer to understand data relationships'
-          ]
-        }
-      },
-      {
         label: 'Marketplace',
-        icon: 'pi pi-store',
+        icon: 'pi pi-shopping-cart',
         url: '/marketplace',
         highlighted: true,
         info: {
@@ -120,6 +74,9 @@ export class SidebarComponent {
           ]
         }
       },
+      
+     
+      
       {
         label: 'separator',
         type: 'separator'
@@ -128,6 +85,27 @@ export class SidebarComponent {
         label: 'Data Mesh',
         icon: 'pi pi-sitemap',
         children: [
+          {
+            label: 'Dashboard',
+            icon: 'pi pi-home',
+            url: '/dashboard',
+            info: {
+              title: 'Dashboard',
+              description: 'Get an overview of your data mesh ecosystem with key metrics and insights.',
+              features: [
+                'Real-time Metrics - Monitor system health and performance',
+                'Quick Access - Navigate to frequently used features',
+                'Recent Activity - View latest changes and updates',
+                'System Status - Check overall platform health'
+              ],
+              usage: 'Use the dashboard to get a quick overview of your data mesh and access key features.',
+              tips: [
+                'Check the dashboard daily for system health updates',
+                'Use quick access tiles to navigate faster',
+                'Monitor recent activity for awareness of changes'
+              ]
+            }
+          },
           { 
             label: 'Overview', 
             icon: 'pi pi-chart-pie', 
@@ -584,7 +562,32 @@ export class SidebarComponent {
             'Use audit logs for compliance'
           ]
         }
+      },
+      {
+      label: 'Explore',
+      icon: 'pi pi-compass',
+      url: '/explore',
+      info: {
+        title: 'Data Discovery & Exploration',
+        description: 'Discover and explore data products, schemas, and relationships across your organization.',
+        features: [
+          'Data Catalog - Browse comprehensive data inventory',
+          'Advanced Search - Find data using smart filters and keywords',
+          'Schema Explorer - Examine data structures and relationships',
+          'Data Preview - Sample and preview data before consuming',
+          'Lineage Discovery - Understand data flow and dependencies',
+          'Usage Analytics - See how data is being used across teams'
+        ],
+        usage: 'Your starting point for data discovery - find, explore, and understand data before using it.',
+        tips: [
+          'Use advanced filters to narrow down your search results',
+          'Preview data samples to understand structure and quality',
+          'Check data lineage to understand dependencies',
+          'Bookmark frequently used datasets for quick access',
+          'Use the schema explorer to understand data relationships'
+        ]
       }
+    },
     ];
   }
 
