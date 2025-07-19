@@ -74,9 +74,6 @@ export class SidebarComponent {
           ]
         }
       },
-      
-     
-      
       {
         label: 'separator',
         type: 'separator'
@@ -84,175 +81,16 @@ export class SidebarComponent {
       {
         label: 'Data Mesh',
         icon: 'pi pi-sitemap',
+        type: 'item',
         children: [
-          {
-            label: 'Dashboard',
-            icon: 'pi pi-home',
-            url: '/dashboard',
-            info: {
-              title: 'Dashboard',
-              description: 'Get an overview of your data mesh ecosystem with key metrics and insights.',
-              features: [
-                'Real-time Metrics - Monitor system health and performance',
-                'Quick Access - Navigate to frequently used features',
-                'Recent Activity - View latest changes and updates',
-                'System Status - Check overall platform health'
-              ],
-              usage: 'Use the dashboard to get a quick overview of your data mesh and access key features.',
-              tips: [
-                'Check the dashboard daily for system health updates',
-                'Use quick access tiles to navigate faster',
-                'Monitor recent activity for awareness of changes'
-              ]
-            }
-          },
-          { 
-            label: 'Overview', 
-            icon: 'pi pi-chart-pie', 
-            url: '/data-mesh/overview',
-            info: {
-              title: 'Data Mesh Overview',
-              description: 'Get a comprehensive view of your data mesh ecosystem with real-time metrics and health indicators.',
-              features: [
-                'Domain Health Dashboard - Monitor all domain statuses',
-                'Key Performance Indicators - Track mesh performance',
-                'Resource Utilization - Monitor infrastructure usage',
-                'Recent Activity - View latest domain activities'
-              ],
-              usage: 'Start here to get an overview of your entire data mesh ecosystem and identify areas that need attention.',
-              tips: [
-                'Check the overview daily to stay informed of system health',
-                'Use filters to focus on specific domains or metrics',
-                'Set up alerts for critical health indicators'
-              ]
-            }
-          },
-          { 
-            label: 'Domain Catalog', 
-            icon: 'pi pi-book', 
-            url: '/data-mesh/domains',
-            info: {
-              title: 'Domain Catalog',
-              description: 'Browse and manage all data domains in your mesh with detailed information and ownership.',
-              features: [
-                'Domain Discovery - Find domains by name, owner, or tags',
-                'Ownership Details - Contact information and responsibilities',
-                'SLA Tracking - Monitor service level agreements',
-                'Domain Metrics - Performance and usage statistics'
-              ],
-              usage: 'Explore available domains, understand their purpose, and connect with domain owners.',
-              tips: [
-                'Use search filters to quickly find relevant domains',
-                'Review domain SLAs before subscribing to data products',
-                'Contact domain owners for specific requirements'
-              ]
-            }
-          },
-          { 
-            label: 'Data Product', 
-            icon: 'pi pi-shopping-cart', 
-            url: '/data-mesh/data-products', 
-            info: {
-              title: 'Data Products',
-              description: 'Discover, subscribe to, and manage data products across all domains in your organization.',
-              features: [
-                'Product Discovery - Browse available data products',
-                'Subscription Management - Subscribe/unsubscribe to products',
-                'Usage Analytics - Track your data product usage',
-                'Quality Metrics - View product quality scores'
-              ],
-              usage: 'Browse available data products, subscribe to ones you need, and manage your subscriptions.',
-              tips: [
-                'Check product quality scores before subscribing',
-                'Review product documentation for usage guidelines',
-                'Monitor your usage to optimize subscriptions'
-              ]
-            }
-          },
-          { 
-            label: 'API Explorer', 
-            icon: 'pi pi-code', 
-            url: '/data-mesh/api-explorer',
-            info: {
-              title: 'API Explorer',
-              description: 'Explore, test, and integrate with APIs provided by data products across all domains.',
-              features: [
-                'API Discovery - Find APIs by domain or functionality',
-                'Interactive Testing - Test APIs directly in the browser',
-                'Documentation - Comprehensive API documentation',
-                'Code Generation - Generate client code for APIs'
-              ],
-              usage: 'Discover APIs, test them interactively, and integrate them into your applications.',
-              tips: [
-                'Test APIs in the sandbox environment first',
-                'Review rate limits and authentication requirements',
-                'Use the code generator to speed up integration'
-              ]
-            }
-          },
-          { 
-            label: 'Data Lineage', 
-            icon: 'pi pi-share-alt', 
-            url: '/data-mesh/lineage',
-            info: {
-              title: 'Data Lineage',
-              description: 'Visualize data flow and dependencies across your mesh to understand impact and relationships.',
-              features: [
-                'Visual Lineage Graphs - Interactive dependency visualization',
-                'Impact Analysis - Understand downstream effects',
-                'Dependency Tracking - Track data dependencies',
-                'Change Impact - Assess impact of changes'
-              ],
-              usage: 'Visualize how data flows through your organization and assess the impact of changes.',
-              tips: [
-                'Use lineage to understand data dependencies before changes',
-                'Regular lineage reviews help maintain data quality',
-                'Share lineage diagrams with stakeholders for clarity'
-              ]
-            }
-          },
-          { 
-            label: 'Quality Metrics', 
-            icon: 'pi pi-chart-bar', 
-            url: '/data-mesh/quality',
-            info: {
-              title: 'Quality Metrics',
-              description: 'Monitor and improve data quality across all domains with comprehensive metrics and alerts.',
-              features: [
-                'Quality Scoring - Automated quality assessment',
-                'Trend Analysis - Track quality improvements over time',
-                'Alerting - Get notified of quality issues',
-                'Quality Rules - Define custom quality criteria'
-              ],
-              usage: 'Monitor data quality across your mesh and take action to improve it.',
-              tips: [
-                'Set up quality alerts for critical data products',
-                'Regular quality reviews help maintain standards',
-                'Use quality trends to identify improvement opportunities'
-              ]
-            }
-          },
-          { 
-            label: 'Data Contracts', 
-            icon: 'pi pi-file-check', 
-            url: '/data-contracts',
-            info: {
-              title: 'Data Contracts',
-              description: 'Manage agreements between data producers and consumers with versioned contracts.',
-              features: [
-                'Contract Templates - Pre-built templates for common scenarios',
-                'Version Control - Track contract changes over time',
-                'SLA Definitions - Define service level agreements',
-                'Compliance Tracking - Monitor contract adherence'
-              ],
-              usage: 'Create and manage data sharing agreements between domains.',
-              tips: [
-                'Use templates to ensure consistent contract structure',
-                'Version contracts carefully to avoid breaking changes',
-                'Regular contract reviews ensure ongoing compliance'
-              ]
-            }
-          }
+          { label: 'Dashboard', url: '/dashboard', icon: 'pi pi-home' },
+          { label: 'Overview', url: '/overview', icon: 'pi pi-chart-pie' },
+          { label: 'Domain Catalog', url: '/data-mesh/domains', icon: 'pi pi-book' },
+          { label: 'Data Product', url: '/data-mesh/data-products', icon: 'pi pi-shopping-cart' },
+          { label: 'API Explorer', url: '/data-mesh/api-explorer', icon: 'pi pi-code' },
+          { label: 'Data Lineage', url: '/data-mesh/lineage', icon: 'pi pi-share-alt' },
+          { label: 'Quality Metrics', url: '/data-mesh/quality', icon: 'pi pi-chart-bar' },
+          { label: 'Data Contracts', url: '/data-contracts', icon: 'pi pi-file-check' }
         ],
         expanded: true,
         info: {
@@ -279,171 +117,22 @@ export class SidebarComponent {
       {
         label: 'Governance',
         icon: 'pi pi-shield',
+        type: 'item',
         children: [
-          { 
-            label: 'Policies', 
-            icon: 'pi pi-bookmark', 
-            url: '/governance/policies',
-            info: {
-              title: 'Data Policies',
-              description: 'Create, manage, and enforce data governance policies to ensure compliance and quality.',
-              features: [
-                'Policy Creation - Define custom governance policies',
-                'Policy Enforcement - Automatically apply policies',
-                'Compliance Tracking - Monitor policy adherence',
-                'Policy Templates - Use pre-built policy templates'
-              ],
-              usage: 'Define and enforce data governance policies across your organization.',
-              tips: [
-                'Use policy templates for common governance patterns',
-                'Test policies in development before production',
-                'Review policy effectiveness regularly'
-              ]
-            }
-          },
-          { 
-            label: 'Permissions', 
-            icon: 'pi pi-key', 
-            url: '/governance/permissions',
-            info: {
-              title: 'Permissions Management',
-              description: 'Fine-grained access control to manage who can access what data and perform which operations.',
-              features: [
-                'Granular Permissions - Define specific access rights',
-                'Permission Inheritance - Hierarchical permission structure',
-                'Audit Trail - Track permission changes',
-                'Bulk Management - Efficiently manage permissions'
-              ],
-              usage: 'Define and manage access permissions for data assets and operations.',
-              tips: [
-                'Follow the principle of least privilege',
-                'Use permission groups for easier management',
-                'Regular permission audits maintain security'
-              ]
-            }
-          },
-          { 
-            label: 'Roles', 
-            icon: 'pi pi-users', 
-            url: '/governance/roles',
-            info: {
-              title: 'Role Management',
-              description: 'Define and manage roles with specific permissions for streamlined access control.',
-              features: [
-                'Role Definition - Create custom roles',
-                'Role Assignment - Assign roles to users',
-                'Role Hierarchy - Establish role inheritance',
-                'Role Analytics - Monitor role usage'
-              ],
-              usage: 'Create and manage roles that match your organizational structure.',
-              tips: [
-                'Design roles based on job functions',
-                'Use role hierarchy to reduce complexity',
-                'Regular role reviews keep permissions current'
-              ]
-            }
-          },
-          { 
-            label: 'Teams', 
-            icon: 'pi pi-sitemap', 
-            url: '/governance/teams',
-            info: {
-              title: 'Team Management',
-              description: 'Organize users into teams and departments for streamlined collaboration and permission management.',
-              features: [
-                'Team Creation - Create organizational teams',
-                'Team Permissions - Assign team-level permissions',
-                'Team Hierarchy - Establish organizational structure',
-                'Team Analytics - Monitor team collaboration'
-              ],
-              usage: 'Create and manage teams that reflect your organizational structure.',
-              tips: [
-                'Align teams with organizational structure',
-                'Use team permissions to reduce management overhead',
-                'Regular team reviews ensure proper access'
-              ]
-            }
-          },
-          { 
-            label: 'Users', 
-            icon: 'pi pi-user', 
-            url: '/governance/users',
-            info: {
-              title: 'User Management',
-              description: 'Manage individual users, their profiles, permissions, and role assignments.',
-              features: [
-                'User Profiles - Comprehensive user information',
-                'Permission Assignment - Direct user permissions',
-                'Role Assignment - Assign multiple roles',
-                'User Analytics - Track user activity'
-              ],
-              usage: 'View and manage individual users and their access rights.',
-              tips: [
-                'Use roles instead of direct permissions',
-                'Keep user profiles updated',
-                'Monitor user activity for security'
-              ]
-            }
-          },
-          { 
-            label: 'Accounts', 
-            icon: 'pi pi-building', 
-            url: '/governance/accounts',
-            info: {
-              title: 'Account Management',
-              description: 'Comprehensive account administration including provisioning and lifecycle management.',
-              features: [
-                'Account Provisioning - Automated account creation',
-                'Account Lifecycle - Manage account status',
-                'Account Policies - Apply organizational policies',
-                'Account Analytics - Monitor account usage'
-              ],
-              usage: 'Manage user accounts from creation to deletion.',
-              tips: [
-                'Automate account provisioning',
-                'Implement account expiration policies',
-                'Regular account audits identify inactive accounts'
-              ]
-            }
-          },
-          { 
-            label: 'Assets', 
-            icon: 'pi pi-database', 
-            url: '/governance/assets',
-            info: {
-              title: 'Data Assets',
-              description: 'Discover, catalog, and manage all data assets with comprehensive metadata.',
-              features: [
-                'Asset Discovery - Automatically discover assets',
-                'Metadata Management - Rich metadata and documentation',
-                'Lineage Tracking - Understand data flow',
-                'Quality Scoring - Assess data quality'
-              ],
-              usage: 'Browse and manage your data assets with detailed metadata.',
-              tips: [
-                'Keep asset metadata up-to-date',
-                'Use tags for organization',
-                'Regular quality assessments maintain integrity'
-              ]
-            }
-          }
+          { label: 'Policies', url: '/governance/policies', icon: 'pi pi-lock' },
+          { label: 'Permissions', url: '/governance/permissions', icon: 'pi pi-key' },
+          { label: 'Roles', url: '/governance/roles', icon: 'pi pi-users' },
+          { label: 'Teams', url: '/governance/teams', icon: 'pi pi-users' },
+          { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
+          { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building' },
+          { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' }
         ],
         expanded: false,
         info: {
-          title: 'Data Governance',
-          description: 'Comprehensive governance framework for data management, compliance, and security.',
-          features: [
-            'Policy Management - Create and enforce policies',
-            'Access Control - Fine-grained permissions',
-            'Compliance Tracking - Monitor adherence',
-            'Asset Management - Catalog and track assets'
-          ],
-          usage: 'Manage data governance policies, user access, and ensure compliance.',
-          tips: [
-            'Start with clear data policies',
-            'Regular reviews maintain security',
-            'Use asset discovery for up-to-date catalogs'
-          ]
+          title: 'Governance',
+          description: 'Manage data policies, permissions, and roles.',
+          features: ['Policies', 'Permissions', 'Roles', 'Teams', 'Users', 'Accounts', 'Assets'],
+          usage: 'Define and enforce data governance policies.'
         }
       },
       {
@@ -453,66 +142,17 @@ export class SidebarComponent {
       {
         label: 'Discovery',
         icon: 'pi pi-search',
+        type: 'item',
         children: [
-          { 
-            label: 'Data Catalog', 
-            icon: 'pi pi-list', 
-            url: '/discovery/data-catalog',
-            info: {
-              title: 'Data Catalog',
-              description: 'Discover and explore available datasets with comprehensive search and filtering.',
-              features: [
-                'Metadata Search - Search by content and metadata',
-                'Data Profiling - Understand data characteristics',
-                'Usage Statistics - See how data is being used',
-                'Quality Indicators - View data quality metrics'
-              ],
-              usage: 'Find and understand available data assets across your organization.',
-              tips: [
-                'Use advanced search filters for precision',
-                'Review data profiles before using datasets',
-                'Check usage statistics for popularity indicators'
-              ]
-            }
-          },
-          { 
-            label: 'Explore Data', 
-            icon: 'pi pi-compass', 
-            url: '/explore',
-            info: {
-              title: 'Data Explorer',
-              description: 'Interactive data exploration and analysis tools for various data sources.',
-              features: [
-                'Query Builder - Visual query construction',
-                'Data Visualization - Interactive charts and graphs',
-                'Sample Data - Preview data before full access',
-                'Export Options - Download results in various formats'
-              ],
-              usage: 'Explore and analyze your data interactively with powerful tools.',
-              tips: [
-                'Start with sample data to understand structure',
-                'Use visualizations to identify patterns',
-                'Save frequently used queries for reuse'
-              ]
-            }
-          }
+          { label: 'Data Catalog', url: '/discovery/data-catalog', icon: 'pi pi-list' },
+          { label: 'Explore Data', url: '/explore', icon: 'pi pi-compass' }
         ],
         expanded: false,
         info: {
-          title: 'Data Discovery',
-          description: 'Discover and explore data assets across your organization.',
-          features: [
-            'Catalog Search - Find data assets quickly',
-            'Interactive Exploration - Explore data interactively',
-            'Schema Discovery - Understand data structure',
-            'Usage Analytics - Track data usage patterns'
-          ],
-          usage: 'Use discovery tools to find and understand available data assets.',
-          tips: [
-            'Use advanced search for precise results',
-            'Explore data samples before full access',
-            'Check usage statistics for popular assets'
-          ]
+          title: 'Discovery',
+          description: 'Discover and explore data assets.',
+          features: ['Data Catalog', 'Explore Data'],
+          usage: 'Find and preview data assets.'
         }
       },
       {
@@ -543,6 +183,69 @@ export class SidebarComponent {
                 'Use anomaly detection to catch issues early'
               ]
             }
+          },
+          { 
+            label: 'Alerts', 
+            icon: 'pi pi-bell', 
+            url: '/observability/alert',
+            info: {
+              title: 'Alerts',
+              description: 'Configure and manage alerts for system and data pipeline events.',
+              features: [
+                'Custom Alert Rules',
+                'Notification Channels',
+                'Alert History',
+                'Integration with Monitoring'
+              ],
+              usage: 'Set up and manage alerts to stay informed about system events.',
+              tips: [
+                'Configure notification channels for critical alerts',
+                'Review alert history for troubleshooting',
+                'Integrate alerts with monitoring for full coverage'
+              ]
+            }
+          },
+          { 
+            label: 'Metrics', 
+            icon: 'pi pi-chart-bar', 
+            url: '/observability/metrics',
+            info: {
+              title: 'Metrics',
+              description: 'Track and analyze system and data metrics for performance and reliability.',
+              features: [
+                'Metric Dashboards',
+                'Trend Analysis',
+                'Custom Metrics',
+                'Export Options'
+              ],
+              usage: 'Monitor key metrics to ensure system reliability and performance.',
+              tips: [
+                'Set up dashboards for important metrics',
+                'Analyze trends to identify issues early',
+                'Export metrics for reporting and analysis'
+              ]
+            }
+          },
+          { 
+            label: 'Audit Logs', 
+            icon: 'pi pi-file', 
+            url: '/observability/audit-log',
+            info: {
+              title: 'Audit Logs',
+              description: 'Track system activities and changes for compliance and troubleshooting.',
+              features: [
+                'Activity Tracking',
+                'Change History',
+                'Compliance Reports',
+                'Export Logs'
+              ],
+              usage: 'Review audit logs to ensure compliance and investigate issues.',
+              tips: [
+                'Regularly review logs for suspicious activity',
+                'Export logs for compliance audits',
+                'Use filters to find relevant events quickly'
+              ]
+            }
           }
         ],
         expanded: false,
@@ -564,42 +267,119 @@ export class SidebarComponent {
         }
       },
       {
-      label: 'Explore',
-      icon: 'pi pi-compass',
-      url: '/explore',
-      info: {
-        title: 'Data Discovery & Exploration',
-        description: 'Discover and explore data products, schemas, and relationships across your organization.',
-        features: [
-          'Data Catalog - Browse comprehensive data inventory',
-          'Advanced Search - Find data using smart filters and keywords',
-          'Schema Explorer - Examine data structures and relationships',
-          'Data Preview - Sample and preview data before consuming',
-          'Lineage Discovery - Understand data flow and dependencies',
-          'Usage Analytics - See how data is being used across teams'
+        label: 'Explore',
+        icon: 'pi pi-compass',
+        url: '/explore',
+        info: {
+          title: 'Explore',
+          description: 'Explore data and analytics.',
+          features: ['Data Exploration'],
+          usage: 'Discover new data insights.'
+        }
+      },
+      {
+        label: 'separator',
+        type: 'separator'
+      },
+      {
+        label: 'Integrations',
+        icon: 'pi pi-cloud',
+        type: 'item',
+        children: [
+          {
+          label: 'Airflow',
+          icon: 'pi pi-send',
+          url: '/integrations/airflow',
+          info: {
+            title: 'Apache Airflow',
+            description: 'Orchestrate, schedule, and monitor workflows with Airflow.',
+            features: [
+            'Workflow Orchestration',
+            'Task Scheduling',
+            'Monitoring & Logging',
+            'Integration with Data Mesh'
+            ],
+            usage: 'Manage and monitor your data pipelines using Airflow.',
+            tips: [
+            'Use DAGs for complex workflows',
+            'Monitor task status regularly',
+            'Integrate Airflow with your data mesh for end-to-end orchestration'
+            ]
+          }
+          },
+          {
+          label: 'Google Cloud',
+          icon: 'pi pi-google',
+          url: '/integrations/google-cloud',
+          info: {
+            title: 'Google Cloud Platform',
+            description: 'Cloud infrastructure, storage, and analytics services.',
+            features: [
+            'BigQuery Analytics',
+            'Cloud Storage',
+            'IAM & Security',
+            'Integration with Data Mesh'
+            ],
+            usage: 'Leverage Google Cloud for scalable data storage and analytics.',
+            tips: [
+            'Use BigQuery for fast analytics',
+            'Secure your data with IAM policies',
+            'Integrate GCP with your mesh for hybrid cloud'
+            ]
+          }
+          },
+          {
+          label: 'Databricks',
+          icon: 'pi pi-database',
+          url: '/integrations/databricks',
+          info: {
+            title: 'Databricks',
+            description: 'Unified analytics platform for big data and AI.',
+            features: [
+            'Spark-based Analytics',
+            'Collaborative Notebooks',
+            'ML & AI Integration',
+            'Integration with Data Mesh'
+            ],
+            usage: 'Run scalable analytics and machine learning workloads.',
+            tips: [
+            'Use collaborative notebooks for team productivity',
+            'Integrate Databricks with mesh for unified data access',
+            'Monitor cluster performance for cost optimization'
+            ]
+          }
+          }
         ],
-        usage: 'Your starting point for data discovery - find, explore, and understand data before using it.',
-        tips: [
-          'Use advanced filters to narrow down your search results',
-          'Preview data samples to understand structure and quality',
-          'Check data lineage to understand dependencies',
-          'Bookmark frequently used datasets for quick access',
-          'Use the schema explorer to understand data relationships'
-        ]
-      }
-    },
+        expanded: false,
+        info: {
+          title: 'Integrations',
+          description: 'Connect and manage external platforms and services.',
+          features: [
+          'Workflow Orchestration',
+          'Cloud Analytics',
+          'Unified Data Access'
+          ],
+          usage: 'Access and manage integrations with external platforms.',
+          tips: [
+          'Regularly review integration health',
+          'Leverage cloud services for scalability',
+          'Centralize monitoring for all platforms'
+          ]
+        }
+      },
+      {
+        label: 'separator',
+        type: 'separator'
+      },
     ];
   }
 
-  toggleItem(item: MenuItem): void {
-    // Toggle expanded state
-    if ('expanded' in item) {
+  toggleItem(item: MenuItem, event?: Event): void {
+    // Toggle expanded state only for items with children
+    if (item.children) {
       item.expanded = !item.expanded;
-    } else {
-      item.expanded = true;
     }
-
-    // Prevent event bubbling
+    // Prevent event bubbling if event is provided
     event?.stopPropagation();
   }
 
@@ -610,7 +390,7 @@ export class SidebarComponent {
 
     if (item.children && !this.collapsed) {
       // Toggle submenu for items with children
-      this.toggleItem(item);
+      this.toggleItem(item, event);
     } else if (item.url) {
       // Navigate for direct menu items
       this.navigateTo(item.url);

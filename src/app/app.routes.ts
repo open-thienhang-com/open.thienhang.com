@@ -37,6 +37,13 @@ import { MaintenanceComponent } from './pages/error/maintenance/maintenance.comp
 import { ForbiddenComponent } from './pages/error/forbidden/forbidden.component';
 import { NotFoundComponent } from './pages/error/not-found/not-found.component';
 import { MarketplaceComponent } from './features/marketplace/marketplace.component';
+import { OverviewComponent } from './features/overview/overview.component';
+import { AlertComponent } from './features/observability/alert/alert.component';
+import { MetricsComponent } from './features/observability/metrics/metrics.component';
+import { AuditLogComponent } from './features/observability/audit-log/audit-log.component';
+import { AirflowComponent } from './features/integrations/airflow/airflow.component';
+import { GoogleCloudComponent } from './features/integrations/google-cloud/google-cloud.component';
+import { DatabricksComponent } from './features/integrations/databricks/databricks.component';
 
 // Data Mesh Components
 import { DomainCatalogComponent as DataMeshDomainCatalogComponent } from './features/data-mesh/domain-catalog/domain-catalog.component';
@@ -249,6 +256,38 @@ export const routes: Routes = [
       {
         path: 'marketplace',
         component: MarketplaceComponent,
+      },
+      {
+        path: 'overview',
+        component: OverviewComponent,
+      },
+      {
+        path: 'discovery/data-catalog',
+        component: DataCatalogComponent,
+      },
+      {
+        path: 'observability/alert',
+        component: AlertComponent,
+      },
+      {
+        path: 'observability/metrics',
+        component: MetricsComponent,
+      },
+      {
+        path: 'observability/audit-log',
+        component: AuditLogComponent,
+      },
+      {
+        path: 'integrations/airflow',
+        component: AirflowComponent,
+      },
+      {
+        path: 'integrations/google-cloud',
+        component: GoogleCloudComponent,
+      },
+      {
+        path: 'integrations/databricks',
+        component: DatabricksComponent,
       },
       {
         path: '',

@@ -1,0 +1,13 @@
+.page-layout {
+  padding: 2rem;
+  background: var(--background);
+  min-height: 100vh;
+}
+h1 {
+  font-size: 2rem;
+  font-weight: bold;
+}
+p {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
