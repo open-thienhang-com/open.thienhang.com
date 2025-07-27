@@ -1,123 +1,149 @@
-<div class="p-4 md:p-6">
-  <div class="mb-6">
-    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Data Sources Explorer</h1>
-    <p class="text-gray-600 dark:text-gray-400">Browse and discover data assets across all connected systems</p>
-  </div>
-
-  <!-- Filters -->
-  <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-6">
-    <div class="flex flex-wrap gap-4">
-      <div class="flex-1 min-w-[200px]">
-        <span class="p-input-icon-left w-full">
-          <i class="pi pi-search"></i>
-          <input 
-            type="text" 
-            pInputText 
-            class="w-full" 
-            placeholder="Search data sources..." 
-            [(ngModel)]="searchQuery">
-        </span>
-      </div>
-      <div class="w-full md:w-auto">
-        <p-dropdown 
-          [options]="typeOptions" 
-          [(ngModel)]="selectedType" 
-          optionLabel="label" 
-          optionValue="value"
-          placeholder="Filter by type">
-        </p-dropdown>
-      </div>
-      <div class="w-full md:w-auto">
-        <p-dropdown 
-          [options]="statusOptions" 
-          [(ngModel)]="selectedStatus" 
-          optionLabel="label" 
-          optionValue="value"
-          placeholder="Filter by status">
-        </p-dropdown>
-      </div>
+<div class="p-0 md:p-0 bg-gray-50 dark:bg-gray-900 min-h-screen w-full">
+  <!-- Top Bar: Title -->
+  <div class="sticky top-0 z-20 bg-white dark:bg-gray-900 shadow px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <i class="pi pi-database text-3xl text-blue-700 dark:text-blue-300"></i>
+      <h1 class="text-2xl md:text-3xl font-extrabold text-blue-700 dark:text-blue-300">Data Asset Dictionary</h1>
     </div>
   </div>
 
-  <!-- Data Sources Table -->
-  <p-card>
-    <p-table [value]="filteredDataSources" [paginator]="true" [rows]="10" styleClass="p-datatable-sm p-datatable-gridlines"
-             [rowsPerPageOptions]="[5,10,25]" [showCurrentPageReport]="true" responsiveLayout="stack" 
-             currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Status</th>
-          <th>Last Synced</th>
-          <th>Owner</th>
-          <th>Assets</th>
-          <th>Health</th>
-          <th>Actions</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-source>
-        <tr>
-          <td>
-            <div class="flex items-center gap-2">
-              <i [ngClass]="getIconClass(source.type, source.subtype)" class="text-lg"></i>
-              <span class="font-medium">{{ source.name }}</span>
-            </div>
-          </td>
-          <td>
-            <span class="capitalize">{{ source.type }}</span>
-            <span class="text-xs text-gray-500 ml-1">({{ source.subtype }})</span>
-          </td>
-          <td>
-            <p-tag [severity]="getStatusSeverity(source.status)" [value]="source.status" [rounded]="true"></p-tag>
-          </td>
-          <td>
-            <span pTooltip="{{formatDate(source.lastSynced)}}">
-              {{ formatDate(source.lastSynced) }}
-            </span>
-          </td>
-          <td>{{ source.owner }}</td>
-          <td>{{ source.assets }}</td>
-          <td>
-            <div class="flex items-center gap-2">
-              <span [ngClass]="getHealthClass(source.health)" class="font-medium">
-                {{ source.health }}%
+  <div class="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Sidebar: Tree for Domains & Types -->
+    <aside class="min-w-[16rem] bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col py-6 px-2 gap-4">
+      <p-tree [value]="domainTree" selectionMode="single" [(selection)]="selectedDomain" (onNodeSelect)="onDomainSelect($event)" class="w-full" [style]="{height: '100%'}"></p-tree>
+    </aside>
+    <!-- Main Explorer -->
+    <main class="flex-1 flex flex-col gap-6 px-8 py-8">
+      <!-- Top Filter/Search/Toggle/Paging Bar -->
+      <div class="flex flex-wrap gap-4 items-center mb-6 justify-between">
+        <div class="flex gap-2 items-center">
+          <input type="text" class="w-64 p-2 rounded border border-gray-300" placeholder="Search assets..." [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" aria-label="Search assets">
+          <select class="w-32 p-2 rounded border border-gray-300" [(ngModel)]="typeFilter" (change)="onFilterChange()">
+            <option value="">Type</option>
+            <option *ngFor="let type of typeOptions" [value]="type">{{ type }}</option>
+          </select>
+          <select class="w-32 p-2 rounded border border-gray-300" [(ngModel)]="ownerFilter" (change)="onFilterChange()">
+            <option value="">Owner</option>
+            <option *ngFor="let owner of ownerOptions" [value]="owner">{{ owner }}</option>
+          </select>
+          <div class="flex gap-1">
+            <span *ngIf="typeFilter" class="bg-blue-100 text-blue-700 px-2 py-1 rounded flex items-center">{{ typeFilter }} <button class="ml-1 text-xs" (click)="typeFilter=''; onFilterChange()">&times;</button></span>
+            <span *ngIf="ownerFilter" class="bg-green-100 text-green-700 px-2 py-1 rounded flex items-center">{{ ownerFilter }} <button class="ml-1 text-xs" (click)="ownerFilter=''; onFilterChange()">&times;</button></span>
+            <span *ngIf="searchQuery" class="bg-gray-100 text-gray-700 px-2 py-1 rounded flex items-center">{{ searchQuery }} <button class="ml-1 text-xs" (click)="searchQuery=''; onSearchChange()">&times;</button></span>
+          </div>
+        </div>
+        <div class="flex gap-2 items-center">
+          <button pButton type="button" label="Card" icon="pi pi-th-large" [class.bg-blue-300]="viewMode==='grid'" (click)="onViewModeChange('grid')"></button>
+          <button pButton type="button" label="List" icon="pi pi-list" [class.bg-blue-300]="viewMode==='list'" (click)="onViewModeChange('list')"></button>
+          <button pButton type="button" label="Order List" icon="pi pi-sort" [class.bg-blue-300]="viewMode==='order'" (click)="onViewModeChange('order')"></button>
+        </div>
+      </div>
+      <div *ngIf="loadingAssets" class="text-center text-blue-500 mb-2"><i class="pi pi-spin pi-spinner text-2xl"></i> Loading assets...</div>
+      <div *ngIf="errorAssets" class="text-center text-red-500 mb-2">{{ errorAssets }}</div>
+      <ng-container *ngIf="!loadingAssets && !errorAssets">
+        <div class="min-h-[300px]">
+          <ng-container *ngIf="filteredAssets.length === 0">
+            <div class="col-span-full text-center p-12 flex flex-col items-center justify-center bg-white rounded-xl shadow">
+              <span class="flex items-center justify-center w-24 h-24 rounded-full bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-200 dark:border-blue-700 shadow mb-4">
+                <i class="pi pi-database text-6xl text-blue-400"></i>
               </span>
-              <div class="w-16 bg-gray-200 rounded-full h-2">
-                <div [style.width.%]="source.health" 
-                     [ngClass]="{
-                       'bg-green-500': source.health >= 90,
-                       'bg-yellow-500': source.health >= 70 && source.health < 90,
-                       'bg-orange-500': source.health > 0 && source.health < 70,
-                       'bg-red-500': source.health === 0
-                     }"
-                     class="h-2 rounded-full">
-                </div>
-              </div>
+              <p class="text-gray-500 text-lg mb-2">No matching data assets found</p>
             </div>
-          </td>
-          <td>
-            <div class="flex gap-2">
-              <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm" 
-                      pTooltip="View details"></button>
-              <button pButton icon="pi pi-sync" class="p-button-rounded p-button-text p-button-sm" 
-                      pTooltip="Sync now"></button>
-              <button pButton icon="pi pi-cog" class="p-button-rounded p-button-text p-button-sm" 
-                      pTooltip="Settings"></button>
+          </ng-container>
+          <ng-container *ngIf="filteredAssets.length > 0">
+            <div class="mb-6">
+              <p-dataView *ngIf="viewMode!=='order'" [value]="filteredAssets" [layout]="viewMode" [paginator]="true" [rows]="9">
+                <ng-template let-asset pTemplate="list">
+                  <div class="flex items-center gap-4 p-4 border-b border-gray-200 dark:border-gray-700 bg-white rounded-lg shadow-sm mb-2">
+                    <span class="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30">
+                      <i [ngClass]="getIconClass(asset.type, asset.subtype)" class="text-3xl"></i>
+                    </span>
+                    <div class="flex-1">
+                      <div class="font-bold text-lg text-blue-700 dark:text-blue-300">{{ asset.name }}</div>
+                      <div class="text-gray-500">{{ asset.description || 'No description' }}</div>
+                      <div class="flex gap-2 mt-1">
+                        <span *ngFor="let tag of asset.tags" class="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs">{{ tag }}</span>
+                      </div>
+                    </div>
+                    <button pButton type="button" label="Detail" icon="pi pi-info-circle" (click)="openDetailPage(asset)"></button>
+                  </div>
+                </ng-template>
+                <ng-template let-asset pTemplate="grid">
+                  <div class="explorer-card flex flex-col items-center text-center p-6 rounded-xl shadow-lg bg-white dark:bg-gray-800 hover:shadow-2xl focus:ring-2 focus:ring-blue-400 transition cursor-pointer mb-4" (click)="openDetailPage(asset)">
+                    <span class="flex items-center justify-center w-24 h-24 rounded-full bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-200 dark:border-blue-700 shadow mb-3">
+                      <i [ngClass]="getIconClass(asset.type, asset.subtype)" class="text-6xl"></i>
+                    </span>
+                    <span class="font-bold text-xl text-blue-700 dark:text-blue-300 mb-1">{{ asset.name }}</span>
+                    <span class="text-gray-500 mb-2">{{ asset.description || 'No description' }}</span>
+                    <div class="mb-2">
+                      <span *ngFor="let tag of asset.tags" class="inline-block bg-blue-50 text-blue-600 px-2 py-1 rounded-full mr-1 mb-1">{{ tag }}</span>
+                    </div>
+                    <span class="metadata-tag bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-3 py-1 rounded mb-1">{{ asset.type }}</span>
+                    <span class="text-xs text-gray-400 mb-1">Owner: {{ asset.owner || 'N/A' }}</span>
+                    <span class="text-xs text-gray-400 mb-1">Updated: {{ asset.updated || 'N/A' }}</span>
+                    <span *ngIf="asset.freeAccess" class="inline-flex items-center gap-1 text-green-600 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded mb-1 text-xs font-semibold"><i class="pi pi-unlock"></i> Free Access</span>
+                    <span class="text-xs text-gray-500 mb-1">{{ asset.location || 'N/A' }}</span>
+                    <span class="text-xs text-gray-500 mb-1 flex items-center gap-1"><i class="pi pi-info-circle"></i> Status: {{ asset.status || 'N/A' }}</span>
+                    <span class="text-xs text-gray-500 mb-1 flex items-center gap-1"><i class="pi pi-shield"></i> Sensitivity: {{ asset.sensitivity || 'N/A' }}</span>
+                    <button pButton type="button" label="Detail" icon="pi pi-info-circle" class="mt-2 w-full" (click)="openDetailPage(asset)"></button>
+                  </div>
+                </ng-template>
+                <ng-template pTemplate="empty">
+                  <div class="col-span-full text-center p-8 flex flex-col items-center justify-center">
+                    <span class="flex items-center justify-center w-24 h-24 rounded-full bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-200 dark:border-blue-700 shadow mb-2">
+                      <i class="pi pi-database text-6xl text-blue-400"></i>
+                    </span>
+                    <p class="text-gray-500 mb-2">No matching data assets found</p>
+                  </div>
+                </ng-template>
+              </p-dataView>
+              <p-orderList *ngIf="viewMode==='order'" [value]="filteredAssets" [listStyle]="{height:'400px'}" dragdrop="true">
+                <ng-template let-asset pTemplate="item">
+                  <div class="flex items-center gap-4 p-4 border-b border-gray-200 dark:border-gray-700 bg-white rounded-lg shadow-sm mb-2">
+                    <span class="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30">
+                      <i [ngClass]="getIconClass(asset.type, asset.subtype)" class="text-3xl"></i>
+                    </span>
+                    <div class="flex-1">
+                      <div class="font-bold text-lg text-blue-700 dark:text-blue-300">{{ asset.name }}</div>
+                      <div class="text-gray-500">{{ asset.description || 'No description' }}</div>
+                      <div class="flex gap-2 mt-1">
+                        <span *ngFor="let tag of asset.tags" class="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs">{{ tag }}</span>
+                      </div>
+                    </div>
+                    <button pButton type="button" label="Detail" icon="pi pi-info-circle" (click)="openDetailPage(asset)"></button>
+                  </div>
+                </ng-template>
+              </p-orderList>
             </div>
-          </td>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="emptymessage">
-        <tr>
-          <td colspan="8" class="text-center p-6">
-            <div class="flex flex-col items-center">
-              <i class="pi pi-search text-5xl text-gray-300 mb-4"></i>
-              <p class="text-gray-500">No data sources found matching your criteria</p>
-            </div>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </p-card>
+          </ng-container>
+        </div>
+        <div class="mb-4 text-sm text-gray-500">Assets loaded: {{ filteredAssets.length }}</div>
+        <table *ngIf="filteredAssets.length > 0" class="min-w-full mb-4 border border-gray-200">
+          <thead><tr><th class="px-2 py-1">Name</th><th class="px-2 py-1">Type</th><th class="px-2 py-1">Owner</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let asset of filteredAssets">
+              <td class="px-2 py-1">{{ asset.name }}</td>
+              <td class="px-2 py-1">{{ asset.type }}</td>
+              <td class="px-2 py-1">{{ asset.owner }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </ng-container>
+      <div class="mb-4 text-sm text-gray-500">Assets loaded: {{ filteredAssets.length }}</div>
+      <table *ngIf="filteredAssets.length > 0" class="min-w-full mb-4 border border-gray-200">
+        <thead><tr><th class="px-2 py-1">Name</th><th class="px-2 py-1">Type</th><th class="px-2 py-1">Owner</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let asset of filteredAssets">
+            <td class="px-2 py-1">{{ asset.name }}</td>
+            <td class="px-2 py-1">{{ asset.type }}</td>
+            <td class="px-2 py-1">{{ asset.owner }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+
+  <!-- Optionally, add SidebarTreeComponent to template if you want the sidebar tree menu -->
+  <!-- <app-sidebar-tree></app-sidebar-tree> -->
 </div>
+<router-outlet></router-outlet>

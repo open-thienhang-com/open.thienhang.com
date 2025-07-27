@@ -1,0 +1,92 @@
+<!-- Discovery Tab Component: Search, Filter, Card/Table View, Bulk Actions -->
+<div class="flex flex-col gap-4">
+  <!-- Advanced Search & Filter -->
+  <div class="flex flex-wrap gap-2 mb-4 items-center">
+    <input type="text" pInputText class="w-48" placeholder="Search name, tag, owner..." [(ngModel)]="searchQuery">
+    <p-dropdown [options]="domainOptions" [(ngModel)]="selectedDomain" optionLabel="label" optionValue="value" placeholder="Domain"></p-dropdown>
+    <p-dropdown [options]="groupOptions" [(ngModel)]="selectedGroup" optionLabel="label" optionValue="value" placeholder="Group"></p-dropdown>
+    <p-dropdown [options]="typeOptions" [(ngModel)]="selectedType" optionLabel="label" optionValue="value" placeholder="Type"></p-dropdown>
+    <p-dropdown [options]="statusOptions" [(ngModel)]="selectedStatus" optionLabel="label" optionValue="value" placeholder="Status"></p-dropdown>
+    <input type="number" pInputText class="w-32" placeholder="Min health" [(ngModel)]="minHealth">
+    <button pButton class="p-button-sm p-button-outlined" icon="pi pi-search" label="Search" (click)="searchAssets()"></button>
+    <button pButton class="p-button-sm p-button-outlined" icon="pi pi-table" label="Table View" (click)="toggleTableView()"></button>
+    <button pButton class="p-button-sm p-button-outlined" icon="pi pi-trash" label="Bulk Delete" (click)="bulkDelete()"></button>
+  </div>
+  <!-- Card/Grid or Table View -->
+  <div *ngIf="!tableView" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div *ngFor="let asset of pagedAssets()" class="explorer-card flex flex-col items-center text-center">
+      <span class="font-bold text-lg text-blue-700 dark:text-blue-300 mb-1">{{ asset.name }}</span>
+      <span class="metadata-tag bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 mb-2">{{ asset.type }}</span>
+      <div class="flex flex-wrap gap-2 justify-center text-xs mb-2">
+        <span class="metadata-tag"><i class="pi pi-user mr-1"></i>{{ asset.owner }}</span>
+        <span class="metadata-tag"><i class="pi pi-database mr-1"></i>{{ asset.assets }}</span>
+        <span class="metadata-tag"
+          [ngClass]="{
+            'status-online': asset.status==='online',
+            'status-warning': asset.status==='warning',
+            'status-offline': asset.status==='offline'
+          }">
+          <i class="pi pi-circle-on text-xs"></i>{{ asset.status }}
+        </span>
+        <span class="metadata-tag"><i class="pi pi-calendar mr-1"></i>{{ formatDate(asset.lastSynced) }}</span>
+        <span [ngClass]="getHealthClass(asset.health)"><i class="pi pi-heart mr-1"></i>{{ asset.health }}%</span>
+      </div>
+    </div>
+    <div *ngIf="pagedAssets().length === 0" class="col-span-full text-center p-8 flex flex-col items-center justify-center">
+      <i class="pi pi-search text-5xl text-gray-300 mb-4 animate-bounce"></i>
+      <p class="text-gray-500 mb-2">No assets found matching your criteria</p>
+      <button pButton class="p-button-sm p-button-outlined" (click)="resetFilters()">Reset Filters</button>
+    </div>
+  </div>
+  <div *ngIf="tableView" class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Owner</th>
+          <th>Status</th>
+          <th>Health</th>
+          <th>Last Synced</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let asset of pagedAssets()">
+          <td>{{ asset.name }}</td>
+          <td>{{ asset.type }}</td>
+          <td>{{ asset.owner }}</td>
+          <td>{{ asset.status }}</td>
+          <td>{{ asset.health }}%</td>
+          <td>{{ formatDate(asset.lastSynced) }}</td>
+          <td>
+            <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm" pTooltip="View details" (click)="openDetailModal(asset)"></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="flex justify-center mt-4">
+    <p-paginator [rows]="9" [totalRecords]="filteredAssets.length" [(first)]="assetPageFirst"></p-paginator>
+  </div>
+  <!-- Modal chi tiết asset -->
+  <p-dialog header="Asset Details" [(visible)]="detailModalVisible" [modal]="true" [style]="{width: '400px'}" [baseZIndex]="10000" *ngIf="selectedAsset">
+    <div class="flex flex-col gap-3 items-center text-center">
+      <span class="font-bold text-lg">{{ selectedAsset.name }}</span>
+      <div class="flex flex-wrap gap-2 justify-center text-xs mb-2">
+        <span class="metadata-tag bg-blue-50 text-blue-700">Type: {{ selectedAsset.type }}</span>
+        <span class="metadata-tag">Owner: {{ selectedAsset.owner }}</span>
+        <span class="metadata-tag">Assets: {{ selectedAsset.assets }}</span>
+        <span class="metadata-tag"
+          [ngClass]="{
+            'status-online': selectedAsset.status==='online',
+            'status-warning': selectedAsset.status==='warning',
+            'status-offline': selectedAsset.status==='offline'
+          }">Status: {{ selectedAsset.status }}</span>
+        <span class="metadata-tag">Last Synced: {{ formatDate(selectedAsset.lastSynced) }}</span>
+        <span [ngClass]="getHealthClass(selectedAsset.health)">Health: {{ selectedAsset.health }}%</span>
+      </div>
+      <div class="mt-2 text-sm text-gray-600">(Thêm các thông tin metadata, mô tả, lịch sử, v.v. tại đây nếu cần)</div>
+    </div>
+  </p-dialog>
+</div>

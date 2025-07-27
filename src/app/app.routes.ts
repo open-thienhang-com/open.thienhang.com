@@ -44,6 +44,7 @@ import { AuditLogComponent } from './features/observability/audit-log/audit-log.
 import { AirflowComponent } from './features/integrations/airflow/airflow.component';
 import { GoogleCloudComponent } from './features/integrations/google-cloud/google-cloud.component';
 import { DatabricksComponent } from './features/integrations/databricks/databricks.component';
+import { AssetDetailComponent } from './features/explore/asset-detail.component';
 
 // Data Mesh Components
 import { DomainCatalogComponent as DataMeshDomainCatalogComponent } from './features/data-mesh/domain-catalog/domain-catalog.component';
@@ -288,6 +289,10 @@ export const routes: Routes = [
       {
         path: 'integrations/databricks',
         component: DatabricksComponent,
+      },
+      {
+        path: 'explore/:id',
+        component: AssetDetailComponent,
       },
       {
         path: '',

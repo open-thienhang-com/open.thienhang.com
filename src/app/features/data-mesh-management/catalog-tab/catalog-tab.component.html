@@ -1,0 +1,101 @@
+<!-- Catalog Tab Component: Card Grid, Summary Panel, Filters, Bulk Actions, Modal -->
+<div class="flex flex-col gap-4">
+  <!-- Summary Panel -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col items-center">
+      <span class="text-xs text-gray-500">Total Assets</span>
+      <span class="text-2xl font-bold text-blue-600 dark:text-blue-300">{{ dataSources.length }}</span>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col items-center">
+      <span class="text-xs text-gray-500">Online</span>
+      <span class="text-2xl font-bold text-green-600 dark:text-green-300">{{ onlineCount }}</span>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col items-center">
+      <span class="text-xs text-gray-500">Warning</span>
+      <span class="text-2xl font-bold text-yellow-600 dark:text-yellow-300">{{ warningCount }}</span>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col items-center">
+      <span class="text-xs text-gray-500">Offline</span>
+      <span class="text-2xl font-bold text-red-600 dark:text-red-300">{{ offlineCount }}</span>
+    </div>
+  </div>
+  <!-- Advanced Filters & Bulk Actions -->
+  <div class="flex flex-wrap gap-2 mb-4 items-center">
+    <p-checkbox [(ngModel)]="selectAllChecked" binary="true" aria-label="Select all assets" (onChange)="toggleSelectAll()" class="mr-2"></p-checkbox>
+    <span class="text-xs font-semibold mr-2">Select All</span>
+    <input type="text" pInputText class="w-48" placeholder="Search name..." [(ngModel)]="searchQuery">
+    <p-dropdown [options]="ownerOptions" [(ngModel)]="selectedOwner" optionLabel="label" optionValue="value" placeholder="Owner"></p-dropdown>
+    <p-dropdown [options]="statusOptions" [(ngModel)]="selectedStatus" optionLabel="label" optionValue="value" placeholder="Status"></p-dropdown>
+    <input type="number" pInputText class="w-32" placeholder="Min health" [(ngModel)]="minHealth">
+    <input type="date" pInputText class="w-40" placeholder="Last synced after" [(ngModel)]="lastSyncedAfter">
+    <button pButton class="p-button-sm p-button-outlined" icon="pi pi-download" label="Export CSV" (click)="exportAssets()"></button>
+    <button pButton class="p-button-sm p-button-outlined" icon="pi pi-trash" label="Bulk Delete" (click)="bulkDeleteSelected()" [disabled]="selectedAssetIds.length === 0"></button>
+  </div>
+  <!-- Card Grid Dictionary Layout with Pagination -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div *ngFor="let source of pagedAssets(); let i = index" class="explorer-card flex flex-col items-center text-center relative" [ngClass]="{'border-red-400': source.status==='offline' || source.status==='warning'}">
+      <div class="absolute left-2 top-2">
+        <p-checkbox [(ngModel)]="selectedAssetIds" [value]="source.id" aria-label="Select asset {{ source.name }}" binary="false" (onChange)="onAssetCheckboxChange()"></p-checkbox>
+      </div>
+      <div class="explorer-card-icon mb-2">
+        <img *ngIf="source.image" [src]="source.image" alt="{{ source.type }}" class="w-12 h-12 rounded-full object-cover border border-gray-200" />
+        <i *ngIf="!source.image" [ngClass]="getIconClass(source.type, source.subtype)" class="text-4xl"></i>
+      </div>
+      <span class="font-bold text-lg text-blue-700 dark:text-blue-300 mb-1">{{ source.name }}</span>
+      <span class="metadata-tag bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 mb-2">{{ source.type }}</span>
+      <div class="flex flex-wrap gap-2 justify-center text-xs mb-2">
+        <span class="metadata-tag" [title]="source.owner"><i class="pi pi-user mr-1"></i>{{ source.owner }}</span>
+        <span class="metadata-tag" [title]="source.assets"><i class="pi pi-database mr-1"></i>{{ source.assets }}</span>
+        <span class="metadata-tag"
+          [ngClass]="{
+            'status-online': source.status==='online',
+            'status-warning': source.status==='warning',
+            'status-offline': source.status==='offline'
+          }" [title]="source.status">
+          <i class="pi pi-circle-on text-xs"></i>{{ source.status }}
+        </span>
+        <span class="metadata-tag" [title]="formatDate(source.lastSynced)"><i class="pi pi-calendar mr-1"></i>{{ formatDate(source.lastSynced) }}</span>
+        <span [ngClass]="getHealthClass(source.health)" [title]="source.health + '%'">
+          <i class="pi pi-heart mr-1"></i>{{ source.health }}%
+        </span>
+      </div>
+      <div class="flex gap-2 mt-2 justify-center">
+        <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm hover:bg-blue-100 dark:hover:bg-blue-900" pTooltip="View details" (click)="openDetailModal(source)" aria-label="View details"></button>
+        <button pButton icon="pi pi-sync" class="p-button-rounded p-button-text p-button-sm hover:bg-green-100 dark:hover:bg-green-900" pTooltip="Sync now" aria-label="Sync now"></button>
+        <button pButton icon="pi pi-cog" class="p-button-rounded p-button-text p-button-sm hover:bg-gray-100 dark:hover:bg-gray-900" pTooltip="Settings" aria-label="Settings"></button>
+      </div>
+    </div>
+    <div *ngIf="pagedAssets().length === 0" class="col-span-full text-center p-8 flex flex-col items-center justify-center">
+      <i class="pi pi-search text-5xl text-gray-300 mb-4 animate-bounce"></i>
+      <p class="text-gray-500 mb-2">No data sources found matching your criteria</p>
+      <button pButton class="p-button-sm p-button-outlined" (click)="resetFilters()">Reset Filters</button>
+    </div>
+  </div>
+  <div class="flex justify-center mt-4">
+    <p-paginator [rows]="9" [totalRecords]="filteredDataSources.length" [(first)]="assetPageFirst"></p-paginator>
+  </div>
+  <!-- Modal chi tiết nguồn dữ liệu -->
+  <p-dialog header="Data Source Details" [(visible)]="detailModalVisible" [modal]="true" [style]="{width: '400px'}" [baseZIndex]="10000" *ngIf="selectedSource">
+    <div class="flex flex-col gap-3 items-center text-center">
+      <div class="explorer-card-icon mb-2">
+        <img *ngIf="selectedSource.image" [src]="selectedSource.image" alt="{{ selectedSource.type }}" class="w-16 h-16 rounded-full object-cover border border-gray-200" />
+        <i *ngIf="!selectedSource.image" [ngClass]="getIconClass(selectedSource.type, selectedSource.subtype)" class="text-4xl"></i>
+      </div>
+      <span class="font-bold text-lg">{{ selectedSource.name }}</span>
+      <div class="flex flex-wrap gap-2 justify-center text-xs mb-2">
+        <span class="metadata-tag bg-blue-50 text-blue-700">Type: {{ selectedSource.type }}</span>
+        <span class="metadata-tag">Owner: {{ selectedSource.owner }}</span>
+        <span class="metadata-tag">Assets: {{ selectedSource.assets }}</span>
+        <span class="metadata-tag"
+          [ngClass]="{
+            'status-online': selectedSource.status==='online',
+            'status-warning': selectedSource.status==='warning',
+            'status-offline': selectedSource.status==='offline'
+          }">Status: {{ selectedSource.status }}</span>
+        <span class="metadata-tag">Last Synced: {{ formatDate(selectedSource.lastSynced) }}</span>
+        <span [ngClass]="getHealthClass(selectedSource.health)">Health: {{ selectedSource.health }}%</span>
+      </div>
+      <div class="mt-2 text-sm text-gray-600">(Thêm các thông tin metadata, mô tả, lịch sử, v.v. tại đây nếu cần)</div>
+    </div>
+  </p-dialog>
+</div>
