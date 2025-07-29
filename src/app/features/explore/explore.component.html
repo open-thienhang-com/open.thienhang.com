@@ -51,95 +51,99 @@
             </div>
           </ng-container>
           <ng-container *ngIf="filteredAssets.length > 0">
-            <div class="mb-6">
-              <p-dataView *ngIf="viewMode!=='order'" [value]="filteredAssets" [layout]="viewMode" [paginator]="true" [rows]="9">
-                <ng-template let-asset pTemplate="list">
-                  <div class="flex items-center gap-4 p-4 border-b border-gray-200 dark:border-gray-700 bg-white rounded-lg shadow-sm mb-2">
-                    <span class="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30">
-                      <i [ngClass]="getIconClass(asset.type, asset.subtype)" class="text-3xl"></i>
-                    </span>
-                    <div class="flex-1">
-                      <div class="font-bold text-lg text-blue-700 dark:text-blue-300">{{ asset.name }}</div>
-                      <div class="text-gray-500">{{ asset.description || 'No description' }}</div>
-                      <div class="flex gap-2 mt-1">
-                        <span *ngFor="let tag of asset.tags" class="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs">{{ tag }}</span>
-                      </div>
+            <!-- Card/Grid View -->
+            <p-dataView *ngIf="viewMode==='grid'" [value]="filteredAssets" layout="grid" [paginator]="true" [rows]="9">
+              <ng-template let-asset pTemplate="grid">
+                <div class="explorer-card flex flex-col items-center text-center p-6 rounded-xl shadow-lg bg-white dark:bg-gray-800 hover:shadow-2xl focus:ring-2 focus:ring-blue-400 transition cursor-pointer mb-4" (click)="openDetailPage(asset)">
+                  <span class="flex items-center justify-center w-24 h-24 rounded-full bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-200 dark:border-blue-700 shadow mb-3">
+                    <i [ngClass]="getIconClass(asset.type, asset.subtype)" class="text-6xl"></i>
+                  </span>
+                  <span class="font-bold text-xl text-blue-700 dark:text-blue-300 mb-1">{{ asset.name || 'No name' }}</span>
+                  <span class="text-gray-500 mb-2">{{ asset.description || 'No description' }}</span>
+                  <div class="mb-2">
+                    <span *ngFor="let tag of asset.tags || []" class="inline-block bg-blue-50 text-blue-600 px-2 py-1 rounded-full mr-1 mb-1">{{ tag }}</span>
+                    <span *ngIf="!asset.tags || asset.tags.length === 0" class="text-gray-400">No tags</span>
+                  </div>
+                  <div class="flex flex-wrap gap-2 justify-center mb-2">
+                    <span class="metadata-tag bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-3 py-1 rounded">{{ asset.type || 'N/A' }}</span>
+                    <span class="text-xs text-gray-400">Owner: {{ asset.owner || 'N/A' }}</span>
+                  </div>
+                  <div class="flex flex-wrap gap-2 justify-center mb-2">
+                    <span class="text-xs text-gray-500 flex items-center gap-1"><i class="pi pi-info-circle"></i> {{ asset.status || 'N/A' }}</span>
+                    <span class="text-xs text-gray-500 flex items-center gap-1"><i class="pi pi-shield"></i> {{ asset.sensitivity || 'N/A' }}</span>
+                  </div>
+                  <span class="text-xs text-gray-400 mb-1">Updated: {{ asset.updated || 'N/A' }}</span>
+                  <span *ngIf="asset.freeAccess" class="inline-flex items-center gap-1 text-green-600 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded mb-1 text-xs font-semibold"><i class="pi pi-unlock"></i> Free Access</span>
+                  <button pButton type="button" label="Detail" icon="pi pi-info-circle" class="mt-2 w-full" (click)="openDetailPage(asset); $event.stopPropagation()"></button>
+                </div>
+              </ng-template>
+              <ng-template pTemplate="empty">
+                <div class="col-span-full text-center p-8 flex flex-col items-center justify-center">
+                  <span class="flex items-center justify-center w-24 h-24 rounded-full bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-200 dark:border-blue-700 shadow mb-2">
+                    <i class="pi pi-database text-6xl text-blue-400"></i>
+                  </span>
+                  <p class="text-gray-500 mb-2">No matching data assets found</p>
+                </div>
+              </ng-template>
+            </p-dataView>
+            <!-- Table View -->
+            <p-table *ngIf="viewMode==='list'" [value]="filteredAssets" [paginator]="true" [rows]="10" [responsiveLayout]="'scroll'" class="p-datatable-gridlines rounded-xl shadow bg-white dark:bg-gray-800">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Icon</th>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Owner</th>
+                  <th>Status</th>
+                  <th>Sensitivity</th>
+                  <th>Tags</th>
+                  <th>Updated</th>
+                  <th>Detail</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-asset>
+                <tr>
+                  <td><i [ngClass]="getIconClass(asset.type, asset.subtype)" class="text-2xl"></i></td>
+                  <td class="font-bold text-blue-700 dark:text-blue-300">{{ asset.name || 'No name' }}</td>
+                  <td>{{ asset.type || 'N/A' }}</td>
+                  <td>{{ asset.owner || 'N/A' }}</td>
+                  <td>{{ asset.status || 'N/A' }}</td>
+                  <td>{{ asset.sensitivity || 'N/A' }}</td>
+                  <td>
+                    <span *ngFor="let tag of asset.tags || []" class="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs mr-1">{{ tag }}</span>
+                    <span *ngIf="!asset.tags || asset.tags.length === 0" class="text-gray-400">No tags</span>
+                  </td>
+                  <td>{{ asset.updated || 'N/A' }}</td>
+                  <td><button pButton type="button" icon="pi pi-info-circle" (click)="openDetailPage(asset); $event.stopPropagation()"></button></td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr><td colspan="9" class="text-center text-gray-400">No matching data assets found</td></tr>
+              </ng-template>
+            </p-table>
+            <!-- Order List giữ nguyên -->
+            <p-orderList *ngIf="viewMode==='order'" [value]="filteredAssets" [listStyle]="{height:'400px'}" dragdrop="true">
+              <ng-template let-asset pTemplate="item">
+                <div class="flex items-center gap-4 p-4 border-b border-gray-200 dark:border-gray-700 bg-white rounded-lg shadow-sm mb-2">
+                  <span class="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30">
+                    <i [ngClass]="getIconClass(asset.type, asset.subtype)" class="text-3xl"></i>
+                  </span>
+                  <div class="flex-1">
+                    <div class="font-bold text-lg text-blue-700 dark:text-blue-300">{{ asset.name || 'No name' }}</div>
+                    <div class="text-gray-500">{{ asset.description || 'No description' }}</div>
+                    <div class="flex gap-2 mt-1">
+                      <span *ngFor="let tag of asset.tags || []" class="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs">{{ tag }}</span>
+                      <span *ngIf="!asset.tags || asset.tags.length === 0" class="text-gray-400">No tags</span>
                     </div>
-                    <button pButton type="button" label="Detail" icon="pi pi-info-circle" (click)="openDetailPage(asset)"></button>
                   </div>
-                </ng-template>
-                <ng-template let-asset pTemplate="grid">
-                  <div class="explorer-card flex flex-col items-center text-center p-6 rounded-xl shadow-lg bg-white dark:bg-gray-800 hover:shadow-2xl focus:ring-2 focus:ring-blue-400 transition cursor-pointer mb-4" (click)="openDetailPage(asset)">
-                    <span class="flex items-center justify-center w-24 h-24 rounded-full bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-200 dark:border-blue-700 shadow mb-3">
-                      <i [ngClass]="getIconClass(asset.type, asset.subtype)" class="text-6xl"></i>
-                    </span>
-                    <span class="font-bold text-xl text-blue-700 dark:text-blue-300 mb-1">{{ asset.name }}</span>
-                    <span class="text-gray-500 mb-2">{{ asset.description || 'No description' }}</span>
-                    <div class="mb-2">
-                      <span *ngFor="let tag of asset.tags" class="inline-block bg-blue-50 text-blue-600 px-2 py-1 rounded-full mr-1 mb-1">{{ tag }}</span>
-                    </div>
-                    <span class="metadata-tag bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-3 py-1 rounded mb-1">{{ asset.type }}</span>
-                    <span class="text-xs text-gray-400 mb-1">Owner: {{ asset.owner || 'N/A' }}</span>
-                    <span class="text-xs text-gray-400 mb-1">Updated: {{ asset.updated || 'N/A' }}</span>
-                    <span *ngIf="asset.freeAccess" class="inline-flex items-center gap-1 text-green-600 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded mb-1 text-xs font-semibold"><i class="pi pi-unlock"></i> Free Access</span>
-                    <span class="text-xs text-gray-500 mb-1">{{ asset.location || 'N/A' }}</span>
-                    <span class="text-xs text-gray-500 mb-1 flex items-center gap-1"><i class="pi pi-info-circle"></i> Status: {{ asset.status || 'N/A' }}</span>
-                    <span class="text-xs text-gray-500 mb-1 flex items-center gap-1"><i class="pi pi-shield"></i> Sensitivity: {{ asset.sensitivity || 'N/A' }}</span>
-                    <button pButton type="button" label="Detail" icon="pi pi-info-circle" class="mt-2 w-full" (click)="openDetailPage(asset)"></button>
-                  </div>
-                </ng-template>
-                <ng-template pTemplate="empty">
-                  <div class="col-span-full text-center p-8 flex flex-col items-center justify-center">
-                    <span class="flex items-center justify-center w-24 h-24 rounded-full bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-200 dark:border-blue-700 shadow mb-2">
-                      <i class="pi pi-database text-6xl text-blue-400"></i>
-                    </span>
-                    <p class="text-gray-500 mb-2">No matching data assets found</p>
-                  </div>
-                </ng-template>
-              </p-dataView>
-              <p-orderList *ngIf="viewMode==='order'" [value]="filteredAssets" [listStyle]="{height:'400px'}" dragdrop="true">
-                <ng-template let-asset pTemplate="item">
-                  <div class="flex items-center gap-4 p-4 border-b border-gray-200 dark:border-gray-700 bg-white rounded-lg shadow-sm mb-2">
-                    <span class="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30">
-                      <i [ngClass]="getIconClass(asset.type, asset.subtype)" class="text-3xl"></i>
-                    </span>
-                    <div class="flex-1">
-                      <div class="font-bold text-lg text-blue-700 dark:text-blue-300">{{ asset.name }}</div>
-                      <div class="text-gray-500">{{ asset.description || 'No description' }}</div>
-                      <div class="flex gap-2 mt-1">
-                        <span *ngFor="let tag of asset.tags" class="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs">{{ tag }}</span>
-                      </div>
-                    </div>
-                    <button pButton type="button" label="Detail" icon="pi pi-info-circle" (click)="openDetailPage(asset)"></button>
-                  </div>
-                </ng-template>
-              </p-orderList>
-            </div>
+                  <button pButton type="button" label="Detail" icon="pi pi-info-circle" (click)="openDetailPage(asset); $event.stopPropagation()"></button>
+                </div>
+              </ng-template>
+            </p-orderList>
           </ng-container>
         </div>
-        <div class="mb-4 text-sm text-gray-500">Assets loaded: {{ filteredAssets.length }}</div>
-        <table *ngIf="filteredAssets.length > 0" class="min-w-full mb-4 border border-gray-200">
-          <thead><tr><th class="px-2 py-1">Name</th><th class="px-2 py-1">Type</th><th class="px-2 py-1">Owner</th></tr></thead>
-          <tbody>
-            <tr *ngFor="let asset of filteredAssets">
-              <td class="px-2 py-1">{{ asset.name }}</td>
-              <td class="px-2 py-1">{{ asset.type }}</td>
-              <td class="px-2 py-1">{{ asset.owner }}</td>
-            </tr>
-          </tbody>
-        </table>
       </ng-container>
-      <div class="mb-4 text-sm text-gray-500">Assets loaded: {{ filteredAssets.length }}</div>
-      <table *ngIf="filteredAssets.length > 0" class="min-w-full mb-4 border border-gray-200">
-        <thead><tr><th class="px-2 py-1">Name</th><th class="px-2 py-1">Type</th><th class="px-2 py-1">Owner</th></tr></thead>
-        <tbody>
-          <tr *ngFor="let asset of filteredAssets">
-            <td class="px-2 py-1">{{ asset.name }}</td>
-            <td class="px-2 py-1">{{ asset.type }}</td>
-            <td class="px-2 py-1">{{ asset.owner }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="mb-4 text-sm text-gray-500"></div>
     </main>
   </div>
 

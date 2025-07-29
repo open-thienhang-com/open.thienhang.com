@@ -284,6 +284,7 @@ export class ExploreComponent {
 
     page: number = 0;
 
+    // Đảm bảo viewMode chỉ nhận 'list' | 'grid' | 'order' và mặc định là 'grid'
     viewMode: 'list' | 'grid' | 'order' = 'grid';
 
     sidebarOpen: boolean = true;
@@ -438,7 +439,11 @@ export class ExploreComponent {
 
     // Update all 'table' references to 'list' for viewMode
     onViewModeChange(mode: 'list' | 'grid' | 'order') {
-        this.viewMode = mode;
+        if (mode === 'list' || mode === 'grid' || mode === 'order') {
+            this.viewMode = mode;
+        } else {
+            this.viewMode = 'grid';
+        }
     }
 
     // Use filteredAssets for UI display
