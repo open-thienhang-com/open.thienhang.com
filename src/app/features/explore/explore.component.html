@@ -17,19 +17,64 @@
       <!-- Top Filter/Search/Toggle/Paging Bar -->
       <div class="flex flex-wrap gap-4 items-center mb-6 justify-between">
         <div class="flex gap-2 items-center">
-          <input type="text" class="w-64 p-2 rounded border border-gray-300" placeholder="Search assets..." [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" aria-label="Search assets">
-          <select class="w-32 p-2 rounded border border-gray-300" [(ngModel)]="typeFilter" (change)="onFilterChange()">
-            <option value="">Type</option>
+          <input 
+            type="text" 
+            class="w-64 p-2 rounded border border-gray-300" 
+            placeholder="Search assets..." 
+            [(ngModel)]="searchQuery" 
+            (ngModelChange)="onSearchChange()" 
+            aria-label="Search assets">
+          
+          <select 
+            class="w-32 p-2 rounded border border-gray-300" 
+            [(ngModel)]="typeFilter" 
+            (change)="onFilterChange()">
+            <option value="">All Types</option>
             <option *ngFor="let type of typeOptions" [value]="type">{{ type }}</option>
           </select>
-          <select class="w-32 p-2 rounded border border-gray-300" [(ngModel)]="ownerFilter" (change)="onFilterChange()">
-            <option value="">Owner</option>
+          
+          <select 
+            class="w-32 p-2 rounded border border-gray-300" 
+            [(ngModel)]="ownerFilter" 
+            (change)="onFilterChange()">
+            <option value="">All Owners</option>
             <option *ngFor="let owner of ownerOptions" [value]="owner">{{ owner }}</option>
           </select>
+          
+          <select 
+            class="w-32 p-2 rounded border border-gray-300" 
+            [(ngModel)]="statusFilter" 
+            (change)="onFilterChange()">
+            <option value="">All Status</option>
+            <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+          </select>
+          
+          <select 
+            class="w-32 p-2 rounded border border-gray-300" 
+            [(ngModel)]="sensitivityFilter" 
+            (change)="onFilterChange()">
+            <option value="">All Sensitivity</option>
+            <option *ngFor="let sensitivity of sensitivityOptions" [value]="sensitivity">{{ sensitivity }}</option>
+          </select>
+          
+          <!-- Filter chips -->
           <div class="flex gap-1">
-            <span *ngIf="typeFilter" class="bg-blue-100 text-blue-700 px-2 py-1 rounded flex items-center">{{ typeFilter }} <button class="ml-1 text-xs" (click)="typeFilter=''; onFilterChange()">&times;</button></span>
-            <span *ngIf="ownerFilter" class="bg-green-100 text-green-700 px-2 py-1 rounded flex items-center">{{ ownerFilter }} <button class="ml-1 text-xs" (click)="ownerFilter=''; onFilterChange()">&times;</button></span>
-            <span *ngIf="searchQuery" class="bg-gray-100 text-gray-700 px-2 py-1 rounded flex items-center">{{ searchQuery }} <button class="ml-1 text-xs" (click)="searchQuery=''; onSearchChange()">&times;</button></span>
+            <span *ngIf="typeFilter" class="bg-blue-100 text-blue-700 px-2 py-1 rounded flex items-center">
+              {{ typeFilter }} 
+              <button class="ml-1 text-xs" (click)="clearTypeFilter()">&times;</button>
+            </span>
+            <span *ngIf="ownerFilter" class="bg-green-100 text-green-700 px-2 py-1 rounded flex items-center">
+              {{ ownerFilter }} 
+              <button class="ml-1 text-xs" (click)="clearOwnerFilter()">&times;</button>
+            </span>
+            <span *ngIf="searchQuery" class="bg-gray-100 text-gray-700 px-2 py-1 rounded flex items-center">
+              "{{ searchQuery }}" 
+              <button class="ml-1 text-xs" (click)="clearSearch()">&times;</button>
+            </span>
+            <span *ngIf="domainFilter" class="bg-purple-100 text-purple-700 px-2 py-1 rounded flex items-center">
+              Domain: {{ domainFilter }} 
+              <button class="ml-1 text-xs" (click)="clearDomainFilter()">&times;</button>
+            </span>
           </div>
         </div>
         <div class="flex gap-2 items-center">
@@ -52,28 +97,30 @@
           </ng-container>
           <ng-container *ngIf="filteredAssets.length > 0">
             <!-- Card/Grid View -->
-            <p-dataView *ngIf="viewMode==='grid'" [value]="filteredAssets" layout="grid" [paginator]="true" [rows]="9">
+            <p-dataView *ngIf="viewMode==='grid'" [value]="filteredAssets" layout="grid" [paginator]="true" [rows]="pageSize" [totalRecords]="totalRecords" [first]="currentPage * pageSize" (onPage)="onPageChange($event)">
               <ng-template let-asset pTemplate="grid">
                 <div class="explorer-card flex flex-col items-center text-center p-6 rounded-xl shadow-lg bg-white dark:bg-gray-800 hover:shadow-2xl focus:ring-2 focus:ring-blue-400 transition cursor-pointer mb-4" (click)="openDetailPage(asset)">
                   <span class="flex items-center justify-center w-24 h-24 rounded-full bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-200 dark:border-blue-700 shadow mb-3">
                     <i [ngClass]="getIconClass(asset.type, asset.subtype)" class="text-6xl"></i>
                   </span>
-                  <span class="font-bold text-xl text-blue-700 dark:text-blue-300 mb-1">{{ asset.name || 'No name' }}</span>
-                  <span class="text-gray-500 mb-2">{{ asset.description || 'No description' }}</span>
+                  <span class="font-bold text-xl text-blue-700 dark:text-blue-300 mb-1">{{ asset.name }}</span>
+                  <span class="text-gray-500 mb-2">{{ asset.description }}</span>
                   <div class="mb-2">
-                    <span *ngFor="let tag of asset.tags || []" class="inline-block bg-blue-50 text-blue-600 px-2 py-1 rounded-full mr-1 mb-1">{{ tag }}</span>
-                    <span *ngIf="!asset.tags || asset.tags.length === 0" class="text-gray-400">No tags</span>
+                    <span *ngFor="let tag of asset.tags" class="inline-block bg-blue-50 text-blue-600 px-2 py-1 rounded-full mr-1 mb-1 text-xs">{{ tag }}</span>
+                    <span *ngIf="!asset.tags || asset.tags.length === 0" class="text-gray-400 text-xs">No tags</span>
                   </div>
                   <div class="flex flex-wrap gap-2 justify-center mb-2">
-                    <span class="metadata-tag bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-3 py-1 rounded">{{ asset.type || 'N/A' }}</span>
-                    <span class="text-xs text-gray-400">Owner: {{ asset.owner || 'N/A' }}</span>
+                    <span class="metadata-tag bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-3 py-1 rounded text-xs">{{ asset.type }}</span>
+                    <span class="text-xs text-gray-400">Owner: {{ asset.owner }}</span>
                   </div>
                   <div class="flex flex-wrap gap-2 justify-center mb-2">
-                    <span class="text-xs text-gray-500 flex items-center gap-1"><i class="pi pi-info-circle"></i> {{ asset.status || 'N/A' }}</span>
-                    <span class="text-xs text-gray-500 flex items-center gap-1"><i class="pi pi-shield"></i> {{ asset.sensitivity || 'N/A' }}</span>
+                    <span [class]="'text-xs px-2 py-1 rounded ' + getStatusClass(asset.status)">{{ asset.status }}</span>
+                    <span [class]="'text-xs px-2 py-1 rounded ' + getSensitivityClass(asset.sensitivity)">{{ asset.sensitivity }}</span>
                   </div>
-                  <span class="text-xs text-gray-400 mb-1">Updated: {{ asset.updated || 'N/A' }}</span>
-                  <span *ngIf="asset.freeAccess" class="inline-flex items-center gap-1 text-green-600 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded mb-1 text-xs font-semibold"><i class="pi pi-unlock"></i> Free Access</span>
+                  <span class="text-xs text-gray-400 mb-1">Updated: {{ formatDate(asset.updated_at) }}</span>
+                  <span *ngIf="asset.freeAccess" class="inline-flex items-center gap-1 text-green-600 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded mb-1 text-xs font-semibold">
+                    <i class="pi pi-unlock"></i> Free Access
+                  </span>
                   <button pButton type="button" label="Detail" icon="pi pi-info-circle" class="mt-2 w-full" (click)="openDetailPage(asset); $event.stopPropagation()"></button>
                 </div>
               </ng-template>
@@ -87,7 +134,7 @@
               </ng-template>
             </p-dataView>
             <!-- Table View -->
-            <p-table *ngIf="viewMode==='list'" [value]="filteredAssets" [paginator]="true" [rows]="10" [responsiveLayout]="'scroll'" class="p-datatable-gridlines rounded-xl shadow bg-white dark:bg-gray-800">
+            <p-table *ngIf="viewMode==='list'" [value]="filteredAssets" [paginator]="true" [rows]="pageSize" [totalRecords]="totalRecords" [first]="currentPage * pageSize" (onPage)="onPageChange($event)" [responsiveLayout]="'scroll'" class="p-datatable-gridlines rounded-xl shadow bg-white dark:bg-gray-800">
               <ng-template pTemplate="header">
                 <tr>
                   <th>Icon</th>
@@ -104,16 +151,16 @@
               <ng-template pTemplate="body" let-asset>
                 <tr>
                   <td><i [ngClass]="getIconClass(asset.type, asset.subtype)" class="text-2xl"></i></td>
-                  <td class="font-bold text-blue-700 dark:text-blue-300">{{ asset.name || 'No name' }}</td>
-                  <td>{{ asset.type || 'N/A' }}</td>
-                  <td>{{ asset.owner || 'N/A' }}</td>
-                  <td>{{ asset.status || 'N/A' }}</td>
-                  <td>{{ asset.sensitivity || 'N/A' }}</td>
+                  <td class="font-bold text-blue-700 dark:text-blue-300">{{ asset.name }}</td>
+                  <td>{{ asset.type }}</td>
+                  <td>{{ asset.owner }}</td>
+                  <td><span [class]="'px-2 py-1 rounded text-xs ' + getStatusClass(asset.status)">{{ asset.status }}</span></td>
+                  <td><span [class]="'px-2 py-1 rounded text-xs ' + getSensitivityClass(asset.sensitivity)">{{ asset.sensitivity }}</span></td>
                   <td>
-                    <span *ngFor="let tag of asset.tags || []" class="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs mr-1">{{ tag }}</span>
-                    <span *ngIf="!asset.tags || asset.tags.length === 0" class="text-gray-400">No tags</span>
+                    <span *ngFor="let tag of asset.tags" class="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs mr-1">{{ tag }}</span>
+                    <span *ngIf="!asset.tags || asset.tags.length === 0" class="text-gray-400 text-xs">No tags</span>
                   </td>
-                  <td>{{ asset.updated || 'N/A' }}</td>
+                  <td>{{ formatDate(asset.updated_at) }}</td>
                   <td><button pButton type="button" icon="pi pi-info-circle" (click)="openDetailPage(asset); $event.stopPropagation()"></button></td>
                 </tr>
               </ng-template>
@@ -129,11 +176,16 @@
                     <i [ngClass]="getIconClass(asset.type, asset.subtype)" class="text-3xl"></i>
                   </span>
                   <div class="flex-1">
-                    <div class="font-bold text-lg text-blue-700 dark:text-blue-300">{{ asset.name || 'No name' }}</div>
-                    <div class="text-gray-500">{{ asset.description || 'No description' }}</div>
+                    <div class="font-bold text-lg text-blue-700 dark:text-blue-300">{{ asset.name }}</div>
+                    <div class="text-gray-500">{{ asset.description }}</div>
                     <div class="flex gap-2 mt-1">
-                      <span *ngFor="let tag of asset.tags || []" class="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs">{{ tag }}</span>
-                      <span *ngIf="!asset.tags || asset.tags.length === 0" class="text-gray-400">No tags</span>
+                      <span *ngFor="let tag of asset.tags" class="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs">{{ tag }}</span>
+                      <span *ngIf="!asset.tags || asset.tags.length === 0" class="text-gray-400 text-xs">No tags</span>
+                    </div>
+                    <div class="flex gap-2 mt-1">
+                      <span [class]="'text-xs px-2 py-1 rounded ' + getStatusClass(asset.status)">{{ asset.status }}</span>
+                      <span [class]="'text-xs px-2 py-1 rounded ' + getSensitivityClass(asset.sensitivity)">{{ asset.sensitivity }}</span>
+                      <span class="text-xs text-gray-500">{{ asset.owner }}</span>
                     </div>
                   </div>
                   <button pButton type="button" label="Detail" icon="pi pi-info-circle" (click)="openDetailPage(asset); $event.stopPropagation()"></button>

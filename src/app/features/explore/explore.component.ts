@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -10,12 +10,70 @@ import { TooltipModule } from 'primeng/tooltip';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
 import { PaginatorModule } from 'primeng/paginator';
-import { SidebarTreeComponent } from '../data-mesh-management/sidebar-tree/sidebar-tree.component';
 import { DataAssetsService } from '../data-mesh-management/assets-tab/data-assets.service';
 import { DialogModule } from 'primeng/dialog';
 import { TreeModule } from 'primeng/tree';
 import { DataViewModule } from 'primeng/dataview';
 import { OrderListModule } from 'primeng/orderlist';
+import { TreeNode } from 'primeng/api';
+import { forkJoin } from 'rxjs';
+
+// Interface definitions based on API documentation
+interface Asset {
+  _id: string;
+  kid?: string;
+  name: string;
+  type: string;
+  subtype?: string;
+  source?: string;
+  location?: string;
+  owner: string;
+  sensitivity: string;
+  classification?: string;
+  status: string;
+  tags: string[];
+  description: string;
+  created_at: string;
+  updated_at: string;
+  domain?: {
+    domain_id: string;
+    domain_name: string;
+    domain_owner: string;
+  };
+  data_product?: {
+    product_id: string;
+    product_name: string;
+    product_owner: string;
+    version: string;
+  };
+  icon?: string;
+  image?: string;
+  freeAccess?: boolean;
+}
+
+interface FilterOptions {
+  types: string[];
+  owners: string[];
+  tags: string[];
+  status: string[];
+  sensitivity: string[];
+  domains: string[];
+}
+
+interface AssetStatistics {
+  total: number;
+  byType: { [key: string]: number };
+  byStatus: { [key: string]: number };
+  bySensitivity: { [key: string]: number };
+  byDomain: { [key: string]: number };
+}
+
+interface DomainNode {
+  id: string;
+  name: string;
+  types: { id: string; name: string; count?: number }[];
+  children: DomainNode[];
+}
 
 @Component({
     selector: 'app-explore',
@@ -32,7 +90,6 @@ import { OrderListModule } from 'primeng/orderlist';
         DropdownModule,
         InputTextModule,
         PaginatorModule,
-        SidebarTreeComponent,
         DialogModule,
         TreeModule,
         DataViewModule,
@@ -41,477 +98,479 @@ import { OrderListModule } from 'primeng/orderlist';
     templateUrl: './explore.component.html',
     styleUrls: ['./explore.component.scss']
 })
-export class ExploreComponent {
-    dataSources = [
-        {
-            id: 1,
-            name: 'MongoDB Production',
-            type: 'database',
-            subtype: 'mongodb',
-            status: 'online',
-            lastSynced: '2025-07-10T12:30:45Z',
-            owner: 'Data Platform Team',
-            assets: 42,
-            health: 98
-        },
-        {
-            id: 2,
-            name: 'Postgres Analytics',
-            type: 'database',
-            subtype: 'postgres',
-            status: 'online',
-            lastSynced: '2025-07-10T10:15:22Z',
-            owner: 'Data Analytics Team',
-            assets: 124,
-            health: 95
-        },
-        {
-            id: 3,
-            name: 'Trino Data Warehouse',
-            type: 'database',
-            subtype: 'trino',
-            status: 'online',
-            lastSynced: '2025-07-09T23:45:12Z',
-            owner: 'Data Engineering',
-            assets: 87,
-            health: 100
-        },
-        {
-            id: 4,
-            name: 'Daily ETL Pipeline',
-            type: 'pipeline',
-            subtype: 'airflow',
-            status: 'online',
-            lastSynced: '2025-07-10T05:00:00Z',
-            owner: 'ETL Team',
-            assets: 17,
-            health: 92
-        },
-        {
-            id: 5,
-            name: 'Events Streaming Platform',
-            type: 'topic',
-            subtype: 'kafka',
-            status: 'warning',
-            lastSynced: '2025-07-10T11:12:33Z',
-            owner: 'Streaming Team',
-            assets: 28,
-            health: 86
-        },
-        {
-            id: 6,
-            name: 'Customer Prediction Model',
-            type: 'mlmodel',
-            subtype: 'tensorflow',
-            status: 'online',
-            lastSynced: '2025-07-10T09:30:45Z',
-            owner: 'Data Science Team',
-            assets: 3,
-            health: 99
-        },
-        {
-            id: 7,
-            name: 'Media Storage',
-            type: 'container',
-            subtype: 's3',
-            status: 'online',
-            lastSynced: '2025-07-10T08:22:18Z',
-            owner: 'Infrastructure Team',
-            assets: 10432,
-            health: 100
-        },
-        {
-            id: 8,
-            name: 'Product Catalog Search',
-            type: 'search',
-            subtype: 'elasticsearch',
-            status: 'offline',
-            lastSynced: '2025-07-08T14:55:10Z',
-            owner: 'Search Team',
-            assets: 1,
-            health: 0
-        },
-        {
-            id: 9,
-            name: 'NLP Service',
-            type: 'api',
-            subtype: 'openai',
-            status: 'online',
-            lastSynced: '2025-07-10T13:05:27Z',
-            owner: 'AI Team',
-            assets: 5,
-            health: 97
-        }
-    ];
-
-    typeOptions = [
-        { label: 'All Types', value: null },
-        { label: 'Database', value: 'database' },
-        { label: 'Pipeline', value: 'pipeline' },
-        { label: 'Topic', value: 'topic' },
-        { label: 'ML Model', value: 'mlmodel' },
-        { label: 'Container', value: 'container' },
-        { label: 'Search Index', value: 'search' },
-        { label: 'API', value: 'api' }
-    ];
-
-    statusOptions = [
-        { label: 'All Statuses', value: null },
-        { label: 'Online', value: 'online' },
-        { label: 'Warning', value: 'warning' },
-        { label: 'Offline', value: 'offline' }
-    ];
-
-    ownerOptions = [
-        { label: 'All Owners', value: null },
-        ...Array.from(new Set(this.dataSources.map(ds => ds.owner))).map(owner => ({ label: owner, value: owner }))
-    ];
-
-    alphabet: string[] = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
-    selectedLetter: string | null = null;
-    selectedType: string | null = null;
-    selectedStatus: string | null = null;
-    selectedOwner: string | null = null;
-    searchQuery: string = '';
-    detailModalVisible: boolean = false;
-    selectedSource: any = null;
-
-    typeFilter: string | null = null;
-    ownerFilter: string | null = null;
-    filterChips: { type?: string; owner?: string; search?: string }[] = [];
-
-    typeFilterQuery: string = '';
-    typePageFirst: number = 0;
-
-    minHealth: number | null = null;
-    lastSyncedAfter: string | null = null;
-    assetPageFirst: number = 0;
-
-    statusFilterQuery: string = '';
-    tagFilterQuery: string = '';
-    tagOptions: any[] = [
-        { label: 'All Tags', value: null },
-        { label: 'PII', value: 'pii' },
-        { label: 'Finance', value: 'finance' },
-        { label: 'Customer', value: 'customer' },
-        { label: 'Critical', value: 'critical' }
-    ];
-    selectedAssets: any[] = [];
-
-    assetGroups = [
-        {
-            name: 'database',
-            label: 'Database',
-            icon: 'pi pi-database text-blue-500',
-            count: this.dataSources.filter(ds => ds.type === 'database').length,
-            expanded: false,
-            children: [
-                { name: 'mongodb', label: 'MongoDB', icon: 'pi pi-server text-green-500', count: this.dataSources.filter(ds => ds.subtype === 'mongodb').length },
-                { name: 'postgres', label: 'Postgres', icon: 'pi pi-server text-blue-700', count: this.dataSources.filter(ds => ds.subtype === 'postgres').length },
-                { name: 'trino', label: 'Trino', icon: 'pi pi-server text-purple-500', count: this.dataSources.filter(ds => ds.subtype === 'trino').length }
-            ]
-        },
-        {
-            name: 'pipeline',
-            label: 'Pipeline',
-            icon: 'pi pi-directions text-green-500',
-            count: this.dataSources.filter(ds => ds.type === 'pipeline').length,
-            expanded: false,
-            children: [
-                { name: 'airflow', label: 'Airflow', icon: 'pi pi-send text-blue-500', count: this.dataSources.filter(ds => ds.subtype === 'airflow').length }
-            ]
-        },
-        {
-            name: 'topic',
-            label: 'Topic',
-            icon: 'pi pi-telegram text-orange-500',
-            count: this.dataSources.filter(ds => ds.type === 'topic').length,
-            expanded: false,
-            children: [
-                { name: 'kafka', label: 'Kafka', icon: 'pi pi-bolt text-yellow-500', count: this.dataSources.filter(ds => ds.subtype === 'kafka').length }
-            ]
-        },
-        {
-            name: 'mlmodel',
-            label: 'ML Model',
-            icon: 'pi pi-chart-line text-purple-500',
-            count: this.dataSources.filter(ds => ds.type === 'mlmodel').length,
-            expanded: false,
-            children: [
-                { name: 'tensorflow', label: 'TensorFlow', icon: 'pi pi-cog text-orange-500', count: this.dataSources.filter(ds => ds.subtype === 'tensorflow').length }
-            ]
-        },
-        {
-            name: 'container',
-            label: 'Container',
-            icon: 'pi pi-box text-yellow-500',
-            count: this.dataSources.filter(ds => ds.type === 'container').length,
-            expanded: false,
-            children: [
-                { name: 's3', label: 'S3', icon: 'pi pi-cloud text-blue-400', count: this.dataSources.filter(ds => ds.subtype === 's3').length }
-            ]
-        },
-        {
-            name: 'search',
-            label: 'Search Index',
-            icon: 'pi pi-search text-red-500',
-            count: this.dataSources.filter(ds => ds.type === 'search').length,
-            expanded: false,
-            children: [
-                { name: 'elasticsearch', label: 'Elasticsearch', icon: 'pi pi-search text-orange-500', count: this.dataSources.filter(ds => ds.subtype === 'elasticsearch').length }
-            ]
-        },
-        {
-            name: 'api',
-            label: 'API',
-            icon: 'pi pi-globe text-indigo-500',
-            count: this.dataSources.filter(ds => ds.type === 'api').length,
-            expanded: false,
-            children: [
-                { name: 'openai', label: 'OpenAI', icon: 'pi pi-star text-blue-500', count: this.dataSources.filter(ds => ds.subtype === 'openai').length }
-            ]
-        }
-    ];
-    selectedGroup: string | null = null;
-    selectedSubGroup: string | null = null;
-
-    activeTab: string = 'catalog';
-
+export class ExploreComponent implements OnInit {
+    // Asset data
+    assets: Asset[] = [];
+    totalRecords: number = 0;
     loadingAssets: boolean = false;
     errorAssets: string = '';
-    assets: any[] = [];
-    totalRecords: number = 0;
 
-    page: number = 0;
+    // Filter options from API
+    filterOptions: FilterOptions = {
+        types: [],
+        owners: [],
+        tags: [],
+        status: [],
+        sensitivity: [],
+        domains: []
+    };
 
-    // Đảm bảo viewMode chỉ nhận 'list' | 'grid' | 'order' và mặc định là 'grid'
+    // Filter values
+    searchQuery: string = '';
+    typeFilter: string = '';
+    ownerFilter: string = '';
+    statusFilter: string = '';
+    sensitivityFilter: string = '';
+    domainFilter: string = '';
+    tagsFilter: string[] = [];
+
+    // Pagination
+    currentPage: number = 0;
+    pageSize: number = 10;
+
+    // View mode
     viewMode: 'list' | 'grid' | 'order' = 'grid';
 
-    sidebarOpen: boolean = true;
+    // Domain tree for sidebar
+    domainTree: TreeNode[] = [];
+    selectedDomain: TreeNode | null = null;
 
-    domainTree: any[] = [];
-    selectedDomain: any = null;
+    // Statistics
+    statistics: AssetStatistics | null = null;
 
-    constructor(private dataAssetsService: DataAssetsService, private router: Router) {}
+    // Loading states
+    loadingFilters: boolean = false;
+    loadingTree: boolean = false;
+    loadingStats: boolean = false;
 
-    ngOnInit() {
-        this.domainTree = this.assetGroups.map(group => ({
-            label: group.label,
-            key: group.name,
-            icon: group.icon,
-            children: group.children.map(child => ({
-                label: child.label,
-                key: child.name,
-                icon: child.icon
-            }))
-        }));
+    constructor(
+        private dataAssetsService: DataAssetsService, 
+        private router: Router
+    ) {}
+
+    ngOnInit(): void {
+        this.initializeComponent();
+    }
+
+    private initializeComponent(): void {
+        // Load all initial data with individual error handling
+        this.loadingFilters = true;
+        this.loadingTree = true;
+        this.loadingStats = true;
+
+        // Load filters
+        this.dataAssetsService.getFilterOptions().subscribe({
+            next: (response) => {
+                this.handleFiltersResponse(response);
+                this.loadingFilters = false;
+            },
+            error: (error) => {
+                console.warn('Failed to load filter options, using defaults:', error);
+                this.filterOptions = this.getDefaultFilterOptions();
+                this.loadingFilters = false;
+            }
+        });
+
+        // Load domain tree
+        this.dataAssetsService.getDomainsTree().subscribe({
+            next: (response) => {
+                this.handleTreeResponse(response);
+                this.loadingTree = false;
+            },
+            error: (error) => {
+                console.warn('Failed to load domain tree, using defaults:', error);
+                this.domainTree = this.getDefaultDomainTree();
+                this.loadingTree = false;
+            }
+        });
+
+        // Load statistics
+        this.dataAssetsService.getAssetStatistics().subscribe({
+            next: (response) => {
+                this.handleStatisticsResponse(response);
+                this.loadingStats = false;
+            },
+            error: (error) => {
+                console.warn('Failed to load statistics, using defaults:', error);
+                this.statistics = this.getDefaultStatistics();
+                this.loadingStats = false;
+            }
+        });
+
+        // Always try to load assets regardless of other API failures
         this.fetchAssets();
     }
 
-    // Helper: Build API params from all active filters
-    buildApiParams(): any {
-        const params: any = { size: 10, offset: this.page * 10 };
-        if (this.selectedType) params.type = this.selectedType;
-        if (this.selectedStatus) params.status = this.selectedStatus;
-        if (this.selectedOwner) params.owner = this.selectedOwner;
-        if (this.selectedLetter) params.letter = this.selectedLetter;
-        if (this.searchQuery) params.search = this.searchQuery;
-        if (this.selectedGroup) params.group = this.selectedGroup;
-        if (this.selectedSubGroup) params.subtype = this.selectedSubGroup;
+    private handleFiltersResponse(response: any): void {
+        if (response?.data && Object.keys(response.data).length > 0) {
+            this.filterOptions = response.data;
+        } else {
+            // Provide default filter options when API returns empty
+            this.filterOptions = this.getDefaultFilterOptions();
+        }
+    }
+
+    private getDefaultFilterOptions(): FilterOptions {
+        return {
+            types: ['database', 'table', 'mlmodel', 'dashboard', 'pipeline', 'api', 'file', 'container', 's3', 'topic', 'stream', 'cache', 'route', 'notebook'],
+            owners: ['customer.team@company.com', 'sales.team@company.com', 'product.team@company.com', 'finance.team@company.com', 'data.team@company.com'],
+            tags: ['customer', 'pii', 'gdpr', 'sales', 'product', 'finance', 'analytics', 'critical', 'public'],
+            status: ['active', 'deprecated', 'archived'],
+            sensitivity: ['low', 'medium', 'high'],
+            domains: ['customer', 'sales', 'product', 'finance']
+        };
+    }
+
+    private handleTreeResponse(response: any): void {
+        if (response?.data?.domains && response.data.domains.length > 0) {
+            this.domainTree = this.convertToTreeNodes(response.data.domains);
+        } else {
+            // Provide default domain tree when API returns empty or no data
+            this.domainTree = this.getDefaultDomainTree();
+        }
+    }
+
+    private getDefaultDomainTree(): TreeNode[] {
+        const defaultDomains = [
+            {
+                id: 'customer',
+                name: 'Customer Domain',
+                types: [
+                    { id: 'database', name: 'Database', count: 0 },
+                    { id: 'table', name: 'Table', count: 0 },
+                    { id: 'api', name: 'API', count: 0 }
+                ],
+                children: []
+            },
+            {
+                id: 'sales',
+                name: 'Sales Domain',
+                types: [
+                    { id: 'database', name: 'Database', count: 0 },
+                    { id: 'dashboard', name: 'Dashboard', count: 0 },
+                    { id: 'pipeline', name: 'Pipeline', count: 0 }
+                ],
+                children: []
+            },
+            {
+                id: 'product',
+                name: 'Product Domain',
+                types: [
+                    { id: 'table', name: 'Table', count: 0 },
+                    { id: 'api', name: 'API', count: 0 },
+                    { id: 'file', name: 'File', count: 0 }
+                ],
+                children: []
+            },
+            {
+                id: 'finance',
+                name: 'Finance Domain',
+                types: [
+                    { id: 'database', name: 'Database', count: 0 },
+                    { id: 'mlmodel', name: 'ML Model', count: 0 },
+                    { id: 'dashboard', name: 'Dashboard', count: 0 }
+                ],
+                children: []
+            }
+        ];
+        return this.convertToTreeNodes(defaultDomains);
+    }
+
+    private handleStatisticsResponse(response: any): void {
+        if (response?.data) {
+            this.statistics = response.data;
+        } else {
+            // Provide default statistics when API returns empty
+            this.statistics = this.getDefaultStatistics();
+        }
+    }
+
+    private getDefaultStatistics(): AssetStatistics {
+        return {
+            total: 0,
+            byType: {
+                'database': 0,
+                'table': 0,
+                'mlmodel': 0,
+                'dashboard': 0,
+                'pipeline': 0,
+                'api': 0
+            },
+            byStatus: {
+                'active': 0,
+                'deprecated': 0,
+                'archived': 0
+            },
+            bySensitivity: {
+                'high': 0,
+                'medium': 0,
+                'low': 0
+            },
+            byDomain: {
+                'customer': 0,
+                'sales': 0,
+                'product': 0,
+                'finance': 0
+            }
+        };
+    }
+
+    private convertToTreeNodes(domains: DomainNode[]): TreeNode[] {
+        return domains.map(domain => ({
+            label: `${domain.name} (${this.getTotalAssetsInDomain(domain)})`,
+            key: domain.id,
+            data: domain,
+            icon: 'pi pi-folder',
+            children: domain.types.map(type => ({
+                label: `${type.name} (${type.count || 0})`,
+                key: `${domain.id}_${type.id}`,
+                data: { ...type, domainId: domain.id },
+                icon: this.getTypeIcon(type.id),
+                leaf: true
+            }))
+        }));
+    }
+
+    private getTotalAssetsInDomain(domain: DomainNode): number {
+        return domain.types.reduce((sum, type) => sum + (type.count || 0), 0);
+    }
+
+    private getTypeIcon(type: string): string {
+        switch (type) {
+            case 'database': return 'pi pi-database';
+            case 'table': return 'pi pi-table';
+            case 'mlmodel': return 'pi pi-chart-line';
+            case 'pipeline': return 'pi pi-directions';
+            case 'dashboard': return 'pi pi-chart-bar';
+            case 'api': return 'pi pi-globe';
+            case 'file': return 'pi pi-file';
+            case 'container': return 'pi pi-box';
+            case 's3': return 'pi pi-cloud';
+            case 'topic': return 'pi pi-telegram';
+            case 'stream': return 'pi pi-bolt';
+            default: return 'pi pi-file';
+        }
+    }
+
+    fetchAssets(): void {
+        this.loadingAssets = true;
+        this.errorAssets = '';
+
+        const params = this.buildQueryParams();
+
+        this.dataAssetsService.getAssets(params).subscribe({
+            next: (response) => {
+                if (response?.data) {
+                    this.assets = response.data.map((asset: any) => this.normalizeAsset(asset));
+                    this.totalRecords = response.total || 0;
+                } else {
+                    this.assets = [];
+                    this.totalRecords = 0;
+                }
+                this.loadingAssets = false;
+            },
+            error: (error) => {
+                console.error('Error fetching assets:', error);
+                this.errorAssets = 'Failed to load assets';
+                this.assets = [];
+                this.totalRecords = 0;
+                this.loadingAssets = false;
+            }
+        });
+    }
+
+    private buildQueryParams(): any {
+        const params: any = {
+            limit: this.pageSize,
+            offset: this.currentPage * this.pageSize
+        };
+
+        if (this.searchQuery.trim()) params.search = this.searchQuery.trim();
+        if (this.typeFilter) params.type = this.typeFilter;
+        if (this.ownerFilter) params.owner = this.ownerFilter;
+        if (this.statusFilter) params.status = this.statusFilter;
+        if (this.sensitivityFilter) params.sensitivity = this.sensitivityFilter;
+        if (this.domainFilter) params.domain = this.domainFilter;
+        if (this.tagsFilter.length > 0) params.tags = this.tagsFilter.join(',');
+
         return params;
     }
 
-    // Unified fetch with all filters
-    fetchAssetsWithFilters() {
-        this.loadingAssets = true;
-        this.errorAssets = '';
-        const params = this.buildApiParams();
-        this.dataAssetsService.getAssetsWithParams(params).subscribe({
-            next: (res) => {
-                this.assets = res?.data || [];
-                this.totalRecords = res?.total || 0;
-                this.loadingAssets = false;
-            },
-            error: () => {
-                this.errorAssets = 'Không thể tải dữ liệu.';
-                this.loadingAssets = false;
-            }
-        });
+    private normalizeAsset(asset: any): Asset {
+        return {
+            _id: asset._id || asset.id,
+            kid: asset.kid,
+            name: asset.name || 'No name',
+            type: asset.type || 'N/A',
+            subtype: asset.subtype || asset.db_type,
+            source: asset.source,
+            location: asset.location,
+            owner: asset.owner || 'N/A',
+            sensitivity: asset.sensitivity || 'N/A',
+            classification: asset.classification,
+            status: asset.status || 'N/A',
+            tags: asset.tags || [],
+            description: asset.description || 'No description',
+            created_at: asset.created_at,
+            updated_at: asset.updated_at || asset.updated || 'N/A',
+            domain: asset.domain,
+            data_product: asset.data_product,
+            icon: asset.icon || this.getDefaultIcon(asset.type),
+            image: asset.image || this.getDefaultImage(asset.type),
+            freeAccess: asset.freeAccess || false
+        };
     }
 
-    // Fix: Only send valid type to API
-    fetchAssets(type?: string, size: number = 10, offset: number = 0, search: string = '') {
-        this.loadingAssets = true;
-        this.errorAssets = '';
-        // Nếu type không truyền thì gọi API không có type
-        const params: any = { size, offset };
-        if (search) params.search = search;
-        if (type) params.type = type;
-        this.dataAssetsService.getAssetsWithParams(params).subscribe({
-            next: (res) => {
-                this.assets = res?.data || [];
-                this.totalRecords = res?.total || 0;
-                this.loadingAssets = false;
-            },
-            error: () => {
-                this.errorAssets = 'Không thể tải dữ liệu.';
-                this.loadingAssets = false;
-            }
-        });
+    private getDefaultIcon(type: string): string {
+        return this.getTypeIcon(type);
     }
 
-    onPageChange(event: any) {
-        this.page = event.page || 0;
-        this.fetchAssetsWithFilters();
+    private getDefaultImage(type: string): string {
+        return `assets/images/${type}-placeholder.svg`;
+    }
+    // Event handlers
+    onSearchChange(): void {
+        this.currentPage = 0;
+        this.fetchAssets();
     }
 
-    onSearchChange() {
-        this.page = 0;
-        this.fetchAssetsWithFilters();
+    onFilterChange(): void {
+        this.currentPage = 0;
+        this.fetchAssets();
     }
 
-    onAssetTypeChange(type: string) {
-        this.selectedType = type;
-        this.page = 0;
-        this.fetchAssetsWithFilters();
+    onPageChange(event: any): void {
+        this.currentPage = event.page;
+        this.fetchAssets();
     }
 
-    onStatusChange(status: string) {
-        this.selectedStatus = status;
-        this.page = 0;
-        this.fetchAssetsWithFilters();
+    onViewModeChange(mode: 'list' | 'grid' | 'order'): void {
+        this.viewMode = mode;
     }
 
-    onOwnerChange(owner: string) {
-        this.selectedOwner = owner;
-        this.page = 0;
-        this.fetchAssetsWithFilters();
-    }
-
-    filterByLetter(letter: string | null) {
-        this.selectedLetter = letter;
-        this.page = 0;
-        this.fetchAssetsWithFilters();
-    }
-
-    selectGroup(groupName: string) {
-        this.selectedGroup = groupName;
-        this.selectedSubGroup = null;
-        this.page = 0;
-        this.fetchAssetsWithFilters();
-    }
-    selectSubGroup(subGroupName: string) {
-        this.selectedSubGroup = subGroupName;
-        this.page = 0;
-        this.fetchAssetsWithFilters();
-    }
-    // Remove filter chip
-    removeFilterChip(filter: string) {
-        switch (filter) {
-            case 'type': this.selectedType = null; break;
-            case 'status': this.selectedStatus = null; break;
-            case 'owner': this.selectedOwner = null; break;
-            case 'letter': this.selectedLetter = null; break;
-            case 'group': this.selectedGroup = null; break;
-            case 'subtype': this.selectedSubGroup = null; break;
-        }
-        this.page = 0;
-        this.fetchAssetsWithFilters();
-    }
-
-    // Called by filter dropdowns in template
-    onFilterChange() {
-        this.selectedType = this.typeFilter;
-        this.selectedOwner = this.ownerFilter;
-        this.page = 0;
-        this.fetchAssetsWithFilters();
-    }
-
-    onDomainSelect(event: any) {
+    onDomainSelect(event: any): void {
         if (event.node) {
-            if (event.node.children && event.node.children.length) {
-                this.selectGroup(event.node.key);
+            const nodeData = event.node.data;
+            if (nodeData.domainId) {
+                // Type selected
+                this.typeFilter = nodeData.id;
+                this.domainFilter = nodeData.domainId;
             } else {
-                this.selectSubGroup(event.node.key);
+                // Domain selected
+                this.domainFilter = nodeData.id;
+                this.typeFilter = '';
             }
+            this.onFilterChange();
         }
     }
 
-    // Update all 'table' references to 'list' for viewMode
-    onViewModeChange(mode: 'list' | 'grid' | 'order') {
-        if (mode === 'list' || mode === 'grid' || mode === 'order') {
-            this.viewMode = mode;
-        } else {
-            this.viewMode = 'grid';
-        }
+    // Clear filters
+    clearSearch(): void {
+        this.searchQuery = '';
+        this.onSearchChange();
     }
 
-    // Use filteredAssets for UI display
-    get filteredAssets() {
-        return this.assets.filter(asset => {
-            if (this.typeFilter && asset.type !== this.typeFilter) return false;
-            if (this.ownerFilter && asset.owner !== this.ownerFilter) return false;
-            if (this.searchQuery && !asset.name.toLowerCase().includes(this.searchQuery.toLowerCase())) return false;
-            return true;
-        });
+    clearTypeFilter(): void {
+        this.typeFilter = '';
+        this.onFilterChange();
     }
 
-    // Remove modal logic
-    // openDetailModal(source: any) {
-    //     this.selectedSource = source;
-    //     this.detailModalVisible = true;
-    // }
-    // Instead, navigate to detail page
-    openDetailPage(asset: any) {
+    clearOwnerFilter(): void {
+        this.ownerFilter = '';
+        this.onFilterChange();
+    }
+
+    clearDomainFilter(): void {
+        this.domainFilter = '';
+        this.selectedDomain = null;
+        this.onFilterChange();
+    }
+
+    // Navigation
+    openDetailPage(asset: Asset): void {
         if (asset && asset._id) {
             this.router.navigate(['/explore', asset._id]);
         }
     }
 
-    getStatusSeverity(status: string): string {
-        switch (status) {
-            case 'online': return 'success';
-            case 'warning': return 'warning';
-            case 'offline': return 'danger';
-            default: return 'info';
+    // Helper methods for template
+    getIconClass(type: string, subtype?: string): string {
+        switch (type) {
+            case 'database':
+                switch (subtype) {
+                    case 'mongodb': return 'pi pi-server text-green-500';
+                    case 'postgres': return 'pi pi-database text-blue-700';
+                    case 'mysql': return 'pi pi-database text-orange-500';
+                    default: return 'pi pi-database text-blue-500';
+                }
+            case 'table': return 'pi pi-table text-blue-600';
+            case 'mlmodel': return 'pi pi-chart-line text-purple-500';
+            case 'pipeline': return 'pi pi-directions text-green-500';
+            case 'dashboard': return 'pi pi-chart-bar text-orange-500';
+            case 'api': return 'pi pi-globe text-indigo-500';
+            case 'file': return 'pi pi-file text-gray-500';
+            case 'container': return 'pi pi-box text-yellow-500';
+            case 's3': return 'pi pi-cloud text-blue-400';
+            case 'topic': return 'pi pi-telegram text-orange-500';
+            case 'stream': return 'pi pi-bolt text-yellow-600';
+            case 'cache': return 'pi pi-refresh text-red-500';
+            case 'route': return 'pi pi-map text-purple-600';
+            case 'notebook': return 'pi pi-book text-green-600';
+            default: return 'pi pi-file text-gray-500';
+        }
+    }
+
+    getSensitivityClass(sensitivity: string): string {
+        switch (sensitivity.toLowerCase()) {
+            case 'high': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300';
+            case 'medium': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300';
+            case 'low': return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300';
+            default: return 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300';
+        }
+    }
+
+    getStatusClass(status: string): string {
+        switch (status.toLowerCase()) {
+            case 'active': return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300';
+            case 'deprecated': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300';
+            case 'archived': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300';
+            default: return 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300';
         }
     }
 
     formatDate(dateString: string): string {
-        const date = new Date(dateString);
-        return date.toLocaleString();
-    }
-
-    getIconClass(type: string, subtype: string): string {
-        switch (type) {
-            case 'database':
-                return 'pi pi-database text-blue-500';
-            case 'pipeline':
-                return 'pi pi-directions text-green-500';
-            case 'topic':
-                return 'pi pi-telegram text-orange-500';
-            case 'mlmodel':
-                return 'pi pi-chart-line text-purple-500';
-            case 'container':
-                return 'pi pi-box text-yellow-500';
-            case 'search':
-                return 'pi pi-search text-red-500';
-            case 'api':
-                return 'pi pi-globe text-indigo-500';
-            default:
-                return 'pi pi-server text-gray-500';
+        if (!dateString || dateString === 'N/A') return 'N/A';
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } catch {
+            return dateString;
         }
     }
 
-    getHealthClass(health: number): string {
-        if (health >= 95) return 'text-green-500';
-        if (health >= 80) return 'text-yellow-500';
-        if (health > 0) return 'text-orange-500';
-        return 'text-red-500';
+    // Get filtered assets for current view
+    get filteredAssets(): Asset[] {
+        return this.assets; // Assets are already filtered by API
     }
 
-    // Bulk selection logic (stub)
-    clearSelection() {
-        this.selectedAssets = [];
+    // Type and owner options for dropdowns
+    get typeOptions(): string[] {
+        return ['', ...this.filterOptions.types];
+    }
+
+    get ownerOptions(): string[] {
+        return ['', ...this.filterOptions.owners];
+    }
+
+    get statusOptions(): string[] {
+        return ['', ...this.filterOptions.status];
+    }
+
+    get sensitivityOptions(): string[] {
+        return ['', ...this.filterOptions.sensitivity];
+    }
+
+    get domainOptions(): string[] {
+        return ['', ...this.filterOptions.domains];
     }
 }
