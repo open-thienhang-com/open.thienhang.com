@@ -20,63 +20,78 @@
   </div>
 
   <!-- Navigation Menu -->
-  <div class="overflow-y-auto flex-1 py-2" [class.px-1]="collapsed" [class.px-3]="!collapsed">
+  <div class="overflow-y-auto flex-1 py-2 sidebar-nav" [class.collapsed]="collapsed" [class.expanded]="!collapsed">
     <ul class="list-none p-0 m-0 space-y-0.5">
       <!-- Dashboard & Overview -->
-      <li>
-        <a [routerLink]="'/dashboard'" class="flex items-center gap-2 p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900">
-          <i class="pi pi-home text-base"></i>
-          <span class="font-medium text-sm">Dashboard</span>
-        </a>
-      </li>
-      <li>
-        <a [routerLink]="'/overview'" class="flex items-center gap-2 p-2 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900">
-          <i class="pi pi-chart-pie text-base"></i>
-          <span class="font-medium text-sm">Overview</span>
+      <li class="menu-item">
+        <a [routerLink]="'/dashboard'" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900 transition-all duration-200 group"
+           [class.justify-center]="collapsed"
+           [class.px-2]="collapsed">
+          <i class="pi pi-home text-lg flex-shrink-0"></i>
+          <span class="font-medium text-sm whitespace-nowrap transition-opacity duration-200"
+                [class.opacity-0]="collapsed"
+                [class.invisible]="collapsed"
+                [class.hidden]="collapsed">Dashboard</span>
         </a>
       </li>
       <!-- Marketplace -->
-      <li>
-        <a [routerLink]="'/marketplace'" class="flex items-center gap-2 p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900">
-          <i class="pi pi-shopping-cart text-base"></i>
-          <span class="font-medium text-sm">Marketplace</span>
+      <li class="menu-item">
+        <a [routerLink]="'/marketplace'" class="flex items-center gap-3 p-3 rounded-lg hover:bg-green-50 dark:hover:bg-green-900 transition-all duration-200 group"
+           [class.justify-center]="collapsed"
+           [class.px-2]="collapsed">
+          <i class="pi pi-shopping-cart text-lg flex-shrink-0"></i>
+          <span class="font-medium text-sm whitespace-nowrap transition-opacity duration-200"
+                [class.opacity-0]="collapsed"
+                [class.invisible]="collapsed"
+                [class.hidden]="collapsed">Marketplace</span>
         </a>
       </li>
       <!-- Accordion Menu Groups -->
-      <li *ngFor="let group of sidebarGroups">
-        <div class="flex items-center justify-between cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800" (click)="group.expanded = !group.expanded">
-          <div class="flex items-center gap-2">
-            <i [ngClass]="group.icon + ' text-base'"></i>
-            <span class="font-medium text-sm">{{ group.label }}</span>
+      <li *ngFor="let group of sidebarGroups" class="menu-group">
+        <div class="flex items-center justify-between cursor-pointer p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group menu-group-header"
+             [class.justify-center]="collapsed"
+             [class.px-2]="collapsed"
+             (click)="group.expanded = !group.expanded">
+          <div class="flex items-center gap-3 min-w-0">
+            <i [ngClass]="group.icon + ' text-lg flex-shrink-0'"></i>
+            <span class="font-medium text-sm whitespace-nowrap transition-all duration-200"
+                  [class.hidden]="collapsed"
+                  [class.w-0]="collapsed"
+                  [class.overflow-hidden]="collapsed">{{ group.label }}</span>
           </div>
-          <i class="pi pi-chevron-down text-xs" [ngClass]="{'rotate-180': group.expanded}"></i>
+          <i class="pi pi-chevron-down text-sm flex-shrink-0 transition-all duration-200"
+             [class.rotate-180]="group.expanded"
+             [class.hidden]="collapsed"
+             [class.w-0]="collapsed"
+             [class.overflow-hidden]="collapsed"></i>
         </div>
-        <div *ngIf="group.expanded" class="ml-4 flex flex-col gap-1">
-          <a *ngFor="let item of group.items" [routerLink]="item.url" class="flex items-center gap-2 p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900 text-sm">
-            <i [ngClass]="item.icon + ' text-base'"></i>
-            <span>{{ item.label }}</span>
-          </a>
+        <!-- Submenu chỉ hiển thị khi không collapsed -->
+        <div *ngIf="group.expanded && !collapsed" class="submenu-container ml-2 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+          <div *ngFor="let item of group.items" class="submenu-item">
+            <!-- Subgroup with children -->
+            <div *ngIf="item.children" class="subgroup mb-2">
+              <div class="flex items-center gap-2 p-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide subgroup-header">
+                <i [ngClass]="item.icon + ' text-sm flex-shrink-0'"></i>
+                <span class="whitespace-nowrap">{{ item.label }}</span>
+              </div>
+              <div class="subgroup-children ml-2 pl-2 border-l border-gray-300 dark:border-gray-600">
+                <a *ngFor="let subItem of item.children"
+                   [routerLink]="subItem.url"
+                   class="flex items-center gap-2 p-2 rounded hover:bg-blue-50 dark:hover:bg-blue-900 transition-all duration-200 text-sm group/subitem">
+                  <i [ngClass]="subItem.icon + ' text-base flex-shrink-0'"></i>
+                  <span class="whitespace-nowrap">{{ subItem.label }}</span>
+                </a>
+              </div>
+            </div>
+            <!-- Direct item -->
+            <a *ngIf="!item.children"
+               [routerLink]="item.url"
+               class="flex items-center gap-2 p-2 rounded hover:bg-blue-50 dark:hover:bg-blue-900 transition-all duration-200 text-sm group/direct-item">
+              <i [ngClass]="item.icon + ' text-base flex-shrink-0'"></i>
+              <span class="whitespace-nowrap">{{ item.label }}</span>
+            </a>
+          </div>
         </div>
-      </li>
-      <!-- Data Contracts -->
-      <li>
-        <a [routerLink]="'/data-contracts'" class="flex items-center gap-2 p-2 rounded-lg hover:bg-cyan-50 dark:hover:bg-cyan-900">
-          <i class="pi pi-file-check text-base"></i>
-          <span class="font-medium text-sm">Data Contracts</span>
-        </a>
-      </li>
-      <!-- Profile & Settings -->
-      <li>
-        <a [routerLink]="'/profile'" class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900">
-          <i class="pi pi-user text-base"></i>
-          <span class="font-medium text-sm">Profile</span>
-        </a>
-      </li>
-      <li>
-        <a [routerLink]="'/settings'" class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900">
-          <i class="pi pi-cog text-base"></i>
-          <span class="font-medium text-sm">Settings</span>
-        </a>
       </li>
     </ul>
   </div>

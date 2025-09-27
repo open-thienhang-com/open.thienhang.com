@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import {
@@ -36,27 +36,56 @@ import { TooltipModule } from 'primeng/tooltip';
   ],
 
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnChanges {
   menu: MenuItem[];
   @Input() collapsed = false;
   @Output() toggle = new EventEmitter<void>();
-  
+
   // Info dialog properties
   infoDialogVisible = false;
   selectedInfo: MenuInfo | null = null;
 
   sidebarGroups = [
     {
-      label: 'Data Mesh',
-      icon: 'pi pi-sitemap',
+      label: 'Explore',
+      icon: 'pi pi-compass',
       expanded: false,
       items: [
-        { label: 'Data Products', url: '/data-mesh/data-products', icon: 'pi pi-shopping-cart' },
-        { label: 'Domains', url: '/data-mesh/domains', icon: 'pi pi-book' },
-        { label: 'API Explorer', url: '/data-mesh/api-explorer', icon: 'pi pi-code' },
-        { label: 'API Documentation', url: '/data-mesh/api-documentation', icon: 'pi pi-file' },
-        { label: 'Lineage', url: '/data-mesh/lineage', icon: 'pi pi-share-alt' },
-        { label: 'Quality Metrics', url: '/data-mesh/quality', icon: 'pi pi-chart-bar' }
+        {
+          label: 'Data Mesh',
+          icon: 'pi pi-sitemap',
+          children: [
+            { label: 'Data Products', url: '/data-mesh/data-products', icon: 'pi pi-shopping-cart' },
+            { label: 'Domains', url: '/data-mesh/domains', icon: 'pi pi-book' },
+            { label: 'API Explorer', url: '/data-mesh/api-explorer', icon: 'pi pi-code' },
+            { label: 'API Documentation', url: '/data-mesh/api-documentation', icon: 'pi pi-file' },
+            { label: 'Lineage', url: '/data-mesh/lineage', icon: 'pi pi-share-alt' },
+            { label: 'Quality Metrics', url: '/data-mesh/quality', icon: 'pi pi-chart-bar' }
+          ]
+        },
+        {
+          label: 'Data Exploration',
+          icon: 'pi pi-search',
+          children: [
+            { label: 'Database', url: '/explore/database', icon: 'pi pi-database' },
+            { label: 'Pipelines', url: '/explore/pipelines', icon: 'pi pi-sliders-h' },
+            { label: 'Topics', url: '/explore/topics', icon: 'pi pi-tags' },
+            { label: 'ML Models', url: '/explore/ml-models', icon: 'pi pi-brain' },
+            { label: 'Container', url: '/explore/container', icon: 'pi pi-box' },
+            { label: 'Search', url: '/explore/search', icon: 'pi pi-search' },
+            { label: 'APIs', url: '/explore/apis', icon: 'pi pi-code' }
+          ]
+        },
+        {
+          label: 'Observability',
+          icon: 'pi pi-eye',
+          children: [
+            { label: 'Monitoring', url: '/observability/monitoring', icon: 'pi pi-chart-line' },
+            { label: 'Alerts', url: '/observability/alert', icon: 'pi pi-bell' },
+            { label: 'Metrics', url: '/observability/metrics', icon: 'pi pi-chart-bar' },
+            { label: 'Audit Log', url: '/observability/audit-log', icon: 'pi pi-file' }
+          ]
+        }
       ]
     },
     {
@@ -70,43 +99,17 @@ export class SidebarComponent {
         { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building' },
         { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
         { label: 'Permissions', url: '/governance/permissions', icon: 'pi pi-key' },
-        { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' }
+        { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' },
+        { label: 'Contracts', url: '/data-contracts', icon: 'pi pi-file-check' }
       ]
     },
     {
-      label: 'Observability',
-      icon: 'pi pi-eye',
+      label: 'Settings',
+      icon: 'pi pi-cog',
       expanded: false,
       items: [
-        { label: 'Monitoring', url: '/observability/monitoring', icon: 'pi pi-chart-line' },
-        { label: 'Alert', url: '/observability/alert', icon: 'pi pi-bell' },
-        { label: 'Metrics', url: '/observability/metrics', icon: 'pi pi-chart-bar' },
-        { label: 'Audit Log', url: '/observability/audit-log', icon: 'pi pi-file' }
-      ]
-    },
-    {
-      label: 'Integrations',
-      icon: 'pi pi-cloud',
-      expanded: false,
-      items: [
-        { label: 'Airflow', url: '/integrations/airflow', icon: 'pi pi-send' },
-        { label: 'Google Cloud', url: '/integrations/google-cloud', icon: 'pi pi-google' },
-        { label: 'Databricks', url: '/integrations/databricks', icon: 'pi pi-database' }
-      ]
-    },
-    {
-      label: 'Explore',
-      icon: 'pi pi-compass',
-      expanded: false,
-      items: [
-        { label: 'Explore Home', url: '/explore', icon: 'pi pi-compass' },
-        { label: 'Database', url: '/explore/database', icon: 'pi pi-database' },
-        { label: 'Pipelines', url: '/explore/pipelines', icon: 'pi pi-sliders-h' },
-        { label: 'Topics', url: '/explore/topics', icon: 'pi pi-tags' },
-        { label: 'ML Models', url: '/explore/ml-models', icon: 'pi pi-robot' },
-        { label: 'Container', url: '/explore/container', icon: 'pi pi-box' },
-        { label: 'Search', url: '/explore/search', icon: 'pi pi-search' },
-        { label: 'APIs', url: '/explore/apis', icon: 'pi pi-code' }
+        { label: 'Profile', url: '/profile', icon: 'pi pi-user' },
+        { label: 'Preferences', url: '/settings', icon: 'pi pi-cog' }
       ]
     }
   ];
@@ -148,12 +151,14 @@ export class SidebarComponent {
             ]
           },
           {
-            label: 'Data Contracts',
-            icon: 'pi pi-file-check',
+            label: 'Observability',
+            icon: 'pi pi-eye',
             expanded: false,
             children: [
-              { label: 'Catalog', url: '/data-contracts/catalog', icon: 'pi pi-list' },
-              { label: 'Discovery', url: '/data-contracts/discovery', icon: 'pi pi-search' }
+              { label: 'Monitoring', url: '/observability/monitoring', icon: 'pi pi-chart-line' },
+              { label: 'Audit Log', url: '/observability/audit-log', icon: 'pi pi-file' },
+              { label: 'Metrics', url: '/observability/metrics', icon: 'pi pi-chart-bar' },
+              { label: 'Alerts', url: '/observability/alert', icon: 'pi pi-bell' }
             ]
           }
         ]
@@ -170,33 +175,30 @@ export class SidebarComponent {
           { label: 'Teams', url: '/governance/teams', icon: 'pi pi-users' },
           { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
           { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building' },
-          { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' }
+          { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' },
+          { label: 'Contracts', url: '/data-contracts', icon: 'pi pi-file-check' }
         ]
       },
       {
-        label: 'Observability',
-        icon: 'pi pi-eye',
+        label: 'Settings',
+        icon: 'pi pi-cog',
         type: 'item',
         expanded: false,
         children: [
-          { label: 'Monitoring', url: '/observability/monitoring', icon: 'pi pi-chart-line' },
-          { label: 'Audit Log', url: '/observability/audit-log', icon: 'pi pi-file' },
-          { label: 'Metrics', url: '/observability/metrics', icon: 'pi pi-chart-bar' },
-          { label: 'Alerts', url: '/observability/alert', icon: 'pi pi-bell' }
-        ]
-      },
-      {
-        label: 'Integrations',
-        icon: 'pi pi-cloud',
-        type: 'item',
-        expanded: false,
-        children: [
-          { label: 'Airflow', url: '/integrations/airflow', icon: 'pi pi-send' },
-          { label: 'Google Cloud', url: '/integrations/google-cloud', icon: 'pi pi-google' },
-          { label: 'Databricks', url: '/integrations/databricks', icon: 'pi pi-database' }
+          { label: 'Profile', url: '/profile', icon: 'pi pi-user' },
+          { label: 'Preferences', url: '/settings', icon: 'pi pi-cog' }
         ]
       }
     ];
+  }
+
+  ngOnChanges(changes: any) {
+    // Khi sidebar bị thu gọn, tự động collapse tất cả menu groups
+    if (changes.collapsed && changes.collapsed.currentValue === true) {
+      this.sidebarGroups.forEach(group => {
+        group.expanded = false;
+      });
+    }
   }
 
   toggleItem(item: MenuItem, event?: Event): void {
@@ -214,7 +216,7 @@ export class SidebarComponent {
     event.stopPropagation();
 
     if (item.children && !this.collapsed) {
-      // Toggle submenu for items with children
+      // Toggle submenu for items with children when not collapsed
       this.toggleItem(item, event);
     } else if (item.url) {
       // Navigate for direct menu items
@@ -256,7 +258,7 @@ export class SidebarComponent {
   showInfo(event: Event, item: MenuItem): void {
     event.preventDefault();
     event.stopPropagation();
-    
+
     if (item.info) {
       this.selectedInfo = item.info;
       this.infoDialogVisible = true;

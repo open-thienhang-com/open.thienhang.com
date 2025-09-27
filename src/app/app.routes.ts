@@ -1,78 +1,31 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AssetsComponent } from './features/governance/assets/assets.component';
-import { AuthComponent } from './pages/auth/auth.component';
-import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
-import { DashboardComponent } from './features/dashboard/dashboard.component';
-import { PoliciesComponent } from './features/governance/policies/policies.component';
-import { TeamsComponent } from './features/governance/teams/teams.component';
-import { RolesComponent } from './features/governance/roles/roles.component';
-import { AccountsComponent } from './features/governance/accounts/accounts.component';
-import { UsersComponent } from './features/governance/users/users.component';
-import { PermissionsComponent } from './features/governance/permissions/permissions.component';
 import { authGuard } from './core/guard/auth.guard';
-import { DataProductComponent } from './features/data-product/data-product.component';
-import { DataProdDetailComponent } from './features/data-product/data-prod-detail/data-prod-detail.component';
-import { ProfileComponent } from './features/profile/profile.component';
-import { SettingsComponent } from './features/settings/setting.component';
-import { DataContractsComponent } from './features/data-contracts/data-contracts.component';
-import { PolicyDetailComponent } from './features/governance/policies/policy-detail/policy-detail.component';
-import { RoleDetailComponent } from './features/governance/roles/role-detail/role-detail.component';
+import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
+import { AuthComponent } from './pages/auth/auth.component';
 import { OfflineComponent } from './pages/error/offline.component';
-import { DomainCatalogComponent } from './features/domain-catalog/domain-catalog.component';
-import { DomainDetailComponent } from './features/domain-catalog/domain-detail/domain-detail.component';
-import { DataLineageComponent } from './features/data-mesh/data-lineage.component';
-import { QualityMetricsComponent } from './features/data-mesh/quality-metrics.component';
-import { DataCatalogComponent } from './features/discovery/data-catalog.component';
-import { MonitoringComponent } from './features/observability/monitoring.component';
-import { ExploreComponent } from './features/explore/explore.component';
-import { DatabaseExplorerComponent } from './features/explore/database/database-explorer.component';
-import { PipelinesExplorerComponent } from './features/explore/pipelines/pipelines-explorer.component';
-import { TopicsExplorerComponent } from './features/explore/topics/topics-explorer.component';
-import { MLModelsExplorerComponent } from './features/explore/ml-models/ml-models-explorer.component';
-import { ContainerExplorerComponent } from './features/explore/container/container-explorer.component';
-import { SearchExplorerComponent } from './features/explore/search/search-explorer.component';
-import { ApisExplorerComponent } from './features/explore/apis/apis-explorer.component';
 import { MaintenanceComponent } from './pages/error/maintenance/maintenance.component';
 import { ForbiddenComponent } from './pages/error/forbidden/forbidden.component';
 import { NotFoundComponent } from './pages/error/not-found/not-found.component';
-import { MarketplaceComponent } from './features/marketplace/marketplace.component';
-import { OverviewComponent } from './features/overview/overview.component';
-import { AlertComponent } from './features/observability/alert/alert.component';
-import { MetricsComponent } from './features/observability/metrics/metrics.component';
-import { AuditLogComponent } from './features/observability/audit-log/audit-log.component';
-import { AirflowComponent } from './features/integrations/airflow/airflow.component';
-import { GoogleCloudComponent } from './features/integrations/google-cloud/google-cloud.component';
-import { DatabricksComponent } from './features/integrations/databricks/databricks.component';
-import { AssetDetailComponent } from './features/explore/asset-detail.component';
-
-// Data Mesh Components
-import { DomainCatalogComponent as DataMeshDomainCatalogComponent } from './features/data-mesh/domain-catalog/domain-catalog.component';
-import { DomainDetailComponent as DataMeshDomainDetailComponent } from './features/data-mesh/domain-detail/domain-detail.component';
-import { DataProductsComponent } from './features/data-mesh/data-products/data-products.component';
-import { ApiExplorerComponent } from './features/data-mesh/api-explorer/api-explorer.component';
-import { ApiDocumentationComponent } from './features/data-mesh/api-documentation/api-documentation.component';
-import { LoadingDemoComponent } from './pages/loading-demo/loading-demo.component';
-import { DataProductDetailComponent } from './features/data-mesh/data-product-detail/data-product-detail.component';
 
 
 export const routes: Routes = [
   // Error pages (outside of auth guard)
   {
     path: 'maintenance',
-    component: MaintenanceComponent
+    loadComponent: () => import('./pages/error/maintenance/maintenance.component').then(m => m.MaintenanceComponent)
   },
   {
     path: 'forbidden',
-    component: ForbiddenComponent
+    loadComponent: () => import('./pages/error/forbidden/forbidden.component').then(m => m.ForbiddenComponent)
   },
   {
     path: 'not-found',
-    component: NotFoundComponent
+    loadComponent: () => import('./pages/error/not-found/not-found.component').then(m => m.NotFoundComponent)
   },
   {
     path: 'offline',
-    component: OfflineComponent
+    loadComponent: () => import('./pages/error/offline.component').then(m => m.OfflineComponent)
   },
   {
     path: '',
@@ -80,219 +33,203 @@ export const routes: Routes = [
     children: [
       {
         path: 'governance/assets',
-        component: AssetsComponent,
+        loadComponent: () => import('./features/governance/assets/assets.component').then(m => m.AssetsComponent),
       },
       {
         path: 'governance/policies',
-        component: PoliciesComponent,
+        loadComponent: () => import('./features/governance/policies/policies.component').then(m => m.PoliciesComponent),
       },
       {
         path: 'governance/policies/:id',
-        component: PolicyDetailComponent,
+        loadComponent: () => import('./features/governance/policies/policy-detail/policy-detail.component').then(m => m.PolicyDetailComponent),
       },
       {
         path: 'governance/teams',
-        component: TeamsComponent,
+        loadComponent: () => import('./features/governance/teams/teams.component').then(m => m.TeamsComponent),
       },
       {
         path: 'governance/roles',
-        component: RolesComponent,
+        loadComponent: () => import('./features/governance/roles/roles.component').then(m => m.RolesComponent),
       },
       {
         path: 'governance/roles/:id',
-        component: RoleDetailComponent,
+        loadComponent: () => import('./features/governance/roles/role-detail/role-detail.component').then(m => m.RoleDetailComponent),
       },
       {
         path: 'governance/accounts',
-        component: AccountsComponent,
+        loadComponent: () => import('./features/governance/accounts/accounts.component').then(m => m.AccountsComponent),
       },
       {
         path: 'governance/users',
-        component: UsersComponent,
+        loadComponent: () => import('./features/governance/users/users.component').then(m => m.UsersComponent),
       },
       {
         path: 'governance/permissions',
-        component: PermissionsComponent,
+        loadComponent: () => import('./features/governance/permissions/permissions.component').then(m => m.PermissionsComponent),
       },
       {
         path: 'data-contracts',
-        component: DataContractsComponent,
+        loadComponent: () => import('./features/data-contracts/data-contracts.component').then(m => m.DataContractsComponent),
       },
       {
         path: 'dashboard',
-        component: DashboardComponent,
+        loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
       },
       {
         path: 'profile',
-        component: ProfileComponent,
+        loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent),
       },
       {
         path: 'settings',
-        component: SettingsComponent,
+        loadComponent: () => import('./features/settings/setting.component').then(m => m.SettingsComponent),
       },
       {
         path: 'data-product',
-        component: DataProductComponent,
+        loadComponent: () => import('./features/data-product/data-product.component').then(m => m.DataProductComponent),
       },
       {
         path: 'data-product-detail',
-        component: DataProdDetailComponent,
+        loadComponent: () => import('./features/data-product/data-prod-detail/data-prod-detail.component').then(m => m.DataProdDetailComponent),
       },
       {
         path: 'domains',
-        component: DomainCatalogComponent,
+        loadComponent: () => import('./features/domain-catalog/domain-catalog.component').then(m => m.DomainCatalogComponent),
       },
       {
         path: 'domains/:id',
-        component: DomainDetailComponent,
+        loadComponent: () => import('./features/domain-catalog/domain-detail/domain-detail.component').then(m => m.DomainDetailComponent),
       },
       {
         path: 'data-mesh/lineage',
-        component: DataLineageComponent,
+        loadComponent: () => import('./features/data-mesh/data-lineage.component').then(m => m.DataLineageComponent),
       },
       {
         path: 'data-mesh/quality',
-        component: QualityMetricsComponent,
+        loadComponent: () => import('./features/data-mesh/quality-metrics.component').then(m => m.QualityMetricsComponent),
       },
       {
         path: 'data-mesh/domains',
-        component: DataMeshDomainCatalogComponent,
+        loadComponent: () => import('./features/data-mesh/domain-catalog/domain-catalog.component').then(m => m.DomainCatalogComponent),
       },
       {
         path: 'data-mesh/domain/:domainKey',
-        component: DataMeshDomainDetailComponent,
+        loadComponent: () => import('./features/data-mesh/domain-detail/domain-detail.component').then(m => m.DomainDetailComponent),
       },
       {
         path: 'data-mesh/data-products',
-        component: DataProductsComponent,
+        loadComponent: () => import('./features/data-mesh/data-products/data-products.component').then(m => m.DataProductsComponent),
       },
       {
         path: 'data-mesh/data-products/:domain/:id',
-        component: DataProductDetailComponent,
+        loadComponent: () => import('./features/data-mesh/data-product-detail/data-product-detail.component').then(m => m.DataProductDetailComponent),
       },
       {
         path: 'data-mesh/data-products/:name',
-        component: DataProductDetailComponent,
+        loadComponent: () => import('./features/data-mesh/data-product-detail/data-product-detail.component').then(m => m.DataProductDetailComponent),
       },
       {
         path: 'data-mesh/api-explorer',
-        component: ApiExplorerComponent,
+        loadComponent: () => import('./features/data-mesh/api-explorer/api-explorer.component').then(m => m.ApiExplorerComponent),
       },
       {
         path: 'data-mesh/api-documentation',
-        component: ApiDocumentationComponent,
+        loadComponent: () => import('./features/data-mesh/api-documentation/api-documentation.component').then(m => m.ApiDocumentationComponent),
       },
       {
         path: 'discovery/catalog',
-        component: DataCatalogComponent,
+        loadComponent: () => import('./features/discovery/data-catalog.component').then(m => m.DataCatalogComponent),
       },
       {
         path: 'observability/monitoring',
-        component: MonitoringComponent,
+        loadComponent: () => import('./features/observability/monitoring.component').then(m => m.MonitoringComponent),
       },
       {
         path: 'explore',
-        component: ExploreComponent,
+        loadComponent: () => import('./features/explore/explore.component').then(m => m.ExploreComponent),
       },
       {
         path: 'explore/database',
-        component: DatabaseExplorerComponent,
+        loadComponent: () => import('./features/explore/database/database-explorer.component').then(m => m.DatabaseExplorerComponent),
       },
       {
         path: 'explore/database/:type',
-        component: DatabaseExplorerComponent,
+        loadComponent: () => import('./features/explore/database/database-explorer.component').then(m => m.DatabaseExplorerComponent),
       },
       {
         path: 'explore/pipelines',
-        component: PipelinesExplorerComponent,
+        loadComponent: () => import('./features/explore/pipelines/pipelines-explorer.component').then(m => m.PipelinesExplorerComponent),
       },
       {
         path: 'explore/pipelines/:type',
-        component: PipelinesExplorerComponent,
+        loadComponent: () => import('./features/explore/pipelines/pipelines-explorer.component').then(m => m.PipelinesExplorerComponent),
       },
       {
         path: 'explore/topics',
-        component: TopicsExplorerComponent,
+        loadComponent: () => import('./features/explore/topics/topics-explorer.component').then(m => m.TopicsExplorerComponent),
       },
       {
         path: 'explore/topics/:type',
-        component: TopicsExplorerComponent,
+        loadComponent: () => import('./features/explore/topics/topics-explorer.component').then(m => m.TopicsExplorerComponent),
       },
       {
         path: 'explore/ml-models',
-        component: MLModelsExplorerComponent,
+        loadComponent: () => import('./features/explore/ml-models/ml-models-explorer.component').then(m => m.MLModelsExplorerComponent),
       },
       {
         path: 'explore/ml-models/:type',
-        component: MLModelsExplorerComponent,
+        loadComponent: () => import('./features/explore/ml-models/ml-models-explorer.component').then(m => m.MLModelsExplorerComponent),
       },
       {
         path: 'explore/container',
-        component: ContainerExplorerComponent,
+        loadComponent: () => import('./features/explore/container/container-explorer.component').then(m => m.ContainerExplorerComponent),
       },
       {
         path: 'explore/container/:type',
-        component: ContainerExplorerComponent,
+        loadComponent: () => import('./features/explore/container/container-explorer.component').then(m => m.ContainerExplorerComponent),
       },
       {
         path: 'explore/search',
-        component: SearchExplorerComponent,
+        loadComponent: () => import('./features/explore/search/search-explorer.component').then(m => m.SearchExplorerComponent),
       },
       {
         path: 'explore/search/:type',
-        component: SearchExplorerComponent,
+        loadComponent: () => import('./features/explore/search/search-explorer.component').then(m => m.SearchExplorerComponent),
       },
       {
         path: 'explore/apis',
-        component: ApisExplorerComponent,
+        loadComponent: () => import('./features/explore/apis/apis-explorer.component').then(m => m.ApisExplorerComponent),
       },
       {
         path: 'explore/apis/:type',
-        component: ApisExplorerComponent,
+        loadComponent: () => import('./features/explore/apis/apis-explorer.component').then(m => m.ApisExplorerComponent),
       },
       {
         path: 'loading-demo',
-        component: LoadingDemoComponent,
+        loadComponent: () => import('./pages/loading-demo/loading-demo.component').then(m => m.LoadingDemoComponent),
       },
       {
         path: 'marketplace',
-        component: MarketplaceComponent,
-      },
-      {
-        path: 'overview',
-        component: OverviewComponent,
+        loadComponent: () => import('./features/marketplace/marketplace.component').then(m => m.MarketplaceComponent),
       },
       {
         path: 'discovery/data-catalog',
-        component: DataCatalogComponent,
+        loadComponent: () => import('./features/discovery/data-catalog.component').then(m => m.DataCatalogComponent),
       },
       {
         path: 'observability/alert',
-        component: AlertComponent,
+        loadComponent: () => import('./features/observability/alert/alert.component').then(m => m.AlertComponent),
       },
       {
         path: 'observability/metrics',
-        component: MetricsComponent,
+        loadComponent: () => import('./features/observability/metrics/metrics.component').then(m => m.MetricsComponent),
       },
       {
         path: 'observability/audit-log',
-        component: AuditLogComponent,
-      },
-      {
-        path: 'integrations/airflow',
-        component: AirflowComponent,
-      },
-      {
-        path: 'integrations/google-cloud',
-        component: GoogleCloudComponent,
-      },
-      {
-        path: 'integrations/databricks',
-        component: DatabricksComponent,
+        loadComponent: () => import('./features/observability/audit-log/audit-log.component').then(m => m.AuditLogComponent),
       },
       {
         path: 'explore/:id',
-        component: AssetDetailComponent,
+        loadComponent: () => import('./features/explore/asset-detail.component').then(m => m.AssetDetailComponent),
       },
       {
         path: '',
