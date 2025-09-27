@@ -1,0 +1,410 @@
+.product-variants-container {
+  padding: 1.5rem;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e9ecef;
+
+    .header-content {
+      h2 {
+        margin: 0 0 0.5rem 0;
+        color: #2c3e50;
+        font-size: 1.75rem;
+        font-weight: 600;
+      }
+
+      .subtitle {
+        margin: 0;
+        color: #6c757d;
+        font-size: 0.95rem;
+      }
+    }
+
+    .header-actions {
+      .p-button {
+        padding: 0.5rem 1.5rem;
+        font-weight: 500;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+
+        &:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+      }
+    }
+  }
+
+  .filters-section {
+    margin-bottom: 1.5rem;
+
+    .filter-row {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+
+      .search-container {
+        flex: 1;
+        min-width: 250px;
+
+        .search-input {
+          width: 100%;
+          padding: 0.5rem 0.75rem;
+          border: 1px solid #ced4da;
+          border-radius: 6px;
+          font-size: 0.9rem;
+
+          &:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+          }
+        }
+      }
+
+      .type-filter {
+        min-width: 200px;
+
+        ::ng-deep .p-dropdown {
+          width: 100%;
+
+          .p-dropdown-label {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+          }
+        }
+      }
+    }
+  }
+
+  .table-container {
+    ::ng-deep {
+      .p-datatable {
+        .p-datatable-thead > tr > th {
+          background: #f8f9fa;
+          color: #495057;
+          font-weight: 600;
+          font-size: 0.85rem;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          padding: 1rem 0.75rem;
+          border-bottom: 2px solid #dee2e6;
+        }
+
+        .p-datatable-tbody > tr {
+          &:hover {
+            background: #f8f9fa;
+          }
+
+          > td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+
+            .type-badge {
+              padding: 0.25rem 0.5rem;
+              border-radius: 4px;
+              font-size: 0.8rem;
+              font-weight: 500;
+              text-transform: capitalize;
+
+              &.type-size { background: #e3f2fd; color: #1976d2; }
+              &.type-color { background: #f3e5f5; color: #7b1fa2; }
+              &.type-style { background: #e8f5e8; color: #388e3c; }
+              &.type-material { background: #fff3e0; color: #f57c00; }
+              &.type-flavor { background: #fce4ec; color: #c2185b; }
+            }
+
+            .price-cell {
+              font-weight: 500;
+
+              .positive { color: #28a745; }
+              .negative { color: #dc3545; }
+            }
+
+            .stock-badge {
+              padding: 0.25rem 0.5rem;
+              border-radius: 4px;
+              font-size: 0.8rem;
+              font-weight: 500;
+
+              &.good { background: #d4edda; color: #155724; }
+              &.low { background: #fff3cd; color: #856404; }
+              &.out { background: #f8d7da; color: #721c24; }
+            }
+
+            .action-buttons {
+              display: flex;
+              gap: 0.25rem;
+              justify-content: center;
+
+              .p-button {
+                width: 2rem;
+                height: 2rem;
+
+                &.p-button-text {
+                  &:hover {
+                    background: rgba(0, 0, 0, 0.04);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        .p-datatable-loading-overlay {
+          background: rgba(255, 255, 255, 0.8);
+        }
+
+        .empty-state {
+          text-align: center;
+          padding: 2rem;
+
+          .empty-icon {
+            font-size: 3rem;
+            color: #dee2e6;
+            margin-bottom: 1rem;
+          }
+
+          p {
+            margin: 0 0 0.5rem 0;
+            color: #6c757d;
+            font-size: 1.1rem;
+            font-weight: 500;
+          }
+
+          small {
+            color: #adb5bd;
+            font-size: 0.9rem;
+          }
+        }
+
+        .p-paginator {
+          padding: 1rem 0;
+          border-top: 1px solid #e9ecef;
+          background: #f8f9fa;
+          justify-content: space-between;
+
+          .p-paginator-pages {
+            .p-paginator-page {
+              &:hover {
+                background: #007bff;
+                color: white;
+              }
+
+              &.p-highlight {
+                background: #007bff;
+                color: white;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Dialog Styling
+::ng-deep {
+  .p-dialog {
+    .p-dialog-header {
+      padding: 1.5rem 2rem 1rem;
+      border-bottom: 1px solid #e9ecef;
+
+      .p-dialog-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #2c3e50;
+      }
+    }
+
+    .p-dialog-content {
+      padding: 1.5rem 2rem;
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+
+        .form-field {
+          display: flex;
+          flex-direction: column;
+
+          &.full-width {
+            grid-column: 1 / -1;
+          }
+
+          label {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #495057;
+            font-size: 0.9rem;
+          }
+
+          input, .p-dropdown, .p-inputnumber {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+            &:focus {
+              border-color: #007bff;
+              box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            }
+
+            &.ng-invalid {
+              border-color: #dc3545;
+
+              &:focus {
+                box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+              }
+            }
+          }
+
+          .p-error {
+            color: #dc3545;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+          }
+
+          .form-hint {
+            color: #6c757d;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+          }
+
+          .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+
+            ::ng-deep .p-checkbox-label {
+              font-weight: normal;
+              color: #495057;
+            }
+          }
+        }
+      }
+    }
+
+    .p-dialog-footer {
+      padding: 1rem 2rem 1.5rem;
+      border-top: 1px solid #e9ecef;
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+
+      .p-button {
+        padding: 0.5rem 1.5rem;
+        font-weight: 500;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+
+        &.p-button-primary {
+          background: #007bff;
+          border-color: #007bff;
+
+          &:hover {
+            background: #0056b3;
+            border-color: #0056b3;
+          }
+        }
+
+        &.p-button-text {
+          &:hover {
+            background: rgba(0, 0, 0, 0.04);
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .product-variants-container {
+    padding: 1rem;
+
+    .header-section {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+
+      .header-actions {
+        width: 100%;
+
+        .p-button {
+          width: 100%;
+        }
+      }
+    }
+
+    .filters-section {
+      .filter-row {
+        flex-direction: column;
+        align-items: stretch;
+
+        .search-container,
+        .type-filter {
+          min-width: auto;
+        }
+      }
+    }
+
+    .table-container {
+      ::ng-deep {
+        .p-datatable {
+          .p-datatable-tbody > tr > td {
+            .action-buttons {
+              flex-direction: column;
+              gap: 0.125rem;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  ::ng-deep {
+    .p-dialog {
+      width: 95vw !important;
+      max-width: 95vw;
+
+      .p-dialog-content {
+        .form-grid {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .product-variants-container {
+    .table-container {
+      ::ng-deep {
+        .p-datatable {
+          .p-datatable-thead > tr > th {
+            padding: 0.5rem 0.25rem;
+            font-size: 0.75rem;
+          }
+
+          .p-datatable-tbody > tr > td {
+            padding: 0.5rem 0.25rem;
+            font-size: 0.85rem;
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,624 @@
+<div class="supplier-integration-container">
+  <div class="header-section">
+    <div class="header-content">
+      <h2>Supplier Integration Management</h2>
+      <p class="subtitle">Manage supplier catalogs and product integrations</p>
+    </div>
+  </div>
+
+  <p-tabView [(activeIndex)]="activeTabIndex" class="supplier-tabs">
+    <!-- Suppliers Tab -->
+    <p-tabPanel header="Suppliers">
+      <div class="tab-content">
+        <div class="filters-section">
+          <div class="filter-row">
+            <div class="search-container">
+              <span class="p-input-icon-left">
+                <i class="pi pi-search"></i>
+                <input
+                  pInputText
+                  placeholder="Search suppliers..."
+                  [(ngModel)]="searchSupplierValue"
+                  (input)="onSupplierSearchChange()"
+                  class="search-input">
+              </span>
+            </div>
+            <div class="status-filter">
+              <p-dropdown
+                [options]="statusOptions"
+                [(ngModel)]="selectedSupplierStatus"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Filter by status"
+                (onChange)="onSupplierStatusFilterChange()"
+                showClear="true">
+              </p-dropdown>
+            </div>
+            <div class="actions">
+              <button
+                pButton
+                type="button"
+                label="Add Supplier"
+                icon="pi pi-plus"
+                class="p-button-primary"
+                (click)="openNewSupplier()">
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <p-table
+            [value]="filteredSuppliers"
+            [(selection)]="selectedSuppliers"
+            dataKey="id"
+            responsiveLayout="scroll"
+            [paginator]="true"
+            [rows]="10"
+            [rowsPerPageOptions]="[5,10,25,50]"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} suppliers"
+            styleClass="p-datatable-striped">
+
+            <ng-template pTemplate="header">
+              <tr>
+                <th style="width: 3rem">
+                  <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                </th>
+                <th pSortableColumn="code">Code <p-sortIcon field="code"></p-sortIcon></th>
+                <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
+                <th pSortableColumn="contactPerson">Contact <p-sortIcon field="contactPerson"></p-sortIcon></th>
+                <th pSortableColumn="status">Status <p-sortIcon field="status"></p-sortIcon></th>
+                <th pSortableColumn="rating">Rating <p-sortIcon field="rating"></p-sortIcon></th>
+                <th pSortableColumn="totalProducts">Products <p-sortIcon field="totalProducts"></p-sortIcon></th>
+                <th pSortableColumn="lastSync">Last Sync <p-sortIcon field="lastSync"></p-sortIcon></th>
+                <th style="width: 10rem">Actions</th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-supplier>
+              <tr>
+                <td>
+                  <p-tableCheckbox [value]="supplier"></p-tableCheckbox>
+                </td>
+                <td>{{ supplier.code }}</td>
+                <td>{{ supplier.name }}</td>
+                <td>
+                  <div class="contact-info">
+                    <div class="contact-name">{{ supplier.contactPerson }}</div>
+                    <div class="contact-email">{{ supplier.email }}</div>
+                  </div>
+                </td>
+                <td>
+                  <p-tag
+                    [value]="getSupplierStatusLabel(supplier.status)"
+                    [severity]="getSupplierStatusSeverity(supplier.status)">
+                  </p-tag>
+                </td>
+                <td>
+                  <div class="rating">
+                    <span class="rating-stars">
+                      <i class="pi pi-star-fill" *ngFor="let star of [1,2,3,4,5]; let i = index"
+                         [class.filled]="i < supplier.rating"></i>
+                    </span>
+                    <span class="rating-value">{{ supplier.rating }}</span>
+                  </div>
+                </td>
+                <td>{{ supplier.totalProducts }}</td>
+                <td>{{ supplier.lastSync | date:'short' }}</td>
+                <td>
+                  <div class="action-buttons">
+                    <button
+                      pButton
+                      type="button"
+                      icon="pi pi-pencil"
+                      class="p-button-rounded p-button-success p-button-text"
+                      pTooltip="Edit"
+                      tooltipPosition="top"
+                      (click)="editSupplier(supplier)">
+                    </button>
+                    <button
+                      pButton
+                      type="button"
+                      icon="pi pi-refresh"
+                      class="p-button-rounded p-button-info p-button-text"
+                      pTooltip="Sync Catalog"
+                      tooltipPosition="top"
+                      (click)="startSync(supplier)">
+                    </button>
+                    <button
+                      pButton
+                      type="button"
+                      icon="pi pi-power-off"
+                      class="p-button-rounded p-button-warning p-button-text"
+                      pTooltip="{{ getSupplierTooltip(supplier.status) }}"
+                      tooltipPosition="top"
+                      (click)="toggleSupplierStatus(supplier)">
+                    </button>
+                    <button
+                      pButton
+                      type="button"
+                      icon="pi pi-trash"
+                      class="p-button-rounded p-button-danger p-button-text"
+                      pTooltip="Delete"
+                      tooltipPosition="top"
+                      (click)="deleteSupplier(supplier)">
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="9" class="text-center py-4">
+                  <div class="empty-state">
+                    <i class="pi pi-building empty-icon"></i>
+                    <p>No suppliers found</p>
+                    <small>Start by adding your first supplier</small>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      </div>
+    </p-tabPanel>
+
+    <!-- Supplier Products Tab -->
+    <p-tabPanel header="Supplier Products">
+      <div class="tab-content">
+        <div class="filters-section">
+          <div class="filter-row">
+            <div class="search-container">
+              <span class="p-input-icon-left">
+                <i class="pi pi-search"></i>
+                <input
+                  pInputText
+                  placeholder="Search products..."
+                  [(ngModel)]="searchProductValue"
+                  (input)="onProductSearchChange()"
+                  class="search-input">
+              </span>
+            </div>
+            <div class="supplier-filter">
+              <p-dropdown
+                [options]="suppliers"
+                [(ngModel)]="selectedSupplierId"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Filter by supplier"
+                (onChange)="onSupplierFilterChange()"
+                showClear="true">
+              </p-dropdown>
+            </div>
+            <div class="actions">
+              <button
+                pButton
+                type="button"
+                label="Add Product"
+                icon="pi pi-plus"
+                class="p-button-primary"
+                (click)="openNewSupplierProduct()">
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <p-table
+            [value]="filteredSupplierProducts"
+            dataKey="id"
+            responsiveLayout="scroll"
+            [paginator]="true"
+            [rows]="10"
+            [rowsPerPageOptions]="[5,10,25,50]"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} supplier products"
+            styleClass="p-datatable-striped">
+
+            <ng-template pTemplate="header">
+              <tr>
+                <th pSortableColumn="supplierProductCode">Supplier Code <p-sortIcon field="supplierProductCode"></p-sortIcon></th>
+                <th pSortableColumn="supplierProductName">Product Name <p-sortIcon field="supplierProductName"></p-sortIcon></th>
+                <th pSortableColumn="supplierId">Supplier <p-sortIcon field="supplierId"></p-sortIcon></th>
+                <th pSortableColumn="supplierPrice">Price <p-sortIcon field="supplierPrice"></p-sortIcon></th>
+                <th pSortableColumn="moq">MOQ <p-sortIcon field="moq"></p-sortIcon></th>
+                <th pSortableColumn="leadTime">Lead Time <p-sortIcon field="leadTime"></p-sortIcon></th>
+                <th pSortableColumn="isActive">Status <p-sortIcon field="isActive"></p-sortIcon></th>
+                <th pSortableColumn="lastUpdated">Last Updated <p-sortIcon field="lastUpdated"></p-sortIcon></th>
+                <th style="width: 8rem">Actions</th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-product>
+              <tr>
+                <td>{{ product.supplierProductCode }}</td>
+                <td>{{ product.supplierProductName }}</td>
+                <td>{{ getSupplierName(product.supplierId) }}</td>
+                <td class="price-cell">{{ product.supplierPrice | currency }}</td>
+                <td>{{ product.moq }}</td>
+                <td>{{ product.leadTime }} days</td>
+                <td>
+                  <p-tag
+                    [value]="getProductStatusLabel(product.isActive)"
+                    [severity]="getProductStatusSeverity(product.isActive)">
+                  </p-tag>
+                </td>
+                <td>{{ product.lastUpdated | date:'short' }}</td>
+                <td>
+                  <div class="action-buttons">
+                    <button
+                      pButton
+                      type="button"
+                      icon="pi pi-pencil"
+                      class="p-button-rounded p-button-success p-button-text"
+                      pTooltip="Edit"
+                      tooltipPosition="top"
+                      (click)="editSupplierProduct(product)">
+                    </button>
+                    <button
+                      pButton
+                      type="button"
+                      icon="pi pi-power-off"
+                      class="p-button-rounded p-button-warning p-button-text"
+                      pTooltip="{{ getProductTooltip(product.isActive) }}"
+                      tooltipPosition="top"
+                      (click)="toggleProductStatus(product)">
+                    </button>
+                    <button
+                      pButton
+                      type="button"
+                      icon="pi pi-trash"
+                      class="p-button-rounded p-button-danger p-button-text"
+                      pTooltip="Delete"
+                      tooltipPosition="top"
+                      (click)="deleteSupplierProduct(product)">
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="9" class="text-center py-4">
+                  <div class="empty-state">
+                    <i class="pi pi-box empty-icon"></i>
+                    <p>No supplier products found</p>
+                    <small>Start by adding supplier products</small>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      </div>
+    </p-tabPanel>
+
+    <!-- Sync Status Tab -->
+    <p-tabPanel header="Sync Status">
+      <div class="tab-content">
+        <div class="sync-overview">
+          <div class="sync-stats">
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="pi pi-spin pi-spinner"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ activeSyncJobs.length }}</div>
+                <div class="stat-label">Active Syncs</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon success">
+                <i class="pi pi-check-circle"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ getCompletedSyncJobsCount() }}</div>
+                <div class="stat-label">Completed</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon danger">
+                <i class="pi pi-times-circle"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ getFailedSyncJobsCount() }}</div>
+                <div class="stat-label">Failed</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <p-table
+            [value]="syncJobs"
+            dataKey="id"
+            responsiveLayout="scroll"
+            [paginator]="true"
+            [rows]="10"
+            [rowsPerPageOptions]="[5,10,25,50]"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} sync jobs"
+            styleClass="p-datatable-striped">
+
+            <ng-template pTemplate="header">
+              <tr>
+                <th pSortableColumn="supplierName">Supplier <p-sortIcon field="supplierName"></p-sortIcon></th>
+                <th pSortableColumn="status">Status <p-sortIcon field="status"></p-sortIcon></th>
+                <th>Progress</th>
+                <th pSortableColumn="totalItems">Total Items <p-sortIcon field="totalItems"></p-sortIcon></th>
+                <th pSortableColumn="processedItems">Processed <p-sortIcon field="processedItems"></p-sortIcon></th>
+                <th pSortableColumn="startTime">Start Time <p-sortIcon field="startTime"></p-sortIcon></th>
+                <th pSortableColumn="endTime">End Time <p-sortIcon field="endTime"></p-sortIcon></th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-job>
+              <tr>
+                <td>{{ job.supplierName }}</td>
+                <td>
+                  <div class="status-cell">
+                    <i [class]="getStatusIconClass(job.status)" class="status-icon"></i>
+                    <span class="status-text">{{ getSyncStatusLabel(job.status) }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="progress-cell">
+                    <p-progressBar
+                      [value]="job.progress"
+                      [showValue]="false"
+                      styleClass="progress-small">
+                    </p-progressBar>
+                    <span class="progress-text">{{ job.progress | number:'1.1-1' }}%</span>
+                  </div>
+                </td>
+                <td>{{ job.totalItems }}</td>
+                <td>{{ job.processedItems }}</td>
+                <td>{{ job.startTime | date:'short' }}</td>
+                <td>{{ formatEndTime(job.endTime) }}</td>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="7" class="text-center py-4">
+                  <div class="empty-state">
+                    <i class="pi pi-refresh empty-icon"></i>
+                    <p>No sync jobs found</p>
+                    <small>Sync jobs will appear here when you start syncing supplier catalogs</small>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      </div>
+    </p-tabPanel>
+  </p-tabView>
+</div>
+
+<!-- Supplier Dialog -->
+<p-dialog
+  [(visible)]="supplierDialog"
+  [style]="{width: '700px'}"
+  header="Supplier Details"
+  [modal]="true"
+  styleClass="p-fluid"
+  [closable]="false">
+
+  <ng-template pTemplate="content">
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="name">Name *</label>
+        <input
+          pInputText
+          id="name"
+          [(ngModel)]="supplier.name"
+          required="true"
+          [ngClass]="{'ng-invalid': submitted && !supplier.name}"
+          placeholder="Enter supplier name">
+        <small class="p-error" *ngIf="submitted && !supplier.name">Name is required.</small>
+      </div>
+
+      <div class="form-field">
+        <label for="code">Code *</label>
+        <input
+          pInputText
+          id="code"
+          [(ngModel)]="supplier.code"
+          required="true"
+          [ngClass]="{'ng-invalid': submitted && !supplier.code}"
+          placeholder="Enter supplier code">
+        <small class="p-error" *ngIf="submitted && !supplier.code">Code is required.</small>
+      </div>
+
+      <div class="form-field">
+        <label for="contactPerson">Contact Person</label>
+        <input
+          pInputText
+          id="contactPerson"
+          [(ngModel)]="supplier.contactPerson"
+          placeholder="Enter contact person name">
+      </div>
+
+      <div class="form-field">
+        <label for="email">Email</label>
+        <input
+          pInputText
+          id="email"
+          [(ngModel)]="supplier.email"
+          type="email"
+          placeholder="Enter email address">
+      </div>
+
+      <div class="form-field">
+        <label for="phone">Phone</label>
+        <input
+          pInputText
+          id="phone"
+          [(ngModel)]="supplier.phone"
+          placeholder="Enter phone number">
+      </div>
+
+      <div class="form-field">
+        <label for="status">Status</label>
+        <p-dropdown
+          id="status"
+          [options]="statusOptions"
+          [(ngModel)]="supplier.status"
+          optionLabel="label"
+          optionValue="value">
+        </p-dropdown>
+      </div>
+
+      <div class="form-field full-width">
+        <label for="address">Address</label>
+        <textarea
+          pInputTextarea
+          id="address"
+          [(ngModel)]="supplier.address"
+          rows="3"
+          placeholder="Enter supplier address">
+        </textarea>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="Cancel"
+      icon="pi pi-times"
+      class="p-button-text"
+      (click)="hideSupplierDialog()">
+    </button>
+    <button
+      pButton
+      type="button"
+      label="Save"
+      icon="pi pi-check"
+      class="p-button-primary"
+      (click)="saveSupplier()">
+    </button>
+  </ng-template>
+</p-dialog>
+
+<!-- Supplier Product Dialog -->
+<p-dialog
+  [(visible)]="productDialog"
+  [style]="{width: '700px'}"
+  header="Supplier Product Details"
+  [modal]="true"
+  styleClass="p-fluid"
+  [closable]="false">
+
+  <ng-template pTemplate="content">
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="supplierId">Supplier *</label>
+        <p-dropdown
+          id="supplierId"
+          [options]="suppliers"
+          [(ngModel)]="supplierProduct.supplierId"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Select supplier"
+          [ngClass]="{'ng-invalid': submitted && !supplierProduct.supplierId}">
+        </p-dropdown>
+        <small class="p-error" *ngIf="submitted && !supplierProduct.supplierId">Supplier is required.</small>
+      </div>
+
+      <div class="form-field">
+        <label for="supplierProductCode">Supplier Product Code *</label>
+        <input
+          pInputText
+          id="supplierProductCode"
+          [(ngModel)]="supplierProduct.supplierProductCode"
+          required="true"
+          [ngClass]="{'ng-invalid': submitted && !supplierProduct.supplierProductCode}"
+          placeholder="Enter supplier product code">
+        <small class="p-error" *ngIf="submitted && !supplierProduct.supplierProductCode">Product code is required.</small>
+      </div>
+
+      <div class="form-field full-width">
+        <label for="supplierProductName">Product Name *</label>
+        <input
+          pInputText
+          id="supplierProductName"
+          [(ngModel)]="supplierProduct.supplierProductName"
+          required="true"
+          [ngClass]="{'ng-invalid': submitted && !supplierProduct.supplierProductName}"
+          placeholder="Enter product name">
+        <small class="p-error" *ngIf="submitted && !supplierProduct.supplierProductName">Product name is required.</small>
+      </div>
+
+      <div class="form-field">
+        <label for="supplierPrice">Supplier Price</label>
+        <p-inputNumber
+          id="supplierPrice"
+          [(ngModel)]="supplierProduct.supplierPrice"
+          mode="currency"
+          currency="USD"
+          locale="en-US"
+          placeholder="0.00">
+        </p-inputNumber>
+      </div>
+
+      <div class="form-field">
+        <label for="moq">Minimum Order Quantity</label>
+        <p-inputNumber
+          id="moq"
+          [(ngModel)]="supplierProduct.moq"
+          placeholder="1"
+          [min]="1">
+        </p-inputNumber>
+      </div>
+
+      <div class="form-field">
+        <label for="leadTime">Lead Time (Days)</label>
+        <p-inputNumber
+          id="leadTime"
+          [(ngModel)]="supplierProduct.leadTime"
+          placeholder="1"
+          [min]="1">
+        </p-inputNumber>
+      </div>
+
+      <div class="form-field full-width">
+        <div class="checkbox-container">
+          <p-checkbox
+            id="isActive"
+            [(ngModel)]="supplierProduct.isActive"
+            label="Active"
+            binary="true">
+          </p-checkbox>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="Cancel"
+      icon="pi pi-times"
+      class="p-button-text"
+      (click)="hideProductDialog()">
+    </button>
+    <button
+      pButton
+      type="button"
+      label="Save"
+      icon="pi pi-check"
+      class="p-button-primary"
+      (click)="saveSupplierProduct()">
+    </button>
+  </ng-template>
+</p-dialog>
+
+<p-confirmDialog></p-confirmDialog>
+<p-toast></p-toast>

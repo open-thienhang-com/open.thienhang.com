@@ -63,49 +63,94 @@ export class RetailServicesComponent implements OnInit {
   editingService: RetailService | null = null;
 
   activeTab = 'overview';
+  activeSubTab = '';
 
   serviceCategories = [
     {
       key: 'overview',
       label: 'Overview',
       icon: 'pi pi-home',
-      description: 'General overview of all retail services'
+      description: 'General overview of all retail services',
+      submenus: []
     },
     {
       key: 'payment',
       label: 'Payment Processing',
       icon: 'pi pi-credit-card',
-      description: 'Secure payment processing and gateway management'
+      description: 'Secure payment processing and gateway management',
+      submenus: []
     },
     {
       key: 'inventory',
       label: 'Inventory Management',
       icon: 'pi pi-box',
-      description: 'Real-time inventory tracking and management'
+      description: 'Real-time inventory tracking and management',
+      submenus: [
+        {
+          key: 'overview',
+          label: 'Overview',
+          icon: 'pi pi-home',
+          description: 'Inventory dashboard and alerts'
+        },
+        {
+          key: 'products',
+          label: 'Products',
+          icon: 'pi pi-list',
+          description: 'Product catalog and stock levels'
+        },
+        {
+          key: 'movements',
+          label: 'Movements',
+          icon: 'pi pi-arrow-right-arrow-left',
+          description: 'Stock in/out history and adjustments'
+        },
+        {
+          key: 'locations',
+          label: 'Locations',
+          icon: 'pi pi-map-marker',
+          description: 'Warehouse and location management'
+        },
+        {
+          key: 'reports',
+          label: 'Reports',
+          icon: 'pi pi-chart-line',
+          description: 'Inventory reports and analytics'
+        },
+        {
+          key: 'settings',
+          label: 'Settings',
+          icon: 'pi pi-cog',
+          description: 'Inventory system configuration'
+        }
+      ]
     },
     {
       key: 'analytics',
       label: 'Customer Analytics',
       icon: 'pi pi-chart-bar',
-      description: 'Advanced customer behavior and analytics'
+      description: 'Advanced customer behavior and analytics',
+      submenus: []
     },
     {
       key: 'loyalty',
       label: 'Loyalty Programs',
       icon: 'pi pi-star',
-      description: 'Customer loyalty and rewards management'
+      description: 'Customer loyalty and rewards management',
+      submenus: []
     },
     {
       key: 'pos',
       label: 'POS Systems',
       icon: 'pi pi-shopping-cart',
-      description: 'Point of sale and transaction management'
+      description: 'Point of sale and transaction management',
+      submenus: []
     },
     {
       key: 'ecommerce',
       label: 'E-commerce',
       icon: 'pi pi-globe',
-      description: 'Online retail and marketplace solutions'
+      description: 'Online retail and marketplace solutions',
+      submenus: []
     }
   ];
 
@@ -146,11 +191,21 @@ export class RetailServicesComponent implements OnInit {
 
   navigateToCategory(categoryKey: string) {
     this.activeTab = categoryKey;
+    this.activeSubTab = ''; // Reset submenu when changing main category
     if (categoryKey === 'overview') {
       this.router.navigate(['/retail']);
     } else {
       this.router.navigate([categoryKey], { relativeTo: this.route });
     }
+  }
+
+  navigateToSubmenu(submenuKey: string) {
+    this.activeSubTab = submenuKey;
+    this.router.navigate(['inventory', submenuKey], { relativeTo: this.route });
+  }
+
+  getCurrentCategory() {
+    return this.serviceCategories.find(cat => cat.key === this.activeTab);
   }
 
   loadRetailServices() {

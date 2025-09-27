@@ -91,6 +91,62 @@ export class SidebarComponent implements OnChanges {
       ]
     },
     {
+      label: 'Retail Services',
+      icon: 'pi pi-shopping-bag',
+      expanded: false,
+      items: [
+        {
+          label: 'Inventory Management',
+          icon: 'pi pi-box',
+          children: [
+            { label: 'Overview', url: '/retail/inventory/overview', icon: 'pi pi-chart-bar' },
+            { label: 'Product Catalog', url: '/retail/inventory/product-catalog', icon: 'pi pi-list' },
+            { label: 'Products', url: '/retail/inventory/products', icon: 'pi pi-shopping-cart' },
+            { label: 'Movements', url: '/retail/inventory/movements', icon: 'pi pi-exchange' },
+            { label: 'Locations', url: '/retail/inventory/locations', icon: 'pi pi-map-marker' },
+            { label: 'Reports', url: '/retail/inventory/reports', icon: 'pi pi-chart-line' },
+            { label: 'Settings', url: '/retail/inventory/settings', icon: 'pi pi-cog' }
+          ]
+        },
+        {
+          label: 'Point of Sale',
+          icon: 'pi pi-credit-card',
+          children: [
+            { label: 'POS Terminal', url: '/retail/pos', icon: 'pi pi-desktop' },
+            { label: 'Transactions', url: '/retail/transactions', icon: 'pi pi-receipt' },
+            { label: 'Cash Management', url: '/retail/cash', icon: 'pi pi-money-bill' }
+          ]
+        },
+        {
+          label: 'E-commerce',
+          icon: 'pi pi-globe',
+          children: [
+            { label: 'Online Store', url: '/retail/ecommerce', icon: 'pi pi-shopping-bag' },
+            { label: 'Orders', url: '/retail/orders', icon: 'pi pi-shopping-cart' },
+            { label: 'Customers', url: '/retail/customers', icon: 'pi pi-users' }
+          ]
+        },
+        {
+          label: 'Analytics',
+          icon: 'pi pi-chart-bar',
+          children: [
+            { label: 'Sales Analytics', url: '/retail/analytics', icon: 'pi pi-chart-line' },
+            { label: 'Customer Insights', url: '/retail/insights', icon: 'pi pi-users' },
+            { label: 'Performance', url: '/retail/performance', icon: 'pi pi-trophy' }
+          ]
+        },
+        {
+          label: 'Loyalty Program',
+          icon: 'pi pi-star',
+          children: [
+            { label: 'Members', url: '/retail/loyalty', icon: 'pi pi-users' },
+            { label: 'Rewards', url: '/retail/rewards', icon: 'pi pi-gift' },
+            { label: 'Campaigns', url: '/retail/campaigns', icon: 'pi pi-megaphone' }
+          ]
+        }
+      ]
+    },
+    {
       label: 'Governance',
       icon: 'pi pi-shield',
       expanded: false,

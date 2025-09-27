@@ -1,0 +1,409 @@
+.product-master-container {
+  // Filters Section
+  .filters-section {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    margin-bottom: 2rem;
+
+    .filters-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      gap: 1rem;
+      align-items: end;
+
+      .filter-item {
+        label {
+          display: block;
+          font-weight: 500;
+          color: #374151;
+          margin-bottom: 0.5rem;
+          font-size: 0.875rem;
+        }
+
+        .search-input {
+          width: 100%;
+        }
+
+        ::ng-deep .p-dropdown {
+          width: 100%;
+        }
+      }
+
+      .filter-actions {
+        ::ng-deep .p-button {
+          height: 2.5rem;
+        }
+      }
+    }
+  }
+
+  // Products Table Section
+  .products-table-section {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem;
+      border-bottom: 1px solid #e5e7eb;
+
+      .table-title {
+        h3 {
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: #1f2937;
+          margin: 0 0 0.25rem 0;
+        }
+
+        p {
+          color: #6b7280;
+          font-size: 0.875rem;
+          margin: 0;
+        }
+      }
+
+      .table-actions {
+        display: flex;
+        gap: 0.5rem;
+
+        ::ng-deep .p-button {
+          padding: 0.5rem 1rem;
+          font-size: 0.875rem;
+        }
+      }
+    }
+
+    ::ng-deep .p-datatable {
+      .p-datatable-thead > tr > th {
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+        font-weight: 600;
+        color: #374151;
+        padding: 1rem;
+        font-size: 0.875rem;
+      }
+
+      .p-datatable-tbody > tr > td {
+        padding: 1rem;
+        border-bottom: 1px solid #f3f4f6;
+        vertical-align: top;
+      }
+
+      .p-paginator {
+        padding: 1rem;
+        border-top: 1px solid #e5e7eb;
+      }
+    }
+
+    .product-image {
+      .product-thumbnail {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 0.375rem;
+        border: 1px solid #e5e7eb;
+      }
+    }
+
+    .sku-info {
+      .sku {
+        font-weight: 600;
+        color: #1f2937;
+        font-family: 'Courier New', monospace;
+        margin-bottom: 0.25rem;
+      }
+
+      .barcode {
+        color: #6b7280;
+        font-size: 0.75rem;
+        font-family: 'Courier New', monospace;
+      }
+    }
+
+    .product-info {
+      .product-name {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.25rem;
+      }
+
+      .product-description {
+        color: #6b7280;
+        font-size: 0.875rem;
+        line-height: 1.4;
+      }
+    }
+
+    .price-cell {
+      font-weight: 600;
+      color: #1f2937;
+      text-align: right;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .empty-message {
+      text-align: center;
+      padding: 3rem;
+
+      .empty-content {
+        i {
+          font-size: 3rem;
+          color: #d1d5db;
+          margin-bottom: 1rem;
+          display: block;
+        }
+
+        p {
+          color: #6b7280;
+          font-size: 1rem;
+          margin: 0;
+
+          a {
+            color: #3b82f6;
+            text-decoration: none;
+
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Product Dialog
+  ::ng-deep .product-dialog {
+    .p-dialog-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #e5e7eb;
+
+      .p-dialog-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1f2937;
+      }
+    }
+
+    .p-dialog-content {
+      padding: 0;
+    }
+
+    .p-dialog-footer {
+      padding: 1.5rem;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    ::ng-deep .p-tabview {
+      .p-tabview-panels {
+        padding: 0;
+      }
+
+      .p-tabview-panel {
+        padding: 1.5rem;
+      }
+
+      .p-tabview-nav {
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+
+        li {
+          .p-tabview-nav-link {
+            padding: 1rem 1.5rem;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-weight: 500;
+            transition: all 0.2s ease;
+
+            &:hover {
+              background: #f3f4f6;
+              color: #374151;
+            }
+
+            &.router-link-active {
+              background: #3b82f6;
+              color: white;
+              border-color: #3b82f6;
+            }
+
+            i {
+              margin-right: 0.5rem;
+            }
+          }
+        }
+      }
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+
+      .form-field {
+        label {
+          display: block;
+          font-weight: 500;
+          color: #374151;
+          margin-bottom: 0.5rem;
+          font-size: 0.875rem;
+        }
+
+        .form-input,
+        .form-textarea {
+          width: 100%;
+        }
+
+        ::ng-deep .p-dropdown {
+          width: 100%;
+        }
+
+        ::ng-deep .p-inputnumber {
+          width: 100%;
+        }
+
+        &.full-width {
+          grid-column: 1 / -1;
+        }
+      }
+    }
+
+    .specifications-section {
+      .spec-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        h4 {
+          font-size: 1rem;
+          font-weight: 600;
+          color: #1f2937;
+          margin: 0;
+        }
+      }
+
+      .spec-list {
+        .spec-item {
+          margin-bottom: 0.75rem;
+
+          .spec-field {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+
+            .spec-key,
+            .spec-value {
+              flex: 1;
+            }
+          }
+        }
+      }
+    }
+
+    .images-section {
+      .image-preview {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+
+        .image-item {
+          position: relative;
+
+          img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 0.375rem;
+            border: 1px solid #e5e7eb;
+          }
+
+          .remove-image {
+            position: absolute;
+            top: 0.25rem;
+            right: 0.25rem;
+            background: rgba(239, 68, 68, 0.9);
+            border-radius: 50%;
+            width: 1.5rem;
+            height: 1.5rem;
+          }
+        }
+      }
+    }
+  }
+
+  // Badge styles
+  ::ng-deep .p-badge {
+    &.badge-active {
+      background: #10b981;
+      color: white;
+    }
+
+    &.badge-inactive {
+      background: #f59e0b;
+      color: white;
+    }
+
+    &.badge-discontinued {
+      background: #ef4444;
+      color: white;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 1024px) {
+  .filters-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .table-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .table-actions {
+    width: 100%;
+    justify-content: stretch;
+
+    ::ng-deep .p-button {
+      flex: 1;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .products-table-section {
+    ::ng-deep .p-datatable {
+      .p-datatable-tbody > tr > td {
+        padding: 0.75rem 0.5rem;
+      }
+    }
+  }
+
+  ::ng-deep .product-dialog {
+    width: 95vw !important;
+  }
+}

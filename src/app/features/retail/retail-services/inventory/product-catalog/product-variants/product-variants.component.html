@@ -1,0 +1,271 @@
+<div class="product-variants-container">
+  <div class="header-section">
+    <div class="header-content">
+      <h2>Product Variants Management</h2>
+      <p class="subtitle">Manage product variations like sizes, colors, and styles</p>
+    </div>
+    <div class="header-actions">
+      <button
+        pButton
+        type="button"
+        label="Add Variant"
+        icon="pi pi-plus"
+        class="p-button-primary"
+        (click)="openNew()">
+      </button>
+    </div>
+  </div>
+
+  <div class="filters-section">
+    <div class="filter-row">
+      <div class="search-container">
+        <span class="p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            placeholder="Search variants..."
+            [(ngModel)]="searchValue"
+            (input)="onSearchChange()"
+            class="search-input">
+        </span>
+      </div>
+      <div class="type-filter">
+        <p-dropdown
+          [options]="variantTypes"
+          [(ngModel)]="selectedType"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Filter by type"
+          (onChange)="onTypeFilterChange()"
+          showClear="true">
+        </p-dropdown>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <p-table
+      [value]="filteredVariants"
+      [(selection)]="selectedVariants"
+      dataKey="id"
+      responsiveLayout="scroll"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[5,10,25,50]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} variants"
+      styleClass="p-datatable-striped">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 3rem">
+            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+          </th>
+          <th pSortableColumn="sku">SKU <p-sortIcon field="sku"></p-sortIcon></th>
+          <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
+          <th pSortableColumn="type">Type <p-sortIcon field="type"></p-sortIcon></th>
+          <th pSortableColumn="value">Value <p-sortIcon field="value"></p-sortIcon></th>
+          <th pSortableColumn="priceAdjustment">Price Adj. <p-sortIcon field="priceAdjustment"></p-sortIcon></th>
+          <th pSortableColumn="stockQuantity">Stock <p-sortIcon field="stockQuantity"></p-sortIcon></th>
+          <th pSortableColumn="isActive">Status <p-sortIcon field="isActive"></p-sortIcon></th>
+          <th style="width: 8rem">Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-variant>
+        <tr>
+          <td>
+            <p-tableCheckbox [value]="variant"></p-tableCheckbox>
+          </td>
+          <td>{{ variant.sku }}</td>
+          <td>{{ variant.name }}</td>
+          <td>
+            <span class="type-badge" [ngClass]="'type-' + variant.type">
+              {{ getTypeLabel(variant.type) }}
+            </span>
+          </td>
+          <td>{{ variant.value }}</td>
+          <td class="price-cell">
+            <span [class]="variant.priceAdjustment >= 0 ? 'positive' : 'negative'">
+              {{ variant.priceAdjustment >= 0 ? '+' : '' }}{{ variant.priceAdjustment | currency }}
+            </span>
+          </td>
+          <td>
+            <span class="stock-badge" [ngClass]="variant.stockQuantity > 10 ? 'good' : variant.stockQuantity > 0 ? 'low' : 'out'">
+              {{ variant.stockQuantity }}
+            </span>
+          </td>
+          <td>
+            <p-tag
+              [value]="getStatusLabel(variant.isActive)"
+              [severity]="getStatusSeverity(variant.isActive)">
+            </p-tag>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button
+                pButton
+                type="button"
+                icon="pi pi-pencil"
+                class="p-button-rounded p-button-success p-button-text"
+                pTooltip="Edit"
+                tooltipPosition="top"
+                (click)="editVariant(variant)">
+              </button>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-power-off"
+                class="p-button-rounded p-button-warning p-button-text"
+                pTooltip="{{ variant.isActive ? 'Deactivate' : 'Activate' }}"
+                tooltipPosition="top"
+                (click)="toggleActive(variant)">
+              </button>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-trash"
+                class="p-button-rounded p-button-danger p-button-text"
+                pTooltip="Delete"
+                tooltipPosition="top"
+                (click)="deleteVariant(variant)">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="9" class="text-center py-4">
+            <div class="empty-state">
+              <i class="pi pi-box empty-icon"></i>
+              <p>No product variants found</p>
+              <small>Start by adding your first variant</small>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<!-- Variant Dialog -->
+<p-dialog
+  [(visible)]="variantDialog"
+  [style]="{width: '600px'}"
+  header="Variant Details"
+  [modal]="true"
+  styleClass="p-fluid"
+  [closable]="false">
+
+  <ng-template pTemplate="content">
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="sku">SKU *</label>
+        <input
+          pInputText
+          id="sku"
+          [(ngModel)]="variant.sku"
+          required="true"
+          [class.ng-invalid]="submitted && !variant.sku"
+          placeholder="Enter SKU">
+        <small class="p-error" *ngIf="submitted && !variant.sku">SKU is required.</small>
+      </div>
+
+      <div class="form-field">
+        <label for="name">Name *</label>
+        <input
+          pInputText
+          id="name"
+          [(ngModel)]="variant.name"
+          required="true"
+          [class.ng-invalid]="submitted && !variant.name"
+          placeholder="Enter variant name">
+        <small class="p-error" *ngIf="submitted && !variant.name">Name is required.</small>
+      </div>
+
+      <div class="form-field">
+        <label for="type">Type *</label>
+        <p-dropdown
+          id="type"
+          [options]="variantTypes"
+          [(ngModel)]="variant.type"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select variant type"
+          [class.ng-invalid]="submitted && !variant.type">
+        </p-dropdown>
+        <small class="p-error" *ngIf="submitted && !variant.type">Type is required.</small>
+      </div>
+
+      <div class="form-field">
+        <label for="value">Value *</label>
+        <input
+          pInputText
+          id="value"
+          [(ngModel)]="variant.value"
+          required="true"
+          [class.ng-invalid]="submitted && !variant.value"
+          placeholder="Enter variant value">
+        <small class="p-error" *ngIf="submitted && !variant.value">Value is required.</small>
+      </div>
+
+      <div class="form-field">
+        <label for="priceAdjustment">Price Adjustment</label>
+        <p-inputNumber
+          id="priceAdjustment"
+          [(ngModel)]="variant.priceAdjustment"
+          mode="currency"
+          currency="USD"
+          locale="en-US"
+          placeholder="0.00">
+        </p-inputNumber>
+        <small class="form-hint">Additional cost for this variant (can be negative)</small>
+      </div>
+
+      <div class="form-field">
+        <label for="stockQuantity">Stock Quantity</label>
+        <p-inputNumber
+          id="stockQuantity"
+          [(ngModel)]="variant.stockQuantity"
+          placeholder="0"
+          [min]="0">
+        </p-inputNumber>
+      </div>
+
+      <div class="form-field full-width">
+        <div class="checkbox-container">
+          <p-checkbox
+            id="isActive"
+            [(ngModel)]="variant.isActive"
+            label="Active"
+            binary="true">
+          </p-checkbox>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="Cancel"
+      icon="pi pi-times"
+      class="p-button-text"
+      (click)="hideDialog()">
+    </button>
+    <button
+      pButton
+      type="button"
+      label="Save"
+      icon="pi pi-check"
+      class="p-button-primary"
+      (click)="saveVariant()">
+    </button>
+  </ng-template>
+</p-dialog>
+
+<p-confirmDialog></p-confirmDialog>
+<p-toast></p-toast>

@@ -213,7 +213,41 @@ export const routes: Routes = [
           },
           {
             path: 'inventory',
-            loadComponent: () => import('./features/retail/retail-services/inventory/inventory.component').then(m => m.InventoryComponent),
+            children: [
+              {
+                path: '',
+                redirectTo: 'overview',
+                pathMatch: 'full'
+              },
+              {
+                path: 'overview',
+                loadComponent: () => import('./features/retail/retail-services/inventory/overview/overview.component').then(m => m.OverviewComponent),
+              },
+              {
+                path: 'product-catalog',
+                loadComponent: () => import('./features/retail/retail-services/inventory/product-catalog/product-catalog.component').then(m => m.ProductCatalogComponent),
+              },
+              {
+                path: 'products',
+                loadComponent: () => import('./features/retail/retail-services/inventory/products/products.component').then(m => m.ProductsComponent),
+              },
+              {
+                path: 'movements',
+                loadComponent: () => import('./features/retail/retail-services/inventory/movements/movements.component').then(m => m.MovementsComponent),
+              },
+              {
+                path: 'locations',
+                loadComponent: () => import('./features/retail/retail-services/inventory/locations/locations.component').then(m => m.LocationsComponent),
+              },
+              {
+                path: 'reports',
+                loadComponent: () => import('./features/retail/retail-services/inventory/reports/reports.component').then(m => m.ReportsComponent),
+              },
+              {
+                path: 'settings',
+                loadComponent: () => import('./features/retail/retail-services/inventory/settings/settings.component').then(m => m.SettingsComponent),
+              },
+            ]
           },
           {
             path: 'analytics',

@@ -1,0 +1,134 @@
+<!-- Product Catalog Management -->
+<div class="product-catalog-container">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="header-content">
+      <h1><i class="pi pi-list"></i> Product Catalog Management</h1>
+      <p>Comprehensive product information management system for retail operations</p>
+    </div>
+    <div class="header-actions">
+      <p-button
+        label="Import Products"
+        icon="pi pi-upload"
+        styleClass="p-button-outlined p-button-secondary">
+      </p-button>
+      <p-button
+        label="Export Catalog"
+        icon="pi pi-download"
+        styleClass="p-button-outlined">
+      </p-button>
+      <p-button
+        label="Add Product"
+        icon="pi pi-plus"
+        styleClass="p-button-primary">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-grid">
+    <p-card class="stat-card">
+      <ng-template pTemplate="header">
+        <div class="stat-header">
+          <i class="pi pi-box stat-icon"></i>
+          <div class="stat-info">
+            <div class="stat-value">{{ catalogStats.totalProducts }}</div>
+            <div class="stat-label">Total Products</div>
+          </div>
+        </div>
+      </ng-template>
+      <p class="stat-description">All products in catalog</p>
+    </p-card>
+
+    <p-card class="stat-card">
+      <ng-template pTemplate="header">
+        <div class="stat-header">
+          <i class="pi pi-check-circle stat-icon active"></i>
+          <div class="stat-info">
+            <div class="stat-value">{{ catalogStats.activeProducts }}</div>
+            <div class="stat-label">Active Products</div>
+          </div>
+        </div>
+      </ng-template>
+      <p class="stat-description">Currently available for sale</p>
+    </p-card>
+
+    <p-card class="stat-card">
+      <ng-template pTemplate="header">
+        <div class="stat-header">
+          <i class="pi pi-times-circle stat-icon inactive"></i>
+          <div class="stat-info">
+            <div class="stat-value">{{ catalogStats.inactiveProducts }}</div>
+            <div class="stat-label">Inactive Products</div>
+          </div>
+        </div>
+      </ng-template>
+      <p class="stat-description">Discontinued or out of stock</p>
+    </p-card>
+
+    <p-card class="stat-card">
+      <ng-template pTemplate="header">
+        <div class="stat-header">
+          <i class="pi pi-tags stat-icon"></i>
+          <div class="stat-info">
+            <div class="stat-value">{{ catalogStats.totalCategories }}</div>
+            <div class="stat-label">Categories</div>
+          </div>
+        </div>
+      </ng-template>
+      <p class="stat-description">Product categories</p>
+    </p-card>
+
+    <p-card class="stat-card">
+      <ng-template pTemplate="header">
+        <div class="stat-header">
+          <i class="pi pi-truck stat-icon"></i>
+          <div class="stat-info">
+            <div class="stat-value">{{ catalogStats.totalSuppliers }}</div>
+            <div class="stat-label">Suppliers</div>
+          </div>
+        </div>
+      </ng-template>
+      <p class="stat-description">Active suppliers</p>
+    </p-card>
+
+    <p-card class="stat-card">
+      <ng-template pTemplate="header">
+        <div class="stat-header">
+          <i class="pi pi-sitemap stat-icon"></i>
+          <div class="stat-info">
+            <div class="stat-value">{{ catalogStats.totalVariants }}</div>
+            <div class="stat-label">Product Variants</div>
+          </div>
+        </div>
+      </ng-template>
+      <p class="stat-description">Size, color, style variations</p>
+    </p-card>
+  </div>
+
+  <!-- Main Content Tabs -->
+  <div class="catalog-content">
+    <p-tabView [(activeIndex)]="activeTabIndex" (onChange)="onTabChange($event)">
+      <!-- Product Master Data Tab -->
+      <p-tabPanel header="Product Master Data" leftIcon="pi pi-database">
+        <div class="tab-content">
+          <app-product-master></app-product-master>
+        </div>
+      </p-tabPanel>
+
+      <!-- Product Variants Tab -->
+      <p-tabPanel header="Product Variants" leftIcon="pi pi-sitemap">
+        <div class="tab-content">
+          <app-product-variants></app-product-variants>
+        </div>
+      </p-tabPanel>
+
+      <!-- Supplier Integration Tab -->
+      <p-tabPanel header="Supplier Integration" leftIcon="pi pi-truck">
+        <div class="tab-content">
+          <app-supplier-integration></app-supplier-integration>
+        </div>
+      </p-tabPanel>
+    </p-tabView>
+  </div>
+</div>

@@ -13,19 +13,19 @@
     </div>
   </div>
 
-  <!-- Navigation Tabs -->
-  <div class="services-navigation">
-    <div class="nav-tabs">
+  <!-- Submenu Navigation (for Inventory) -->
+  <div class="services-submenu" *ngIf="activeTab === 'inventory' && getCurrentCategory()?.submenus?.length">
+    <div class="submenu-tabs">
       <div
-        *ngFor="let category of serviceCategories"
-        class="nav-tab"
-        [class.active]="activeTab === category.key"
-        (click)="navigateToCategory(category.key)">
-        <div class="tab-content">
-          <i [class]="category.icon"></i>
-          <div class="tab-info">
-            <span class="tab-label">{{ category.label }}</span>
-            <span class="tab-description">{{ category.description }}</span>
+        *ngFor="let submenu of getCurrentCategory()?.submenus"
+        class="submenu-tab"
+        [class.active]="activeSubTab === submenu.key"
+        (click)="navigateToSubmenu(submenu.key)">
+        <div class="submenu-content">
+          <i [class]="submenu.icon"></i>
+          <div class="submenu-info">
+            <span class="submenu-label">{{ submenu.label }}</span>
+            <span class="submenu-description">{{ submenu.description }}</span>
           </div>
         </div>
       </div>

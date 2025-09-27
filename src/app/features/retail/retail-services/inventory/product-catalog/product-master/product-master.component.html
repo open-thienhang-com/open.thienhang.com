@@ -1,0 +1,425 @@
+<!-- Product Master Data Management -->
+<div class="product-master-container">
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="filters-grid">
+      <div class="filter-item">
+        <label>Search Products</label>
+        <input
+          pInputText
+          [(ngModel)]="searchTerm"
+          (input)="filterProducts()"
+          placeholder="Search by name, SKU, or barcode..."
+          class="search-input">
+      </div>
+
+      <div class="filter-item">
+        <label>Category</label>
+        <p-dropdown
+          [(ngModel)]="selectedCategory"
+          [options]="categories"
+          (onChange)="filterProducts()"
+          placeholder="All Categories"
+          optionLabel="label"
+          optionValue="value">
+        </p-dropdown>
+      </div>
+
+      <div class="filter-item">
+        <label>Brand</label>
+        <p-dropdown
+          [(ngModel)]="selectedBrand"
+          [options]="brands"
+          (onChange)="filterProducts()"
+          placeholder="All Brands"
+          optionLabel="label"
+          optionValue="value">
+        </p-dropdown>
+      </div>
+
+      <div class="filter-item">
+        <label>Status</label>
+        <p-dropdown
+          [(ngModel)]="selectedStatus"
+          [options]="statuses"
+          (onChange)="filterProducts()"
+          placeholder="All Statuses"
+          optionLabel="label"
+          optionValue="value">
+        </p-dropdown>
+      </div>
+
+      <div class="filter-actions">
+        <p-button
+          label="Clear Filters"
+          icon="pi pi-filter-slash"
+          styleClass="p-button-outlined p-button-secondary"
+          (onClick)="searchTerm = ''; selectedCategory = ''; selectedStatus = ''; selectedBrand = ''; filterProducts()">
+        </p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Products Table -->
+  <div class="products-table-section">
+    <div class="table-header">
+      <div class="table-title">
+        <h3>Product Master Data</h3>
+        <p>{{ filteredProducts.length }} of {{ products.length }} products</p>
+      </div>
+      <div class="table-actions">
+        <p-button
+          *ngIf="selectedProducts.length > 0"
+          label="Delete Selected"
+          icon="pi pi-trash"
+          styleClass="p-button-danger p-button-outlined"
+          (onClick)="deleteSelectedProducts()">
+        </p-button>
+        <p-button
+          label="Add Product"
+          icon="pi pi-plus"
+          styleClass="p-button-primary"
+          (onClick)="openCreateDialog()">
+        </p-button>
+      </div>
+    </div>
+
+    <p-table
+      [value]="filteredProducts"
+      [(selection)]="selectedProducts"
+      [loading]="loading"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[5, 10, 25, 50]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+      [globalFilterFields]="['name', 'sku', 'barcode', 'description']"
+      responsiveLayout="scroll">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 3rem">
+            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+          </th>
+          <th style="width: 120px">Image</th>
+          <th style="width: 150px">SKU</th>
+          <th>Product Name</th>
+          <th style="width: 120px">Category</th>
+          <th style="width: 100px">Brand</th>
+          <th style="width: 120px">Cost Price</th>
+          <th style="width: 120px">Selling Price</th>
+          <th style="width: 100px">Status</th>
+          <th style="width: 150px">Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-product>
+        <tr>
+          <td>
+            <p-tableCheckbox [value]="product"></p-tableCheckbox>
+          </td>
+          <td>
+            <div class="product-image">
+              <img
+                [src]="product.images[0] || '/assets/images/placeholder-product.png'"
+                [alt]="product.name"
+                class="product-thumbnail">
+            </div>
+          </td>
+          <td>
+            <div class="sku-info">
+              <div class="sku">{{ product.sku }}</div>
+              <div class="barcode" *ngIf="product.barcode">{{ product.barcode }}</div>
+            </div>
+          </td>
+          <td>
+            <div class="product-info">
+              <div class="product-name">{{ product.name }}</div>
+              <div class="product-description">{{ product.description | slice:0:50 }}...</div>
+            </div>
+          </td>
+          <td>{{ getCategoryLabel(product.category) }}</td>
+          <td>{{ getBrandLabel(product.brand) }}</td>
+          <td class="price-cell">${{ product.costPrice | number:'1.2-2' }}</td>
+          <td class="price-cell">${{ product.sellingPrice | number:'1.2-2' }}</td>
+          <td>
+            <p-badge
+              [value]="product.status.toUpperCase()"
+              [ngClass]="getStatusBadgeClass(product.status)">
+            </p-badge>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <p-button
+                icon="pi pi-eye"
+                styleClass="p-button-text p-button-rounded"
+                pTooltip="View Details"
+                tooltipPosition="top">
+              </p-button>
+              <p-button
+                icon="pi pi-pencil"
+                styleClass="p-button-text p-button-rounded p-button-info"
+                pTooltip="Edit Product"
+                tooltipPosition="top"
+                (onClick)="openEditDialog(product)">
+              </p-button>
+              <p-button
+                icon="pi pi-trash"
+                styleClass="p-button-text p-button-rounded p-button-danger"
+                pTooltip="Delete Product"
+                tooltipPosition="top"
+                (onClick)="deleteProduct(product)">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="10" class="empty-message">
+            <div class="empty-content">
+              <i class="pi pi-box"></i>
+              <p>No products found. <a href="#" (click)="openCreateDialog(); $event.preventDefault()">Add your first product</a></p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- Product Dialog -->
+  <p-dialog
+    [(visible)]="productDialogVisible"
+    [header]="productDialogMode === 'create' ? 'Add New Product' : 'Edit Product'"
+    [modal]="true"
+    [style]="{width: '70vw'}"
+    [maximizable]="true"
+    styleClass="product-dialog">
+
+    <p-tabView>
+      <!-- Basic Information Tab -->
+      <p-tabPanel header="Basic Information" leftIcon="pi pi-info-circle">
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="sku">SKU *</label>
+            <input
+              pInputText
+              id="sku"
+              [(ngModel)]="currentProduct.sku"
+              placeholder="Enter SKU"
+              required>
+          </div>
+
+          <div class="form-field">
+            <label for="barcode">Barcode</label>
+            <input
+              pInputText
+              id="barcode"
+              [(ngModel)]="currentProduct.barcode"
+              placeholder="Enter barcode">
+          </div>
+
+          <div class="form-field full-width">
+            <label for="name">Product Name *</label>
+            <input
+              pInputText
+              id="name"
+              [(ngModel)]="currentProduct.name"
+              placeholder="Enter product name"
+              required>
+          </div>
+
+          <div class="form-field full-width">
+            <label for="description">Description</label>
+            <textarea
+              pInputTextarea
+              id="description"
+              [(ngModel)]="currentProduct.description"
+              rows="3"
+              placeholder="Enter product description">
+            </textarea>
+          </div>
+
+          <div class="form-field">
+            <label for="category">Category *</label>
+            <p-dropdown
+              id="category"
+              [(ngModel)]="currentProduct.category"
+              [options]="categories"
+              placeholder="Select category"
+              optionLabel="label"
+              optionValue="value"
+              required>
+            </p-dropdown>
+          </div>
+
+          <div class="form-field">
+            <label for="brand">Brand *</label>
+            <p-dropdown
+              id="brand"
+              [(ngModel)]="currentProduct.brand"
+              [options]="brands"
+              placeholder="Select brand"
+              optionLabel="label"
+              optionValue="value"
+              required>
+            </p-dropdown>
+          </div>
+
+          <div class="form-field">
+            <label for="supplier">Supplier *</label>
+            <p-dropdown
+              id="supplier"
+              [(ngModel)]="currentProduct.supplier"
+              [options]="suppliers"
+              placeholder="Select supplier"
+              optionLabel="label"
+              optionValue="value"
+              required>
+            </p-dropdown>
+          </div>
+
+          <div class="form-field">
+            <label for="unit">Unit *</label>
+            <p-dropdown
+              id="unit"
+              [(ngModel)]="currentProduct.unit"
+              [options]="units"
+              placeholder="Select unit"
+              optionLabel="label"
+              optionValue="value"
+              required>
+            </p-dropdown>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Pricing Tab -->
+      <p-tabPanel header="Pricing" leftIcon="pi pi-dollar">
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="costPrice">Cost Price *</label>
+            <p-inputNumber
+              id="costPrice"
+              [(ngModel)]="currentProduct.costPrice"
+              mode="currency"
+              currency="USD"
+              locale="en-US"
+              [min]="0"
+              placeholder="0.00"
+              required>
+            </p-inputNumber>
+          </div>
+
+          <div class="form-field">
+            <label for="sellingPrice">Selling Price *</label>
+            <p-inputNumber
+              id="sellingPrice"
+              [(ngModel)]="currentProduct.sellingPrice"
+              mode="currency"
+              currency="USD"
+              locale="en-US"
+              [min]="0"
+              placeholder="0.00"
+              required>
+            </p-inputNumber>
+          </div>
+
+          <div class="form-field">
+            <label for="status">Status</label>
+            <p-dropdown
+              id="status"
+              [(ngModel)]="currentProduct.status"
+              [options]="statuses"
+              placeholder="Select status"
+              optionLabel="label"
+              optionValue="value">
+            </p-dropdown>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Specifications Tab -->
+      <p-tabPanel header="Specifications" leftIcon="pi pi-list">
+        <div class="specifications-section">
+          <div class="spec-header">
+            <h4>Product Specifications</h4>
+            <p-button
+              label="Add Specification"
+              icon="pi pi-plus"
+              styleClass="p-button-outlined p-button-sm"
+              (onClick)="addSpecification()">
+            </p-button>
+          </div>
+
+          <div class="spec-list">
+            <div class="spec-item" *ngFor="let key of getSpecKeys()">
+              <div class="spec-field">
+                <input
+                  pInputText
+                  [value]="key"
+                  placeholder="Specification name"
+                  class="spec-key">
+                <input
+                  pInputText
+                  [(ngModel)]="currentProduct.specifications![key]"
+                  placeholder="Specification value"
+                  class="spec-value">
+                <p-button
+                  icon="pi pi-trash"
+                  styleClass="p-button-text p-button-danger p-button-sm"
+                  (onClick)="removeSpecification(key)">
+                </p-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Images Tab -->
+      <p-tabPanel header="Images" leftIcon="pi pi-images">
+        <div class="images-section">
+          <p-fileUpload
+            mode="basic"
+            chooseLabel="Choose Images"
+            [multiple]="true"
+            accept="image/*"
+            [maxFileSize]="1000000"
+            (onSelect)="onImageUpload($event)">
+          </p-fileUpload>
+
+          <div class="image-preview" *ngIf="currentProduct.images?.length">
+            <div class="image-item" *ngFor="let image of currentProduct.images; let i = index">
+              <img [src]="image" [alt]="'Product image ' + (i + 1)">
+              <p-button
+                icon="pi pi-times"
+                styleClass="p-button-text p-button-danger p-button-sm remove-image"
+                (onClick)="currentProduct.images!.splice(i, 1)">
+              </p-button>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+    </p-tabView>
+
+    <ng-template pTemplate="footer">
+      <p-button
+        label="Cancel"
+        icon="pi pi-times"
+        styleClass="p-button-text"
+        (onClick)="productDialogVisible = false">
+      </p-button>
+      <p-button
+        label="Save"
+        icon="pi pi-check"
+        styleClass="p-button-primary"
+        (onClick)="saveProduct()"
+        [disabled]="!currentProduct.name || !currentProduct.sku">
+      </p-button>
+    </ng-template>
+  </p-dialog>
+</div>
+
+<p-confirmDialog></p-confirmDialog>
+<p-toast></p-toast>
