@@ -60,7 +60,7 @@ export class MarketplaceComponent implements OnInit {
   constructor(
     private i18nService: I18nService,
     private http: HttpClient
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadDataProducts();
@@ -142,17 +142,17 @@ export class MarketplaceComponent implements OnInit {
     // Try to get domain-specific features from translations
     const featuresKey = `marketplace.domains.${domain}.features`;
     const domainTranslations = this.i18nService.getTranslations('marketplace');
-    
-    if (domainTranslations && 
-        domainTranslations['domains'] && 
-        domainTranslations['domains'][domain] && 
-        domainTranslations['domains'][domain]['features']) {
+
+    if (domainTranslations &&
+      domainTranslations['domains'] &&
+      domainTranslations['domains'][domain] &&
+      domainTranslations['domains'][domain]['features']) {
       const features = domainTranslations['domains'][domain]['features'];
       if (typeof features === 'object') {
         return Object.values(features) as string[];
       }
     }
-    
+
     // Default features for unknown domains
     return [
       this.t('marketplace.dataAccess'),
@@ -189,21 +189,21 @@ export class MarketplaceComponent implements OnInit {
 
   getFilteredProducts() {
     let filtered = this.dataProducts;
-    
+
     // Filter by domain
     if (this.selectedDomain) {
       filtered = filtered.filter(product => product.domain === this.selectedDomain);
     }
-    
+
     // Filter by search query
     if (this.searchQuery) {
-      filtered = filtered.filter(product => 
+      filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         product.description.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         product.domain.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     }
-    
+
     return filtered;
   }
 
@@ -217,7 +217,7 @@ export class MarketplaceComponent implements OnInit {
       acc[product.domain] = (acc[product.domain] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-    
+
     return Object.entries(stats).map(([domain, count]) => ({
       domain,
       count,

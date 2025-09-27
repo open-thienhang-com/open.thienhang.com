@@ -108,7 +108,7 @@ export class ErrorInterceptor implements HttpInterceptor {
     
     // Redirect to login with return URL
     const returnUrl = this.router.url;
-    this.router.navigate(['/auth/login'], { 
+    this.router.navigate(['/login'], { 
       queryParams: { returnUrl } 
     });
   }

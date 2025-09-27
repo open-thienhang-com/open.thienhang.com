@@ -77,6 +77,18 @@
                 [class.hidden]="collapsed">Retail Overview</span>
         </a>
       </li>
+      <!-- Settings -->
+      <li class="menu-item">
+        <a [routerLink]="'/settings'" class="flex items-center gap-3 p-3 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900 transition-all duration-200 group"
+           [class.justify-center]="collapsed"
+           [class.px-2]="collapsed">
+          <i class="pi pi-cog text-lg flex-shrink-0"></i>
+          <span class="font-medium text-sm whitespace-nowrap transition-opacity duration-200"
+                [class.opacity-0]="collapsed"
+                [class.invisible]="collapsed"
+                [class.hidden]="collapsed">Settings</span>
+        </a>
+      </li>
       <!-- Accordion Menu Groups -->
       <li *ngFor="let group of sidebarGroups" class="menu-group">
         <div class="flex items-center justify-between cursor-pointer p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group menu-group-header"

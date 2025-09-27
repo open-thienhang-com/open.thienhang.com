@@ -87,7 +87,7 @@
   .table-container {
     ::ng-deep {
       .p-datatable {
-        .p-datatable-thead > tr > th {
+        .p-datatable-thead>tr>th {
           background: #f8f9fa;
           color: #495057;
           font-weight: 600;
@@ -98,12 +98,12 @@
           border-bottom: 2px solid #dee2e6;
         }
 
-        .p-datatable-tbody > tr {
+        .p-datatable-tbody>tr {
           &:hover {
             background: #f8f9fa;
           }
 
-          > td {
+          >td {
             padding: 0.75rem;
             border-bottom: 1px solid #e9ecef;
             vertical-align: middle;
@@ -115,18 +115,42 @@
               font-weight: 500;
               text-transform: capitalize;
 
-              &.type-size { background: #e3f2fd; color: #1976d2; }
-              &.type-color { background: #f3e5f5; color: #7b1fa2; }
-              &.type-style { background: #e8f5e8; color: #388e3c; }
-              &.type-material { background: #fff3e0; color: #f57c00; }
-              &.type-flavor { background: #fce4ec; color: #c2185b; }
+              &.type-size {
+                background: #e3f2fd;
+                color: #1976d2;
+              }
+
+              &.type-color {
+                background: #f3e5f5;
+                color: #7b1fa2;
+              }
+
+              &.type-style {
+                background: #e8f5e8;
+                color: #388e3c;
+              }
+
+              &.type-material {
+                background: #fff3e0;
+                color: #f57c00;
+              }
+
+              &.type-flavor {
+                background: #fce4ec;
+                color: #c2185b;
+              }
             }
 
             .price-cell {
               font-weight: 500;
 
-              .positive { color: #28a745; }
-              .negative { color: #dc3545; }
+              .positive {
+                color: #28a745;
+              }
+
+              .negative {
+                color: #dc3545;
+              }
             }
 
             .stock-badge {
@@ -135,9 +159,20 @@
               font-size: 0.8rem;
               font-weight: 500;
 
-              &.good { background: #d4edda; color: #155724; }
-              &.low { background: #fff3cd; color: #856404; }
-              &.out { background: #f8d7da; color: #721c24; }
+              &.good {
+                background: #d4edda;
+                color: #155724;
+              }
+
+              &.low {
+                background: #fff3cd;
+                color: #856404;
+              }
+
+              &.out {
+                background: #f8d7da;
+                color: #721c24;
+              }
             }
 
             .action-buttons {
@@ -248,7 +283,9 @@
             font-size: 0.9rem;
           }
 
-          input, .p-dropdown, .p-inputnumber {
+          input,
+          .p-dropdown,
+          .p-inputnumber {
             padding: 0.5rem 0.75rem;
             border: 1px solid #ced4da;
             border-radius: 4px;
@@ -363,7 +400,7 @@
     .table-container {
       ::ng-deep {
         .p-datatable {
-          .p-datatable-tbody > tr > td {
+          .p-datatable-tbody>tr>td {
             .action-buttons {
               flex-direction: column;
               gap: 0.125rem;
@@ -394,12 +431,12 @@
     .table-container {
       ::ng-deep {
         .p-datatable {
-          .p-datatable-thead > tr > th {
+          .p-datatable-thead>tr>th {
             padding: 0.5rem 0.25rem;
             font-size: 0.75rem;
           }
 
-          .p-datatable-tbody > tr > td {
+          .p-datatable-tbody>tr>td {
             padding: 0.5rem 0.25rem;
             font-size: 0.85rem;
           }

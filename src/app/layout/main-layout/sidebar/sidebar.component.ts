@@ -160,15 +160,6 @@ export class SidebarComponent implements OnChanges {
         { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' },
         { label: 'Contracts', url: '/data-contracts', icon: 'pi pi-file-check' }
       ]
-    },
-    {
-      label: 'Settings',
-      icon: 'pi pi-cog',
-      expanded: false,
-      items: [
-        { label: 'Profile', url: '/profile', icon: 'pi pi-user' },
-        { label: 'Preferences', url: '/settings', icon: 'pi pi-cog' }
-      ]
     }
   ];
 
@@ -237,16 +228,7 @@ export class SidebarComponent implements OnChanges {
           { label: 'Contracts', url: '/data-contracts', icon: 'pi pi-file-check' }
         ]
       },
-      {
-        label: 'Settings',
-        icon: 'pi pi-cog',
-        type: 'item',
-        expanded: false,
-        children: [
-          { label: 'Profile', url: '/profile', icon: 'pi pi-user' },
-          { label: 'Preferences', url: '/settings', icon: 'pi pi-cog' }
-        ]
-      }
+        { label: 'Settings', url: '/settings', icon: 'pi pi-cog' }
     ];
   }
 

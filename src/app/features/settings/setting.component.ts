@@ -20,6 +20,13 @@ import { SliderModule } from 'primeng/slider';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { ChipModule } from 'primeng/chip';
+import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
+import { BadgeModule } from 'primeng/badge';
+import { UserService } from '../../core/services/user.service';
+import { I18nService } from '../../core/services/i18n.service';
+import { forkJoin } from 'rxjs';
 
 interface UserProfile {
   firstName: string;
@@ -87,7 +94,11 @@ interface AppearanceSettings {
     SliderModule,
     ColorPickerModule,
     SelectButtonModule,
-    ChipModule
+    ChipModule,
+    TableModule,
+    TagModule,
+    TooltipModule,
+    BadgeModule
   ],
   templateUrl: './setting.component.html',
   styleUrls: ['./setting.component.scss'],
@@ -253,13 +264,31 @@ export class SettingsComponent implements OnInit {
     { label: '4 hours', value: 240 }
   ];
 
+  // Profile management properties (from Profile component)
+  allUsers: any[] = [];
+  filteredUsers: any[] = [];
+  currentDate = new Date();
+  loading = false;
+  userSearchText = '';
+
+  // Table columns for users
+  userColumns = [
+    { field: 'full_name', header: 'profile.users.fullName' },
+    { field: 'email', header: 'profile.users.email' },
+    { field: 'role', header: 'profile.users.role' },
+    { field: 'is_active', header: 'profile.users.status' },
+    { field: 'created_at', header: 'profile.users.joinedDate' }
+  ];
+
   constructor(
     private injector: Injector,
     private profileService: ProfileServices,
     private fb: FormBuilder,
     private messageService: MessageService,
     private themeService: ThemeService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private userService: UserService,
+    public i18nService: I18nService
   ) {
     this.initializeForms();
   }
@@ -267,6 +296,7 @@ export class SettingsComponent implements OnInit {
   ngOnInit(): void {
     this.loadUserProfile();
     this.loadThemeSettings();
+    this.loadProfileData();
 
     // Set active tab based on URL parameter
     this.route.queryParams.subscribe(params => {
@@ -283,6 +313,9 @@ export class SettingsComponent implements OnInit {
             break;
           case 'appearance':
             this.activeTabIndex = 3;
+            break;
+          case 'users':
+            this.activeTabIndex = 4;
             break;
           default:
             this.activeTabIndex = 0;
@@ -477,5 +510,63 @@ export class SettingsComponent implements OnInit {
         detail: 'Account deletion request submitted'
       });
     }
+  }
+
+  // Profile management methods (from Profile component)
+  loadProfileData() {
+    this.loading = true;
+
+    // Load both current user profile and all users
+    forkJoin({
+      profile: this.profileService.getProfile(),
+      users: this.userService.getAllUsers()
+    }).subscribe({
+      next: (responses) => {
+        // Update profile with API data, keeping existing structure
+        if (responses.profile.data) {
+          const apiProfile = responses.profile.data as any;
+          this.profile = {
+            ...this.profile,
+            firstName: apiProfile.firstName || apiProfile.first_name || this.profile.firstName,
+            lastName: apiProfile.lastName || apiProfile.last_name || this.profile.lastName,
+            email: apiProfile.email || this.profile.email,
+            phone: apiProfile.phone || this.profile.phone,
+            department: apiProfile.department || this.profile.department,
+            role: apiProfile.role || this.profile.role,
+            timezone: apiProfile.timezone || this.profile.timezone,
+            language: apiProfile.language || this.profile.language,
+            avatar: apiProfile.avatar || this.profile.avatar
+          };
+        }
+        this.allUsers = responses.users.data || [];
+        this.filteredUsers = [...this.allUsers];
+        this.loading = false;
+        console.log('Profile loaded:', this.profile);
+        console.log('All users loaded:', this.allUsers);
+      },
+      error: (error) => {
+        console.error('Error loading profile data:', error);
+        this.loading = false;
+      }
+    });
+  }
+
+  // Filter users based on search text
+  filterUsers() {
+    if (!this.userSearchText) {
+      this.filteredUsers = [...this.allUsers];
+      return;
+    }
+
+    const searchTerm = this.userSearchText.toLowerCase();
+    this.filteredUsers = this.allUsers.filter(user =>
+      user.full_name?.toLowerCase().includes(searchTerm) ||
+      user.email?.toLowerCase().includes(searchTerm) ||
+      user.role?.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  refreshData() {
+    this.loadProfileData();
   }
 }

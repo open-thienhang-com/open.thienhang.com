@@ -215,12 +215,29 @@
           font-size: 1rem;
         }
 
-        &.payment { background: linear-gradient(135deg, #10b981, #059669); }
-        &.inventory { background: linear-gradient(135deg, #f59e0b, #d97706); }
-        &.analytics { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
-        &.loyalty { background: linear-gradient(135deg, #ec4899, #db2777); }
-        &.pos { background: linear-gradient(135deg, #06b6d4, #0891b2); }
-        &.ecommerce { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        &.payment {
+          background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        &.inventory {
+          background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        &.analytics {
+          background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+
+        &.loyalty {
+          background: linear-gradient(135deg, #ec4899, #db2777);
+        }
+
+        &.pos {
+          background: linear-gradient(135deg, #06b6d4, #0891b2);
+        }
+
+        &.ecommerce {
+          background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
       }
 
       .service-status {
@@ -316,7 +333,7 @@
   overflow: hidden;
 
   ::ng-deep .services-table {
-    .p-datatable-thead > tr > th {
+    .p-datatable-thead>tr>th {
       background: #f9fafb;
       color: #374151;
       font-weight: 600;
@@ -325,7 +342,7 @@
       border-bottom: 1px solid #e5e7eb;
     }
 
-    .p-datatable-tbody > tr > td {
+    .p-datatable-tbody>tr>td {
       padding: 1rem;
       border-bottom: 1px solid #f3f4f6;
     }

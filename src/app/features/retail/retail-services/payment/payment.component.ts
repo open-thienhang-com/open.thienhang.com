@@ -303,7 +303,7 @@ export class PaymentComponent implements OnInit {
           beginAtZero: true,
           ticks: {
             color: textColorSecondary,
-            callback: function(value: any) {
+            callback: function (value: any) {
               return '$' + value.toLocaleString();
             }
           },

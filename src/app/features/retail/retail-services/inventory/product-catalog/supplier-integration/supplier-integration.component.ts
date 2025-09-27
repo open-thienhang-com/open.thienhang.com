@@ -115,7 +115,7 @@ export class SupplierIntegrationComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
     private datePipe: DatePipe
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadSuppliers();

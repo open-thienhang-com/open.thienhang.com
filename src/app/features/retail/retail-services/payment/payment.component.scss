@@ -334,7 +334,7 @@
     overflow: hidden;
 
     ::ng-deep .p-datatable {
-      .p-datatable-thead > tr > th {
+      .p-datatable-thead>tr>th {
         background: #f9fafb;
         border-bottom: 1px solid #e5e7eb;
         font-weight: 600;
@@ -342,7 +342,7 @@
         padding: 1rem;
       }
 
-      .p-datatable-tbody > tr > td {
+      .p-datatable-tbody>tr>td {
         padding: 1rem;
         border-bottom: 1px solid #f3f4f6;
       }
@@ -424,7 +424,7 @@
     overflow: hidden;
 
     ::ng-deep .p-datatable {
-      .p-datatable-thead > tr > th {
+      .p-datatable-thead>tr>th {
         background: #f9fafb;
         border-bottom: 1px solid #e5e7eb;
         font-weight: 600;
@@ -432,7 +432,7 @@
         padding: 1rem;
       }
 
-      .p-datatable-tbody > tr > td {
+      .p-datatable-tbody>tr>td {
         padding: 1rem;
         border-bottom: 1px solid #f3f4f6;
       }

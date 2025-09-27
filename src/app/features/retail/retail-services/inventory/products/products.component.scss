@@ -149,7 +149,7 @@
   overflow: hidden;
 
   ::ng-deep .p-datatable {
-    .p-datatable-thead > tr > th {
+    .p-datatable-thead>tr>th {
       background: #f9fafb;
       border-bottom: 1px solid #e5e7eb;
       font-weight: 600;
@@ -158,7 +158,7 @@
       font-size: 0.875rem;
     }
 
-    .p-datatable-tbody > tr > td {
+    .p-datatable-tbody>tr>td {
       padding: 1rem;
       border-bottom: 1px solid #f3f4f6;
       vertical-align: top;
@@ -309,7 +309,7 @@
 
   .products-table-section {
     ::ng-deep .p-datatable {
-      .p-datatable-tbody > tr > td {
+      .p-datatable-tbody>tr>td {
         padding: 0.75rem 0.5rem;
       }
     }

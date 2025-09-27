@@ -77,7 +77,8 @@ export const routes: Routes = [
       },
       {
         path: 'profile',
-        loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent),
+        redirectTo: 'settings',
+        pathMatch: 'full'
       },
       {
         path: 'settings',
