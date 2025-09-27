@@ -1,0 +1,561 @@
+.payment-container {
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// Header Section
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+
+  .header-content {
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 0 0 0.5rem 0;
+    }
+
+    p {
+      color: #6b7280;
+      font-size: 1rem;
+      margin: 0;
+    }
+  }
+
+  .header-actions {
+    ::ng-deep .p-button {
+      padding: 0.75rem 1.5rem;
+    }
+  }
+}
+
+// Payment Tabs
+.payment-tabs {
+  ::ng-deep .p-tabview-panels {
+    padding: 0;
+  }
+
+  ::ng-deep .p-tabview-panel {
+    padding: 1.5rem 0;
+  }
+}
+
+// Stats Grid
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  .stat-card {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .stat-icon {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 0.5rem;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      i {
+        color: white;
+        font-size: 1.25rem;
+      }
+    }
+
+    .stat-content {
+      flex: 1;
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0 0 0.25rem 0;
+      }
+
+      .stat-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin: 0 0 0.5rem 0;
+      }
+
+      .stat-trend {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+
+        &.positive {
+          color: #10b981;
+
+          i {
+            color: #10b981;
+          }
+        }
+
+        &.negative {
+          color: #ef4444;
+
+          i {
+            color: #ef4444;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Overview Grid
+.overview-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+
+  .section-header {
+    margin-bottom: 1.5rem;
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0;
+    }
+  }
+}
+
+// Chart Section
+.chart-section {
+  .chart-container {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    ::ng-deep .p-chart {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+// Activity Section
+.activity-section {
+  .transactions-list {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+
+    .transaction-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #f3f4f6;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .transaction-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        background: #e0f2fe;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        i {
+          color: #0284c7;
+        }
+      }
+
+      .transaction-content {
+        flex: 1;
+
+        .transaction-amount {
+          font-weight: 600;
+          color: #1f2937;
+          margin-bottom: 0.25rem;
+        }
+
+        .transaction-details {
+          color: #6b7280;
+          font-size: 0.875rem;
+          margin-bottom: 0.25rem;
+        }
+
+        .transaction-time {
+          color: #9ca3af;
+          font-size: 0.75rem;
+        }
+      }
+
+      .transaction-status {
+        ::ng-deep .p-badge {
+          font-size: 0.75rem;
+          padding: 0.25rem 0.5rem;
+        }
+      }
+    }
+  }
+}
+
+// Gateways Section
+.gateways-content {
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0;
+    }
+  }
+
+  .gateways-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+
+    .gateway-card {
+      background: white;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e5e7eb;
+
+      .gateway-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+
+        .gateway-info {
+          h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0 0 0.25rem 0;
+          }
+
+          p {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin: 0;
+          }
+        }
+
+        .gateway-status {
+          ::ng-deep .p-badge {
+            font-size: 0.75rem;
+          }
+        }
+      }
+
+      .gateway-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+
+        .stat {
+          text-align: center;
+
+          .label {
+            display: block;
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+          }
+
+          .value {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 0.875rem;
+          }
+        }
+      }
+
+      .gateway-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+    }
+  }
+}
+
+// Methods Section
+.methods-content {
+  .section-header {
+    margin-bottom: 2rem;
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0;
+    }
+  }
+
+  .methods-table {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+
+    ::ng-deep .p-datatable {
+      .p-datatable-thead > tr > th {
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+        font-weight: 600;
+        color: #374151;
+        padding: 1rem;
+      }
+
+      .p-datatable-tbody > tr > td {
+        padding: 1rem;
+        border-bottom: 1px solid #f3f4f6;
+      }
+    }
+
+    .method-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      i {
+        color: #6b7280;
+      }
+    }
+
+    .popularity-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      ::ng-deep .popularity-progress {
+        flex: 1;
+
+        .p-progressbar {
+          height: 0.5rem;
+
+          .p-progressbar-value {
+            background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+          }
+        }
+      }
+
+      .popularity-value {
+        font-size: 0.875rem;
+        color: #6b7280;
+        min-width: 3rem;
+      }
+    }
+  }
+}
+
+// Transactions Section
+.transactions-content {
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0;
+    }
+
+    .filters {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+
+      ::ng-deep .p-dropdown {
+        min-width: 150px;
+      }
+
+      .search-input {
+        ::ng-deep .p-inputtext {
+          min-width: 200px;
+        }
+      }
+    }
+  }
+
+  .transactions-table {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+
+    ::ng-deep .p-datatable {
+      .p-datatable-thead > tr > th {
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+        font-weight: 600;
+        color: #374151;
+        padding: 1rem;
+      }
+
+      .p-datatable-tbody > tr > td {
+        padding: 1rem;
+        border-bottom: 1px solid #f3f4f6;
+      }
+    }
+  }
+}
+
+// Settings Section
+.settings-content {
+  .settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+
+    .setting-card {
+      background: white;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e5e7eb;
+
+      h4 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0 0 1.5rem 0;
+      }
+
+      .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        label {
+          font-weight: 500;
+          color: #374151;
+        }
+
+        ::ng-deep .p-togglebutton {
+          .p-button {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+          }
+        }
+
+        ::ng-deep .p-inputtext {
+          width: 120px;
+        }
+      }
+    }
+  }
+
+  .settings-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+  }
+}
+
+// Responsive Design
+@media (max-width: 1024px) {
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .gateways-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .payment-container {
+    padding: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+
+    ::ng-deep .p-dropdown,
+    .search-input {
+      width: 100%;
+    }
+  }
+
+  .gateway-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .gateway-actions {
+    flex-direction: column;
+  }
+
+  .settings-actions {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,39 @@
+<!-- Retail Services Management Page -->
+<div class="retail-services-container">
+  <!-- Header Section -->
+  <div class="services-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <i class="pi pi-shopping-bag"></i>
+        Retail Services Management
+      </h1>
+      <p class="page-subtitle">
+        Manage and monitor retail services, integrations, and business operations
+      </p>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="services-navigation">
+    <div class="nav-tabs">
+      <div
+        *ngFor="let category of serviceCategories"
+        class="nav-tab"
+        [class.active]="activeTab === category.key"
+        (click)="navigateToCategory(category.key)">
+        <div class="tab-content">
+          <i [class]="category.icon"></i>
+          <div class="tab-info">
+            <span class="tab-label">{{ category.label }}</span>
+            <span class="tab-description">{{ category.description }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Router Outlet for Child Components -->
+  <div class="services-content">
+    <router-outlet></router-outlet>
+  </div>
+</div>

@@ -1,0 +1,177 @@
+<!-- Retail Services Overview -->
+<div class="overview-container">
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="pi pi-shopping-bag"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ getTotalServices() }}</div>
+        <div class="stat-label">Total Services</div>
+        <div class="stat-trend positive">
+          <i class="pi pi-arrow-up"></i>
+          <span>{{ getAverageGrowth().toFixed(1) }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="pi pi-check-circle"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ getActiveServices() }}</div>
+        <div class="stat-label">Active Services</div>
+        <div class="stat-trend positive">
+          <i class="pi pi-arrow-up"></i>
+          <span>{{ ((getActiveServices() / getTotalServices()) * 100).toFixed(0) }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="pi pi-dollar"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">${{ getTotalRevenue() }}</div>
+        <div class="stat-label">Monthly Revenue</div>
+        <div class="stat-trend positive">
+          <i class="pi pi-arrow-up"></i>
+          <span>15.2%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="pi pi-users"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">1,250</div>
+        <div class="stat-label">Total Users</div>
+        <div class="stat-trend positive">
+          <i class="pi pi-arrow-up"></i>
+          <span>8.5%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="content-grid">
+    <!-- Service Categories -->
+    <div class="categories-section">
+      <div class="section-header">
+        <h3>Service Categories</h3>
+        <p>Explore different retail service categories</p>
+      </div>
+
+      <div class="categories-grid">
+        <div
+          *ngFor="let category of serviceCategories"
+          class="category-card"
+          [routerLink]="category.key">
+          <div class="category-header">
+            <div class="category-icon" [style.background-color]="category.color">
+              <i [class]="category.icon"></i>
+            </div>
+            <div class="category-stats">
+              <span class="count">{{ getCategoryCount(category.key) }}</span>
+              <span class="label">services</span>
+            </div>
+          </div>
+          <div class="category-content">
+            <h4>{{ category.label }}</h4>
+            <p>{{ category.description }}</p>
+          </div>
+          <div class="category-footer">
+            <p-button
+              label="Explore"
+              [outlined]="true"
+              severity="secondary"
+              size="small">
+            </p-button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Services Chart -->
+    <div class="chart-section">
+      <div class="section-header">
+        <h3>Services Distribution</h3>
+        <p>Active services by category</p>
+      </div>
+
+      <div class="chart-container">
+        <p-chart
+          type="radar"
+          [data]="chartData"
+          [options]="chartOptions"
+          [responsive]="true">
+        </p-chart>
+      </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="activities-section">
+      <div class="section-header">
+        <h3>Recent Activities</h3>
+        <p>Latest service updates and events</p>
+      </div>
+
+      <div class="activities-list">
+        <div
+          *ngFor="let activity of recentActivities"
+          class="activity-item">
+          <div class="activity-icon" [ngClass]="activity.status">
+            <i [class]="getStatusIcon(activity.status)"></i>
+          </div>
+          <div class="activity-content">
+            <div class="activity-title">{{ activity.action }}</div>
+            <div class="activity-service">{{ activity.service }}</div>
+            <div class="activity-time">{{ formatTimeAgo(activity.timestamp) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Service Performance -->
+    <div class="performance-section">
+      <div class="section-header">
+        <h3>Service Performance</h3>
+        <p>Revenue and growth metrics</p>
+      </div>
+
+      <div class="performance-list">
+        <div
+          *ngFor="let stat of serviceStats"
+          class="performance-item">
+          <div class="performance-header">
+            <span class="category-name">{{ stat.category }}</span>
+            <span class="revenue">${{ stat.revenue }}/mo</span>
+          </div>
+          <div class="performance-metrics">
+            <div class="metric">
+              <span class="label">Active</span>
+              <span class="value">{{ stat.active }}/{{ stat.count }}</span>
+            </div>
+            <div class="metric">
+              <span class="label">Growth</span>
+              <span class="value" [class]="stat.growth >= 0 ? 'positive' : 'negative'">
+                {{ stat.growth >= 0 ? '+' : '' }}{{ stat.growth.toFixed(1) }}%
+              </span>
+            </div>
+          </div>
+          <p-progressBar
+            [value]="(stat.active / stat.count) * 100"
+            [showValue]="false"
+            styleClass="performance-progress">
+          </p-progressBar>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

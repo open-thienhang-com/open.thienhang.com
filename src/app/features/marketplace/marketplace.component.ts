@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { BadgeModule } from 'primeng/badge';
@@ -31,6 +32,7 @@ interface ApiResponse {
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     CardModule,
     ButtonModule,
     BadgeModule,

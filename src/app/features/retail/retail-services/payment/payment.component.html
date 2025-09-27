@@ -1,0 +1,368 @@
+<!-- Payment Processing Management -->
+<div class="payment-container">
+  <div class="header-section">
+    <div class="header-content">
+      <h1>Payment Processing</h1>
+      <p>Manage payment gateways, methods, and monitor transactions</p>
+    </div>
+    <div class="header-actions">
+      <p-button
+        label="Add Gateway"
+        icon="pi pi-plus"
+        (onClick)="addNewGateway()">
+      </p-button>
+    </div>
+  </div>
+
+  <p-tabView [(activeIndex)]="activeTab" class="payment-tabs">
+    <!-- Overview Tab -->
+    <p-tabPanel header="Overview">
+      <div class="overview-content">
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="pi pi-dollar"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">${{ getTotalVolume() }}</div>
+              <div class="stat-label">Total Volume (24h)</div>
+              <div class="stat-trend positive">
+                <i class="pi pi-arrow-up"></i>
+                <span>12.5%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="pi pi-check-circle"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">{{ getSuccessRate() }}%</div>
+              <div class="stat-label">Success Rate</div>
+              <div class="stat-trend positive">
+                <i class="pi pi-arrow-up"></i>
+                <span>2.1%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="pi pi-credit-card"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">{{ getTotalTransactions() }}</div>
+              <div class="stat-label">Transactions (24h)</div>
+              <div class="stat-trend positive">
+                <i class="pi pi-arrow-up"></i>
+                <span>8.3%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="pi pi-exclamation-triangle"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">{{ getFailedTransactions() }}</div>
+              <div class="stat-label">Failed Today</div>
+              <div class="stat-trend negative">
+                <i class="pi pi-arrow-down"></i>
+                <span>15.2%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts and Recent Activity -->
+        <div class="overview-grid">
+          <div class="chart-section">
+            <div class="section-header">
+              <h3>Payment Methods Distribution</h3>
+            </div>
+            <div class="chart-container">
+              <p-chart
+                type="bar"
+                [data]="chartData"
+                [options]="chartOptions"
+                [responsive]="true">
+              </p-chart>
+            </div>
+          </div>
+
+          <div class="activity-section">
+            <div class="section-header">
+              <h3>Recent Transactions</h3>
+            </div>
+            <div class="transactions-list">
+              <div
+                *ngFor="let transaction of recentTransactions.slice(0, 5)"
+                class="transaction-item">
+                <div class="transaction-icon">
+                  <i class="pi pi-credit-card"></i>
+                </div>
+                <div class="transaction-content">
+                  <div class="transaction-amount">{{ formatCurrency(transaction.amount, transaction.currency) }}</div>
+                  <div class="transaction-details">{{ transaction.customer }} • {{ transaction.method }}</div>
+                  <div class="transaction-time">{{ formatTimeAgo(transaction.timestamp) }}</div>
+                </div>
+                <div class="transaction-status">
+                  <p-badge
+                    [value]="transaction.status"
+                    [severity]="getTransactionStatusSeverity(transaction.status)">
+                  </p-badge>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p-tabPanel>
+
+    <!-- Gateways Tab -->
+    <p-tabPanel header="Payment Gateways">
+      <div class="gateways-content">
+        <div class="section-header">
+          <h3>Configured Payment Gateways</h3>
+          <p-button
+            label="Add Gateway"
+            icon="pi pi-plus"
+            size="small"
+            (onClick)="addNewGateway()">
+          </p-button>
+        </div>
+
+        <div class="gateways-grid">
+          <div
+            *ngFor="let gateway of paymentGateways"
+            class="gateway-card">
+            <div class="gateway-header">
+              <div class="gateway-info">
+                <h4>{{ gateway.name }}</h4>
+                <p>{{ gateway.provider }}</p>
+              </div>
+              <div class="gateway-status">
+                <p-badge
+                  [value]="gateway.status"
+                  [severity]="getStatusSeverity(gateway.status)">
+                </p-badge>
+              </div>
+            </div>
+
+            <div class="gateway-stats">
+              <div class="stat">
+                <span class="label">Transactions</span>
+                <span class="value">{{ gateway.transactions.toLocaleString() }}</span>
+              </div>
+              <div class="stat">
+                <span class="label">Success Rate</span>
+                <span class="value">{{ gateway.successRate }}%</span>
+              </div>
+              <div class="stat">
+                <span class="label">Fees</span>
+                <span class="value">{{ gateway.fees }}</span>
+              </div>
+            </div>
+
+            <div class="gateway-actions">
+              <p-button
+                label="Configure"
+                [outlined]="true"
+                size="small"
+                (onClick)="configureGateway(gateway)">
+              </p-button>
+              <p-button
+                label="Test"
+                [outlined]="true"
+                severity="secondary"
+                size="small">
+              </p-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p-tabPanel>
+
+    <!-- Payment Methods Tab -->
+    <p-tabPanel header="Payment Methods">
+      <div class="methods-content">
+        <div class="section-header">
+          <h3>Available Payment Methods</h3>
+        </div>
+
+        <div class="methods-table">
+          <p-table [value]="paymentMethods" styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Method</th>
+                <th>Type</th>
+                <th>Popularity</th>
+                <th>Processing Fee</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-method>
+              <tr>
+                <td>
+                  <div class="method-info">
+                    <i [class]="getMethodIcon(method.type)"></i>
+                    <span>{{ method.name }}</span>
+                  </div>
+                </td>
+                <td>{{ getMethodTypeLabel(method.type) }}</td>
+                <td>
+                  <div class="popularity-bar">
+                    <p-progressBar
+                      [value]="method.popularity"
+                      [showValue]="false"
+                      styleClass="popularity-progress">
+                    </p-progressBar>
+                    <span class="popularity-value">{{ method.popularity }}%</span>
+                  </div>
+                </td>
+                <td>{{ method.processingFee }}%</td>
+                <td>
+                  <p-toggleButton
+                    [(ngModel)]="method.enabled"
+                    onLabel="Enabled"
+                    offLabel="Disabled"
+                    (onChange)="togglePaymentMethod(method)">
+                  </p-toggleButton>
+                </td>
+                <td>
+                  <p-button
+                    label="Configure"
+                    [outlined]="true"
+                    size="small">
+                  </p-button>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      </div>
+    </p-tabPanel>
+
+    <!-- Transactions Tab -->
+    <p-tabPanel header="Transactions">
+      <div class="transactions-content">
+        <div class="section-header">
+          <h3>Transaction History</h3>
+          <div class="filters">
+            <p-dropdown
+              placeholder="Filter by status"
+              [options]="statusOptions"
+              optionLabel="label"
+              optionValue="value">
+            </p-dropdown>
+            <input pInputText placeholder="Search transactions..." class="search-input">
+          </div>
+        </div>
+
+        <div class="transactions-table">
+          <p-table [value]="recentTransactions" styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Transaction ID</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Gateway</th>
+                <th>Time</th>
+                <th>Actions</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-transaction>
+              <tr>
+                <td>{{ transaction.id }}</td>
+                <td>{{ formatCurrency(transaction.amount, transaction.currency) }}</td>
+                <td>{{ transaction.method }}</td>
+                <td>{{ transaction.customer }}</td>
+                <td>
+                  <p-badge
+                    [value]="transaction.status"
+                    [severity]="getTransactionStatusSeverity(transaction.status)">
+                  </p-badge>
+                </td>
+                <td>{{ transaction.gateway }}</td>
+                <td>{{ formatTimeAgo(transaction.timestamp) }}</td>
+                <td>
+                  <p-button
+                    label="View"
+                    [outlined]="true"
+                    size="small">
+                  </p-button>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      </div>
+    </p-tabPanel>
+
+    <!-- Settings Tab -->
+    <p-tabPanel header="Settings">
+      <div class="settings-content">
+        <div class="settings-grid">
+          <div class="setting-card">
+            <h4>Security Settings</h4>
+            <div class="setting-item">
+              <label>Enable 3D Secure</label>
+              <p-toggleButton [(ngModel)]="securitySettings.threeDSecure" onLabel="On" offLabel="Off"></p-toggleButton>
+            </div>
+            <div class="setting-item">
+              <label>Fraud Detection</label>
+              <p-toggleButton [(ngModel)]="securitySettings.fraudDetection" onLabel="On" offLabel="Off"></p-toggleButton>
+            </div>
+            <div class="setting-item">
+              <label>PCI Compliance Mode</label>
+              <p-toggleButton [(ngModel)]="securitySettings.pciCompliance" onLabel="On" offLabel="Off"></p-toggleButton>
+            </div>
+          </div>
+
+          <div class="setting-card">
+            <h4>Notification Settings</h4>
+            <div class="setting-item">
+              <label>Failed Payment Alerts</label>
+              <p-toggleButton [(ngModel)]="notificationSettings.failedPayments" onLabel="On" offLabel="Off"></p-toggleButton>
+            </div>
+            <div class="setting-item">
+              <label>High Value Transactions</label>
+              <p-toggleButton [(ngModel)]="notificationSettings.highValue" onLabel="On" offLabel="Off"></p-toggleButton>
+            </div>
+            <div class="setting-item">
+              <label>Gateway Issues</label>
+              <p-toggleButton [(ngModel)]="notificationSettings.gatewayIssues" onLabel="On" offLabel="Off"></p-toggleButton>
+            </div>
+          </div>
+
+          <div class="setting-card">
+            <h4>Processing Limits</h4>
+            <div class="setting-item">
+              <label>Daily Transaction Limit</label>
+              <p-inputText [(ngModel)]="processingLimits.dailyLimit" placeholder="Enter limit"></p-inputText>
+            </div>
+            <div class="setting-item">
+              <label>Single Transaction Max</label>
+              <p-inputText [(ngModel)]="processingLimits.singleMax" placeholder="Enter max amount"></p-inputText>
+            </div>
+            <div class="setting-item">
+              <label>Monthly Volume Limit</label>
+              <p-inputText [(ngModel)]="processingLimits.monthlyLimit" placeholder="Enter limit"></p-inputText>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-actions">
+          <p-button label="Save Settings" severity="success"></p-button>
+          <p-button label="Reset to Defaults" [outlined]="true" severity="secondary"></p-button>
+        </div>
+      </div>
+    </p-tabPanel>
+  </p-tabView>
+</div>

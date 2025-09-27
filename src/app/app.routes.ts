@@ -91,14 +91,7 @@ export const routes: Routes = [
         path: 'data-product-detail',
         loadComponent: () => import('./features/data-product/data-prod-detail/data-prod-detail.component').then(m => m.DataProdDetailComponent),
       },
-      {
-        path: 'domains',
-        loadComponent: () => import('./features/domain-catalog/domain-catalog.component').then(m => m.DomainCatalogComponent),
-      },
-      {
-        path: 'domains/:id',
-        loadComponent: () => import('./features/domain-catalog/domain-detail/domain-detail.component').then(m => m.DomainDetailComponent),
-      },
+
       {
         path: 'data-mesh/lineage',
         loadComponent: () => import('./features/data-mesh/data-lineage.component').then(m => m.DataLineageComponent),
@@ -208,8 +201,37 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/loading-demo/loading-demo.component').then(m => m.LoadingDemoComponent),
       },
       {
-        path: 'marketplace',
-        loadComponent: () => import('./features/marketplace/marketplace.component').then(m => m.MarketplaceComponent),
+        path: 'retail',
+        children: [
+          {
+            path: '',
+            loadComponent: () => import('./features/retail/retail-services/overview/overview.component').then(m => m.OverviewComponent),
+          },
+          {
+            path: 'payment',
+            loadComponent: () => import('./features/retail/retail-services/payment/payment.component').then(m => m.PaymentComponent),
+          },
+          {
+            path: 'inventory',
+            loadComponent: () => import('./features/retail/retail-services/inventory/inventory.component').then(m => m.InventoryComponent),
+          },
+          {
+            path: 'analytics',
+            loadComponent: () => import('./features/retail/retail-services/analytics/analytics.component').then(m => m.AnalyticsComponent),
+          },
+          {
+            path: 'loyalty',
+            loadComponent: () => import('./features/retail/retail-services/loyalty/loyalty.component').then(m => m.LoyaltyComponent),
+          },
+          {
+            path: 'pos',
+            loadComponent: () => import('./features/retail/retail-services/pos/pos.component').then(m => m.PosComponent),
+          },
+          {
+            path: 'ecommerce',
+            loadComponent: () => import('./features/retail/retail-services/ecommerce/ecommerce.component').then(m => m.EcommerceComponent),
+          },
+        ]
       },
       {
         path: 'discovery/data-catalog',

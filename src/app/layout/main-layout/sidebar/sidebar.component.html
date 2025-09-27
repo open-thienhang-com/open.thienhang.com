@@ -36,14 +36,45 @@
       </li>
       <!-- Marketplace -->
       <li class="menu-item">
-        <a [routerLink]="'/marketplace'" class="flex items-center gap-3 p-3 rounded-lg hover:bg-green-50 dark:hover:bg-green-900 transition-all duration-200 group"
+        <div class="flex items-center justify-between cursor-pointer p-3 rounded-lg hover:bg-green-50 dark:hover:bg-green-900 transition-all duration-200 group"
+             [class.justify-center]="collapsed"
+             [class.px-2]="collapsed"
+             (click)="toggleMarketplace()">
+          <div class="flex items-center gap-3" [class.justify-center]="collapsed">
+            <i class="pi pi-shopping-cart text-lg flex-shrink-0"></i>
+            <span class="font-medium text-sm whitespace-nowrap transition-opacity duration-200"
+                  [class.opacity-0]="collapsed"
+                  [class.invisible]="collapsed"
+                  [class.hidden]="collapsed">Marketplace</span>
+          </div>
+          <i class="pi pi-chevron-down text-sm flex-shrink-0 transition-all duration-200"
+             [class.rotate-180]="marketplaceExpanded"
+             [class.hidden]="collapsed"
+             [class.w-0]="collapsed"
+             [class.overflow-hidden]="collapsed"></i>
+        </div>
+        <!-- Submenu chỉ hiển thị khi expanded và không collapsed -->
+        <div *ngIf="marketplaceExpanded && !collapsed" class="submenu-container ml-2 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+          <a [routerLink]="'/marketplace'" class="flex items-center gap-2 p-2 rounded hover:bg-green-50 dark:hover:bg-green-900 transition-all duration-200 text-sm group">
+            <i class="pi pi-list text-base flex-shrink-0"></i>
+            <span class="whitespace-nowrap">Overview</span>
+          </a>
+          <a [routerLink]="'/marketplace/domains'" class="flex items-center gap-2 p-2 rounded hover:bg-green-50 dark:hover:bg-green-900 transition-all duration-200 text-sm group">
+            <i class="pi pi-book text-base flex-shrink-0"></i>
+            <span class="whitespace-nowrap">Domains</span>
+          </a>
+        </div>
+      </li>
+      <!-- Retail Services -->
+      <li class="menu-item">
+        <a [routerLink]="'/retail'" class="flex items-center gap-3 p-3 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900 transition-all duration-200 group"
            [class.justify-center]="collapsed"
            [class.px-2]="collapsed">
-          <i class="pi pi-shopping-cart text-lg flex-shrink-0"></i>
+          <i class="pi pi-shopping-bag text-lg flex-shrink-0"></i>
           <span class="font-medium text-sm whitespace-nowrap transition-opacity duration-200"
                 [class.opacity-0]="collapsed"
                 [class.invisible]="collapsed"
-                [class.hidden]="collapsed">Marketplace</span>
+                [class.hidden]="collapsed">Retail Services</span>
         </a>
       </li>
       <!-- Accordion Menu Groups -->

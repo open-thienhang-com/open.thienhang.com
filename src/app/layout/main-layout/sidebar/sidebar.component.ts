@@ -45,6 +45,8 @@ export class SidebarComponent implements OnChanges {
   infoDialogVisible = false;
   selectedInfo: MenuInfo | null = null;
 
+  marketplaceExpanded = false;
+
   sidebarGroups = [
     {
       label: 'Explore',
@@ -198,7 +200,12 @@ export class SidebarComponent implements OnChanges {
       this.sidebarGroups.forEach(group => {
         group.expanded = false;
       });
+      this.marketplaceExpanded = false;
     }
+  }
+
+  toggleMarketplace() {
+    this.marketplaceExpanded = !this.marketplaceExpanded;
   }
 
   toggleItem(item: MenuItem, event?: Event): void {
