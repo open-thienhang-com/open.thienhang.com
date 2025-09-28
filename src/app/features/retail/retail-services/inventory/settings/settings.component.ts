@@ -62,7 +62,6 @@ interface InventorySettings {
     ButtonModule,
     CardModule,
     InputTextModule,
-    InputTextarea,
     DropdownModule,
     InputSwitchModule,
     InputNumberModule,
@@ -149,7 +148,7 @@ export class SettingsComponent implements OnInit {
   constructor(
     private confirmationService: ConfirmationService,
     private messageService: MessageService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadSettings();

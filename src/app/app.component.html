@@ -1,8 +1,8 @@
-<!-- Loading Page (shown during initial app load/refresh) -->
-<app-loading-page *ngIf="showLoadingPage"></app-loading-page>
+<!-- Simple Loading Screen -->
+<app-simple-loading *ngIf="showLoading"></app-simple-loading>
 
-<!-- Main App Content (shown after loading is complete) -->
-<div *ngIf="!showLoadingPage" class="app-container">
+<!-- Main App Content -->
+<div *ngIf="!showLoading" class="app-container">
   <router-outlet></router-outlet>
 </div>
 

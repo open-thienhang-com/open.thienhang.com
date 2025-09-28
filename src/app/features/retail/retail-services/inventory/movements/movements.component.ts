@@ -111,7 +111,7 @@ export class MovementsComponent implements OnInit {
   constructor(
     private confirmationService: ConfirmationService,
     private messageService: MessageService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadMovements();

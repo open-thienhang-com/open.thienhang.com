@@ -39,7 +39,7 @@ describe('LocationsComponent', () => {
         MessageService
       ]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(LocationsComponent);
     component = fixture.componentInstance;

@@ -382,6 +382,33 @@
 }
 
 // Responsive design
+@media (max-width: 1400px) {
+    .dashboard-container {
+        .dashboard-content {
+            .content-grid {
+                grid-template-columns: repeat(12, 1fr);
+                gap: 1.5rem;
+
+                .chart-section {
+                    grid-column: span 8;
+                }
+
+                .compliance-section {
+                    grid-column: span 4;
+                }
+
+                .table-section {
+                    grid-column: span 8;
+                }
+
+                .activity-section {
+                    grid-column: span 4;
+                }
+            }
+        }
+    }
+}
+
 @media (max-width: 1200px) {
     .dashboard-container {
         .dashboard-content {
@@ -400,6 +427,25 @@
 
                 .activity-section {
                     grid-column: span 12;
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 1024px) {
+    .dashboard-container {
+        .metrics-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+        }
+
+        .dashboard-content {
+            .content-grid {
+                .compliance-section {
+                    .compliance-grid {
+                        grid-template-columns: repeat(2, 1fr);
+                    }
                 }
             }
         }
@@ -465,6 +511,36 @@
                 .health-overview {
                     flex-direction: column;
                     gap: 1rem;
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-container {
+        .dashboard-header {
+            .header-content {
+                .dashboard-title {
+                    font-size: 1.75rem;
+                }
+
+                .dashboard-subtitle {
+                    font-size: 1rem;
+                }
+            }
+        }
+
+        .metrics-grid {
+            .metric-card {
+                .metric-content {
+                    flex-direction: column;
+                    text-align: center;
+                    gap: 0.75rem;
+
+                    .metric-icon {
+                        align-self: center;
+                    }
                 }
             }
         }

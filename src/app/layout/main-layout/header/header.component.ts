@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {Component, computed, effect, EventEmitter, inject, Output, PLATFORM_ID, signal} from '@angular/core';
+import { Component, computed, effect, EventEmitter, inject, Output, PLATFORM_ID, signal, HostListener, ElementRef } from '@angular/core';
 import { $t, updatePreset, updateSurfacePalette } from '@primeng/themes';
 import Aura from '@primeng/themes/aura';
 import Lara from '@primeng/themes/lara';
@@ -10,8 +10,11 @@ import { PrimeNG } from 'primeng/config';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { StyleClassModule } from 'primeng/styleclass';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { InputTextModule } from 'primeng/inputtext';
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { I18nService } from '../../../core/services/i18n.service';
+import { SearchService, SearchResult } from '../../../core/services/search.service';
+import { SearchResultsComponent } from '../../../shared/components/search-results/search-results.component';
 
 const presets = {
   Aura,
@@ -28,8 +31,16 @@ export interface ThemeState {
 }
 @Component({
   selector: 'app-header',
-  imports: [CommonModule, FormsModule, StyleClassModule, SelectButtonModule, ToggleSwitchModule],
-    templateUrl: './header.component.html',
+  imports: [
+    CommonModule,
+    FormsModule,
+    StyleClassModule,
+    SelectButtonModule,
+    ToggleSwitchModule,
+    InputTextModule,
+    SearchResultsComponent
+  ],
+  templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent {
@@ -37,6 +48,14 @@ export class HeaderComponent {
   private readonly STORAGE_KEY = 'themeSwitcherState';
   searchKeyword = '';
   document = inject(DOCUMENT);
+  private elementRef = inject(ElementRef);
+
+  // Search functionality
+  searchService = inject(SearchService);
+  searchResults$ = this.searchService.searchResults$;
+  isSearching$ = this.searchService.isSearching$;
+  popularSearches = this.searchService.getPopularSearches();
+  showSearchResults = false;
 
   iconClass = computed(() =>
     this.themeState().darkTheme ? 'pi-sun' : 'pi-moon'
@@ -537,5 +556,41 @@ export class HeaderComponent {
 
   changeLanguage(lang: string): void {
     this.i18nService.setLanguage(lang);
+  }
+
+  performSearch(): void {
+    if (this.searchKeyword.trim()) {
+      this.showSearchResults = true;
+      this.searchService.performGlobalSearch(this.searchKeyword);
+    } else {
+      this.clearSearch();
+    }
+  }
+
+  onSearchInput(): void {
+    if (this.searchKeyword.trim().length >= 2) {
+      this.showSearchResults = true;
+      this.searchService.performGlobalSearch(this.searchKeyword);
+    } else if (this.searchKeyword.trim().length === 0) {
+      this.clearSearch();
+    }
+  }
+
+  clearSearch(): void {
+    this.showSearchResults = false;
+    this.searchService.clearSearch();
+  }
+
+  onSearchResultClick(result: SearchResult): void {
+    this.clearSearch();
+    this.searchKeyword = '';
+    // Navigation is handled by routerLink in the template
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    if (!this.elementRef.nativeElement.contains(event.target)) {
+      this.clearSearch();
+    }
   }
 }

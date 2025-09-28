@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HeaderComponent } from "./header/header.component";
 import { RouterOutlet } from "@angular/router";
 import { SidebarComponent } from "./sidebar/sidebar.component";
+import { FooterComponent } from "./footer/footer.component";
 import { Toast } from 'primeng/toast';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { ThemeService } from '../../core/services/theme.service';
@@ -17,6 +18,7 @@ import { Subject, takeUntil } from 'rxjs';
     HeaderComponent,
     RouterOutlet,
     SidebarComponent,
+    FooterComponent,
     Toast,
     ConfirmDialog,
     LoadingComponent
@@ -35,14 +37,14 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     fullScreen: false,
     overlay: false
   };
-  
+
   // Array of cute animal animations for random selection
   animalTypes: ('cat-running' | 'dog-running' | 'rabbit-hopping' | 'penguin-walking' | 'hamster-wheel' | 'fox-trotting' | 'unicorn-flying' | 'owl-flying' | 'butterfly-floating' | 'fish-swimming' | 'panda-rolling' | 'koala-climbing' | 'sloth-hanging' | 'duck-swimming')[] = [
-    'cat-running', 'dog-running', 'rabbit-hopping', 'penguin-walking', 'hamster-wheel', 
+    'cat-running', 'dog-running', 'rabbit-hopping', 'penguin-walking', 'hamster-wheel',
     'fox-trotting', 'unicorn-flying', 'owl-flying', 'butterfly-floating', 'fish-swimming',
     'panda-rolling', 'koala-climbing', 'sloth-hanging', 'duck-swimming'
   ];
-  
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -69,7 +71,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
         if (loadingState.isLoading && loadingState.type === 'default') {
           loadingState.type = this.getRandomAnimalType();
         }
-        
+
         this.loadingState = {
           ...loadingState,
           fullScreen: true, // Make loading full screen for better UX
@@ -102,7 +104,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   private showInitialLoading(): void {
     // Show loading for a beautiful initial experience
     const randomAnimal = this.getRandomAnimalType();
-    
+
     this.loadingService.showFullScreen(
       'Welcome back! Loading your awesome experience...',
       randomAnimal

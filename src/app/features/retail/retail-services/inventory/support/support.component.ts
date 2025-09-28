@@ -160,7 +160,7 @@ export class SupportComponent implements OnInit {
   selectedCategory = '';
   categories = ['All', 'Products', 'Movements', 'Alerts', 'Reports', 'Scanning', 'Basics'];
 
-  constructor() {}
+  constructor() { }
 
   ngOnInit() {
     this.filteredFaqs = [...this.faqs];

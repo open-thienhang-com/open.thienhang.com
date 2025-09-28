@@ -8,9 +8,29 @@
           <i class="pi pi-th-large dark:text-white"></i>
         </button>
       </li>
-<!--      <li>-->
-<!--        <input type="text" pInputText [(ngModel)]="searchKeyword" />-->
-<!--      </li>-->
+      <li>
+        <div class="search-container">
+          <input type="text" 
+                 pInputText 
+                 [(ngModel)]="searchKeyword" 
+                 placeholder="Search..."
+                 (keyup.enter)="performSearch()"
+                 (input)="onSearchInput()"
+                 class="search-input">
+          <i class="pi pi-search search-icon" (click)="performSearch()"></i>
+          
+          <!-- Search Results Overlay -->
+          <div class="search-overlay" *ngIf="showSearchResults" (clickOutside)="clearSearch()">
+            <app-search-results
+              [results]="searchResults$ | async"
+              [isSearching]="isSearching$ | async"
+              [popularSearches]="popularSearches"
+              (clear)="clearSearch()"
+              (resultClick)="onSearchResultClick($event)">
+            </app-search-results>
+          </div>
+        </div>
+      </li>
     </ul>
   </div>
   <div class="">

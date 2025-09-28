@@ -1,4 +1,7 @@
 <div class="dashboard-container">
+  <!-- Breadcrumb -->
+  <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
+
   <!-- Header Section -->
   <div class="dashboard-header">
     <div class="header-content">
@@ -6,16 +9,14 @@
       <p class="dashboard-subtitle">Monitor and manage your data mesh ecosystem</p>
     </div>
     <div class="header-actions">
-      <p-button 
-        label="View All Domains" 
+      <p-button
+        label="View All Domains"
         icon="pi pi-external-link"
         class="p-button-outlined"
         routerLink="/domains">
       </p-button>
     </div>
-  </div>
-
-  <!-- Key Metrics Cards -->
+  </div>  <!-- Key Metrics Cards -->
   <div class="metrics-grid">
     <div class="metric-card">
       <p-card>

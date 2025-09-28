@@ -113,7 +113,7 @@ export class SuppliersComponent implements OnInit {
   constructor(
     private confirmationService: ConfirmationService,
     private messageService: MessageService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadSuppliers();

@@ -12,6 +12,7 @@ import { TableModule } from 'primeng/table';
 import { AvatarModule } from 'primeng/avatar';
 import { KnobModule } from 'primeng/knob';
 import { TimelineModule } from 'primeng/timeline';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../shared/component/breadcrumb/breadcrumb.component';
 
 interface DashboardMetrics {
   totalDomains: number;
@@ -56,7 +57,8 @@ interface RecentActivity {
     TableModule,
     AvatarModule,
     KnobModule,
-    TimelineModule
+    TimelineModule,
+    BreadcrumbComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
@@ -70,6 +72,11 @@ export class DashboardComponent implements OnInit {
     apiCalls: 0,
     totalUsers: 0
   };
+
+  breadcrumbItems: BreadcrumbItem[] = [
+    { label: 'Home', url: '/' },
+    { label: 'Dashboard', active: true }
+  ];
 
   domainOverview: DomainOverview[] = [];
   recentActivities: RecentActivity[] = [];

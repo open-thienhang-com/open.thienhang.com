@@ -3,3 +3,112 @@
   height: 41px;
   border-bottom: 1px solid var(--p-content-border-color);
 }
+
+// Search container styles
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 250px;
+
+  .search-input {
+    width: 100%;
+    padding-right: 2.5rem;
+    border-radius: 6px;
+    border: 1px solid var(--p-surface-300);
+    background: var(--p-surface-50);
+    color: var(--p-surface-700);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+
+    &:focus {
+      border-color: var(--p-primary-500);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+      outline: none;
+    }
+
+    &::placeholder {
+      color: var(--p-surface-400);
+    }
+  }
+
+  .search-icon {
+    position: absolute;
+    right: 0.75rem;
+    color: var(--p-surface-400);
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--p-primary-500);
+    }
+  }
+}
+
+// Responsive search
+@media (max-width: 768px) {
+  .search-container {
+    width: 200px;
+
+    .search-input {
+      font-size: 0.8125rem;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .search-container {
+    display: none; // Hide search on very small screens
+  }
+}
+
+// Search overlay styles
+.search-overlay {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  margin-top: 4px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: var(--p-surface-0);
+  border: 1px solid var(--p-surface-200);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+// Dark mode support for search
+.p-dark-theme {
+  .search-container {
+    .search-input {
+      background: var(--p-surface-800);
+      border-color: var(--p-surface-600);
+      color: var(--p-surface-100);
+
+      &:focus {
+        border-color: var(--p-primary-400);
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+      }
+
+      &::placeholder {
+        color: var(--p-surface-500);
+      }
+    }
+
+    .search-icon {
+      color: var(--p-surface-500);
+
+      &:hover {
+        color: var(--p-primary-400);
+      }
+    }
+  }
+
+  .search-overlay {
+    background: var(--p-surface-800);
+    border-color: var(--p-surface-700);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  }
+}

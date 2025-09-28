@@ -76,6 +76,14 @@ export const routes: Routes = [
         loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
       },
       {
+        path: 'marketplace',
+        loadComponent: () => import('./features/marketplace/marketplace.component').then(m => m.MarketplaceComponent),
+      },
+      {
+        path: 'marketplace/domains',
+        loadComponent: () => import('./features/domain-catalog/domain-catalog.component').then(m => m.DomainCatalogComponent),
+      },
+      {
         path: 'profile',
         redirectTo: 'settings',
         pathMatch: 'full'
@@ -196,10 +204,6 @@ export const routes: Routes = [
       {
         path: 'explore/apis/:type',
         loadComponent: () => import('./features/explore/apis/apis-explorer.component').then(m => m.ApisExplorerComponent),
-      },
-      {
-        path: 'loading-demo',
-        loadComponent: () => import('./pages/loading-demo/loading-demo.component').then(m => m.LoadingDemoComponent),
       },
       {
         path: 'retail',

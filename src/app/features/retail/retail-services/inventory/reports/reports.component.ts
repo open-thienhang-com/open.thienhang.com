@@ -102,7 +102,7 @@ export class ReportsComponent implements OnInit {
     { label: 'Yearly', value: 'yearly' }
   ];
 
-  constructor() {}
+  constructor() { }
 
   ngOnInit() {
     this.initializeDefaultDateRange();
