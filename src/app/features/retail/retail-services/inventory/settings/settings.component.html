@@ -1,1 +1,349 @@
-<p>settings works!</p>
+<!-- Inventory Settings Management -->
+<div class="settings-container">
+  <div class="header-section">
+    <div class="header-content">
+      <h1><i class="pi pi-cog"></i> Inventory Settings</h1>
+      <p>Configure your inventory management system preferences</p>
+    </div>
+    <div class="header-actions">
+      <p-button
+        label="Save Settings"
+        icon="pi pi-save"
+        severity="success"
+        (onClick)="saveSettings()">
+      </p-button>
+      <p-button
+        label="Reset to Defaults"
+        icon="pi pi-refresh"
+        [outlined]="true"
+        severity="danger"
+        (onClick)="resetToDefaults()">
+      </p-button>
+      <p-button
+        label="Export"
+        icon="pi pi-download"
+        [outlined]="true"
+        (onClick)="exportSettings()">
+      </p-button>
+      <input
+        type="file"
+        #fileInput
+        (change)="importSettings($event)"
+        accept=".json"
+        style="display: none;">
+      <p-button
+        label="Import"
+        icon="pi pi-upload"
+        [outlined]="true"
+        (onClick)="fileInput.click()">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Settings Tabs -->
+  <p-tabView class="settings-tabs">
+    <!-- General Settings -->
+    <p-tabPanel header="General">
+      <div class="settings-section">
+        <h3>General Configuration</h3>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label for="companyName">Company Name</label>
+            <input
+              pInputText
+              id="companyName"
+              [(ngModel)]="settings.general.companyName"
+              placeholder="Enter company name">
+          </div>
+
+          <div class="setting-item">
+            <label for="currency">Default Currency</label>
+            <p-dropdown
+              [(ngModel)]="settings.general.defaultCurrency"
+              [options]="currencyOptions"
+              optionLabel="label"
+              optionValue="value">
+            </p-dropdown>
+          </div>
+
+          <div class="setting-item">
+            <label for="language">Default Language</label>
+            <p-dropdown
+              [(ngModel)]="settings.general.defaultLanguage"
+              [options]="languageOptions"
+              optionLabel="label"
+              optionValue="value">
+            </p-dropdown>
+          </div>
+
+          <div class="setting-item">
+            <label for="timezone">Timezone</label>
+            <p-dropdown
+              [(ngModel)]="settings.general.timezone"
+              [options]="timezoneOptions"
+              optionLabel="label"
+              optionValue="value">
+            </p-dropdown>
+          </div>
+
+          <div class="setting-item">
+            <label for="fiscalYear">Fiscal Year Start</label>
+            <input
+              pInputText
+              id="fiscalYear"
+              [(ngModel)]="settings.general.fiscalYearStart"
+              placeholder="MM-DD (e.g., 01-01)">
+          </div>
+        </div>
+      </div>
+    </p-tabPanel>
+
+    <!-- Notifications -->
+    <p-tabPanel header="Notifications">
+      <div class="settings-section">
+        <h3>Alert & Notification Preferences</h3>
+        <div class="settings-grid">
+          <div class="setting-item switch-item">
+            <div class="switch-content">
+              <div>
+                <strong>Low Stock Alerts</strong>
+                <p>Get notified when products are running low</p>
+              </div>
+              <p-inputSwitch [(ngModel)]="settings.notifications.lowStockAlerts"></p-inputSwitch>
+            </div>
+          </div>
+
+          <div class="setting-item switch-item">
+            <div class="switch-content">
+              <div>
+                <strong>Stock Out Alerts</strong>
+                <p>Get notified when products are completely out of stock</p>
+              </div>
+              <p-inputSwitch [(ngModel)]="settings.notifications.stockOutAlerts"></p-inputSwitch>
+            </div>
+          </div>
+
+          <div class="setting-item switch-item">
+            <div class="switch-content">
+              <div>
+                <strong>Expiry Alerts</strong>
+                <p>Get notified about products nearing expiry</p>
+              </div>
+              <p-inputSwitch [(ngModel)]="settings.notifications.expiryAlerts"></p-inputSwitch>
+            </div>
+          </div>
+
+          <div class="setting-item switch-item">
+            <div class="switch-content">
+              <div>
+                <strong>Reorder Alerts</strong>
+                <p>Get notified when it's time to reorder products</p>
+              </div>
+              <p-inputSwitch [(ngModel)]="settings.notifications.reorderAlerts"></p-inputSwitch>
+            </div>
+          </div>
+
+          <div class="setting-item switch-item">
+            <div class="switch-content">
+              <div>
+                <strong>Email Notifications</strong>
+                <p>Send notifications via email</p>
+              </div>
+              <p-inputSwitch [(ngModel)]="settings.notifications.emailNotifications"></p-inputSwitch>
+            </div>
+          </div>
+
+          <div class="setting-item switch-item">
+            <div class="switch-content">
+              <div>
+                <strong>SMS Notifications</strong>
+                <p>Send notifications via SMS</p>
+              </div>
+              <p-inputSwitch [(ngModel)]="settings.notifications.smsNotifications"></p-inputSwitch>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p-tabPanel>
+
+    <!-- Stock Management -->
+    <p-tabPanel header="Stock Management">
+      <div class="settings-section">
+        <h3>Stock Control Settings</h3>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label for="defaultLocation">Default Location</label>
+            <input
+              pInputText
+              id="defaultLocation"
+              [(ngModel)]="settings.stock.defaultLocation"
+              placeholder="Enter default warehouse location">
+          </div>
+
+          <div class="setting-item">
+            <label for="lowStockThreshold">Low Stock Threshold</label>
+            <p-inputNumber
+              [(ngModel)]="settings.stock.lowStockThreshold"
+              [min]="0"
+              [max]="1000"
+              suffix=" units">
+            </p-inputNumber>
+          </div>
+
+          <div class="setting-item">
+            <label for="reorderPoint">Reorder Point</label>
+            <p-inputNumber
+              [(ngModel)]="settings.stock.reorderPoint"
+              [min]="0"
+              [max]="10000"
+              suffix=" units">
+            </p-inputNumber>
+          </div>
+
+          <div class="setting-item switch-item">
+            <div class="switch-content">
+              <div>
+                <strong>Auto Generate SKU</strong>
+                <p>Automatically generate SKU codes for new products</p>
+              </div>
+              <p-inputSwitch [(ngModel)]="settings.stock.autoGenerateSKU"></p-inputSwitch>
+            </div>
+          </div>
+
+          <div class="setting-item switch-item">
+            <div class="switch-content">
+              <div>
+                <strong>Allow Negative Stock</strong>
+                <p>Permit stock levels to go below zero</p>
+              </div>
+              <p-inputSwitch [(ngModel)]="settings.stock.negativeStockAllowed"></p-inputSwitch>
+            </div>
+          </div>
+
+          <div class="setting-item switch-item">
+            <div class="switch-content">
+              <div>
+                <strong>Batch Tracking</strong>
+                <p>Track products by batch/lot numbers</p>
+              </div>
+              <p-inputSwitch [(ngModel)]="settings.stock.batchTracking"></p-inputSwitch>
+            </div>
+          </div>
+
+          <div class="setting-item switch-item">
+            <div class="switch-content">
+              <div>
+                <strong>Expiry Tracking</strong>
+                <p>Track product expiry dates</p>
+              </div>
+              <p-inputSwitch [(ngModel)]="settings.stock.expiryTracking"></p-inputSwitch>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p-tabPanel>
+
+    <!-- Pricing -->
+    <p-tabPanel header="Pricing">
+      <div class="settings-section">
+        <h3>Pricing & Tax Configuration</h3>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label for="taxRate">Default Tax Rate</label>
+            <p-inputNumber
+              [(ngModel)]="settings.pricing.defaultTaxRate"
+              [min]="0"
+              [max]="100"
+              [step]="0.1"
+              suffix=" %">
+            </p-inputNumber>
+          </div>
+
+          <div class="setting-item">
+            <label for="rounding">Price Rounding</label>
+            <p-dropdown
+              [(ngModel)]="settings.pricing.priceRounding"
+              [options]="roundingOptions"
+              optionLabel="label"
+              optionValue="value">
+            </p-dropdown>
+          </div>
+
+          <div class="setting-item switch-item">
+            <div class="switch-content">
+              <div>
+                <strong>Price Includes Tax</strong>
+                <p>Product prices already include tax</p>
+              </div>
+              <p-inputSwitch [(ngModel)]="settings.pricing.priceIncludesTax"></p-inputSwitch>
+            </div>
+          </div>
+
+          <div class="setting-item switch-item">
+            <div class="switch-content">
+              <div>
+                <strong>Multi-Currency Support</strong>
+                <p>Enable multiple currency handling</p>
+              </div>
+              <p-inputSwitch [(ngModel)]="settings.pricing.multiCurrency"></p-inputSwitch>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p-tabPanel>
+
+    <!-- Integrations -->
+    <p-tabPanel header="Integrations">
+      <div class="settings-section">
+        <h3>Third-party Integrations</h3>
+        <div class="settings-grid">
+          <div class="setting-item switch-item">
+            <div class="switch-content">
+              <div>
+                <strong>Barcode Scanning</strong>
+                <p>Enable barcode scanner integration</p>
+              </div>
+              <p-inputSwitch [(ngModel)]="settings.integration.barcodeScanning"></p-inputSwitch>
+            </div>
+          </div>
+
+          <div class="setting-item switch-item">
+            <div class="switch-content">
+              <div>
+                <strong>RFID Integration</strong>
+                <p>Enable RFID tag reading</p>
+              </div>
+              <p-inputSwitch [(ngModel)]="settings.integration.rfidIntegration"></p-inputSwitch>
+            </div>
+          </div>
+
+          <div class="setting-item switch-item">
+            <div class="switch-content">
+              <div>
+                <strong>API Access</strong>
+                <p>Allow external API access to inventory data</p>
+              </div>
+              <p-inputSwitch [(ngModel)]="settings.integration.apiAccess"></p-inputSwitch>
+            </div>
+          </div>
+
+          <div class="setting-item switch-item">
+            <div class="switch-content">
+              <div>
+                <strong>Third-party Sync</strong>
+                <p>Enable synchronization with external systems</p>
+              </div>
+              <p-inputSwitch [(ngModel)]="settings.integration.thirdPartySync"></p-inputSwitch>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p-tabPanel>
+  </p-tabView>
+
+  <!-- Toast Messages -->
+  <p-toast></p-toast>
+
+  <!-- Confirm Dialog -->
+  <p-confirmDialog></p-confirmDialog>
+</div>

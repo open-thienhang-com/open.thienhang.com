@@ -1,0 +1,236 @@
+<!-- User Support & Help Center -->
+<div class="support-container">
+  <div class="header-section">
+    <div class="header-content">
+      <h1><i class="pi pi-question-circle"></i> Help & Support</h1>
+      <p>Find answers, tutorials, and get help with inventory management</p>
+    </div>
+    <div class="header-actions">
+      <p-button
+        label="Contact Support"
+        icon="pi pi-envelope"
+        (onClick)="contactSupport()">
+      </p-button>
+      <p-button
+        label="Download Guide"
+        icon="pi pi-download"
+        [outlined]="true"
+        (onClick)="downloadUserGuide()">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Search Section -->
+  <div class="search-section">
+    <div class="search-grid">
+      <div class="search-item">
+        <label>Search Help</label>
+        <input
+          pInputText
+          [(ngModel)]="searchTerm"
+          (input)="onSearch()"
+          placeholder="Search FAQs, tutorials..."
+          class="search-input">
+      </div>
+
+      <div class="search-item">
+        <label>Category</label>
+        <select
+          class="form-select"
+          [(ngModel)]="selectedCategory"
+          (change)="onCategoryChange()">
+          <option *ngFor="let category of categories" [value]="category">
+            {{ category }}
+          </option>
+        </select>
+      </div>
+
+      <div class="search-actions">
+        <p-button
+          label="Clear"
+          [outlined]="true"
+          size="small"
+          (onClick)="clearSearch()">
+        </p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help Topics Grid -->
+  <div class="help-topics">
+    <h3>Quick Help Topics</h3>
+    <div class="topics-grid">
+      <div
+        *ngFor="let topic of helpTopics"
+        class="topic-card"
+        (click)="openHelpDialog(topic)">
+        <div class="topic-icon">
+          <i [class]="topic.icon"></i>
+        </div>
+        <div class="topic-content">
+          <h4>{{ topic.title }}</h4>
+          <p>{{ topic.description }}</p>
+        </div>
+        <div class="topic-arrow">
+          <i class="pi pi-chevron-right"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Tabs -->
+  <div class="support-content">
+    <p-tabView [(activeIndex)]="activeTabIndex">
+      <!-- FAQ Tab -->
+      <p-tabPanel header="Frequently Asked Questions" leftIcon="pi pi-question">
+        <div class="tab-content">
+          <p-accordion>
+            <p-accordionTab
+              *ngFor="let faq of filteredFaqs"
+              [header]="faq.question">
+              <div class="faq-content">
+                <p>{{ faq.answer }}</p>
+                <div class="faq-category">
+                  <p-badge [value]="faq.category" severity="info"></p-badge>
+                </div>
+              </div>
+            </p-accordionTab>
+          </p-accordion>
+
+          <div *ngIf="filteredFaqs.length === 0" class="empty-state">
+            <div class="empty-content">
+              <i class="pi pi-search"></i>
+              <h3>No results found</h3>
+              <p>Try adjusting your search terms or browse all categories.</p>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Tutorials Tab -->
+      <p-tabPanel header="Video Tutorials" leftIcon="pi pi-video">
+        <div class="tab-content">
+          <div class="tutorial-section">
+            <h3>Getting Started</h3>
+            <div class="tutorial-cards">
+              <p-card
+                *ngFor="let tutorial of getCategoryTutorials('Basics')"
+                class="tutorial-card">
+                <ng-template pTemplate="header">
+                  <div class="tutorial-header">
+                    <i class="pi pi-play-circle tutorial-icon"></i>
+                    <div class="tutorial-info">
+                      <h4>{{ tutorial.title }}</h4>
+                      <p>{{ tutorial.description }}</p>
+                    </div>
+                  </div>
+                </ng-template>
+                <div class="tutorial-steps">
+                  <ol>
+                    <li *ngFor="let step of tutorial.steps">{{ step }}</li>
+                  </ol>
+                </div>
+              </p-card>
+            </div>
+          </div>
+
+          <div class="tutorial-section">
+            <h3>Advanced Features</h3>
+            <div class="tutorial-cards">
+              <p-card
+                *ngFor="let tutorial of tutorials.slice(1)"
+                class="tutorial-card">
+                <ng-template pTemplate="header">
+                  <div class="tutorial-header">
+                    <i class="pi pi-cog tutorial-icon"></i>
+                    <div class="tutorial-info">
+                      <h4>{{ tutorial.title }}</h4>
+                      <p>{{ tutorial.description }}</p>
+                    </div>
+                  </div>
+                </ng-template>
+                <div class="tutorial-steps">
+                  <ol>
+                    <li *ngFor="let step of tutorial.steps">{{ step }}</li>
+                  </ol>
+                </div>
+              </p-card>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Tips & Tricks Tab -->
+      <p-tabPanel header="Tips & Tricks" leftIcon="pi pi-lightbulb">
+        <div class="tab-content">
+          <div class="tips-grid">
+            <div class="tip-card">
+              <div class="tip-icon">
+                <i class="pi pi-keyboard"></i>
+              </div>
+              <div class="tip-content">
+                <h4>Keyboard Shortcuts</h4>
+                <ul>
+                  <li><kbd>Ctrl+N</kbd> - New item</li>
+                  <li><kbd>Ctrl+S</kbd> - Save</li>
+                  <li><kbd>Ctrl+F</kbd> - Search</li>
+                  <li><kbd>F1</kbd> - Help</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="tip-card">
+              <div class="tip-icon">
+                <i class="pi pi-mobile"></i>
+              </div>
+              <div class="tip-content">
+                <h4>Mobile Optimization</h4>
+                <p>Access inventory on any device. All features work seamlessly on mobile browsers.</p>
+              </div>
+            </div>
+
+            <div class="tip-card">
+              <div class="tip-icon">
+                <i class="pi pi-bell"></i>
+              </div>
+              <div class="tip-content">
+                <h4>Smart Alerts</h4>
+                <p>Set up automated alerts for low stock, expiring items, and unusual movements.</p>
+              </div>
+            </div>
+
+            <div class="tip-card">
+              <div class="tip-icon">
+                <i class="pi pi-chart-line"></i>
+              </div>
+              <div class="tip-content">
+                <h4>Data Export</h4>
+                <p>Export reports in multiple formats (PDF, Excel, CSV) for external analysis.</p>
+              </div>
+            </div>
+
+            <div class="tip-card">
+              <div class="tip-icon">
+                <i class="pi pi-users"></i>
+              </div>
+              <div class="tip-content">
+                <h4>Team Collaboration</h4>
+                <p>Share access with team members and track changes with audit logs.</p>
+              </div>
+            </div>
+
+            <div class="tip-card">
+              <div class="tip-icon">
+                <i class="pi pi-shield"></i>
+              </div>
+              <div class="tip-content">
+                <h4>Data Security</h4>
+                <p>All data is encrypted and backed up regularly. Role-based access ensures security.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+    </p-tabView>
+  </div>
+</div>

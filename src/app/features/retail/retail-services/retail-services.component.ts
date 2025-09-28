@@ -105,6 +105,12 @@ export class RetailServicesComponent implements OnInit {
           description: 'Stock in/out history and adjustments'
         },
         {
+          key: 'suppliers',
+          label: 'Suppliers',
+          icon: 'pi pi-users',
+          description: 'Supplier and customer management'
+        },
+        {
           key: 'locations',
           label: 'Locations',
           icon: 'pi pi-map-marker',
@@ -115,6 +121,12 @@ export class RetailServicesComponent implements OnInit {
           label: 'Reports',
           icon: 'pi pi-chart-line',
           description: 'Inventory reports and analytics'
+        },
+        {
+          key: 'support',
+          label: 'Support',
+          icon: 'pi pi-question-circle',
+          description: 'Help and user support'
         },
         {
           key: 'settings',

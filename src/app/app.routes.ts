@@ -245,6 +245,14 @@ export const routes: Routes = [
                 loadComponent: () => import('./features/retail/retail-services/inventory/reports/reports.component').then(m => m.ReportsComponent),
               },
               {
+                path: 'suppliers',
+                loadComponent: () => import('./features/retail/retail-services/inventory/suppliers/suppliers.component').then(m => m.SuppliersComponent),
+              },
+              {
+                path: 'support',
+                loadComponent: () => import('./features/retail/retail-services/inventory/support/support.component').then(m => m.SupportComponent),
+              },
+              {
                 path: 'settings',
                 loadComponent: () => import('./features/retail/retail-services/inventory/settings/settings.component').then(m => m.SettingsComponent),
               },

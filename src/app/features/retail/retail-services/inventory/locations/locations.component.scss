@@ -2,50 +2,67 @@
   padding: 1.5rem;
   max-width: 1400px;
   margin: 0 auto;
+  background: var(--surface-ground);
+  min-height: 100vh;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 }
 
-// Header Section
 .header-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 1.5rem;
+  background: var(--surface-card);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
 
   .header-content {
     h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #1f2937;
       margin: 0 0 0.5rem 0;
+      color: var(--text-color);
+      font-size: 1.75rem;
+      font-weight: 600;
+
+      i {
+        margin-right: 0.5rem;
+        color: var(--primary-color);
+      }
     }
 
     p {
-      color: #6b7280;
-      font-size: 1rem;
       margin: 0;
+      color: var(--text-color-secondary);
+      font-size: 0.95rem;
     }
   }
 
   .header-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.75rem;
 
-    ::ng-deep .p-button {
-      padding: 0.75rem 1.5rem;
+    @media (max-width: 768px) {
+      width: 100%;
+      justify-content: flex-end;
     }
   }
 }
 
-// Filters Section
 .filters-section {
-  background: white;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
   margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--surface-card);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
   .filters-grid {
     display: grid;
@@ -53,245 +70,185 @@
     gap: 1rem;
     align-items: end;
 
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+
     .filter-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
       label {
-        display: block;
         font-weight: 500;
-        color: #374151;
-        margin-bottom: 0.5rem;
-        font-size: 0.875rem;
+        color: var(--text-color);
+        font-size: 0.9rem;
       }
 
       .search-input {
         width: 100%;
       }
 
-      ::ng-deep .p-dropdown {
+      p-dropdown {
         width: 100%;
       }
     }
 
     .filter-actions {
-      ::ng-deep .p-button {
-        height: 2.5rem;
-      }
+      display: flex;
+      align-items: end;
     }
   }
 }
 
-// Locations Grid Section
-.locations-grid-section {
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
   margin-bottom: 2rem;
 
-  .locations-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1.5rem;
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 
-    .location-card {
-      background: white;
-      border-radius: 0.75rem;
-      padding: 1.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      border: 1px solid #e5e7eb;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+  .summary-card {
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem;
 
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      }
+      .card-icon {
+        font-size: 1.5rem;
+        padding: 0.5rem;
+        border-radius: 8px;
 
-      .location-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 1rem;
-
-        .location-info {
-          flex: 1;
-
-          .location-name {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #1f2937;
-            margin: 0 0 0.5rem 0;
-          }
-
-          .location-code {
-            color: #6b7280;
-            font-size: 0.875rem;
-            font-family: 'Courier New', monospace;
-            margin: 0;
-          }
+        &.warehouses {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
         }
 
-        .location-status {
-          ::ng-deep .p-badge {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-          }
+        &.active {
+          background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+          color: white;
+        }
+
+        &.maintenance {
+          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+          color: white;
+        }
+
+        &.capacity {
+          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+          color: white;
         }
       }
 
-      .location-details {
-        margin-bottom: 1rem;
-
-        .detail-row {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 0.5rem;
-
-          &:last-child {
-            margin-bottom: 0;
-          }
-
-          .detail-label {
-            color: #6b7280;
-            font-size: 0.875rem;
-          }
-
-          .detail-value {
-            font-weight: 600;
-            color: #1f2937;
-            font-size: 0.875rem;
-          }
-        }
+      .card-title {
+        font-weight: 600;
+        color: var(--text-color);
+        font-size: 0.9rem;
       }
+    }
 
-      .location-stats {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-        margin-bottom: 1rem;
+    .card-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-color);
+      margin: 0.5rem 0;
+    }
 
-        .stat-item {
-          text-align: center;
-
-          .stat-value {
-            display: block;
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 0.25rem;
-          }
-
-          .stat-label {
-            color: #6b7280;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            font-weight: 500;
-          }
-        }
-      }
-
-      .location-actions {
-        display: flex;
-        gap: 0.5rem;
-
-        ::ng-deep .p-button {
-          flex: 1;
-          padding: 0.5rem;
-          font-size: 0.875rem;
-        }
-      }
+    .card-subtitle {
+      color: var(--text-color-secondary);
+      font-size: 0.85rem;
     }
   }
 }
 
-// Locations Table Section
 .locations-table-section {
-  background: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
+  background: var(--surface-card);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-
-  ::ng-deep .p-datatable {
-    .p-datatable-thead>tr>th {
-      background: #f9fafb;
-      border-bottom: 1px solid #e5e7eb;
-      font-weight: 600;
-      color: #374151;
-      padding: 1rem;
-      font-size: 0.875rem;
-    }
-
-    .p-datatable-tbody>tr>td {
-      padding: 1rem;
-      border-bottom: 1px solid #f3f4f6;
-      vertical-align: top;
-    }
-
-    .p-paginator {
-      padding: 1rem;
-      border-top: 1px solid #e5e7eb;
-    }
-  }
 
   .location-info {
     .location-name {
       font-weight: 600;
-      color: #1f2937;
+      color: var(--text-color);
       margin-bottom: 0.25rem;
     }
 
-    .location-code {
-      color: #6b7280;
-      font-size: 0.875rem;
-      font-family: 'Courier New', monospace;
+    .location-description {
+      font-size: 0.85rem;
+      color: var(--text-color-secondary);
     }
   }
 
-  .location-type {
-    ::ng-deep .p-badge {
-      font-size: 0.75rem;
-      padding: 0.25rem 0.5rem;
-    }
-  }
+  .address-info {
+    font-size: 0.9rem;
+    line-height: 1.4;
 
-  .capacity-info {
-    .current-capacity {
-      display: block;
-      font-weight: 600;
-      color: #1f2937;
+    div {
       margin-bottom: 0.25rem;
-    }
 
-    .capacity-bar {
-      width: 100%;
-      height: 0.5rem;
-      background: #e5e7eb;
-      border-radius: 0.25rem;
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .utilization-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .utilization-bar {
+      flex: 1;
+      height: 8px;
+      background: var(--surface-border);
+      border-radius: 4px;
       overflow: hidden;
 
-      .capacity-fill {
+      .utilization-fill {
         height: 100%;
-        border-radius: 0.25rem;
+        border-radius: 4px;
+        transition: width 0.3s ease;
 
         &.low {
-          background: #10b981;
+          background: linear-gradient(90deg, #4ecdc4, #44a08d);
         }
 
         &.medium {
-          background: #f59e0b;
+          background: linear-gradient(90deg, #ffeaa7, #fab1a0);
         }
 
         &.high {
-          background: #ef4444;
+          background: linear-gradient(90deg, #fd79a8, #e84393);
+        }
+
+        &.critical {
+          background: linear-gradient(90deg, #ff7675, #d63031);
         }
       }
     }
 
-    .capacity-text {
-      color: #6b7280;
-      font-size: 0.75rem;
-      margin-top: 0.25rem;
+    .utilization-text {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-color);
+      min-width: 45px;
+      text-align: right;
     }
   }
 
   .action-buttons {
     display: flex;
-    gap: 0.25rem;
+    gap: 0.5rem;
+    justify-content: center;
   }
 
   .empty-message {
@@ -299,36 +256,50 @@
     padding: 3rem;
 
     .empty-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+
       i {
         font-size: 3rem;
-        color: #d1d5db;
-        margin-bottom: 1rem;
-        display: block;
+        color: var(--text-color-secondary);
+        opacity: 0.5;
       }
 
       p {
-        color: #6b7280;
-        font-size: 1rem;
         margin: 0;
+        color: var(--text-color-secondary);
+        font-size: 1.1rem;
       }
     }
   }
 }
 
-// Location Form Dialog
 .location-form {
   .form-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
 
     .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      &.full-width {
+        grid-column: 1 / -1;
+      }
+
       label {
-        display: block;
         font-weight: 500;
-        color: #374151;
-        margin-bottom: 0.5rem;
-        font-size: 0.875rem;
+        color: var(--text-color);
+        font-size: 0.9rem;
       }
 
       .form-input,
@@ -336,128 +307,87 @@
         width: 100%;
       }
 
-      ::ng-deep .p-dropdown {
+      p-dropdown {
         width: 100%;
       }
     }
-
-    .form-field:nth-child(7) {
-      grid-column: 1 / -1;
-    }
   }
 }
 
-// View Toggle
-.view-toggle {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 1rem;
-
-  ::ng-deep .p-button {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-  }
-}
-
-// Summary Stats
-.summary-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-
-  .stat-card {
-    background: white;
-    border-radius: 0.75rem;
-    padding: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e5e7eb;
-    text-align: center;
-
-    .stat-icon {
-      width: 3rem;
-      height: 3rem;
-      border-radius: 0.5rem;
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 1rem auto;
-
-      i {
-        color: white;
-        font-size: 1.25rem;
-      }
-    }
-
-    .stat-value {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #1f2937;
-      margin: 0 0 0.25rem 0;
-    }
-
-    .stat-label {
-      color: #6b7280;
-      font-size: 0.875rem;
-      margin: 0;
-    }
-  }
-}
-
-// Responsive Design
+// Responsive adjustments
 @media (max-width: 1024px) {
-  .filters-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .locations-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
   .locations-container {
     padding: 1rem;
   }
 
   .header-section {
-    flex-direction: column;
-    align-items: flex-start;
+    padding: 1rem;
+  }
+
+  .filters-section {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .locations-container {
+    padding: 0.75rem;
+  }
+
+  .header-section {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .filters-section {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .summary-cards {
     gap: 1rem;
-  }
-
-  .header-actions {
-    width: 100%;
-    justify-content: stretch;
-
-    ::ng-deep .p-button {
-      flex: 1;
-    }
-  }
-
-  .filters-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .locations-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .summary-stats {
-    grid-template-columns: 1fr;
+    margin-bottom: 1.5rem;
   }
 
   .locations-table-section {
-    ::ng-deep .p-datatable {
-      .p-datatable-tbody>tr>td {
-        padding: 0.75rem 0.5rem;
+    .p-datatable {
+      font-size: 0.85rem;
+
+      .p-datatable-tbody > tr > td {
+        padding: 0.5rem;
       }
     }
+  }
+}
+
+// Dark theme adjustments
+@media (prefers-color-scheme: dark) {
+  .locations-container {
+    background: var(--surface-ground);
+  }
+
+  .header-section,
+  .filters-section,
+  .locations-table-section {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+  }
+}
+
+// Print styles
+@media print {
+  .locations-container {
+    box-shadow: none;
+  }
+
+  .header-actions,
+  .filters-section,
+  .action-buttons {
+    display: none !important;
+  }
+
+  .locations-table-section {
+    box-shadow: none;
+    border: 1px solid #ddd;
   }
 }

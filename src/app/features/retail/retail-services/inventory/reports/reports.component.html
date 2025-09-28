@@ -1,1 +1,283 @@
-<p>reports works!</p>
+<!-- Inventory Reports & Analytics -->
+<div class="reports-container">
+  <div class="header-section">
+    <div class="header-content">
+      <h1><i class="pi pi-chart-bar"></i> Reports & Analytics</h1>
+      <p>Comprehensive inventory reports and data insights</p>
+    </div>
+    <div class="header-actions">
+      <p-button
+        label="Export PDF"
+        icon="pi pi-file-pdf"
+        [outlined]="true"
+        (onClick)="exportReport('pdf')">
+      </p-button>
+      <p-button
+        label="Export Excel"
+        icon="pi pi-file-excel"
+        [outlined]="true"
+        (onClick)="exportReport('excel')">
+      </p-button>
+      <p-button
+        label="Generate Report"
+        icon="pi pi-refresh"
+        (onClick)="generateReport()">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="filters-grid">
+      <div class="filter-item">
+        <label>Period</label>
+        <p-dropdown
+          [(ngModel)]="selectedPeriod"
+          [options]="periodOptions"
+          optionLabel="label"
+          optionValue="value"
+          (onChange)="onPeriodChange()">
+        </p-dropdown>
+      </div>
+
+      <div class="filter-item">
+        <label>Date Range</label>
+        <p-calendar
+          [(ngModel)]="dateRange"
+          selectionMode="range"
+          [readonlyInput]="true"
+          placeholder="Select date range"
+          (onSelect)="onDateRangeChange()"
+          (onClear)="onDateRangeChange()">
+        </p-calendar>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards">
+    <p-card class="summary-card">
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <i class="pi pi-arrow-down card-icon inbound"></i>
+          <div class="card-title">Total Inbound</div>
+        </div>
+      </ng-template>
+      <div class="card-value">{{ formatNumber(totalInbound) }}</div>
+      <div class="card-subtitle">Items received</div>
+    </p-card>
+
+    <p-card class="summary-card">
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <i class="pi pi-arrow-up card-icon outbound"></i>
+          <div class="card-title">Total Outbound</div>
+        </div>
+      </ng-template>
+      <div class="card-value">{{ formatNumber(totalOutbound) }}</div>
+      <div class="card-subtitle">Items shipped</div>
+    </p-card>
+
+    <p-card class="summary-card">
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <i class="pi pi-dollar card-icon value"></i>
+          <div class="card-title">Total Value</div>
+        </div>
+      </ng-template>
+      <div class="card-value">{{ formatCurrency(totalValue) }}</div>
+      <div class="card-subtitle">Movement value</div>
+    </p-card>
+
+    <p-card class="summary-card">
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <i class="pi pi-exclamation-triangle card-icon alerts"></i>
+          <div class="card-title">Stock Alerts</div>
+        </div>
+      </ng-template>
+      <div class="card-value">{{ lowStockCount + outOfStockCount }}</div>
+      <div class="card-subtitle">Items need attention</div>
+    </p-card>
+  </div>
+
+  <!-- Reports Tabs -->
+  <div class="reports-content">
+    <p-tabView [(activeIndex)]="activeTabIndex">
+      <!-- Movement Report Tab -->
+      <p-tabPanel header="Movement Report" leftIcon="pi pi-exchange">
+        <div class="tab-content">
+          <div class="chart-section">
+            <h3>Movement Trends</h3>
+            <div class="chart-container">
+              <p-chart
+                type="line"
+                [data]="movementChartData"
+                [options]="chartOptions"
+                height="300px">
+              </p-chart>
+            </div>
+          </div>
+
+          <div class="table-section">
+            <h3>Movement Details</h3>
+            <p-table
+              [value]="movementReport"
+              styleClass="p-datatable-sm">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Period</th>
+                  <th>Inbound</th>
+                  <th>Outbound</th>
+                  <th>Net Movement</th>
+                  <th>Value</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-report>
+                <tr>
+                  <td>{{ report.period }}</td>
+                  <td>{{ formatNumber(report.inbound) }}</td>
+                  <td>{{ formatNumber(report.outbound) }}</td>
+                  <td>
+                    <span [class]="report.netMovement >= 0 ? 'positive' : 'negative'">
+                      {{ report.netMovement >= 0 ? '+' : '' }}{{ report.netMovement }}
+                    </span>
+                  </td>
+                  <td>{{ formatCurrency(report.value) }}</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Top Products Tab -->
+      <p-tabPanel header="Top Products" leftIcon="pi pi-star">
+        <div class="tab-content">
+          <div class="chart-section">
+            <h3>Top Moving Products</h3>
+            <div class="chart-container">
+              <p-chart
+                type="bar"
+                [data]="topProductsChartData"
+                [options]="chartOptions"
+                height="300px">
+              </p-chart>
+            </div>
+          </div>
+
+          <div class="table-section">
+            <h3>Product Rankings</h3>
+            <p-table
+              [value]="topProducts"
+              styleClass="p-datatable-sm">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Product</th>
+                  <th>SKU</th>
+                  <th>Total Movement</th>
+                  <th>Value</th>
+                  <th>Percentage</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-product>
+                <tr>
+                  <td>{{ product.name }}</td>
+                  <td>{{ product.sku }}</td>
+                  <td>{{ formatNumber(product.totalMovement) }}</td>
+                  <td>{{ formatCurrency(product.value) }}</td>
+                  <td>{{ product.percentage }}%</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Stock Alerts Tab -->
+      <p-tabPanel header="Stock Alerts" leftIcon="pi pi-exclamation-triangle">
+        <div class="tab-content">
+          <div class="chart-section">
+            <h3>Stock Alert Distribution</h3>
+            <div class="chart-container">
+              <p-chart
+                type="doughnut"
+                [data]="stockChartData"
+                [options]="chartOptions"
+                height="300px">
+              </p-chart>
+            </div>
+          </div>
+
+          <div class="table-section">
+            <h3>Alert Details</h3>
+            <p-table
+              [value]="stockAlerts"
+              styleClass="p-datatable-sm">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Product</th>
+                  <th>Current Stock</th>
+                  <th>Minimum Stock</th>
+                  <th>Status</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-alert>
+                <tr>
+                  <td>{{ alert.product }}</td>
+                  <td>{{ alert.currentStock }}</td>
+                  <td>{{ alert.minStock }}</td>
+                  <td>
+                    <p-badge
+                      [value]="alert.status.toUpperCase()"
+                      [severity]="getAlertSeverity(alert.status)">
+                    </p-badge>
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Value Analysis Tab -->
+      <p-tabPanel header="Value Analysis" leftIcon="pi pi-dollar">
+        <div class="tab-content">
+          <div class="chart-section">
+            <h3>Movement Value Trends</h3>
+            <div class="chart-container">
+              <p-chart
+                type="line"
+                [data]="valueChartData"
+                [options]="chartOptions"
+                height="300px">
+              </p-chart>
+            </div>
+          </div>
+
+          <div class="table-section">
+            <h3>Value Summary</h3>
+            <p-table
+              [value]="movementReport"
+              styleClass="p-datatable-sm">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Period</th>
+                  <th>Movement Value</th>
+                  <th>Average per Item</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-report>
+                <tr>
+                  <td>{{ report.period }}</td>
+                  <td>{{ formatCurrency(report.value) }}</td>
+                  <td>{{ formatCurrency(report.value / (report.inbound + report.outbound)) }}</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </div>
+      </p-tabPanel>
+    </p-tabView>
+  </div>
+</div>
