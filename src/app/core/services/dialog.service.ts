@@ -26,7 +26,7 @@ export class DialogService {
   private networkDialogConfig$ = new BehaviorSubject<NetworkErrorDialogConfig>({});
   private networkDialogChecking$ = new BehaviorSubject<boolean>(false);
 
-  constructor() {}
+  constructor() { }
 
   // Retry Dialog Methods
   showRetryDialog(config: RetryDialogConfig = {}): Observable<void> {
@@ -36,13 +36,13 @@ export class DialogService {
       errorDetails: config.errorDetails || 'Unknown error occurred'
     });
     this.retryDialogVisible$.next(true);
-    
+
     return new Observable(observer => {
       const subscription = this.retrySubject$.subscribe(() => {
         observer.next();
         observer.complete();
       });
-      
+
       return () => subscription.unsubscribe();
     });
   }

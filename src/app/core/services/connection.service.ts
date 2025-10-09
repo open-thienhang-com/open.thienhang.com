@@ -45,7 +45,7 @@ export class ConnectionService {
     }
 
     private checkApiHealth(): Observable<boolean> {
-        return this.http.get(`${this.API_BASE_URL}/health`, { 
+        return this.http.get(`${this.API_BASE_URL}/health`, {
             headers: { 'Cache-Control': 'no-cache' }
         }).pipe(
             timeout(5000), // 5 second timeout

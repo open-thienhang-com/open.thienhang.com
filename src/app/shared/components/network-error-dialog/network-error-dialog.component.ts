@@ -109,7 +109,7 @@ export class NetworkErrorDialogComponent {
   @Input() message: string = 'Please check your internet connection and try again.';
   @Input() checking: boolean = false;
   @Input() isOnline: boolean = false;
-  
+
   @Output() checkConnection = new EventEmitter<void>();
   @Output() visibleChange = new EventEmitter<boolean>();
 

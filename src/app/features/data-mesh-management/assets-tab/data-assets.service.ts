@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 export class DataAssetsService {
   private baseUrl = `${getApiBase()}/data-catalog`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Get assets list with filtering, search, and pagination
   getAssets(params: any = {}): Observable<any> {

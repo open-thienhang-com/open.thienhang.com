@@ -74,9 +74,17 @@ export class LoginComponent extends AppBaseComponent {
     }).subscribe({
       next: (res) => {
         if (res.success) {
-          localStorage.setItem('isLoggedIn', 'true');
-          this.showSuccess('Login successful');
-          this.router.navigate(['']).then();
+          // Ensure we fetch current user profile after login so header/menu can show user info
+          this.authService.getCurrentUser().subscribe(() => {
+            localStorage.setItem('isLoggedIn', 'true');
+            this.showSuccess('Login successful');
+            this.router.navigate(['']).then();
+          }, () => {
+            // even if fetching profile fails, continue to navigate
+            localStorage.setItem('isLoggedIn', 'true');
+            this.showSuccess('Login successful');
+            this.router.navigate(['']).then();
+          });
         } else {
           this.showError(res.message || 'Login failed');
         }

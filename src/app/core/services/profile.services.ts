@@ -148,10 +148,10 @@ export class ProfileServices {
 
   // Helper method to wrap an array response to match the API response format
   private wrapArrayResponse<T>(data: T[]): ApiResponse<T[]> {
-    return { 
-      data: data || [], 
+    return {
+      data: data || [],
       total: Array.isArray(data) ? data.length : 0,
-      success: true 
+      success: true
     };
   }
 }

@@ -1,15 +1,38 @@
-
-<p-menu #menu [model]="menuItems" [popup]="true" />
-<a pRipple
-   class="m-4 flex items-center cursor-pointer p-2 gap-2 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple justify-between">
-  <div class="flex items-center">
-    <p-avatar image="https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png" shape="circle"/>
-    <div class="flex flex-col ml-3">
-      <span class="font-bold">{{user.full_name}}</span>
-      <span class="text-sm">
-        <p-tag severity="success" value="Admin" />
-      </span>
+<p-menu #menu [model]="menuItems" [popup]="true" styleClass="user-dropdown-menu">
+  <ng-template pTemplate="start">
+    <div class="user-menu-header">
+      <div class="user-menu-avatar">
+        <div *ngIf="user?.avatar || user?.image" class="avatar-img">
+          <p-avatar [image]="user.avatar || user.image" shape="circle" size="large"></p-avatar>
+        </div>
+        <div *ngIf="!user?.avatar && !user?.image" class="avatar-default">
+          <i class="pi pi-user"></i>
+        </div>
+      </div>
+      <div class="user-menu-info">
+        <div class="user-menu-name">
+          {{ user?.full_name || user?.fullName || user?.name || user?.email?.split('@')[0] || 'Anonymous User' }}
+        </div>
+        <div class="user-menu-email">
+          {{ user?.email || 'No email' }}
+        </div>
+        <div class="user-menu-id">
+          ID: {{ user?.identify || user?.tid || user?.id || 'N/A' }}
+        </div>
+      </div>
     </div>
+  </ng-template>
+</p-menu>
+
+<button
+  type="button"
+  (click)="menu.toggle($event)"
+  class="user-menu-button">
+  <div *ngIf="user?.avatar || user?.image" class="button-avatar">
+    <p-avatar [image]="user.avatar || user.image" shape="circle" size="normal"></p-avatar>
   </div>
-  <p-button icon="pi pi-cog" [rounded]="true" [text]="true" (click)="menu.toggle($event)" severity="secondary" />
-</a>
+  <div *ngIf="!user?.avatar && !user?.image" class="button-avatar-default">
+    <i class="pi pi-user"></i>
+  </div>
+  <i class="pi pi-angle-down"></i>
+</button>

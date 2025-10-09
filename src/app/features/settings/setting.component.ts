@@ -101,7 +101,7 @@ interface AppearanceSettings {
     TagModule,
     TooltipModule,
     BadgeModule
-    ,AccordionModule
+    , AccordionModule
   ],
   templateUrl: './setting.component.html',
   styleUrls: ['./setting.component.scss'],

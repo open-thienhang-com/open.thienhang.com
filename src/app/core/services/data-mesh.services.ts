@@ -304,7 +304,7 @@ export class DataMeshServices {
             data_products: [],
             contact: { email: '', slack: '', support: '' }
           }));
-          
+
           return {
             data: basicDomains,
             total: basicDomains.length,
@@ -441,10 +441,10 @@ export class DataMeshServices {
   }
 
   // Get all APIs with pagination and filtering
-  getApis(params?: { 
-    include_dynamic?: boolean; 
-    size?: number; 
-    offset?: number; 
+  getApis(params?: {
+    include_dynamic?: boolean;
+    size?: number;
+    offset?: number;
     domain?: string;
     search?: string;
   }): Observable<ApiResponse<ApiResponse_DataMesh['data']>> {
@@ -545,7 +545,7 @@ export class DataMeshServices {
     return this.getDomainCatalog().pipe(
       map(response => {
         if (response.success && response.data) {
-          const filteredDomains = response.data.filter(domain => 
+          const filteredDomains = response.data.filter(domain =>
             domain.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             domain.display_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             domain.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -566,7 +566,7 @@ export class DataMeshServices {
     return this.getDomainCatalog().pipe(
       map(response => {
         if (response.success && response.data) {
-          const filteredDomains = response.data.filter(domain => 
+          const filteredDomains = response.data.filter(domain =>
             domain.status.toLowerCase() === status.toLowerCase()
           );
           return {
@@ -584,7 +584,7 @@ export class DataMeshServices {
     return this.getDomainCatalog().pipe(
       map(response => {
         if (response.success && response.data) {
-          const filteredDomains = response.data.filter(domain => 
+          const filteredDomains = response.data.filter(domain =>
             domain.team.toLowerCase().includes(team.toLowerCase())
           );
           return {
@@ -762,10 +762,10 @@ export class DataMeshServices {
 
   // Helper method to wrap an array response to match the API response format
   private wrapArrayResponse<T>(data: T[]): ApiResponse<T[]> {
-    return { 
-      data: data || [], 
+    return {
+      data: data || [],
       total: Array.isArray(data) ? data.length : 0,
-      success: true 
+      success: true
     };
   }
 }

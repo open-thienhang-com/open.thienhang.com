@@ -15,6 +15,7 @@ import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { I18nService } from '../../../core/services/i18n.service';
 import { SearchService, SearchResult } from '../../../core/services/search.service';
 import { SearchResultsComponent } from '../../../shared/components/search-results/search-results.component';
+import { CurrentUserComponent } from '../sidebar/current-user/current-user.component';
 
 const presets = {
   Aura,
@@ -38,7 +39,8 @@ export interface ThemeState {
     SelectButtonModule,
     ToggleSwitchModule,
     InputTextModule,
-    SearchResultsComponent
+    SearchResultsComponent,
+    CurrentUserComponent
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'

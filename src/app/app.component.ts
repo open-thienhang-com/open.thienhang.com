@@ -20,7 +20,7 @@ export class AppComponent implements OnInit {
   constructor(
     private auth: AuthServices,
     private loadingService: LoadingService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.initializeApp();

@@ -88,7 +88,7 @@ export class MarketplaceComponent implements OnInit {
     this.loading = true;
     try {
       const response = await this.http.get<ApiResponse>(
-    `${getApiBase()}/data-mesh/data-mesh/data-products?size=10&offset=0`
+        `${getApiBase()}/data-mesh/data-mesh/data-products?size=10&offset=0`
       ).toPromise();
 
       if (response && response.data) {

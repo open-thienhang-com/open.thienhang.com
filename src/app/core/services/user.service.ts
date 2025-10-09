@@ -39,7 +39,7 @@ export interface UserProfile extends User {
 export class UserService {
   private baseUrl = getApiBase();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Get all users in current account
   getAllUsers(): Observable<ApiResponse<User[]>> {

@@ -101,7 +101,7 @@ export class DataProductServices {
   }
 
   getDataProductDetail(id: string, domain?: string): Observable<ApiResponse<DataProduct>> {
-    const url = domain 
+    const url = domain
       ? `${this.baseUrl}/data-mesh/data-mesh/data-products/${domain}/${id}`
       : `${this.baseUrl}/data-mesh/data-mesh/data-products/${id}`;
     return this.http.get<DataProduct>(url)
@@ -223,10 +223,10 @@ export class DataProductServices {
 
   // Helper method to wrap an array response to match the API response format
   private wrapArrayResponse<T>(data: T[]): ApiResponse<T[]> {
-    return { 
-      data: data || [], 
+    return {
+      data: data || [],
       total: Array.isArray(data) ? data.length : 0,
-      success: true 
+      success: true
     };
   }
 }

@@ -35,49 +35,9 @@
   </div>
   <div class="">
     <ul class="flex list-none m-0 p-0 gap-2 items-center">
-      <!-- Account Management Dropdown -->
-      <li class="relative">
-        <button
-          pStyleClass="@next"
-          enterFromClass="hidden"
-          enterActiveClass="animate-scalein"
-          leaveToClass="hidden"
-          leaveActiveClass="animate-fadeout"
-          [hideOnOutsideClick]="true"
-          type="button"
-          class="inline-flex w-10 h-10 p-0 items-center justify-center surface-0 dark:surface-800 border border-surface-200 dark:border-surface-600 rounded-full hover:bg-surface-100 dark:hover:bg-surface-700 transition-all duration-200">
-          <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-md">
-            <i class="pi pi-user text-white text-sm"></i>
-          </div>
-        </button>
-        <div class="absolute top-[3rem] right-0 hidden w-[16rem] bg-white dark:bg-surface-800 rounded-md shadow-lg border border-surface-200 dark:border-surface-700 z-50 origin-top">
-          <div class="p-3 border-b border-surface-200 dark:border-surface-700">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-md">
-                <i class="pi pi-user text-white text-sm"></i>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">Admin User</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">admin&#64;datamesh.com</p>
-              </div>
-            </div>
-          </div>
-          <div class="p-2">
-            <a href="/profile" class="flex items-center gap-3 p-2 rounded-md hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors">
-              <i class="pi pi-user text-surface-600 dark:text-surface-400"></i>
-              <span class="text-sm text-surface-700 dark:text-surface-300">Profile</span>
-            </a>
-            <a href="/settings" class="flex items-center gap-3 p-2 rounded-md hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors">
-              <i class="pi pi-cog text-surface-600 dark:text-surface-400"></i>
-              <span class="text-sm text-surface-700 dark:text-surface-300">Settings</span>
-            </a>
-            <hr class="my-2 border-surface-200 dark:border-surface-700">
-            <button class="flex items-center gap-3 p-2 rounded-md hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors w-full text-left">
-              <i class="pi pi-sign-out text-surface-600 dark:text-surface-400"></i>
-              <span class="text-sm text-surface-700 dark:text-surface-300">Logout</span>
-            </button>
-          </div>
-        </div>
+      <!-- Current user component shows avatar dropdown with name, email and ID -->
+      <li>
+        <app-current-user></app-current-user>
       </li>
 
       <!-- Language Selector -->

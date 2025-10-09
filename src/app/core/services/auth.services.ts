@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { getApiBase } from '../config/api-config';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, catchError, Observable, of, tap, map } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { BehaviorSubject, catchError, Observable, of, tap, map, finalize } from 'rxjs';
 import { ApiResponse } from './governance.services';
 import { UserProfile } from './profile.services';
 import { LoadingService } from './loading.service';
@@ -47,6 +47,17 @@ export class AuthServices {
   private userSubject = new BehaviorSubject<UserProfile | null>(null);
 
   constructor(private http: HttpClient, private loadingService: LoadingService) {
+    // Initialize user from sessionStorage if present
+    try {
+      const raw = sessionStorage.getItem('currentUser');
+      if (raw) {
+        const parsed = JSON.parse(raw) as any;
+        const normalized = this.normalizeUser(parsed);
+        this.userSubject.next(normalized as UserProfile);
+      }
+    } catch (e) {
+      // ignore parse/storage errors
+    }
   }
 
   login(data: LoginRequest): Observable<ApiResponse<AuthResponse>> {
@@ -75,11 +86,24 @@ export class AuthServices {
   }
 
   logout(): Observable<ApiResponse<any>> {
-    localStorage.removeItem('isLoggedIn');
-    this.userSubject.next(null);
     const url = `${this.baseUrl}/authentication/logout`;
-    return this.http.post<any>(url, null)
-      .pipe(map(response => this.wrapResponse(response)));
+    const headers = new HttpHeaders({ accept: 'application/json' });
+
+    // Send empty body as in curl -d '' and include accept header
+    return this.http.post<any>(url, '', { headers })
+      .pipe(
+        map(response => this.wrapResponse(response)),
+        catchError((err) => {
+          // Convert error into ApiResponse shape so callers get a consistent object
+          return of({ data: null, success: false, message: err?.message || 'Logout failed' } as ApiResponse<null>);
+        }),
+        finalize(() => {
+          // Clear client-side session state regardless of request result
+          localStorage.removeItem('isLoggedIn');
+          try { sessionStorage.removeItem('currentUser'); } catch (e) { }
+          this.userSubject.next(null);
+        })
+      );
   }
 
   signUp(data: SignUpRequest): Observable<ApiResponse<AuthResponse>> {
@@ -92,12 +116,26 @@ export class AuthServices {
     const url = `${this.baseUrl}/authentication/me`;
     return this.http.get<UserProfile>(url).pipe(
       tap(response => {
-        const userData = this.isWrappedResponse(response) ? response.data : response;
+        let userData: any = this.isWrappedResponse(response) ? response.data : response;
+        // Some APIs wrap user under `user` key (e.g., { data: { user: {...} } })
+        if (userData && userData.user) userData = userData.user;
+
+        // Normalize user (ensure identify present)
+        const normalized = this.normalizeUser(userData || {});
+
+        // Persist into sessionStorage so it survives page refresh for this session
+        try {
+          sessionStorage.setItem('currentUser', JSON.stringify(normalized));
+        } catch (e) {
+          // ignore session storage errors
+        }
         localStorage.setItem('isLoggedIn', 'true');
-        this.userSubject.next(userData);
+        this.userSubject.next(normalized as UserProfile);
       }),
       catchError(() => {
+        // If the /me call fails, remove stored session user and mark logged out state
         localStorage.removeItem('isLoggedIn');
+        try { sessionStorage.removeItem('currentUser'); } catch (e) { }
         this.userSubject.next(null);
         return of({ data: null, success: false, message: 'Failed to get user data' } as ApiResponse<null>);
       }),
@@ -148,14 +186,14 @@ export class AuthServices {
     const worksheet = XLSX.utils.json_to_sheet(users);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Users');
-    
+
     // Auto-size columns
     const range = XLSX.utils.decode_range(worksheet['!ref']!);
     const columnWidths = [];
     for (let C = range.s.c; C <= range.e.c; ++C) {
       let maxWidth = 0;
       for (let R = range.s.r; R <= range.e.r; ++R) {
-        const cell = worksheet[XLSX.utils.encode_cell({r: R, c: C})];
+        const cell = worksheet[XLSX.utils.encode_cell({ r: R, c: C })];
         if (cell && cell.v) {
           const cellLength = cell.v.toString().length;
           if (cellLength > maxWidth) {
@@ -166,7 +204,7 @@ export class AuthServices {
       columnWidths.push({ wch: Math.min(maxWidth + 2, 50) });
     }
     worksheet['!cols'] = columnWidths;
-    
+
     XLSX.writeFile(workbook, `users_export_${new Date().toISOString().split('T')[0]}.xlsx`);
   }
 
@@ -181,15 +219,15 @@ export class AuthServices {
           const firstSheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[firstSheetName];
           const users = XLSX.utils.sheet_to_json(worksheet);
-          
+
           // Validate and process users
           const validUsers = users.filter((user: any) => user.email && user.password);
-          
+
           if (validUsers.length === 0) {
             observer.next({ data: null, success: false, message: 'No valid users found in Excel file' });
             return;
           }
-          
+
           // Send bulk create request
           const url = `${this.baseUrl}/authentication/bulk-register`;
           this.http.post<any>(url, { users: validUsers }).subscribe({
@@ -237,6 +275,40 @@ export class AuthServices {
   // Helper to check if a response is already wrapped in our ApiResponse format
   private isWrappedResponse(response: any): response is ApiResponse<any> {
     return response && 'data' in response && 'success' in response;
+  }
+
+  // Normalize user object returned from different API shapes so templates can rely on fields
+  private normalizeUser(user: any): any {
+    if (!user) return {};
+    const u: any = { ...user };
+
+    // identify: support various possible keys from backend
+    u.identify = u.identify || u.tid || u.id || u.identifier || u.identification || u.user_id || u.userId || '';
+
+    // full_name normalization - build from first_name + last_name if not available
+    if (!u.full_name && !u.fullName) {
+      if (u.first_name || u.last_name) {
+        u.full_name = `${u.first_name || ''} ${u.last_name || ''}`.trim();
+      } else if (u.name) {
+        u.full_name = u.name;
+      } else if (u.email) {
+        // Use email username as fallback
+        u.full_name = u.email.split('@')[0];
+      } else {
+        u.full_name = 'Anonymous User';
+      }
+    } else {
+      u.full_name = u.full_name || u.fullName;
+    }
+
+    // avatar normalization
+    u.avatar = u.avatar || u.image || u.avatarUrl || u.avatar_url || u.photo || u.picture || '';
+
+    // email normalization
+    u.email = u.email || u.email_address || u.username || '';
+
+    console.log('Normalized user:', u);
+    return u;
   }
 
   // Helper method to wrap a single object response to match the API response format

@@ -35,15 +35,15 @@ export class ApiDocumentationComponent implements OnInit {
   constructor(
     private router: Router,
     private messageService: MessageService
-  ) {}
+  ) { }
 
   ngOnInit() {
     // Initialize component
   }
 
   downloadOpenAPI() {
-  // Download OpenAPI specification
-  window.open(`${getApiBase()}/openapi.json`, '_blank');
+    // Download OpenAPI specification
+    window.open(`${getApiBase()}/openapi.json`, '_blank');
     this.messageService.add({
       severity: 'success',
       summary: 'Download Started',
@@ -52,8 +52,8 @@ export class ApiDocumentationComponent implements OnInit {
   }
 
   openSwagger() {
-  // Open Swagger UI
-  window.open(`${getApiBase()}/docs`, '_blank');
+    // Open Swagger UI
+    window.open(`${getApiBase()}/docs`, '_blank');
     this.messageService.add({
       severity: 'info',
       summary: 'Swagger UI Opened',

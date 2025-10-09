@@ -799,7 +799,7 @@ export class GovernanceServices {
           if (typeof params[key] === 'number' && isNaN(params[key])) {
             return; // Skip NaN values
           }
-          
+
           if (Array.isArray(params[key])) {
             params[key].forEach((value: any) => {
               if (typeof value === 'number' && isNaN(value)) {
@@ -832,7 +832,7 @@ export class GovernanceServices {
         message: response.message
       };
     }
-    
+
     // If response is a direct array
     if (Array.isArray(response)) {
       return {
@@ -841,7 +841,7 @@ export class GovernanceServices {
         success: true
       };
     }
-    
+
     // Fallback for other cases
     return {
       data: [] as T[],

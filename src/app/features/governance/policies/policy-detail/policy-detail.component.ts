@@ -53,7 +53,7 @@ export class PolicyDetailComponent implements OnInit, OnDestroy {
   policy: Policy | null = null;
   loading = false;
   policyId: string | null = null;
-  
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -62,7 +62,7 @@ export class PolicyDetailComponent implements OnInit, OnDestroy {
     private governanceServices: GovernanceServices,
     private messageService: MessageService,
     private confirmationService: ConfirmationService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
@@ -80,9 +80,9 @@ export class PolicyDetailComponent implements OnInit, OnDestroy {
 
   loadPolicy(): void {
     if (!this.policyId) return;
-    
+
     console.log('Loading policy with ID:', this.policyId);
-  console.log('API URL will be:', `${getApiBase()}/governance/policies/${this.policyId}`);
+    console.log('API URL will be:', `${getApiBase()}/governance/policies/${this.policyId}`);
     this.loading = true;
     this.governanceServices.getPolicy(this.policyId).subscribe({
       next: (response) => {
@@ -108,7 +108,7 @@ export class PolicyDetailComponent implements OnInit, OnDestroy {
           url: error.url,
           message: error.message
         });
-        
+
         let errorMessage = 'Failed to load policy details. Please try again.';
         if (error.status === 404) {
           errorMessage = 'The policy you\'re looking for doesn\'t exist or has been deleted.';
@@ -117,7 +117,7 @@ export class PolicyDetailComponent implements OnInit, OnDestroy {
         } else if (error.status === 0) {
           errorMessage = 'Unable to connect to the server. Please check your internet connection.';
         }
-        
+
         this.messageService.add({
           severity: 'error',
           summary: 'Policy Not Found',
@@ -142,8 +142,8 @@ export class PolicyDetailComponent implements OnInit, OnDestroy {
     if (!this.policy) return;
 
     const action = this.policy.enabled ? 'disable' : 'enable';
-    const serviceCall = this.policy.enabled ? 
-      this.governanceServices.disablePolicy(this.policy.kid) : 
+    const serviceCall = this.policy.enabled ?
+      this.governanceServices.disablePolicy(this.policy.kid) :
       this.governanceServices.enablePolicy(this.policy.kid);
 
     serviceCall.subscribe({

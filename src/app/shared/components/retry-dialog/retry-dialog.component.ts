@@ -80,7 +80,7 @@ export class RetryDialogComponent {
   @Input() message: string = 'The server encountered an error. Would you like to retry?';
   @Input() errorDetails: string = '';
   @Input() retrying: boolean = false;
-  
+
   @Output() retry = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
   @Output() visibleChange = new EventEmitter<boolean>();

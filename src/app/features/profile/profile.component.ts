@@ -46,7 +46,7 @@ export class ProfileComponent extends AppBaseComponent implements OnInit {
   currentDate = new Date();
   loading = false;
   userSearchText = '';
-  
+
   // Table columns for users
   userColumns = [
     { field: 'full_name', header: 'profile.users.fullName' },
@@ -57,7 +57,7 @@ export class ProfileComponent extends AppBaseComponent implements OnInit {
   ];
 
   constructor(
-    private injector: Injector, 
+    private injector: Injector,
     private dataProdServices: ProfileServices,
     private userService: UserService,
     public i18nService: I18nService
@@ -91,9 +91,9 @@ export class ProfileComponent extends AppBaseComponent implements OnInit {
       this.filteredUsers = [...this.allUsers];
       return;
     }
-    
+
     const searchTerm = this.userSearchText.toLowerCase();
-    this.filteredUsers = this.allUsers.filter(user => 
+    this.filteredUsers = this.allUsers.filter(user =>
       user.full_name?.toLowerCase().includes(searchTerm) ||
       user.email?.toLowerCase().includes(searchTerm) ||
       user.role?.toLowerCase().includes(searchTerm)

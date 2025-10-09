@@ -104,7 +104,7 @@ export class ErrorPageComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
