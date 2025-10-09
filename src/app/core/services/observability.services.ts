@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { getApiBase } from '../config/api-config';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { ApiResponse } from './governance.services';
@@ -152,7 +153,7 @@ export interface UsageAnalytics {
   providedIn: 'root',
 })
 export class ObservabilityServices {
-  private baseUrl = 'https://api.thienhang.com';
+  private baseUrl = getApiBase();
 
   constructor(private http: HttpClient) { }
 

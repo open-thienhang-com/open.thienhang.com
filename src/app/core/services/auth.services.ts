@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { getApiBase } from '../config/api-config';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, catchError, Observable, of, tap, map } from 'rxjs';
 import { ApiResponse } from './governance.services';
@@ -42,7 +43,7 @@ export interface SetNewPasswordRequest {
   providedIn: 'root',
 })
 export class AuthServices {
-  private baseUrl = 'https://api.thienhang.com';
+  private baseUrl = getApiBase();
   private userSubject = new BehaviorSubject<UserProfile | null>(null);
 
   constructor(private http: HttpClient, private loadingService: LoadingService) {

@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { getApiBase } from '../config/api-config';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { ApiResponse } from './governance.services';
@@ -36,7 +37,7 @@ export interface UserProfile extends User {
   providedIn: 'root'
 })
 export class UserService {
-  private baseUrl = 'https://api.thienhang.com';
+  private baseUrl = getApiBase();
 
   constructor(private http: HttpClient) {}
 

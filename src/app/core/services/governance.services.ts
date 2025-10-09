@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { getApiBase } from '../config/api-config';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map, tap } from 'rxjs';
 import { CacheService } from './cache.service';
@@ -240,7 +241,7 @@ export interface Permission {
   providedIn: 'root'
 })
 export class GovernanceServices {
-  private baseUrl = 'https://api.thienhang.com';
+  private baseUrl = getApiBase();
 
   constructor(
     private http: HttpClient,

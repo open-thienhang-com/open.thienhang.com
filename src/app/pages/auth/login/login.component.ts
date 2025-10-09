@@ -2,6 +2,7 @@ import { Component, EventEmitter, Injector, Output } from '@angular/core';
 import { Button } from "primeng/button";
 import { FloatLabel } from "primeng/floatlabel";
 import { InputText } from "primeng/inputtext";
+import { DropdownModule } from 'primeng/dropdown';
 import { PasswordModule } from "primeng/password";
 import { CheckboxModule } from "primeng/checkbox";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
@@ -16,6 +17,7 @@ import { LoadingService } from '../../../core/services/loading.service';
   imports: [
     Button,
     InputText,
+    DropdownModule,
     PasswordModule,
     CheckboxModule,
     ReactiveFormsModule,
@@ -29,16 +31,29 @@ export class LoginComponent extends AppBaseComponent {
   password = '12345678';
   remember = false;
   isLoading = false;
+  apiOptions = [
+    { label: 'Production (api.thienhang.com)', value: 'https://api.thienhang.com' },
+    { label: 'Local (http://localhost:8080/)', value: 'http://localhost:8080' }
+  ];
+  selectedApi: string | null = null;
+  // If true, the selected environment will be applied to the runtime API base (localStorage/window.__API_BASE__)
+  applyApi = true;
   @Output() onSignUp: EventEmitter<any> = new EventEmitter();
   @Output() onForgotPassword: EventEmitter<any> = new EventEmitter();
 
   constructor(
-    private injector: Injector, 
-    private authService: AuthServices, 
+    private injector: Injector,
+    private authService: AuthServices,
     private router: Router,
     private loadingService: LoadingService
   ) {
     super(injector);
+    // Initialize selectedApi from localStorage if present
+    try {
+      this.selectedApi = localStorage.getItem('API_BASE') || null;
+    } catch (e) {
+      this.selectedApi = null;
+    }
   }
 
   login() {
@@ -48,7 +63,7 @@ export class LoginComponent extends AppBaseComponent {
     }
 
     this.isLoading = true;
-    
+
     // Show beautiful loading animation
     this.loadingService.showOverlay('Signing you in...', 'pulse');
 
@@ -74,6 +89,26 @@ export class LoginComponent extends AppBaseComponent {
         this.loadingService.hide();
       }
     });
+  }
+
+  onApiChange(value: string | null) {
+    this.selectedApi = value;
+    try {
+      if (this.applyApi) {
+        if (value) {
+          localStorage.setItem('API_BASE', value);
+          // Also set runtime override for immediate use in the page
+          // @ts-ignore
+          if (typeof window !== 'undefined') window.__API_BASE__ = value;
+        } else {
+          localStorage.removeItem('API_BASE');
+          // @ts-ignore
+          if (typeof window !== 'undefined') delete window.__API_BASE__;
+        }
+      }
+    } catch (e) {
+      // ignore storage errors
+    }
   }
 
 }

@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { GovernanceServices, Policy } from '../../../../core/services/governance.services';
+import { getApiBase } from '../../../../core/config/api-config';
 import { MessageService } from 'primeng/api';
 
 // PrimeNG imports
@@ -81,7 +82,7 @@ export class PolicyDetailComponent implements OnInit, OnDestroy {
     if (!this.policyId) return;
     
     console.log('Loading policy with ID:', this.policyId);
-    console.log('API URL will be:', `https://api.thienhang.com/governance/policies/${this.policyId}`);
+  console.log('API URL will be:', `${getApiBase()}/governance/policies/${this.policyId}`);
     this.loading = true;
     this.governanceServices.getPolicy(this.policyId).subscribe({
       next: (response) => {

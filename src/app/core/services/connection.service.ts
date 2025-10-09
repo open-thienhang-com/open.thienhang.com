@@ -3,6 +3,7 @@ import { BehaviorSubject, Observable, fromEvent, merge, timer, of } from 'rxjs';
 import { map, switchMap, catchError, timeout } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { getApiBase } from '../config/api-config';
 
 @Injectable({
     providedIn: 'root'
@@ -10,7 +11,7 @@ import { HttpClient } from '@angular/common/http';
 export class ConnectionService {
     private online$ = new BehaviorSubject<boolean>(navigator.onLine);
     private apiAvailable$ = new BehaviorSubject<boolean>(true);
-    private readonly API_BASE_URL = 'https://api.thienhang.com';
+    private readonly API_BASE_URL = getApiBase();
 
     constructor(
         private router: Router,

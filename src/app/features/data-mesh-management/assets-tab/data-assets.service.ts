@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
+import { getApiBase } from '../../../core/config/api-config';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class DataAssetsService {
-  private baseUrl = 'https://api.thienhang.com/data-catalog';
+  private baseUrl = `${getApiBase()}/data-catalog`;
 
   constructor(private http: HttpClient) {}
 

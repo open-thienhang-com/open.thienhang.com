@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { getApiBase } from '../../../core/config/api-config';
 
 // PrimeNG imports
 import { ToastModule } from 'primeng/toast';
@@ -41,8 +42,8 @@ export class ApiDocumentationComponent implements OnInit {
   }
 
   downloadOpenAPI() {
-    // Download OpenAPI specification
-    window.open('https://api.thienhang.com/openapi.json', '_blank');
+  // Download OpenAPI specification
+  window.open(`${getApiBase()}/openapi.json`, '_blank');
     this.messageService.add({
       severity: 'success',
       summary: 'Download Started',
@@ -51,8 +52,8 @@ export class ApiDocumentationComponent implements OnInit {
   }
 
   openSwagger() {
-    // Open Swagger UI
-    window.open('https://api.thienhang.com/docs', '_blank');
+  // Open Swagger UI
+  window.open(`${getApiBase()}/docs`, '_blank');
     this.messageService.add({
       severity: 'info',
       summary: 'Swagger UI Opened',

@@ -10,6 +10,7 @@ import { TagModule } from 'primeng/tag';
 import { DialogModule } from 'primeng/dialog';
 import { DataProdDetailComponent } from '../data-product/data-prod-detail/data-prod-detail.component';
 import { I18nService } from '../../core/services/i18n.service';
+import { getApiBase } from '../../core/config/api-config';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
@@ -87,7 +88,7 @@ export class MarketplaceComponent implements OnInit {
     this.loading = true;
     try {
       const response = await this.http.get<ApiResponse>(
-        'https://api.thienhang.com/data-mesh/data-mesh/data-products?size=10&offset=0'
+    `${getApiBase()}/data-mesh/data-mesh/data-products?size=10&offset=0`
       ).toPromise();
 
       if (response && response.data) {
