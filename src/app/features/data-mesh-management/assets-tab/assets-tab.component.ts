@@ -37,7 +37,7 @@ export class AssetsTabComponent implements OnInit {
   loadingAssets: boolean = false;
   errorAssets: string = '';
 
-  constructor(private dataAssetsService: DataAssetsService) {}
+  constructor(private dataAssetsService: DataAssetsService) { }
 
   ngOnInit() {
     this.fetchAssets();
@@ -46,7 +46,17 @@ export class AssetsTabComponent implements OnInit {
   fetchAssets(type: string = this.selectedAssetType, size: number = 10, offset: number = 0, search: string = '') {
     this.loadingAssets = true;
     this.errorAssets = '';
-    this.dataAssetsService.getAssets(type, size, offset, search).subscribe({
+    const params: any = {
+      type,
+      size,
+      offset,
+    };
+
+    if (search) {
+      params.search = search;
+    }
+
+    this.dataAssetsService.getAssets(params).subscribe({
       next: (res) => {
         this.assets = res?.data || [];
         this.loadingAssets = false;
@@ -72,11 +82,11 @@ export class AssetsTabComponent implements OnInit {
     this.fetchAssets(this.selectedAssetType, 10, 0, this.searchQuery);
   }
 
-  bulkSync() {}
-  bulkDelete() {}
+  bulkSync() { }
+  bulkDelete() { }
   pagedAssets() { return this.filteredAssets; }
-  resetFilters() {}
+  resetFilters() { }
   formatDate(date: string) { return date; }
   getHealthClass(health: number) { return health > 80 ? 'text-green-600' : health > 50 ? 'text-yellow-600' : 'text-red-600'; }
-  openDetailModal(asset: any) {}
+  openDetailModal(asset: any) { }
 }

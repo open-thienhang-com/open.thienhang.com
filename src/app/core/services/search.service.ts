@@ -150,15 +150,6 @@ export class SearchService {
       category: 'Marketplace',
       tags: ['marketplace', 'integrations', 'data']
     },
-    {
-      id: 'marketplace-domains',
-      title: 'Domain Catalog',
-      description: 'Browse and manage data domains',
-      type: 'page',
-      url: '/marketplace/domains',
-      category: 'Marketplace',
-      tags: ['domains', 'catalog', 'data', 'management']
-    },
 
     // Documentation
     {
@@ -172,7 +163,7 @@ export class SearchService {
     }
   ];
 
-  constructor() {}
+  constructor() { }
 
   performGlobalSearch(query: string): void {
     if (!query || query.trim().length < 2) {
@@ -223,7 +214,7 @@ export class SearchService {
   getPopularSearches(): SearchResult[] {
     // Return most commonly accessed items
     return this.searchIndex.filter(item =>
-      ['dashboard', 'inventory-management', 'data-products', 'policies', 'marketplace', 'marketplace-domains'].includes(item.id)
+      ['dashboard', 'inventory-management', 'data-products', 'policies', 'marketplace'].includes(item.id)
     );
   }
 }

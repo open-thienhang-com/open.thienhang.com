@@ -60,7 +60,6 @@ export class SidebarComponent implements OnChanges {
             { label: 'Data Products', url: '/data-mesh/data-products', icon: 'pi pi-shopping-cart' },
             { label: 'Domains', url: '/data-mesh/domains', icon: 'pi pi-book' },
             { label: 'API Explorer', url: '/data-mesh/api-explorer', icon: 'pi pi-code' },
-            { label: 'API Documentation', url: '/data-mesh/api-documentation', icon: 'pi pi-file' },
             { label: 'Lineage', url: '/data-mesh/lineage', icon: 'pi pi-share-alt' },
             { label: 'Quality Metrics', url: '/data-mesh/quality', icon: 'pi pi-chart-bar' }
           ]
@@ -74,8 +73,7 @@ export class SidebarComponent implements OnChanges {
             { label: 'Topics', url: '/explore/topics', icon: 'pi pi-tags' },
             { label: 'ML Models', url: '/explore/ml-models', icon: 'pi pi-brain' },
             { label: 'Container', url: '/explore/container', icon: 'pi pi-box' },
-            { label: 'Search', url: '/explore/search', icon: 'pi pi-search' },
-            { label: 'APIs', url: '/explore/apis', icon: 'pi pi-code' }
+            { label: 'Search', url: '/explore/search', icon: 'pi pi-search' }
           ]
         },
         {
@@ -228,7 +226,7 @@ export class SidebarComponent implements OnChanges {
           { label: 'Contracts', url: '/data-contracts', icon: 'pi pi-file-check' }
         ]
       },
-        { label: 'Settings', url: '/settings', icon: 'pi pi-cog' }
+      { label: 'Settings', url: '/settings', icon: 'pi pi-cog' }
     ];
   }
 

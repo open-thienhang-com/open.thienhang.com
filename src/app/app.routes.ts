@@ -80,10 +80,6 @@ export const routes: Routes = [
         loadComponent: () => import('./features/marketplace/marketplace.component').then(m => m.MarketplaceComponent),
       },
       {
-        path: 'marketplace/domains',
-        loadComponent: () => import('./features/domain-catalog/domain-catalog.component').then(m => m.DomainCatalogComponent),
-      },
-      {
         path: 'profile',
         redirectTo: 'settings',
         pathMatch: 'full'
@@ -132,10 +128,6 @@ export const routes: Routes = [
       {
         path: 'data-mesh/api-explorer',
         loadComponent: () => import('./features/data-mesh/api-explorer/api-explorer.component').then(m => m.ApiExplorerComponent),
-      },
-      {
-        path: 'data-mesh/api-documentation',
-        loadComponent: () => import('./features/data-mesh/api-documentation/api-documentation.component').then(m => m.ApiDocumentationComponent),
       },
       {
         path: 'discovery/catalog',
@@ -196,14 +188,6 @@ export const routes: Routes = [
       {
         path: 'explore/search/:type',
         loadComponent: () => import('./features/explore/search/search-explorer.component').then(m => m.SearchExplorerComponent),
-      },
-      {
-        path: 'explore/apis',
-        loadComponent: () => import('./features/explore/apis/apis-explorer.component').then(m => m.ApisExplorerComponent),
-      },
-      {
-        path: 'explore/apis/:type',
-        loadComponent: () => import('./features/explore/apis/apis-explorer.component').then(m => m.ApisExplorerComponent),
       },
       {
         path: 'retail',
