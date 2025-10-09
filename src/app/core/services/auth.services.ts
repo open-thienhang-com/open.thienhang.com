@@ -47,9 +47,6 @@ export class AuthServices {
   private userSubject = new BehaviorSubject<UserProfile | null>(null);
 
   constructor(private http: HttpClient, private loadingService: LoadingService) {
-    if (this.isLoggedIn()) {
-      this.getCurrentUser().subscribe();
-    }
   }
 
   login(data: LoginRequest): Observable<ApiResponse<AuthResponse>> {

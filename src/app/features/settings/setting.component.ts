@@ -15,6 +15,7 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ProfileServices } from '../../core/services/profile.services';
+import { HttpClient } from '@angular/common/http';
 import { ThemeService, ThemeSettings } from '../../core/services/theme.service';
 import { SliderModule } from 'primeng/slider';
 import { ColorPickerModule } from 'primeng/colorpicker';
@@ -24,6 +25,7 @@ import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { BadgeModule } from 'primeng/badge';
+import { AccordionModule } from 'primeng/accordion';
 import { UserService } from '../../core/services/user.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { forkJoin } from 'rxjs';
@@ -99,6 +101,7 @@ interface AppearanceSettings {
     TagModule,
     TooltipModule,
     BadgeModule
+    ,AccordionModule
   ],
   templateUrl: './setting.component.html',
   styleUrls: ['./setting.component.scss'],
@@ -271,6 +274,11 @@ export class SettingsComponent implements OnInit {
   loading = false;
   userSearchText = '';
 
+  // Local profile & session management
+  sessions: any[] = [];
+  localProfileSource = 'http://localhost:8080';
+  localLoading = false;
+
   // Table columns for users
   userColumns = [
     { field: 'full_name', header: 'profile.users.fullName' },
@@ -283,6 +291,7 @@ export class SettingsComponent implements OnInit {
   constructor(
     private injector: Injector,
     private profileService: ProfileServices,
+    private http: HttpClient,
     private fb: FormBuilder,
     private messageService: MessageService,
     private themeService: ThemeService,
@@ -301,27 +310,30 @@ export class SettingsComponent implements OnInit {
     // Set active tab based on URL parameter
     this.route.queryParams.subscribe(params => {
       if (params['tab']) {
+        // After merging Security, Users and Data & Privacy into Profile tab, keep older links working
         switch (params['tab']) {
           case 'profile':
+          case 'security':
+          case 'users':
+          case 'data-privacy':
+          case 'data&privacy':
             this.activeTabIndex = 0;
             break;
-          case 'security':
+          case 'notifications':
             this.activeTabIndex = 1;
             break;
-          case 'notifications':
-            this.activeTabIndex = 2;
-            break;
           case 'appearance':
-            this.activeTabIndex = 3;
-            break;
-          case 'users':
-            this.activeTabIndex = 4;
+            this.activeTabIndex = 2;
             break;
           default:
             this.activeTabIndex = 0;
         }
       }
     });
+
+    // Only fetch /authentication/me when this Settings component is active
+    this.fetchLocalProfile();
+
   }
 
   private loadThemeSettings(): void {
@@ -483,15 +495,49 @@ export class SettingsComponent implements OnInit {
   }
 
   onAvatarUpload(event: any): void {
-    const file = event.files[0];
-    if (file) {
-      // Handle avatar upload
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Avatar uploaded successfully'
-      });
+    const file: File | undefined = (event && event.files && event.files.length) ? event.files[0] : (event instanceof File ? event : undefined);
+    if (!file) {
+      this.messageService.add({ severity: 'error', summary: 'Upload error', detail: 'No file selected' });
+      return;
     }
+
+    this.uploadAvatar(file);
+  }
+
+  private uploadAvatar(file: File): void {
+    const uploadUrl = `${this.localProfileSource}/data-mesh/data-mesh/domains/files/upload/supabase`;
+    const form = new FormData();
+    form.append('file', file, file.name);
+
+    this.messageService.add({ severity: 'info', summary: 'Uploading', detail: file.name });
+
+    this.http.post<any>(uploadUrl, form).subscribe({
+      next: (res) => {
+        // API returns a top-level object with url property
+        const publicUrl = res?.url || res?.data?.url || null;
+        if (publicUrl) {
+          // update avatar in-memory and notify user
+          this.profile.avatar = publicUrl;
+          // If profileForm had an avatar control, patch it; otherwise UI binds to profile.avatar
+          try {
+            if (this.profileForm.contains && this.profileForm.contains('avatar')) {
+              this.profileForm.patchValue({ avatar: publicUrl });
+            }
+          } catch (e) {
+            // ignore if no avatar control
+          }
+
+          this.messageService.add({ severity: 'success', summary: 'Uploaded', detail: 'Avatar updated' });
+        } else {
+          console.warn('Upload response missing url:', res);
+          this.messageService.add({ severity: 'warn', summary: 'Upload finished', detail: 'Upload completed but no URL returned' });
+        }
+      },
+      error: (err) => {
+        console.error('Avatar upload failed:', err);
+        this.messageService.add({ severity: 'error', summary: 'Upload failed', detail: 'Failed to upload avatar' });
+      }
+    });
   }
 
   exportData(): void {
@@ -516,36 +562,15 @@ export class SettingsComponent implements OnInit {
   loadProfileData() {
     this.loading = true;
 
-    // Load both current user profile and all users
-    forkJoin({
-      profile: this.profileService.getProfile(),
-      users: this.userService.getAllUsers()
-    }).subscribe({
-      next: (responses) => {
-        // Update profile with API data, keeping existing structure
-        if (responses.profile.data) {
-          const apiProfile = responses.profile.data as any;
-          this.profile = {
-            ...this.profile,
-            firstName: apiProfile.firstName || apiProfile.first_name || this.profile.firstName,
-            lastName: apiProfile.lastName || apiProfile.last_name || this.profile.lastName,
-            email: apiProfile.email || this.profile.email,
-            phone: apiProfile.phone || this.profile.phone,
-            department: apiProfile.department || this.profile.department,
-            role: apiProfile.role || this.profile.role,
-            timezone: apiProfile.timezone || this.profile.timezone,
-            language: apiProfile.language || this.profile.language,
-            avatar: apiProfile.avatar || this.profile.avatar
-          };
-        }
-        this.allUsers = responses.users.data || [];
+    // Load all users only (do not call /authentication/me here; Settings page calls fetchLocalProfile())
+    this.userService.getAllUsers().subscribe({
+      next: (res) => {
+        this.allUsers = res?.data || [];
         this.filteredUsers = [...this.allUsers];
         this.loading = false;
-        console.log('Profile loaded:', this.profile);
-        console.log('All users loaded:', this.allUsers);
       },
-      error: (error) => {
-        console.error('Error loading profile data:', error);
+      error: (err) => {
+        console.error('Error loading users:', err);
         this.loading = false;
       }
     });
@@ -568,5 +593,117 @@ export class SettingsComponent implements OnInit {
 
   refreshData() {
     this.loadProfileData();
+  }
+
+  // --- Local profile & session helpers ---
+  fetchLocalProfile() {
+    this.localLoading = true;
+    const url = `${this.localProfileSource}/authentication/me`;
+    this.http.get<any>(url).subscribe({
+      next: (res) => {
+        this.localLoading = false;
+        const apiProfile = res?.data || null;
+        if (!apiProfile) {
+          this.messageService.add({ severity: 'warn', summary: 'No profile', detail: 'Local API returned no profile data' });
+          return;
+        }
+
+        // helper that converts null/empty/undefined to 'No Information'
+        const normalize = (v: any) => {
+          if (v === null || v === undefined) return 'No Information';
+          if (typeof v === 'string' && v.trim() === '') return 'No Information';
+          return v;
+        };
+
+        // Update the in-memory profile so header and cards reflect API values
+        // Determine avatar: prefer API value when non-empty, otherwise use default
+        const defaultAvatar = '/assets/images/avatar.jpg';
+        const avatarUrl = (apiProfile.image && typeof apiProfile.image === 'string' && apiProfile.image.trim() !== '') ? apiProfile.image : defaultAvatar;
+
+        this.profile = {
+          firstName: normalize(apiProfile.first_name) === 'No Information' && apiProfile.full_name ? apiProfile.full_name : normalize(apiProfile.first_name),
+          lastName: normalize(apiProfile.last_name) === 'No Information' && apiProfile.full_name ? '' : normalize(apiProfile.last_name),
+          email: normalize(apiProfile.email),
+          phone: normalize(apiProfile.phone),
+          department: normalize(apiProfile.department),
+          role: normalize(apiProfile.job_title || apiProfile.role),
+          avatar: avatarUrl,
+          timezone: normalize(apiProfile.timezone),
+          language: normalize(apiProfile.language || this.profile.language)
+        } as any;
+
+        // Patch form controls with normalized values (use No Information for missing)
+        this.profileForm.patchValue({
+          firstName: this.profile.firstName || 'No Information',
+          lastName: this.profile.lastName || 'No Information',
+          email: this.profile.email || 'No Information',
+          phone: this.profile.phone || 'No Information',
+          department: this.profile.department || 'No Information',
+          role: this.profile.role || 'No Information',
+          timezone: this.profile.timezone || 'No Information',
+          language: this.profile.language || 'No Information'
+        });
+
+        this.sessions = Array.isArray(apiProfile.sessions) ? apiProfile.sessions.map((s: any, i: number) => ({
+          kid: s.kid || `No Information-${i}`,
+          session: s.session || 'No Information',
+          device: s.device || 'No Information',
+          remaining_seconds: (s.remaining_seconds === null || s.remaining_seconds === undefined) ? 0 : s.remaining_seconds
+        })) : [];
+
+        this.messageService.add({ severity: 'success', summary: 'Local profile loaded', detail: `Loaded ${this.sessions.length} sessions` });
+      },
+      error: (err) => {
+        this.localLoading = false;
+        console.error('Error fetching local profile:', err);
+        this.messageService.add({ severity: 'error', summary: 'Local API error', detail: 'Failed to call http://localhost:8080/authentication/me' });
+      }
+    });
+  }
+
+  formatRemaining(seconds: number): string {
+    if (!seconds || seconds <= 0) return 'Expired';
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${hrs}h ${mins}m ${secs}s`;
+  }
+
+  maskSession(sessionId: string): string {
+    if (!sessionId || sessionId === 'N/A') return 'N/A';
+    const len = sessionId.length;
+    if (len <= 8) return sessionId;
+    return `••••••${sessionId.slice(-8)}`;
+  }
+
+  revokeSession(sessionId: string) {
+    if (!confirm('Are you sure you want to revoke this session?')) return;
+    const url = `${this.localProfileSource}/authentication/sessions/${sessionId}`;
+    this.http.delete<any>(url).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Session revoked', detail: this.maskSession(sessionId) });
+        this.sessions = this.sessions.filter(s => s.session !== sessionId);
+      },
+      error: (err) => {
+        console.error('Error revoking session:', err);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to revoke session' });
+      }
+    });
+  }
+
+  revokeOtherSessions(keepSessionId?: string) {
+    if (!confirm('Revoke all other sessions?')) return;
+    const url = `${this.localProfileSource}/authentication/sessions/revoke-others`;
+    this.http.post<any>(url, { keep: keepSessionId || null }).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Other sessions revoked', detail: 'All other sessions removed' });
+        if (keepSessionId) this.sessions = this.sessions.filter(s => s.session === keepSessionId);
+        else this.sessions = [];
+      },
+      error: (err) => {
+        console.error('Error revoking other sessions:', err);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to revoke other sessions' });
+      }
+    });
   }
 }

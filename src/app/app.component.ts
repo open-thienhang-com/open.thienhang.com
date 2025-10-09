@@ -27,17 +27,9 @@ export class AppComponent implements OnInit {
   }
 
   private initializeApp() {
-    // Quick authentication check
-    this.auth.getCurrentUser().subscribe({
-      next: (response) => {
-        console.log('User authentication status:', response);
-        this.hideLoading();
-      },
-      error: (error) => {
-        console.error('Authentication error:', error);
-        this.hideLoading();
-      }
-    });
+    // Don't call /authentication/me globally during app init.
+    // The application will fetch user data only when necessary (e.g. on Settings page).
+    this.hideLoading();
   }
 
   private hideLoading() {

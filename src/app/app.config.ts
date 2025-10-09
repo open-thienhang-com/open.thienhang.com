@@ -11,8 +11,9 @@ import { AuthServices } from './core/services/auth.services';
 import { TimeoutInterceptor } from './core/interceptor/timeout.interceptor';
 import { ErrorInterceptor } from './core/interceptor/error.interceptor';
 
-export function initApp(authService: AuthServices) {
-  return () => authService.getCurrentUser().toPromise();
+export function initApp(): () => Promise<void> {
+  // No-op initializer: do not call /authentication/me during app bootstrap
+  return () => Promise.resolve();
 }
 
 // @ts-ignore
@@ -30,7 +31,7 @@ export const appConfig: ApplicationConfig = {
     {
       provide: APP_INITIALIZER,
       useFactory: initApp,
-      deps: [AuthServices],
+      deps: [],
       multi: true
     },
     {

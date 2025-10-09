@@ -71,22 +71,15 @@ export class ProfileComponent extends AppBaseComponent implements OnInit {
 
   loadProfileData() {
     this.loading = true;
-    
-    // Load both current user profile and all users
-    forkJoin({
-      profile: this.dataProdServices.getProfile(),
-      users: this.userService.getAllUsers()
-    }).subscribe({
-      next: (responses) => {
-        this.profile = responses.profile.data;
-        this.allUsers = responses.users.data || [];
+    // Only load users here; do not call /authentication/me on this page
+    this.userService.getAllUsers().subscribe({
+      next: (res) => {
+        this.allUsers = res?.data || [];
         this.filteredUsers = [...this.allUsers];
         this.loading = false;
-        console.log('Profile loaded:', this.profile);
-        console.log('All users loaded:', this.allUsers);
       },
-      error: (error) => {
-        console.error('Error loading profile data:', error);
+      error: (err) => {
+        console.error('Error loading users:', err);
         this.loading = false;
       }
     });
