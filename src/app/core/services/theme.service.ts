@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { generatePalette, getContrastColor, ColorPalette } from './utils/color-utils';
 
 export interface ThemeSettings {
     theme: 'light' | 'dark' | 'auto';
@@ -83,16 +84,16 @@ export class ThemeService {
 
         // Apply theme
         if (settings.theme === 'dark') {
-            root.classList.add('dark');
+            root.classList.add('dark', 'p-dark');
         } else if (settings.theme === 'light') {
-            root.classList.remove('dark');
+            root.classList.remove('dark', 'p-dark');
         } else {
             // Auto theme based on system preference
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             if (prefersDark) {
-                root.classList.add('dark');
+                root.classList.add('dark', 'p-dark');
             } else {
-                root.classList.remove('dark');
+                root.classList.remove('dark', 'p-dark');
             }
         }
 
@@ -130,10 +131,45 @@ export class ThemeService {
             root.classList.remove('shadows-enabled');
         }
 
-        // Apply CSS custom properties
-        root.style.setProperty('--primary-color', settings.primaryColor);
-        root.style.setProperty('--accent-color', settings.accentColor);
+        // Apply CSS custom properties (basic)
         root.style.setProperty('--font-family', settings.fontFamily);
+
+        // Generate and apply color palettes dynamically
+        this.applyColorPalettes(settings);
+    }
+
+    /**
+     * Generate complete color palettes and inject as CSS variables
+     */
+    private applyColorPalettes(settings: ThemeSettings): void {
+        const root = document.documentElement;
+
+        // Generate primary color palette
+        const primaryPalette = generatePalette(settings.primaryColor);
+        this.injectColorPalette('primary', primaryPalette);
+
+        // Generate accent color palette
+        const accentPalette = generatePalette(settings.accentColor);
+        this.injectColorPalette('accent', accentPalette);
+
+        // Apply to PrimeNG theme system
+        root.style.setProperty('--p-primary-color', settings.primaryColor);
+        root.style.setProperty('--p-primary-contrast-color', getContrastColor(settings.primaryColor));
+
+        // Apply base colors for quick access
+        root.style.setProperty('--color-primary', settings.primaryColor);
+        root.style.setProperty('--color-accent', settings.accentColor);
+    }
+
+    /**
+     * Inject a color palette as CSS variables
+     */
+    private injectColorPalette(name: string, palette: ColorPalette): void {
+        const root = document.documentElement;
+
+        Object.entries(palette).forEach(([shade, color]) => {
+            root.style.setProperty(`--color-${name}-${shade}`, color);
+        });
     }
 
     // Color presets
