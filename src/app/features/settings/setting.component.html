@@ -181,279 +181,113 @@
                   </div>
                 </div>
               </p-card>
-          
-            <!-- --- Security section (moved from Security tab) --- -->
-            <div class="mt-6">
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Change Password -->
-                <div>
-                  <p-card>
-                    <ng-template pTemplate="header">
-                      <div class="flex items-center gap-2 p-4">
-                        <i class="pi pi-lock text-primary-500"></i>
-                        <h3 class="text-lg font-semibold">Change Password</h3>
-                      </div>
-                    </ng-template>
-                    
-                    <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+            <p-accordion class="mt-6">
+              <p-accordionTab header="Security & Password">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <p-card>
+                      <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+                        <div class="space-y-4">
+                          <div>
+                            <label class="block text-sm font-medium mb-2">Current Password</label>
+                            <input type="password" pInputText formControlName="currentPassword" class="w-full">
+                          </div>
+                          <div>
+                            <label class="block text-sm font-medium mb-2">New Password</label>
+                            <input type="password" pInputText formControlName="newPassword" class="w-full">
+                          </div>
+                          <div>
+                            <label class="block text-sm font-medium mb-2">Confirm New Password</label>
+                            <input type="password" pInputText formControlName="confirmPassword" class="w-full">
+                          </div>
+                          <button pButton type="submit" label="Change Password" class="p-button-warning w-full"></button>
+                        </div>
+                      </form>
+                    </p-card>
+                  </div>
+
+                  <div>
+                    <p-card>
                       <div class="space-y-4">
-                        <div>
-                          <label class="block text-sm font-medium mb-2">Current Password</label>
-                          <input 
-                            type="password" 
-                            pInputText 
-                            formControlName="currentPassword"
-                            class="w-full"
-                            [class.ng-invalid]="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <label class="block text-sm font-medium">Two-Factor Authentication</label>
+                            <p class="text-xs text-surface-600 dark:text-surface-400">Add an extra layer of security</p>
+                          </div>
+                          <p-inputSwitch [(ngModel)]="securitySettings.twoFactorEnabled"></p-inputSwitch>
                         </div>
 
                         <div>
-                          <label class="block text-sm font-medium mb-2">New Password</label>
-                          <input 
-                            type="password" 
-                            pInputText 
-                            formControlName="newPassword"
-                            class="w-full"
-                            [class.ng-invalid]="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched">
+                          <label class="block text-sm font-medium mb-2">Session Timeout</label>
+                          <p-dropdown [options]="sessionTimeoutOptions" [(ngModel)]="securitySettings.sessionTimeout" class="w-full"></p-dropdown>
                         </div>
 
-                        <div>
-                          <label class="block text-sm font-medium mb-2">Confirm New Password</label>
-                          <input 
-                            type="password" 
-                            pInputText 
-                            formControlName="confirmPassword"
-                            class="w-full"
-                            [class.ng-invalid]="passwordForm.get('confirmPassword')?.invalid && passwordForm.get('confirmPassword')?.touched">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <label class="block text-sm font-medium">Login Notifications</label>
+                            <p class="text-xs text-surface-600 dark:text-surface-400">Get notified of new logins</p>
+                          </div>
+                          <p-inputSwitch [(ngModel)]="securitySettings.loginNotifications"></p-inputSwitch>
                         </div>
 
-                        <button 
-                          pButton 
-                          type="submit" 
-                          label="Change Password" 
-                          class="p-button-warning w-full"
-                          [disabled]="passwordForm.invalid">
-                        </button>
+                        <button pButton type="button" label="Save Security Settings" class="p-button-primary w-full" (click)="saveSecuritySettings()"></button>
                       </div>
-                    </form>
-                  </p-card>
+                    </p-card>
+                  </div>
+                </div>
+              </p-accordionTab>
+
+              <p-accordionTab header="User Management">
+                <div class="mb-4 flex justify-between items-center">
+                  <div>
+                    <h4 class="font-semibold">Users</h4>
+                    <p class="text-sm text-surface-600">Manage and view all users</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 bg-primary-100 rounded-full text-sm">{{ allUsers.length }} Users</span>
+                    <button pButton type="button" label="Refresh" icon="pi pi-refresh" class="p-button-outlined p-button-sm" (click)="refreshData()"></button>
+                  </div>
                 </div>
 
-                <!-- Security Settings -->
-                <div>
-                  <p-card>
-                    <ng-template pTemplate="header">
-                      <div class="flex items-center gap-2 p-4">
-                        <i class="pi pi-cog text-primary-500"></i>
-                        <h3 class="text-lg font-semibold">Security Settings</h3>
-                      </div>
-                    </ng-template>
-                    
-                    <div class="space-y-4">
-                      <div class="flex items-center justify-between">
-                        <div>
-                          <label class="block text-sm font-medium">Two-Factor Authentication</label>
-                          <p class="text-xs text-surface-600 dark:text-surface-400">Add an extra layer of security</p>
-                        </div>
-                        <p-inputSwitch [(ngModel)]="securitySettings.twoFactorEnabled"></p-inputSwitch>
-                      </div>
-
-                      <div>
-                        <label class="block text-sm font-medium mb-2">Session Timeout</label>
-                        <p-dropdown 
-                          [options]="sessionTimeoutOptions"
-                          [(ngModel)]="securitySettings.sessionTimeout"
-                          placeholder="Select timeout"
-                          class="w-full">
-                        </p-dropdown>
-                      </div>
-
-                      <div class="flex items-center justify-between">
-                        <div>
-                          <label class="block text-sm font-medium">Login Notifications</label>
-                          <p class="text-xs text-surface-600 dark:text-surface-400">Get notified of new logins</p>
-                        </div>
-                        <p-inputSwitch [(ngModel)]="securitySettings.loginNotifications"></p-inputSwitch>
-                      </div>
-
-                      <button 
-                        pButton 
-                        type="button" 
-                        label="Save Security Settings" 
-                        class="p-button-primary w-full"
-                        (click)="saveSecuritySettings()">
-                      </button>
-                    </div>
-                  </p-card>
-                </div>
-              </div>
-            </div>
-
-            <!-- --- Users section (moved from Users tab) --- -->
-            <div class="mt-6">
-              <div class="flex justify-between items-center mb-4">
-                <div>
-                  <h3 class="text-xl font-semibold text-surface-900 dark:text-surface-50">User Management</h3>
-                  <p class="text-surface-600 dark:text-surface-400 mt-1">Manage and view all users in the system</p>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="px-3 py-1 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full text-sm font-medium">
-                    {{ allUsers.length }} Users
+                <div class="max-w-md mb-4">
+                  <span class="p-input-icon-left w-full"><i class="pi pi-search"></i>
+                    <input type="text" pInputText [(ngModel)]="userSearchText" (input)="filterUsers()" placeholder="Search users..." class="w-full">
                   </span>
-                  <button
-                    pButton
-                    type="button"
-                    icon="pi pi-refresh"
-                    label="Refresh"
-                    class="p-button-outlined p-button-sm"
-                    (click)="refreshData()"
-                    [loading]="loading">
-                  </button>
                 </div>
-              </div>
 
-              <div class="max-w-md mb-4">
-                <span class="p-input-icon-left w-full">
-                  <i class="pi pi-search"></i>
-                  <input
-                    type="text"
-                    pInputText
-                    [(ngModel)]="userSearchText"
-                    (input)="filterUsers()"
-                    placeholder="Search users by name, email, or role..."
-                    class="w-full">
-                </span>
-              </div>
-
-              <p-card>
-                <p-table
-                  [value]="filteredUsers"
-                  [paginator]="true"
-                  [rows]="10"
-                  [showCurrentPageReport]="true"
-                  [rowsPerPageOptions]="[5, 10, 20, 50]"
-                  currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
-                  styleClass="p-datatable-striped">
-
+                <p-table [value]="filteredUsers" [paginator]="true" [rows]="10" styleClass="p-datatable-striped">
                   <ng-template pTemplate="header">
-                    <tr>
-                      <th class="font-semibold">User</th>
-                      <th class="font-semibold">Email</th>
-                      <th class="font-semibold">Role</th>
-                      <th class="font-semibold">Status</th>
-                      <th class="font-semibold">Joined Date</th>
-                    </tr>
+                    <tr><th>User</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th></tr>
                   </ng-template>
-
                   <ng-template pTemplate="body" let-user>
                     <tr>
-                      <td>
-                        <div class="flex items-center gap-3">
-                          <p-avatar
-                            [label]="getUserInitials(user)"
-                            size="normal"
-                            styleClass="bg-primary-100 text-primary-700">
-                          </p-avatar>
-                          <div>
-                            <div class="font-medium text-surface-900 dark:text-surface-50">{{ user.full_name || 'Unknown' }}</div>
-                            <div class="text-sm text-surface-600 dark:text-surface-400">ID: {{ user.identify }}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="flex items-center gap-2">
-                          <span>{{ user.email }}</span>
-                          <i class="pi pi-verified text-green-500" *ngIf="user.is_verified" pTooltip="Verified"></i>
-                        </div>
-                      </td>
-                      <td>
-                        <p-tag
-                          [value]="getRoleDisplayText(user.role || 'user')"
-                          [severity]="getRoleSeverity(user.role || 'user')">
-                        </p-tag>
-                      </td>
-                      <td>
-                        <p-tag
-                          [value]="getUserStatus(user)"
-                          [severity]="getUserStatusSeverity(user)">
-                        </p-tag>
-                      </td>
-                      <td>
-                        <span class="text-sm text-surface-600 dark:text-surface-400">{{ formatDate(user.created_at) }}</span>
-                      </td>
-                    </tr>
-                  </ng-template>
-
-                  <ng-template pTemplate="emptymessage">
-                    <tr>
-                      <td colspan="5" class="text-center py-8">
-                        <div class="flex flex-col items-center gap-2">
-                          <i class="pi pi-users text-4xl text-surface-400"></i>
-                          <span class="text-surface-600 dark:text-surface-400">No users found</span>
-                        </div>
-                      </td>
+                      <td><div class="flex items-center gap-3"><p-avatar [label]="getUserInitials(user)" size="normal" styleClass="bg-primary-100 text-primary-700"></p-avatar><div><div class="font-medium">{{ user.full_name || 'Unknown' }}</div><div class="text-sm">ID: {{ user.identify }}</div></div></div></td>
+                      <td>{{ user.email }}</td>
+                      <td><p-tag [value]="getRoleDisplayText(user.role || 'user')" [severity]="getRoleSeverity(user.role || 'user')"></p-tag></td>
+                      <td><p-tag [value]="getUserStatus(user)" [severity]="getUserStatusSeverity(user)"></p-tag></td>
+                      <td>{{ formatDate(user.created_at) }}</td>
                     </tr>
                   </ng-template>
                 </p-table>
-              </p-card>
-            </div>
+              </p-accordionTab>
 
-            <!-- --- Data & Privacy section (moved from Data & Privacy tab) --- -->
-            <div class="mt-6">
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Data Export -->
-                <div>
-                  <p-card>
-                    <ng-template pTemplate="header">
-                      <div class="flex items-center gap-2 p-4">
-                        <i class="pi pi-download text-primary-500"></i>
-                        <h3 class="text-lg font-semibold">Export Data</h3>
-                      </div>
-                    </ng-template>
-                    
-                    <div class="space-y-4">
-                      <p class="text-surface-600 dark:text-surface-400">
-                        Download a copy of your data including profile information, settings, and activity history.
-                      </p>
-                      
-                      <button 
-                        pButton 
-                        type="button" 
-                        label="Export My Data" 
-                        class="p-button-outlined w-full"
-                        (click)="exportData()">
-                      </button>
-                    </div>
-                  </p-card>
+              <p-accordionTab header="Data & Privacy">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <p-card>
+                      <p class="text-surface-600">Download a copy of your data including profile and activity history.</p>
+                      <button pButton type="button" label="Export My Data" class="p-button-outlined w-full mt-3" (click)="exportData()"></button>
+                    </p-card>
+                  </div>
+                  <div>
+                    <p-card>
+                      <p class="text-surface-600">Permanently delete your account and all associated data. This action cannot be undone.</p>
+                      <button pButton type="button" label="Delete Account" class="p-button-danger w-full mt-3" (click)="deleteAccount()"></button>
+                    </p-card>
+                  </div>
                 </div>
-
-                <!-- Delete Account -->
-                <div>
-                  <p-card>
-                    <ng-template pTemplate="header">
-                      <div class="flex items-center gap-2 p-4">
-                        <i class="pi pi-trash text-red-500"></i>
-                        <h3 class="text-lg font-semibold text-red-600 dark:text-red-400">Delete Account</h3>
-                      </div>
-                    </ng-template>
-                    
-                    <div class="space-y-4">
-                      <p class="text-surface-600 dark:text-surface-400">
-                        Permanently delete your account and all associated data. This action cannot be undone.
-                      </p>
-                      
-                      <button 
-                        pButton 
-                        type="button" 
-                        label="Delete Account" 
-                        class="p-button-danger w-full"
-                        (click)="deleteAccount()">
-                      </button>
-                    </div>
-                  </p-card>
-                </div>
-              </div>
-            </div>
+              </p-accordionTab>
+            </p-accordion>
           </div>
         </div>
       </p-tabPanel>
