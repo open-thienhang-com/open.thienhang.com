@@ -77,7 +77,8 @@ export class RolesComponent implements OnInit {
   loading = false;
   showRoleModal = false;
   selectedRole: Role | null = null;
-  viewMode: 'table' | 'card' = 'table';
+  viewMode: 'list' | 'card' = 'list';
+  showFilters: boolean = false;
 
   searchTerm = '';
   filters = {
@@ -229,7 +230,33 @@ export class RolesComponent implements OnInit {
     this.loadRoles();
   }
 
-  setViewMode(mode: 'table' | 'card'): void {
+  refreshRoles(): void {
+    this.loadRoles();
+  }
+
+  exportRoles(): void {
+    // TODO: Implement export functionality
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Export',
+      detail: 'Export functionality coming soon'
+    });
+  }
+
+  toggleFilters(): void {
+    this.showFilters = !this.showFilters;
+  }
+
+  applyFilters(): void {
+    this.currentPage = 0;
+    this.loadRoles();
+  }
+
+  toggleViewMode(): void {
+    this.viewMode = this.viewMode === 'list' ? 'card' : 'list';
+  }
+
+  setViewMode(mode: 'list' | 'card'): void {
     this.viewMode = mode;
   }
 

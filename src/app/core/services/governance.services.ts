@@ -375,7 +375,7 @@ export class GovernanceServices {
     const cacheKey = `assets_${JSON.stringify(params || {})}`;
 
     // Create the HTTP observable
-    const httpObservable = this.http.get<any>(`${this.baseUrl}/governance/assets/assets`, { params: httpParams })
+    const httpObservable = this.http.get<any>(`${this.baseUrl}/data-catalog/assets`, { params: httpParams })
       .pipe(map(response => {
         // Handle the API response format from your example
         if (response && response.data) {

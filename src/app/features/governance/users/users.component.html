@@ -1,9 +1,11 @@
 <!-- Users Management - ACL Foundation -->
-<div class="bg-gray-50 p-6">
-  <div class="max-w-7xl mx-auto">
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="bg-gray-50 min-h-screen p-6">
     
     <!-- Header Section -->
-    <div class="mb-8">
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
           <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
@@ -14,90 +16,161 @@
             <p class="text-gray-600">Manage user accounts, roles, and access permissions</p>
           </div>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+          <!-- 1. Refresh Button -->
           <p-button 
-            label="Export Users" 
+            icon="pi pi-refresh" 
+            severity="info" 
+            [outlined]="true"
+            [rounded]="true"
+            (click)="refreshUsers()"
+            pTooltip="Refresh Users"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <!-- 2. Clear Cache Button -->
+          <p-button 
+            icon="pi pi-trash" 
+            severity="warning" 
+            [outlined]="true"
+            [rounded]="true"
+            pTooltip="Clear Cache"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <!-- 3. Export Button -->
+          <p-button 
             icon="pi pi-download" 
             severity="secondary" 
             [outlined]="true"
-            (click)="exportUsers()">
+            [rounded]="true"
+            (click)="exportUsers()"
+            pTooltip="Export Users"
+            class="hidden sm:inline-flex">
           </p-button>
+          <!-- 4. Toggle Filters Button -->
+          <p-button 
+            icon="pi pi-filter" 
+            severity="secondary"
+            [outlined]="!showFilters"
+            [rounded]="true"
+            (click)="toggleFilters()"
+            pTooltip="Toggle Filters"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <!-- 5. List View Button -->
+          <p-button 
+            icon="pi pi-list" 
+            severity="secondary"
+            [outlined]="viewMode !== 'list'"
+            [rounded]="true"
+            (click)="setViewMode('list')"
+            pTooltip="List View"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <!-- 6. Card View Button -->
+          <p-button 
+            icon="pi pi-th-large" 
+            severity="secondary"
+            [outlined]="viewMode !== 'card'"
+            [rounded]="true"
+            (click)="setViewMode('card')"
+            pTooltip="Card View"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <!-- 7. Add New Button (Mobile) -->
           <p-button 
             label="Add User" 
             icon="pi pi-plus" 
             severity="primary"
-            (click)="userDetail.show()">
+            size="small"
+            (click)="userDetail.show()"
+            class="sm:hidden">
+          </p-button>
+          <!-- 7. Add New Button (Desktop) -->
+          <p-button 
+            icon="pi pi-plus" 
+            severity="primary"
+            [rounded]="true"
+            (click)="userDetail.show()"
+            pTooltip="Add User"
+            class="hidden sm:inline-flex">
           </p-button>
         </div>
       </div>
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-      <div class="bg-white rounded-xl border border-gray-200 p-6">
-        <div class="flex items-center gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Total Users</p>
+            <p class="text-3xl font-bold text-gray-900">{{ totalUsers || 0 }}</p>
+          </div>
           <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
             <i class="pi pi-users text-blue-600 text-xl"></i>
           </div>
-          <div>
-            <div class="text-2xl font-bold text-gray-900">{{ totalUsers || 0 }}</div>
-            <div class="text-sm text-gray-500">Total Users</div>
-          </div>
         </div>
       </div>
       
-      <div class="bg-white rounded-xl border border-gray-200 p-6">
-        <div class="flex items-center gap-4">
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Active Users</p>
+            <p class="text-3xl font-bold text-green-600">{{ activeUsers || 0 }}</p>
+          </div>
           <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
             <i class="pi pi-check-circle text-green-600 text-xl"></i>
           </div>
-          <div>
-            <div class="text-2xl font-bold text-gray-900">{{ activeUsers || 0 }}</div>
-            <div class="text-sm text-gray-500">Active Users</div>
-          </div>
         </div>
       </div>
       
-      <div class="bg-white rounded-xl border border-gray-200 p-6">
-        <div class="flex items-center gap-4">
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Pending Verification</p>
+            <p class="text-3xl font-bold text-yellow-600">{{ pendingUsers || 0 }}</p>
+          </div>
           <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
             <i class="pi pi-clock text-yellow-600 text-xl"></i>
           </div>
-          <div>
-            <div class="text-2xl font-bold text-gray-900">{{ pendingUsers || 0 }}</div>
-            <div class="text-sm text-gray-500">Pending Verification</div>
-          </div>
         </div>
       </div>
       
-      <div class="bg-white rounded-xl border border-gray-200 p-6">
-        <div class="flex items-center gap-4">
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Admin Users</p>
+            <p class="text-3xl font-bold text-purple-600">{{ adminUsers || 0 }}</p>
+          </div>
           <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
             <i class="pi pi-shield text-purple-600 text-xl"></i>
-          </div>
-          <div>
-            <div class="text-2xl font-bold text-gray-900">{{ adminUsers || 0 }}</div>
-            <div class="text-sm text-gray-500">Admin Users</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Filters and Search -->
-    <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Search Users</label>
-          <span class="p-input-icon-left w-full">
+    <!-- Filters Section -->
+    <div *ngIf="showFilters" class="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div class="flex flex-col gap-2">
+          <label for="search" class="text-sm font-medium text-gray-700">Search</label>
+          <span class="p-input-icon-left">
             <i class="pi pi-search"></i>
-            <input type="text" pInputText placeholder="Search by name, email..." 
-                   [(ngModel)]="searchTerm" (input)="filterUsers()" class="w-full" />
+            <input 
+              id="search"
+              type="text" 
+              pInputText 
+              placeholder="Search by name, email..." 
+              [(ngModel)]="searchTerm" 
+              (input)="filterUsers()" 
+              class="w-full" />
           </span>
         </div>
         
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+        <div class="flex flex-col gap-2">
+          <label for="status" class="text-sm font-medium text-gray-700">Status</label>
           <p-dropdown 
+            id="status"
             [options]="statusOptions" 
             [(ngModel)]="selectedStatus" 
             placeholder="All Status"
@@ -107,9 +180,10 @@
           </p-dropdown>
         </div>
         
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+        <div class="flex flex-col gap-2">
+          <label for="role" class="text-sm font-medium text-gray-700">Role</label>
           <p-dropdown 
+            id="role"
             [options]="roleOptions" 
             [(ngModel)]="selectedRole" 
             placeholder="All Roles"
@@ -119,9 +193,10 @@
           </p-dropdown>
         </div>
         
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Team</label>
+        <div class="flex flex-col gap-2">
+          <label for="team" class="text-sm font-medium text-gray-700">Team</label>
           <p-dropdown 
+            id="team"
             [options]="teamOptions" 
             [(ngModel)]="selectedTeam" 
             placeholder="All Teams"
@@ -131,13 +206,29 @@
           </p-dropdown>
         </div>
       </div>
+      
+      <div class="flex justify-end gap-2">
+        <p-button 
+          label="Apply Filters" 
+          icon="pi pi-check" 
+          severity="primary" 
+          (onClick)="applyFilters()">
+        </p-button>
+        <p-button 
+          label="Clear Filters" 
+          icon="pi pi-filter-slash" 
+          severity="secondary" 
+          [outlined]="true"
+          (onClick)="clearFilters()">
+        </p-button>
+      </div>
     </div>
 
-    <!-- Users Table -->
+    <!-- Users Content -->
     <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
       <div class="px-6 py-4 border-b border-gray-200">
         <div class="flex items-center justify-between">
-          <h2 class="text-lg font-semibold text-gray-900">Users List</h2>
+          <h2 class="text-lg font-semibold text-gray-900">Users</h2>
           <div class="flex items-center gap-2">
             <p-button 
               icon="pi pi-refresh" 
@@ -147,18 +238,12 @@
               (click)="refreshUsers()"
               pTooltip="Refresh">
             </p-button>
-            <p-button 
-              icon="pi pi-filter" 
-              [rounded]="true" 
-              [text]="true" 
-              severity="secondary"
-              pTooltip="Advanced Filter">
-            </p-button>
           </div>
         </div>
       </div>
       
-      <div class="overflow-x-auto">
+      <!-- List View -->
+      <div class="overflow-x-auto" *ngIf="viewMode === 'list'">
         <table class="w-full">
           <thead class="bg-gray-50">
             <tr>
@@ -293,6 +378,113 @@
         </table>
       </div>
       
+      <!-- Card View -->
+      <div class="p-6" *ngIf="viewMode === 'card'">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" *ngIf="filteredUsers.length > 0">
+          <div *ngFor="let user of filteredUsers" 
+               class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <i class="pi pi-user text-white text-lg"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900">{{ user.first_name }} {{ user.last_name }}</h3>
+                  <p class="text-sm text-gray-500">{{ user.username || user.email }}</p>
+                </div>
+              </div>
+              <p-badge 
+                [value]="user.status || 'Active'" 
+                [severity]="getStatusSeverity(user.status)">
+              </p-badge>
+            </div>
+            
+            <div class="space-y-3 mb-4">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-envelope text-gray-400"></i>
+                <span class="text-sm text-gray-600">{{ user.email }}</span>
+              </div>
+              
+              <div class="flex items-center gap-2" *ngIf="user.phone">
+                <i class="pi pi-phone text-gray-400"></i>
+                <span class="text-sm text-gray-600">{{ user.phone }}</span>
+              </div>
+              
+              <div class="flex items-center gap-2">
+                <i class="pi pi-shield text-gray-400"></i>
+                <p-badge 
+                  [value]="user.role || 'User'" 
+                  [severity]="getRoleSeverity(user.role)"
+                  class="text-xs">
+                </p-badge>
+              </div>
+              
+              <div class="flex items-center gap-2" *ngIf="user.teams?.length">
+                <i class="pi pi-users text-gray-400"></i>
+                <span class="text-sm text-gray-600">{{ user.teams.length }} teams</span>
+              </div>
+              
+              <div class="flex items-center gap-2" *ngIf="user.last_active">
+                <i class="pi pi-clock text-gray-400"></i>
+                <span class="text-sm text-gray-600">Last active: {{ user.last_active | date:'short' }}</span>
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-2 pt-4 border-t border-gray-200">
+              <p-button 
+                icon="pi pi-eye" 
+                [text]="true" 
+                severity="info" 
+                size="small"
+                (click)="userDetail.show(user._id)"
+                pTooltip="View User">
+              </p-button>
+              <p-button 
+                icon="pi pi-pencil" 
+                [text]="true" 
+                severity="secondary" 
+                size="small"
+                (click)="userDetail.show(user._id)"
+                pTooltip="Edit User">
+              </p-button>
+              <p-button 
+                icon="pi pi-shield" 
+                [text]="true" 
+                severity="warning" 
+                size="small"
+                (click)="managePermissions(user)"
+                pTooltip="Manage Permissions">
+              </p-button>
+              <p-button 
+                icon="pi pi-trash" 
+                [text]="true" 
+                severity="danger" 
+                size="small"
+                (click)="deleteUser(user)"
+                pTooltip="Delete User">
+              </p-button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Empty State for Card View -->
+        <div class="text-center p-8" *ngIf="filteredUsers.length === 0">
+          <div class="flex flex-col items-center gap-4">
+            <i class="pi pi-users text-gray-400 text-4xl"></i>
+            <div>
+              <h3 class="text-lg font-medium text-gray-900">No users found</h3>
+              <p class="text-gray-500">Try adjusting your search criteria or create a new user.</p>
+            </div>
+            <p-button 
+              label="Add First User" 
+              icon="pi pi-plus" 
+              severity="primary"
+              (click)="userDetail.show()">
+            </p-button>
+          </div>
+        </div>
+      </div>
+      
       <!-- Pagination -->
       <div class="px-6 py-4 border-t border-gray-200" *ngIf="filteredUsers.length > 0">
         <p-paginator 
@@ -302,7 +494,6 @@
         </p-paginator>
       </div>
     </div>
-  </div>
 </div>
 
 <!-- User Detail Modal -->

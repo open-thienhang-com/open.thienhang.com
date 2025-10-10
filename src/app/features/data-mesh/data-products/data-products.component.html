@@ -21,6 +21,15 @@
         
         <div class="flex items-center gap-2">
           <p-button 
+            icon="pi pi-filter"
+            severity="secondary"
+            [outlined]="!showFilters"
+            (onClick)="toggleFilters()"
+            pTooltip="Toggle Filters"
+            tooltipPosition="bottom"
+            size="small">
+          </p-button>
+          <p-button 
             [icon]="'pi pi-th-large'"
             [severity]="viewMode === 'grid' ? 'primary' : 'secondary'"
             [outlined]="viewMode !== 'grid'"
@@ -76,7 +85,7 @@
     </div>
 
     <!-- Filters Section -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6" *ngIf="showFilters">
       <div class="flex flex-wrap items-center gap-4">
         <div class="flex-1 min-w-48">
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

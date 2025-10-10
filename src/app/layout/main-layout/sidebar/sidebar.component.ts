@@ -64,6 +64,24 @@ export class SidebarComponent implements OnChanges {
             { label: 'Quality Metrics', url: '/data-mesh/quality', icon: 'pi pi-chart-bar' }
           ]
         },
+        // Data Exploration moved out to top-level menu
+        {
+          label: 'Observability',
+          icon: 'pi pi-eye',
+          children: [
+            { label: 'Monitoring', url: '/observability/monitoring', icon: 'pi pi-chart-line' },
+            { label: 'Alerts', url: '/observability/alert', icon: 'pi pi-bell' },
+            { label: 'Metrics', url: '/observability/metrics', icon: 'pi pi-chart-bar' },
+            { label: 'Audit Log', url: '/observability/audit-log', icon: 'pi pi-file' }
+          ]
+        }
+      ]
+    },
+    {
+      label: 'Data Catalog',
+      icon: 'pi pi-search',
+      expanded: false,
+      items: [
         {
           label: 'Data Exploration',
           icon: 'pi pi-search',
@@ -74,16 +92,6 @@ export class SidebarComponent implements OnChanges {
             { label: 'ML Models', url: '/explore/ml-models', icon: 'pi pi-brain' },
             { label: 'Container', url: '/explore/container', icon: 'pi pi-box' },
             { label: 'Search', url: '/explore/search', icon: 'pi pi-search' }
-          ]
-        },
-        {
-          label: 'Observability',
-          icon: 'pi pi-eye',
-          children: [
-            { label: 'Monitoring', url: '/observability/monitoring', icon: 'pi pi-chart-line' },
-            { label: 'Alerts', url: '/observability/alert', icon: 'pi pi-bell' },
-            { label: 'Metrics', url: '/observability/metrics', icon: 'pi pi-chart-bar' },
-            { label: 'Audit Log', url: '/observability/audit-log', icon: 'pi pi-file' }
           ]
         }
       ]
@@ -149,12 +157,12 @@ export class SidebarComponent implements OnChanges {
       icon: 'pi pi-shield',
       expanded: false,
       items: [
-        { label: 'Policies', url: '/governance/policies', icon: 'pi pi-lock' },
-        { label: 'Roles', url: '/governance/roles', icon: 'pi pi-users' },
+        { label: 'Permissions', url: '/governance/permissions', icon: 'pi pi-key' },
         { label: 'Teams', url: '/governance/teams', icon: 'pi pi-users' },
+        { label: 'Policies', url: '/governance/policies', icon: 'pi pi-lock' },
+        { label: 'Roles', url: '/governance/roles', icon: 'pi pi-id-card' },
         { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building' },
         { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
-        { label: 'Permissions', url: '/governance/permissions', icon: 'pi pi-key' },
         { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' },
         { label: 'Contracts', url: '/data-contracts', icon: 'pi pi-file-check' }
       ]
@@ -216,12 +224,12 @@ export class SidebarComponent implements OnChanges {
         type: 'item',
         expanded: false,
         children: [
-          { label: 'Policies', url: '/governance/policies', icon: 'pi pi-lock' },
           { label: 'Permissions', url: '/governance/permissions', icon: 'pi pi-key' },
-          { label: 'Roles', url: '/governance/roles', icon: 'pi pi-users' },
           { label: 'Teams', url: '/governance/teams', icon: 'pi pi-users' },
-          { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
+          { label: 'Policies', url: '/governance/policies', icon: 'pi pi-lock' },
+          { label: 'Roles', url: '/governance/roles', icon: 'pi pi-id-card' },
           { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building' },
+          { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
           { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' },
           { label: 'Contracts', url: '/data-contracts', icon: 'pi pi-file-check' }
         ]

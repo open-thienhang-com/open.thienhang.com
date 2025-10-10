@@ -11,6 +11,8 @@ import { DropdownModule } from 'primeng/dropdown';
 import { BadgeModule } from 'primeng/badge';
 import { PaginatorModule } from 'primeng/paginator';
 import { TooltipModule } from 'primeng/tooltip';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-teams',
@@ -24,13 +26,21 @@ import { TooltipModule } from 'primeng/tooltip';
     DropdownModule,
     BadgeModule,
     PaginatorModule,
-    TooltipModule
+    TooltipModule,
+    ToastModule,
+    ConfirmDialogModule
   ],
   templateUrl: './teams.component.html',
 })
 export class TeamsComponent extends AppBaseComponent implements OnInit {
   teams: any[] = [];
   filteredTeams: any[] = [];
+  
+  // View mode
+  viewMode: 'list' | 'card' = 'card';
+  
+  // Filters
+  showFilters: boolean = false;
   
   // Stats
   totalTeams: number = 0;
@@ -120,6 +130,43 @@ export class TeamsComponent extends AppBaseComponent implements OnInit {
 
   refreshTeams() {
     this.getTeams();
+  }
+
+  toggleFilters() {
+    this.showFilters = !this.showFilters;
+  }
+
+  setViewMode(mode: 'list' | 'card') {
+    this.viewMode = mode;
+  }
+
+  toggleViewMode() {
+    this.viewMode = this.viewMode === 'list' ? 'card' : 'list';
+  }
+
+  onSearch() {
+    this.filterTeams();
+  }
+
+  onFilterChange() {
+    // Can auto-apply or wait for Apply button
+  }
+
+  applyFilters() {
+    this.filterTeams();
+  }
+
+  clearFilters() {
+    this.searchTerm = '';
+    this.selectedType = null;
+    this.selectedStatus = null;
+    this.selectedOwner = null;
+    this.filterTeams();
+  }
+
+  exportTeams() {
+    console.log('Exporting teams...');
+    // TODO: Implement export functionality
   }
 
   showAnalytics() {

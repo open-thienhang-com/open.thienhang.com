@@ -7,6 +7,12 @@
     </div>
     <div class="header-actions">
       <p-button
+        icon="pi pi-filter"
+        [outlined]="!showFilters"
+        (onClick)="toggleFilters()"
+        pTooltip="Toggle Filters">
+      </p-button>
+      <p-button
         label="Add Product"
         icon="pi pi-plus"
         (onClick)="createProduct()">
@@ -27,7 +33,7 @@
   </div>
 
   <!-- Filters Section -->
-  <div class="filters-section">
+  <div class="filters-section" *ngIf="showFilters">
     <div class="filters-grid">
       <div class="filter-item">
         <label>Search Products</label>

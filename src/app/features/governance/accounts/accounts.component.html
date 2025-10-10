@@ -1,9 +1,11 @@
 <!-- Account Management - ACL Foundation -->
-<div class="bg-gray-50 p-6">
-  <div class="max-w-7xl mx-auto">
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="bg-gray-50 min-h-screen p-6">
     
     <!-- Header Section -->
-    <div class="mb-8">
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
           <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
@@ -14,63 +16,93 @@
             <p class="text-gray-600">Manage user accounts, authentication, and profile information</p>
           </div>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+          <!-- 1. Refresh Button -->
           <p-button 
-            label="Export Accounts" 
+            icon="pi pi-refresh" 
+            severity="info" 
+            [outlined]="true"
+            [rounded]="true"
+            pTooltip="Refresh Accounts"
+            (click)="refreshAccounts()"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <!-- 2. Clear Cache Button -->
+          <p-button 
+            icon="pi pi-trash" 
+            severity="warning" 
+            [outlined]="true"
+            [rounded]="true"
+            pTooltip="Clear Cache"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <!-- 3. Export Button -->
+          <p-button 
             icon="pi pi-download" 
             severity="secondary" 
             [outlined]="true"
-            (click)="exportAccounts()">
+            [rounded]="true"
+            (click)="exportAccounts()"
+            pTooltip="Export Accounts"
+            class="hidden sm:inline-flex">
           </p-button>
+          <!-- 4. Toggle Filters Button -->
           <p-button 
-            [icon]="viewMode === 'list' ? 'pi pi-th-large' : 'pi pi-list'" 
-            [pTooltip]="viewMode === 'list' ? 'Card View' : 'List View'"
-            severity="secondary" 
-            [outlined]="true"
-            (click)="toggleViewMode()">
+            icon="pi pi-filter" 
+            severity="secondary"
+            [outlined]="!showFilters"
+            [rounded]="true"
+            (click)="toggleFilters()"
+            pTooltip="Toggle Filters"
+            class="hidden sm:inline-flex">
           </p-button>
-          <!-- Account creation is not supported by the API -->
-        </div>
-      </div>
-    </div>
-
-    <!-- Introduction Card -->
-    <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200 p-6 mb-8">
-      <div class="flex items-start gap-4">
-        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-          <i class="pi pi-info-circle text-purple-600 text-xl"></i>
-        </div>
-        <div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">Understanding Account Management</h3>
-          <p class="text-gray-700 mb-4">
-            Accounts represent individual user profiles and authentication credentials in your system. 
-            Each account contains personal information, authentication details, and links to roles and permissions.
-          </p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div class="flex items-center gap-2">
-              <i class="pi pi-user text-purple-500"></i>
-              <span><strong>Identity:</strong> Personal profile data</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <i class="pi pi-lock text-purple-500"></i>
-              <span><strong>Authentication:</strong> Login credentials</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <i class="pi pi-shield text-purple-500"></i>
-              <span><strong>Access:</strong> Role assignments</span>
-            </div>
-          </div>
+          <!-- 5. List View Button -->
+          <p-button 
+            icon="pi pi-list" 
+            severity="secondary"
+            [outlined]="viewMode !== 'list'"
+            [rounded]="true"
+            (click)="setViewMode('list')"
+            pTooltip="List View"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <!-- 6. Card View Button -->
+          <p-button 
+            icon="pi pi-th-large" 
+            severity="secondary"
+            [outlined]="viewMode !== 'card'"
+            [rounded]="true"
+            (click)="setViewMode('card')"
+            pTooltip="Card View"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <!-- 7. Add New Button (Mobile) -->
+          <p-button 
+            label="Add Account" 
+            icon="pi pi-plus" 
+            severity="primary"
+            size="small"
+            class="sm:hidden">
+          </p-button>
+          <!-- 7. Add New Button (Desktop) -->
+          <p-button 
+            icon="pi pi-plus" 
+            severity="primary"
+            [rounded]="true"
+            pTooltip="Add Account"
+            class="hidden sm:inline-flex">
+          </p-button>
         </div>
       </div>
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Total Accounts</p>
-            <p class="text-2xl font-bold text-gray-900">{{ stats.totalAccounts }}</p>
+            <p class="text-3xl font-bold text-gray-900">{{ stats.totalAccounts }}</p>
           </div>
           <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
             <i class="pi pi-id-card text-purple-600 text-xl"></i>
@@ -78,11 +110,11 @@
         </div>
       </div>
 
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Active Accounts</p>
-            <p class="text-2xl font-bold text-green-600">{{ stats.activeAccounts }}</p>
+            <p class="text-3xl font-bold text-green-600">{{ stats.activeAccounts }}</p>
           </div>
           <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
             <i class="pi pi-check-circle text-green-600 text-xl"></i>
@@ -90,11 +122,11 @@
         </div>
       </div>
 
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Pending Verification</p>
-            <p class="text-2xl font-bold text-yellow-600">{{ stats.pendingAccounts }}</p>
+            <p class="text-3xl font-bold text-yellow-600">{{ stats.pendingAccounts }}</p>
           </div>
           <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
             <i class="pi pi-clock text-yellow-600 text-xl"></i>
@@ -102,11 +134,11 @@
         </div>
       </div>
 
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Locked Accounts</p>
-            <p class="text-2xl font-bold text-red-600">{{ stats.lockedAccounts }}</p>
+            <p class="text-3xl font-bold text-red-600">{{ stats.lockedAccounts }}</p>
           </div>
           <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
             <i class="pi pi-lock text-red-600 text-xl"></i>
@@ -115,94 +147,89 @@
       </div>
     </div>
 
-    <!-- Filters Panel -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6" *ngIf="showFilters">
-      <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">Filter Accounts</h3>
-      </div>
-      <div class="p-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
-            <span class="p-input-icon-left w-full">
-              <i class="pi pi-search"></i>
-              <input 
-                type="text" 
-                pInputText 
-                placeholder="Search accounts..." 
-                [(ngModel)]="searchTerm"
-                (input)="filterAccounts()"
-                class="w-full" />
-            </span>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-            <p-dropdown 
-              [options]="statusOptions" 
-              [(ngModel)]="selectedStatus"
-              optionLabel="label" 
-              optionValue="value"
-              placeholder="All Status"
-              [showClear]="true"
-              (onChange)="filterAccounts()"
-              class="w-full">
-            </p-dropdown>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Account Type</label>
-            <p-dropdown 
-              [options]="typeOptions" 
-              [(ngModel)]="selectedType"
-              optionLabel="label" 
-              optionValue="value"
-              placeholder="All Types"
-              [showClear]="true"
-              (onChange)="filterAccounts()"
-              class="w-full">
-            </p-dropdown>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
-            <p-dropdown 
-              [options]="departmentOptions" 
-              [(ngModel)]="selectedDepartment"
-              optionLabel="label" 
-              optionValue="value"
-              placeholder="All Departments"
-              [showClear]="true"
-              (onChange)="filterAccounts()"
-              class="w-full">
-            </p-dropdown>
-          </div>
+    <!-- Filters Section -->
+    <div *ngIf="showFilters" class="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div class="flex flex-col gap-2">
+          <label for="search" class="text-sm font-medium text-gray-700">Search</label>
+          <span class="p-input-icon-left">
+            <i class="pi pi-search"></i>
+            <input 
+              id="search"
+              type="text" 
+              pInputText 
+              placeholder="Search accounts..." 
+              [(ngModel)]="searchTerm"
+              (input)="filterAccounts()"
+              class="w-full" />
+          </span>
         </div>
         
-        <div class="flex items-center gap-3 mt-6">
-          <p-button 
-            label="Apply Filters" 
-            icon="pi pi-check" 
-            (onClick)="applyFilters()">
-          </p-button>
-          <p-button 
-            label="Clear" 
-            icon="pi pi-times" 
-            [outlined]="true" 
-            (onClick)="clearFilters()">
-          </p-button>
-          <p-button 
-            icon="pi pi-filter" 
-            [outlined]="true" 
-            (onClick)="toggleFilters()"
-            pTooltip="Toggle Filters">
-          </p-button>
+        <div class="flex flex-col gap-2">
+          <label for="status" class="text-sm font-medium text-gray-700">Status</label>
+          <p-dropdown 
+            id="status"
+            [options]="statusOptions" 
+            [(ngModel)]="selectedStatus"
+            optionLabel="label" 
+            optionValue="value"
+            placeholder="All Status"
+            [showClear]="true"
+            (onChange)="filterAccounts()"
+            class="w-full">
+          </p-dropdown>
         </div>
+        
+        <div class="flex flex-col gap-2">
+          <label for="type" class="text-sm font-medium text-gray-700">Account Type</label>
+          <p-dropdown 
+            id="type"
+            [options]="typeOptions" 
+            [(ngModel)]="selectedType"
+            optionLabel="label" 
+            optionValue="value"
+            placeholder="All Types"
+            [showClear]="true"
+            (onChange)="filterAccounts()"
+            class="w-full">
+          </p-dropdown>
+        </div>
+        
+        <div class="flex flex-col gap-2">
+          <label for="department" class="text-sm font-medium text-gray-700">Department</label>
+          <p-dropdown 
+            id="department"
+            [options]="departmentOptions" 
+            [(ngModel)]="selectedDepartment"
+            optionLabel="label" 
+            optionValue="value"
+            placeholder="All Departments"
+            [showClear]="true"
+            (onChange)="filterAccounts()"
+            class="w-full">
+          </p-dropdown>
+        </div>
+      </div>
+      
+      <div class="flex justify-end gap-2">
+        <p-button 
+          label="Apply Filters" 
+          icon="pi pi-check" 
+          severity="primary" 
+          (onClick)="applyFilters()">
+        </p-button>
+        <p-button 
+          label="Clear Filters" 
+          icon="pi pi-filter-slash" 
+          severity="secondary" 
+          [outlined]="true"
+          (onClick)="clearFilters()">
+        </p-button>
       </div>
     </div>
 
     <!-- Default Accounts Layout -->
-    <div class="space-y-8" *ngIf="!accounts?.data?.length">
+    <div class="space-y-8" *ngIf="viewMode === 'card' && !filteredAccounts?.length">
       
       <!-- Default Account Examples -->
       <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -352,48 +379,114 @@
       </div>
     </div>
 
-    <!-- Search and Controls -->
-    <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6" *ngIf="accounts?.data?.length">
-      <div class="flex flex-col lg:flex-row gap-4 items-center justify-between">
-        <div class="flex-1 w-full lg:w-auto">
-          <p-inputGroup>
-            <p-inputGroupAddon>
-              <i class="pi pi-search"></i>
-            </p-inputGroupAddon>
-            <input 
-              type="text" 
-              pInputText 
-              placeholder="Search accounts by name, email, or username..." 
-              [(ngModel)]="searchTerm"
-              (input)="filterAccounts()"
-              class="w-full lg:w-96" />
-          </p-inputGroup>
+    <!-- Accounts Card View -->
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" *ngIf="viewMode === 'card' && filteredAccounts?.length">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900">Accounts Overview</h2>
+          <div class="flex items-center gap-2">
+            <p-button
+              icon="pi pi-refresh"
+              [rounded]="true"
+              [text]="true"
+              severity="secondary"
+              (click)="refreshAccounts()"
+              pTooltip="Refresh">
+            </p-button>
+            <p-button
+              icon="pi pi-filter"
+              [rounded]="true"
+              [text]="true"
+              severity="secondary"
+              (onClick)="toggleFilters()"
+              pTooltip="Toggle Filters">
+            </p-button>
+          </div>
         </div>
-        <div class="flex items-center gap-3">
-          <span class="text-sm text-gray-600">Show:</span>
-          <p-dropdown 
-            [options]="pageSizeOptions" 
-            [(ngModel)]="pageSize"
-            optionLabel="label" 
-            optionValue="value"
-            (onChange)="onPageSizeChange()"
-            class="w-20">
-          </p-dropdown>
-          <span class="text-sm text-gray-600">per page</span>
-          <p-button 
-            icon="pi pi-filter" 
-            [rounded]="true" 
-            [text]="true" 
-            severity="secondary"
-            (onClick)="toggleFilters()"
-            pTooltip="Toggle Filters">
+      </div>
+
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-colors" *ngFor="let account of filteredAccounts">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center">
+                  <i class="text-white pi pi-user"></i>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-gray-900">{{ account.name || account.username }}</h4>
+                  <p class="text-sm text-gray-500">{{ account.email }}</p>
+                </div>
+              </div>
+              <p-tag [value]="account.status || 'Active'" [severity]="account.status === 'Active' ? 'success' : 'warning'"></p-tag>
+            </div>
+
+            <div class="space-y-3">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-shield text-blue-500 text-sm"></i>
+                <span class="text-sm text-gray-600">{{ account.role || 'User' }}</span>
+              </div>
+              <div class="flex items-center gap-2" *ngIf="account.department">
+                <i class="pi pi-building text-gray-400 text-sm"></i>
+                <span class="text-sm text-gray-600">{{ account.department }}</span>
+              </div>
+              <div class="flex items-center gap-2" *ngIf="account.lastLogin">
+                <i class="pi pi-calendar text-gray-400 text-sm"></i>
+                <span class="text-sm text-gray-600">Last login: {{ account.lastLogin | date:'short' }}</span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
+              <p-button
+                icon="pi pi-eye"
+                [rounded]="true"
+                [text]="true"
+                severity="info"
+                size="small"
+                (click)="viewAccount(account)"
+                pTooltip="View Details">
+              </p-button>
+              <p-button
+                icon="pi pi-pencil"
+                [rounded]="true"
+                [text]="true"
+                severity="secondary"
+                size="small"
+                (click)="editAccount(account)"
+                pTooltip="Edit Account">
+              </p-button>
+              <p-button
+                icon="pi pi-key"
+                [rounded]="true"
+                [text]="true"
+                severity="warning"
+                size="small"
+                (click)="manageAccess(account)"
+                pTooltip="Manage Access">
+              </p-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State for Card View -->
+        <div class="text-center py-12" *ngIf="filteredAccounts.length === 0">
+          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="pi pi-id-card text-gray-400 text-2xl"></i>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No accounts found</h3>
+          <p class="text-gray-500 mb-4">Try adjusting your search criteria or create a new account.</p>
+          <p-button
+            label="Add Account"
+            icon="pi pi-plus"
+            severity="primary"
+            (click)="accountDetail.show()">
           </p-button>
         </div>
       </div>
     </div>
 
     <!-- Accounts Table -->
-    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" *ngIf="accounts?.data?.length">
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" *ngIf="viewMode === 'list'">
       <div class="px-6 py-4 border-b border-gray-200">
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-semibold text-gray-900">Accounts List</h2>
@@ -554,7 +647,6 @@
         </p-paginator>
       </div>
     </div>
-  </div>
 </div>
 
 <!-- Account Detail Modal -->

@@ -20,6 +20,8 @@ import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { DataViewModule } from 'primeng/dataview';
 import { DividerModule } from 'primeng/divider';
 import { PanelModule } from 'primeng/panel';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-accounts',
@@ -42,7 +44,9 @@ import { PanelModule } from 'primeng/panel';
     InputGroupAddonModule,
     DataViewModule,
     DividerModule,
-    PanelModule
+    PanelModule,
+    ToastModule,
+    ConfirmDialogModule
   ],
   templateUrl: './accounts.component.html',
 })
@@ -141,6 +145,10 @@ export class AccountsComponent extends AppBaseComponent implements OnInit {
 
   toggleViewMode() {
     this.viewMode = this.viewMode === 'list' ? 'card' : 'list';
+  }
+
+  setViewMode(mode: 'list' | 'card'): void {
+    this.viewMode = mode;
   }
 
   onPageSizeChange() {

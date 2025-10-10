@@ -75,7 +75,8 @@ export class PoliciesComponent implements OnInit {
   loading = false;
   showPolicyModal = false;
   selectedPolicy: Policy | null = null;
-  viewMode: 'table' | 'card' = 'table';
+  viewMode: 'list' | 'card' = 'list';
+  showFilters: boolean = false;
 
   searchTerm = '';
   filters = {
@@ -239,7 +240,33 @@ export class PoliciesComponent implements OnInit {
     this.loadPolicies();
   }
 
-  setViewMode(mode: 'table' | 'card'): void {
+  refreshPolicies(): void {
+    this.loadPolicies();
+  }
+
+  exportPolicies(): void {
+    // TODO: Implement export functionality
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Export',
+      detail: 'Export functionality coming soon'
+    });
+  }
+
+  toggleFilters(): void {
+    this.showFilters = !this.showFilters;
+  }
+
+  applyFilters(): void {
+    this.currentPage = 0;
+    this.loadPolicies();
+  }
+
+  toggleViewMode(): void {
+    this.viewMode = this.viewMode === 'list' ? 'card' : 'list';
+  }
+
+  setViewMode(mode: 'list' | 'card'): void {
     this.viewMode = mode;
   }
 

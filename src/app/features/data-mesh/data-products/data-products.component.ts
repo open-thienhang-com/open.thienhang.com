@@ -64,6 +64,7 @@ export class DataProductsComponent implements OnInit {
   };
 
   viewMode: 'grid' | 'table' = 'grid';
+  showFilters: boolean = false;
   
   // Pagination
   totalRecords = 0;
@@ -183,6 +184,10 @@ export class DataProductsComponent implements OnInit {
     return domainKey.split('_').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
+  }
+
+  toggleFilters(): void {
+    this.showFilters = !this.showFilters;
   }
 
   onSearch(): void {

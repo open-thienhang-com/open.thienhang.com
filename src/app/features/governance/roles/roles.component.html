@@ -3,10 +3,9 @@
 <p-confirmDialog></p-confirmDialog>
 
 <div class="bg-gray-50 min-h-screen p-6">
-  <div class="max-w-7xl mx-auto space-y-6">
     
     <!-- Header Section -->
-    <div class="bg-white rounded-lg shadow-sm p-6">
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
           <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-600 rounded-lg flex items-center justify-center">
@@ -17,33 +16,90 @@
             <p class="text-gray-600">Define and manage user roles and permissions</p>
           </div>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+          <!-- 1. Refresh Button -->
           <p-button 
-            label="Table View" 
-            icon="pi pi-table" 
-            [outlined]="viewMode !== 'table'"
-            (onClick)="setViewMode('table')"
-            size="small">
+            icon="pi pi-refresh" 
+            severity="info" 
+            [outlined]="true"
+            [rounded]="true"
+            pTooltip="Refresh Roles"
+            (click)="refreshRoles()"
+            class="hidden sm:inline-flex">
           </p-button>
+          <!-- 2. Clear Cache Button -->
           <p-button 
-            label="Card View" 
+            icon="pi pi-trash" 
+            severity="warning" 
+            [outlined]="true"
+            [rounded]="true"
+            pTooltip="Clear Cache"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <!-- 3. Export Button -->
+          <p-button 
+            icon="pi pi-download" 
+            severity="secondary" 
+            [outlined]="true"
+            [rounded]="true"
+            pTooltip="Export Roles"
+            (click)="exportRoles()"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <!-- 4. Toggle Filters Button -->
+          <p-button 
+            icon="pi pi-filter" 
+            severity="secondary"
+            [outlined]="!showFilters"
+            [rounded]="true"
+            (click)="toggleFilters()"
+            pTooltip="Toggle Filters"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <!-- 5. List View Button -->
+          <p-button 
+            icon="pi pi-list" 
+            severity="secondary"
+            [outlined]="viewMode !== 'list'"
+            [rounded]="true"
+            (onClick)="setViewMode('list')"
+            pTooltip="List View"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <!-- 6. Card View Button -->
+          <p-button 
             icon="pi pi-th-large" 
+            severity="secondary"
             [outlined]="viewMode !== 'card'"
+            [rounded]="true"
             (onClick)="setViewMode('card')"
-            size="small">
+            pTooltip="Card View"
+            class="hidden sm:inline-flex">
           </p-button>
+          <!-- 7. Add New Button (Mobile) -->
           <p-button 
             label="Add Role" 
             icon="pi pi-plus" 
             severity="primary"
-            (onClick)="openRoleModal()">
+            size="small"
+            (onClick)="openRoleModal()"
+            class="sm:hidden">
+          </p-button>
+          <!-- 7. Add New Button (Desktop) -->
+          <p-button 
+            icon="pi pi-plus" 
+            severity="primary"
+            [rounded]="true"
+            (onClick)="openRoleModal()"
+            pTooltip="Add Role"
+            class="hidden sm:inline-flex">
           </p-button>
         </div>
       </div>
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
       <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex items-center justify-between">
           <div>
@@ -94,8 +150,8 @@
     </div>
 
     <!-- Filters Section -->
-    <div class="bg-white rounded-lg shadow-sm p-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div *ngIf="showFilters" class="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         <div class="flex flex-col gap-2">
           <label for="search" class="text-sm font-medium text-gray-700">Search</label>
           <span class="p-input-icon-left">
@@ -118,6 +174,7 @@
             [options]="typeOptions" 
             [(ngModel)]="filters.type" 
             (onChange)="onFilterChange()"
+            [showClear]="true"
             optionLabel="label" 
             optionValue="value" 
             placeholder="Select type"
@@ -132,23 +189,29 @@
             [options]="statusOptions" 
             [(ngModel)]="filters.status" 
             (onChange)="onFilterChange()"
+            [showClear]="true"
             optionLabel="label" 
             optionValue="value" 
             placeholder="Select status"
             class="w-full">
           </p-dropdown>
         </div>
-        
-        <div class="flex flex-col gap-2">
-          <label class="text-sm font-medium text-gray-700">&nbsp;</label>
-          <p-button 
-            label="Clear Filters" 
-            icon="pi pi-filter-slash" 
-            severity="secondary" 
-            [outlined]="true"
-            (onClick)="clearFilters()">
-          </p-button>
-        </div>
+      </div>
+      
+      <div class="flex justify-end gap-2">
+        <p-button 
+          label="Apply Filters" 
+          icon="pi pi-check" 
+          severity="primary" 
+          (onClick)="applyFilters()">
+        </p-button>
+        <p-button 
+          label="Clear Filters" 
+          icon="pi pi-filter-slash" 
+          severity="secondary" 
+          [outlined]="true"
+          (onClick)="clearFilters()">
+        </p-button>
       </div>
     </div>
 
@@ -161,8 +224,8 @@
       </div>
     </div>
 
-    <!-- Table View -->
-    <div *ngIf="!loading && viewMode === 'table'" class="bg-white rounded-lg shadow-sm">
+    <!-- List View -->
+    <div *ngIf="!loading && viewMode === 'list'" class="bg-white rounded-lg shadow-sm">
       <p-table 
         [value]="roles" 
         [paginator]="true" 
@@ -381,7 +444,6 @@
         (onClick)="openRoleModal()">
       </p-button>
     </div>
-  </div>
 </div>
 
 <!-- Role Modal -->

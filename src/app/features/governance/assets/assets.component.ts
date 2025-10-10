@@ -25,6 +25,7 @@ import { DataViewModule } from 'primeng/dataview';
 import { DividerModule } from 'primeng/divider';
 import { PanelModule } from 'primeng/panel';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import * as XLSX from 'xlsx';
 
 @Component({
@@ -51,7 +52,8 @@ import * as XLSX from 'xlsx';
     DataViewModule,
     DividerModule,
     PanelModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    ConfirmDialogModule
   ],
   templateUrl: './assets.component.html',
   styleUrls: ['./assets.component.scss']
@@ -74,6 +76,7 @@ export class AssetsComponent extends AppBaseComponent implements OnInit, OnDestr
   filteredAssets: any[] = [];
   totalRecords: number = 0;
   currentPage: number = 0;
+  firstRecord: number = 0; // Track first record for paginator
   lastRequestKey: string = '';
 
   // Stats
@@ -146,6 +149,8 @@ export class AssetsComponent extends AppBaseComponent implements OnInit, OnDestr
     this.assets = { data: [], total: 0 };
     this.filteredAssets = [];
     this.totalRecords = 0;
+    this.currentPage = 0;
+    this.firstRecord = 0; // Initialize first record
     this.stats = {
       totalAssets: 0,
       activeAssets: 0,
@@ -245,123 +250,105 @@ export class AssetsComponent extends AppBaseComponent implements OnInit, OnDestr
     this.getAssets(0, true);
   }
 
-  getAssets = (page = 0, forceRefresh = false) => {
-    const cacheKey = this.generateCacheKey(page);
-
-    // Check if this exact request is already pending
-    if (this.pendingRequests.has(cacheKey)) {
-      console.log('Request already pending, skipping...');
-      return;
-    }
-
-    // Check cache first (unless forced refresh)
-    if (!forceRefresh && this.isCacheValid(cacheKey)) {
-      console.log('Using cached data for:', cacheKey);
-      const cachedData = this.getCachedData(cacheKey);
-      this.assets = cachedData;
-      this.filteredAssets = cachedData?.data || [];
-      this.totalRecords = cachedData?.total || 0;
-      this.currentPage = page;
-      this.lastRequestKey = cacheKey;
-      this.isFromCache = true;
-      this.updateStats();
-
-      // Show cache notification
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Cached Data',
-        detail: `Loaded ${this.filteredAssets.length} assets from cache`,
-        life: 2000
-      });
-
-      return;
-    }
-
-    // Clean expired cache entries periodically
-    this.cleanExpiredCache();
-
+  // page: zero-based page index from paginator
+  // first: optional absolute index of the first record (from paginator event)
+  getAssets = (page = 0, forceRefresh = false, first?: number) => {
     this.loading = true;
     this.isTableLoading = true;
     this.currentPage = page;
-    this.lastRequestKey = cacheKey;
+    if (typeof first === 'number') {
+      this.firstRecord = first;
+    }
 
-    // Add to pending requests
-    this.pendingRequests.add(cacheKey);
+    const requestKey = `${page}-${this.selectedType?.value || ''}-${this.selectedSensitivity?.value || ''}-${this.selectedStatus?.value || ''}-${this.searchTerm}`;
 
-    const params = {
-      offset: page * this.tableRowsPerPage,
+    // Check cache if not forcing refresh
+    if (!forceRefresh && this.cache.has(requestKey)) {
+      const cached = this.cache.get(requestKey);
+      if (cached && Date.now() - cached.timestamp < cached.ttl) {
+        this.assets = cached.data;
+        this.filteredAssets = cached.data.data;
+        this.totalRecords = cached.data.total || 0;
+        this.updateStats();
+        // Ensure paginator 'first' stays in sync with current page & page size
+        this.firstRecord = this.currentPage * this.tableRowsPerPage;
+        this.loading = false;
+        this.isTableLoading = false;
+        this.isFromCache = true;
+        return;
+      }
+    }
+
+    // Prevent duplicate requests
+    if (this.pendingRequests.has(requestKey)) {
+      return;
+    }
+
+    this.pendingRequests.add(requestKey);
+    this.isFromCache = false;
+
+    // Use firstRecord if set (keeps offset accurate when paginator provides first),
+    // otherwise compute from page * rows
+    const offset = (typeof this.firstRecord === 'number' && this.firstRecord >= 0)
+      ? this.firstRecord
+      : page * this.tableRowsPerPage;
+
+    const filters: any = {
+      offset,
       size: this.tableRowsPerPage
     };
 
-    // Add search parameter if search term exists
-    if (this.searchTerm && this.searchTerm.trim()) {
-      params['search'] = this.searchTerm.trim();
+    if (this.searchTerm) {
+      filters.search = this.searchTerm;
+    }
+    if (this.selectedType?.value) {
+      filters.type = this.selectedType.value;
+    }
+    if (this.selectedSensitivity?.value) {
+      filters.sensitivity = this.selectedSensitivity.value;
+    }
+    if (this.selectedStatus?.value) {
+      filters.status = this.selectedStatus.value;
     }
 
-    // Add type filter if selected
-    if (this.selectedType) {
-      params['type'] = this.selectedType;
-    }
-
-    // Add sensitivity filter if selected
-    if (this.selectedSensitivity) {
-      params['sensitivity'] = this.selectedSensitivity;
-    }
-
-    // Add status filter if selected
-    if (this.selectedStatus) {
-      params['status'] = this.selectedStatus;
-    }
-
-    console.log('Making API call with params:', params);
-
-    this.governanceServices.getAssets(params).subscribe({
+  this.governanceServices.getAssets(filters).subscribe({
       next: (res) => {
-        console.log('API Response received:', res);
+        this.assets = res;
+        this.filteredAssets = res.data;
+        this.totalRecords = res.total || 0;
+        this.updateStats();
 
-        // Only process if this is still the latest request
-        if (this.lastRequestKey === cacheKey) {
-          this.assets = res;
-          this.filteredAssets = res?.data || [];
-          this.totalRecords = res?.total || 0;
-          this.isFromCache = false;
-          this.updateStats();
+  // Keep paginator first index in sync after receiving data (in case API changed totals)
+  this.firstRecord = this.currentPage * this.tableRowsPerPage;
 
-          // Cache the response
-          this.setCachedData(cacheKey, res);
-
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Fresh Data',
-            detail: `Loaded ${this.filteredAssets.length} assets from API`,
-            life: 2000
-          });
-        }
+        // Cache the result
+        this.cache.set(requestKey, {
+          data: res,
+          timestamp: Date.now(),
+          ttl: this.CACHE_TTL
+        });
 
         this.loading = false;
         this.isTableLoading = false;
-        this.pendingRequests.delete(cacheKey);
+        this.pendingRequests.delete(requestKey);
+        this.lastRequestKey = requestKey;
       },
-      error: (error) => {
-        console.error('Error fetching assets:', error);
-
-        // Only process if this is still the latest request
-        if (this.lastRequestKey === cacheKey) {
-          // Initialize empty state
-          this.assets = { data: [], total: 0 };
-          this.filteredAssets = [];
-          this.totalRecords = 0;
-
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to fetch assets. Showing empty state.'
-          });
-        }
-
+      error: (err) => {
+        console.error('Error loading assets:', err);
+        this.assets = { data: [], total: 0 };
+        this.filteredAssets = [];
+        this.totalRecords = 0;
+        // Reset paginator state on error to avoid inconsistent UI
+        this.firstRecord = 0;
+        this.currentPage = 0;
         this.loading = false;
         this.isTableLoading = false;
-        this.pendingRequests.delete(cacheKey);
+        this.pendingRequests.delete(requestKey);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load assets'
+        });
       }
     });
   }
@@ -586,7 +573,9 @@ export class AssetsComponent extends AppBaseComponent implements OnInit, OnDestr
   }
 
   onPageChange(event: any) {
-    this.getAssets(event.page);
+    this.currentPage = event.page;
+    this.firstRecord = event.first; // Update first record
+    this.getAssets(event.page, false, event.first);
   }
 
   getSeverity(status: string) {
@@ -688,10 +677,16 @@ export class AssetsComponent extends AppBaseComponent implements OnInit, OnDestr
     });
   }
 
+  // Set specific view mode
+  setViewMode(mode: 'list' | 'card'): void {
+    this.viewMode = mode;
+  }
+
   // Change page size
   onPageSizeChange(event: any) {
     this.tableRowsPerPage = event.value;
     this.currentPage = 0; // Reset to first page
+    this.firstRecord = 0; // Reset first record for paginator
 
     // Clear cache since page size changed
     this.cache.clear();

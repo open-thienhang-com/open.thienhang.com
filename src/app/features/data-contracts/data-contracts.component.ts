@@ -2,6 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { TooltipModule } from 'primeng/tooltip';
 
 interface DataContract {
     id: string;
@@ -44,7 +48,15 @@ interface ContractStats {
 @Component({
     selector: 'app-data-contracts',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule],
+    imports: [
+        CommonModule, 
+        FormsModule, 
+        RouterModule,
+        ButtonModule,
+        ToastModule,
+        ConfirmDialogModule,
+        TooltipModule
+    ],
     templateUrl: './data-contracts.component.html',
     styleUrls: ['./data-contracts.component.scss']
 })
@@ -61,6 +73,9 @@ export class DataContractsComponent implements OnInit {
         provider: '',
         classification: ''
     };
+
+    // View mode
+    viewMode: 'list' | 'card' = 'list';
 
     stats: ContractStats = {
         totalContracts: 0,
@@ -253,6 +268,10 @@ export class DataContractsComponent implements OnInit {
             this.applyFilters();
             this.loadStats();
         }
+    }
+
+    toggleViewMode() {
+        this.viewMode = this.viewMode === 'list' ? 'card' : 'list';
     }
 
     trackByContractId(index: number, contract: DataContract): string {

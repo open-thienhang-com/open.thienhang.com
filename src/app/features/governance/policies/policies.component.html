@@ -3,58 +3,95 @@
 <p-confirmDialog></p-confirmDialog>
 
 <div class="bg-gray-50 min-h-screen p-6">
-  <div class="max-w-7xl mx-auto space-y-6">
     
-    <!-- Loading Component -->
-    <div *ngIf="loading" class="w-full">
-      <app-loading 
-        type="data-flow" 
-        message="Loading policies..." 
-        size="large">
-      </app-loading>
-    </div>
-
-    <!-- Main Content (shown when not loading) -->
-    <div *ngIf="!loading">
-      <!-- Header Section -->
-      <div class="bg-white rounded-lg shadow-sm p-6">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
-              <i class="pi pi-shield text-white text-xl"></i>
-            </div>
-            <div>
-              <h1 class="text-3xl font-bold text-gray-900">Policy Management</h1>
-              <p class="text-gray-600">Define and manage data governance policies</p>
-            </div>
+    <!-- Header Section -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
+            <i class="pi pi-shield text-white text-xl"></i>
           </div>
-          <div class="flex items-center gap-3">
-            <p-button 
-              label="Table View" 
-              icon="pi pi-table" 
-              [outlined]="viewMode !== 'table'"
-              (onClick)="setViewMode('table')"
-              size="small">
-            </p-button>
-            <p-button 
-              label="Card View" 
-              icon="pi pi-th-large" 
-              [outlined]="viewMode !== 'card'"
-              (onClick)="setViewMode('card')"
-              size="small">
-            </p-button>
-            <p-button 
-              label="Add Policy" 
-              icon="pi pi-plus" 
-              severity="primary"
-              (onClick)="openPolicyModal()">
-            </p-button>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">Policy Management</h1>
+            <p class="text-gray-600">Define and manage data governance policies</p>
           </div>
         </div>
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+          <p-button 
+            icon="pi pi-refresh" 
+            severity="info" 
+            [outlined]="true"
+            [rounded]="true"
+            (click)="refreshPolicies()"
+            pTooltip="Refresh Data"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <p-button 
+            icon="pi pi-trash" 
+            severity="warning" 
+            [outlined]="true"
+            [rounded]="true"
+            pTooltip="Clear Cache"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <p-button 
+            icon="pi pi-download" 
+            severity="secondary" 
+            [outlined]="true"
+            [rounded]="true"
+            (click)="exportPolicies()"
+            pTooltip="Export Policies"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <p-button 
+            icon="pi pi-filter" 
+            severity="secondary"
+            [outlined]="!showFilters"
+            [rounded]="true"
+            (click)="toggleFilters()"
+            pTooltip="Toggle Filters"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <p-button 
+            icon="pi pi-list" 
+            severity="secondary"
+            [outlined]="viewMode !== 'list'"
+            [rounded]="true"
+            (onClick)="setViewMode('list')"
+            pTooltip="List View"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <p-button 
+            icon="pi pi-th-large" 
+            severity="secondary"
+            [outlined]="viewMode !== 'card'"
+            [rounded]="true"
+            (onClick)="setViewMode('card')"
+            pTooltip="Card View"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <p-button 
+            label="Add Policy" 
+            icon="pi pi-plus" 
+            severity="primary"
+            size="small"
+            (onClick)="openPolicyModal()"
+            class="sm:hidden">
+          </p-button>
+          <p-button 
+            icon="pi pi-plus" 
+            severity="primary"
+            [rounded]="true"
+            (onClick)="openPolicyModal()"
+            pTooltip="Add Policy"
+            class="hidden sm:inline-flex">
+          </p-button>
+        </div>
       </div>
+    </div>
 
-      <!-- Stats Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         <div class="bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between">
             <div>
@@ -105,7 +142,7 @@
       </div>
 
       <!-- Filters Section -->
-      <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-6" *ngIf="showFilters">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div class="flex flex-col gap-2">
             <label for="search" class="text-sm font-medium text-gray-700">Search</label>
@@ -172,8 +209,8 @@
         </div>
       </div>
 
-      <!-- Table View -->
-      <div *ngIf="!loading && viewMode === 'table'" class="bg-white rounded-lg shadow-sm">
+      <!-- List View -->
+      <div *ngIf="!loading && viewMode === 'list'" class="bg-white rounded-lg shadow-sm">
         <p-table 
           [value]="policies" 
           [paginator]="true" 
@@ -392,8 +429,6 @@
           (onClick)="openPolicyModal()">
         </p-button>
       </div>
-    </div>
-  </div>
 </div>
 
 <!-- Policy Modal -->

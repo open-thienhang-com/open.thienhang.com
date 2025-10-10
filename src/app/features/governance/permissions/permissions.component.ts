@@ -21,6 +21,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-permissions',
@@ -42,7 +43,8 @@ import { ToastModule } from 'primeng/toast';
     MultiSelectModule,
     OverlayPanelModule,
     TreeModule,
-    ToastModule
+    ToastModule,
+    ConfirmDialogModule
   ],
   providers: [MessageService],
   templateUrl: './permissions.component.html',
@@ -109,51 +111,27 @@ export class PermissionsComponent extends AppBaseComponent implements OnInit {
     console.log('Permissions component initialized');
     this.permissions = { data: [], total: 0 };
     this.getPermissions();
-    this.loadStats();
   }
 
   getPermissions = (page = 0) => {
     this.isTableLoading = true;
     this.loading = true;
     
-    const params = {
+    this.governanceServices.getPermissions({
       offset: page * this.tableRowsPerPage,
       size: this.tableRowsPerPage
-    };
-
-    console.log('Fetching permissions with params:', params);
-
-    this.governanceServices.getPermissions(params).subscribe({
+    }).subscribe({
       next: (res) => {
-        console.log('Permissions API response:', res);
-        
-        // Handle different response structures
-        if (res && res.data) {
-          this.permissions = res;
-        } else if (res && Array.isArray(res)) {
-          // Handle case where response is directly an array
-          this.permissions = { data: res, total: res.length };
-        } else {
-          console.warn('Unexpected response structure:', res);
-          this.permissions = { data: [], total: 0 };
-        }
-        
+        this.permissions = res;
         this.updateStats();
         this.isTableLoading = false;
         this.loading = false;
-        
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: `Loaded ${this.permissions?.data?.length || 0} permissions`
-        });
       },
-      error: (error) => {
-        console.error('Error fetching permissions:', error);
+      error: (err) => {
+        console.error('Error loading permissions:', err);
         this.permissions = { data: [], total: 0 };
         this.isTableLoading = false;
         this.loading = false;
-        
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
@@ -259,6 +237,20 @@ export class PermissionsComponent extends AppBaseComponent implements OnInit {
     this.viewMode = mode;
   }
 
+  toggleViewMode() {
+    this.viewMode = this.viewMode === 'list' ? 'card' : 'list';
+  }
+
+  onSearch() {
+    // Implement search logic - can add debouncing if needed
+    this.applyFilters();
+  }
+
+  onFilterChange() {
+    // Auto-apply filters on change if desired, or wait for Apply button
+    // this.applyFilters();
+  }
+
   refreshPermissions() {
     this.getPermissions(0);
   }
@@ -328,10 +320,6 @@ export class PermissionsComponent extends AppBaseComponent implements OnInit {
       case 'Active': return 'success';
       default: return 'secondary';
     }
-  }
-
-  toggleViewMode() {
-    this.viewMode = this.viewMode === 'list' ? 'card' : 'list';
   }
 
   // Debug method to test API response

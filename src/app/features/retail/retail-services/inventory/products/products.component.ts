@@ -57,6 +57,7 @@ export class ProductsComponent implements OnInit {
   selectedCategory = '';
   selectedStatus: any = null;
   loading = false;
+  showFilters = false;
 
   showProductDialog = false;
   editingProduct: Product | null = null;
@@ -183,6 +184,10 @@ export class ProductsComponent implements OnInit {
       this.filteredProducts = [...this.products];
       this.loading = false;
     }, 1000);
+  }
+
+  toggleFilters() {
+    this.showFilters = !this.showFilters;
   }
 
   applyFilters() {

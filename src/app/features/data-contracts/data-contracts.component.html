@@ -1,87 +1,118 @@
-<div class="bg-gray-50 dark:bg-gray-900">
-  <!-- Header Section -->
-  <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-    <div class="px-4 sm:px-6 lg:px-8 py-6">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Data Contracts</h1>
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Manage data product contracts, SLAs, and quality agreements
-          </p>
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="bg-gray-50 min-h-screen p-6">
+    
+    <!-- Header Section -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
+            <i class="pi pi-file-check text-white text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">Data Contracts</h1>
+            <p class="text-gray-600">Manage data product contracts, SLAs, and quality agreements</p>
+          </div>
         </div>
-        <div class="flex gap-3">
-          <button 
-            type="button"
-            class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-            <i class="pi pi-download mr-2"></i>
-            Export
-          </button>
-          <button 
-            type="button"
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+          <p-button 
+            icon="pi pi-cog" 
+            severity="info" 
+            [outlined]="true"
+            [rounded]="true"
+            pTooltip="Refresh Data"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <p-button 
+            icon="pi pi-trash" 
+            severity="warning" 
+            [outlined]="true"
+            [rounded]="true"
+            pTooltip="Clear Cache"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <p-button 
+            icon="pi pi-download" 
+            severity="secondary" 
+            [outlined]="true"
+            [rounded]="true"
+            pTooltip="Export Contracts"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <p-button 
+            label="New Contract" 
+            icon="pi pi-plus" 
+            severity="primary"
+            size="small"
             (click)="openContractModal()"
-            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors">
-            <i class="pi pi-plus mr-2"></i>
-            New Contract
-          </button>
+            class="sm:hidden">
+          </p-button>
+          <p-button 
+            icon="pi pi-plus" 
+            severity="primary"
+            [rounded]="true"
+            (click)="openContractModal()"
+            pTooltip="New Contract"
+            class="hidden sm:inline-flex">
+          </p-button>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Stats Cards -->
-  <div class="px-4 sm:px-6 lg:px-8 py-6">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Contracts</p>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.totalContracts }}</p>
+            <p class="text-sm font-medium text-gray-600">Total Contracts</p>
+            <p class="text-3xl font-bold text-gray-900">{{ stats.totalContracts }}</p>
           </div>
-          <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
-            <i class="pi pi-file-text text-blue-600 dark:text-blue-400"></i>
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-file-text text-blue-600 text-xl"></i>
           </div>
         </div>
       </div>
       
-      <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+      <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Contracts</p>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.activeContracts }}</p>
+            <p class="text-sm font-medium text-gray-600">Active Contracts</p>
+            <p class="text-3xl font-bold text-green-600">{{ stats.activeContracts }}</p>
           </div>
-          <div class="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
-            <i class="pi pi-check-circle text-green-600 dark:text-green-400"></i>
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-check-circle text-green-600 text-xl"></i>
           </div>
         </div>
       </div>
       
-      <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+      <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Expiring Soon</p>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.expiringSoon }}</p>
+            <p class="text-sm font-medium text-gray-600">Expiring Soon</p>
+            <p class="text-3xl font-bold text-orange-600">{{ stats.expiringSoon }}</p>
           </div>
-          <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
-            <i class="pi pi-clock text-orange-600 dark:text-orange-400"></i>
+          <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-clock text-orange-600 text-xl"></i>
           </div>
         </div>
       </div>
       
-      <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+      <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">SLA Violations</p>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.violations }}</p>
+            <p class="text-sm font-medium text-gray-600">SLA Violations</p>
+            <p class="text-3xl font-bold text-red-600">{{ stats.violations }}</p>
           </div>
-          <div class="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
-            <i class="pi pi-exclamation-triangle text-red-600 dark:text-red-400"></i>
+          <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-exclamation-triangle text-red-600 text-xl"></i>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Filters and Search -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
+    <div class="bg-white rounded-lg shadow-sm p-6">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Search -->
         <div class="lg:col-span-2">
@@ -137,6 +168,14 @@
           <div class="flex gap-2">
             <button 
               type="button"
+              (click)="toggleViewMode()"
+              [title]="viewMode === 'list' ? 'Card View' : 'List View'"
+              class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
+              <i [class]="viewMode === 'list' ? 'pi pi-th-large mr-2' : 'pi pi-list mr-2'"></i>
+              {{ viewMode === 'list' ? 'Card View' : 'List View' }}
+            </button>
+            <button 
+              type="button"
               class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
               <i class="pi pi-filter mr-2"></i>
               Advanced Filters
@@ -163,7 +202,7 @@
       </div>
 
       <!-- Table Content -->
-      <div *ngIf="!loading" class="overflow-x-auto">
+      <div *ngIf="!loading && viewMode === 'list'" class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead class="bg-gray-50 dark:bg-gray-900">
             <tr>
@@ -287,6 +326,93 @@
           </button>
         </div>
       </div>
+
+      <!-- Card View -->
+      <div *ngIf="!loading && viewMode === 'card'" class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" *ngIf="filteredContracts.length > 0">
+          <div *ngFor="let contract of filteredContracts" 
+               class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
+                  <i class="pi pi-file-text text-white text-lg"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900 dark:text-white">{{ contract.name }}</h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ contract.id }}</p>
+                </div>
+              </div>
+              <span [class]="getStatusColor(contract.status)" 
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                {{ contract.status }}
+              </span>
+            </div>
+            
+            <div class="space-y-3 mb-4">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-building text-gray-400"></i>
+                <span class="text-sm text-gray-600 dark:text-gray-300">{{ contract.provider }}</span>
+              </div>
+              
+              <div class="flex items-center gap-2">
+                <i class="pi pi-shield text-gray-400"></i>
+                <span [class]="getClassificationColor(contract.classification)" 
+                      class="inline-flex items-center px-2 py-1 rounded text-xs font-medium">
+                  {{ contract.classification }}
+                </span>
+              </div>
+              
+              <div class="flex items-center gap-2" *ngIf="contract.expiresAt">
+                <i class="pi pi-calendar text-gray-400"></i>
+                <span class="text-sm text-gray-600 dark:text-gray-300">Expires: {{ contract.expiresAt | date:'short' }}</span>
+              </div>
+              
+              <div class="flex items-center gap-2" *ngIf="contract.description">
+                <i class="pi pi-info-circle text-gray-400"></i>
+                <span class="text-sm text-gray-600 dark:text-gray-300">{{ contract.description }}</span>
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button 
+                type="button"
+                (click)="viewContract(contract)"
+                class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 transition-colors">
+                <i class="pi pi-eye"></i>
+              </button>
+              <button 
+                type="button"
+                (click)="openContractModal(contract)"
+                class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 transition-colors">
+                <i class="pi pi-pencil"></i>
+              </button>
+              <button 
+                type="button"
+                (click)="deleteContract(contract.id)"
+                class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors">
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Empty State for Card View -->
+        <div *ngIf="filteredContracts.length === 0" class="p-8 text-center">
+          <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="pi pi-file-text text-gray-400 text-2xl"></i>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No data contracts found</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Get started by creating your first data contract to define data product agreements.
+          </p>
+          <button 
+            type="button"
+            (click)="openContractModal()"
+            class="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors">
+            <i class="pi pi-plus mr-2"></i>
+            Create Contract
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
 </div>
