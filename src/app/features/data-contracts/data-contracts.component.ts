@@ -49,8 +49,8 @@ interface ContractStats {
     selector: 'app-data-contracts',
     standalone: true,
     imports: [
-        CommonModule, 
-        FormsModule, 
+        CommonModule,
+        FormsModule,
         RouterModule,
         ButtonModule,
         ToastModule,

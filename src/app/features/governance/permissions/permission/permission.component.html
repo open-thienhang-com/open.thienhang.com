@@ -1,25 +1,271 @@
-<p-dialog [(visible)]="visible" [modal]="true" [style]="{ width: '50rem' }">
+<p-toast></p-toast>
+
+<p-dialog 
+  [(visible)]="visible" 
+  [modal]="true" 
+  [style]="{ width: '90vw', maxWidth: '900px' }"
+  [draggable]="false"
+  [resizable]="false">
+  
   <ng-template #header>
-    <div class="inline-flex items-center justify-center gap-2">
-      <span class="font-bold whitespace-nowrap">{{ title }}</span>
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
+        <i class="pi pi-key text-white"></i>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-gray-900">{{ title }}</h2>
+        <p class="text-sm text-gray-500" *ngIf="permission.kid">{{ permission.kid }}</p>
+      </div>
     </div>
   </ng-template>
-  <div class="grid grid-flow-row grid-cols-2 gap-4 mt-3">
+
+  <!-- Loading State -->
+  <div class="flex items-center justify-center p-8" *ngIf="loading">
+    <i class="pi pi-spin pi-spinner text-blue-500 text-2xl"></i>
+  </div>
+
+  <!-- View Mode -->
+  <div class="space-y-6" *ngIf="!loading && isViewMode">
+    <!-- Permission Header -->
+    <div class="bg-gray-50 rounded-lg p-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Permission Name</label>
+          <p class="text-gray-900 font-medium">{{ permission.name || 'N/A' }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Code</label>
+          <div class="flex items-center gap-2">
+            <code class="text-sm bg-gray-800 text-gray-100 px-3 py-1 rounded">{{ permission.code }}</code>
+            <p-button 
+              icon="pi pi-copy" 
+              [text]="true" 
+              [rounded]="true"
+              size="small"
+              (click)="copyToClipboard(permission.code)"
+              pTooltip="Copy Code">
+            </p-button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action & Description -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Action</label>
+        <p-tag 
+          [value]="permission.action" 
+          [severity]="getActionSeverity(permission.action)" 
+          styleClass="text-base px-4 py-2">
+        </p-tag>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Total Assets</label>
+        <p-tag 
+          [value]="(permission.asset_total || 0).toString()" 
+          severity="info" 
+          icon="pi pi-database"
+          styleClass="text-base px-4 py-2">
+        </p-tag>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div *ngIf="permission.description">
+      <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+      <p class="text-gray-600 bg-gray-50 p-3 rounded-lg">{{ permission.description }}</p>
+    </div>
+
+    <p-divider></p-divider>
+
+    <!-- Assets List -->
+    <div *ngIf="permission.assets && permission.assets.length > 0">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900">Associated Assets</h3>
+        <p-tag 
+          [value]="permission.assets.length + ' assets'" 
+          severity="info">
+        </p-tag>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg overflow-hidden">
+        <p-table 
+          [value]="permission.assets" 
+          [tableStyle]="{'min-width': '100%'}"
+          styleClass="p-datatable-sm">
+          
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Asset Name</th>
+              <th>Type</th>
+              <th>Location</th>
+              <th>Sensitivity</th>
+              <th>Source</th>
+              <th>Status</th>
+            </tr>
+          </ng-template>
+          
+          <ng-template pTemplate="body" let-asset>
+            <tr>
+              <td>
+                <div class="font-medium text-gray-900">{{ asset.name || 'N/A' }}</div>
+                <div class="text-xs text-gray-500" *ngIf="asset.kid">{{ asset.kid }}</div>
+              </td>
+              <td>
+                <p-tag 
+                  [value]="asset.type" 
+                  [severity]="getAssetTypeSeverity(asset.type)">
+                </p-tag>
+              </td>
+              <td>
+                <code class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-700">{{ asset.location || 'N/A' }}</code>
+              </td>
+              <td>
+                <p-tag 
+                  [value]="asset.sensitivity" 
+                  [severity]="getSensitivitySeverity(asset.sensitivity)">
+                </p-tag>
+              </td>
+              <td>
+                <span class="text-sm text-gray-600">{{ asset.source || 'N/A' }}</span>
+              </td>
+              <td>
+                <p-tag 
+                  [value]="asset.status" 
+                  [severity]="getStatusSeverity(asset.status)">
+                </p-tag>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="6" class="text-center p-4 text-gray-500">
+                No assets associated with this permission
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+
+    <!-- Metadata -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Created At</label>
+        <p class="text-sm text-gray-600">{{ permission.created_at | date:'medium' }}</p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Updated At</label>
+        <p class="text-sm text-gray-600">{{ permission.updated_at | date:'medium' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit/Create Mode -->
+  <div class="grid grid-flow-row grid-cols-2 gap-4 mt-3" *ngIf="!loading && !isViewMode">
     <p-floatlabel variant="on">
-      <input class="w-full" pInputText id="name" [(ngModel)]="permission.name" autocomplete="off"/>
-      <label for="name">Name</label>
+      <input 
+        class="w-full" 
+        pInputText 
+        id="name" 
+        [(ngModel)]="permission.name" 
+        autocomplete="off"
+        [disabled]="loading"/>
+      <label for="name">Name *</label>
     </p-floatlabel>
+    
     <p-floatlabel variant="on">
-      <input class="w-full" pInputText id="code" [(ngModel)]="permission.code" autocomplete="off"/>
-      <label for="code">Code</label>
+      <input 
+        class="w-full" 
+        pInputText 
+        id="code" 
+        [(ngModel)]="permission.code" 
+        autocomplete="off"
+        [disabled]="loading"/>
+      <label for="code">Code *</label>
     </p-floatlabel>
+
+    <p-floatlabel variant="on">
+      <p-dropdown 
+        id="action"
+        [options]="actionOptions" 
+        [(ngModel)]="permission.action"
+        optionLabel="label" 
+        optionValue="value"
+        placeholder="Select action"
+        [disabled]="loading"
+        styleClass="w-full">
+      </p-dropdown>
+      <label for="action">Action</label>
+    </p-floatlabel>
+
     <p-floatlabel variant="on" class="col-span-2">
-      <textarea pTextarea id="description" [(ngModel)]="permission.description" rows="3" cols="30" style="resize: none" class="w-full h-full"></textarea>
+      <textarea 
+        pTextarea 
+        id="description" 
+        [(ngModel)]="permission.description" 
+        rows="3" 
+        cols="30" 
+        style="resize: none" 
+        class="w-full h-full"
+        [disabled]="loading">
+      </textarea>
       <label for="description">Description</label>
     </p-floatlabel>
   </div>
+
   <ng-template #footer>
-    <p-button label="Cancel" [text]="true" severity="secondary" (click)="visible = false"/>
-    <p-button label="Save" [outlined]="true" severity="secondary" (click)="save()"/>
+    <div class="flex items-center justify-between gap-3">
+      <!-- View Mode Actions -->
+      <div *ngIf="isViewMode" class="flex items-center gap-2">
+        <p-button 
+          label="Edit" 
+          icon="pi pi-pencil"
+          severity="primary"
+          [outlined]="true"
+          (click)="switchToEditMode()">
+        </p-button>
+        <p-button 
+          label="Delete" 
+          icon="pi pi-trash"
+          severity="danger"
+          [outlined]="true"
+          (click)="delete()">
+        </p-button>
+      </div>
+
+      <!-- Edit/Create Mode Actions -->
+      <div *ngIf="!isViewMode" class="flex-1">
+        <p-button 
+          *ngIf="isEditMode && !isViewMode"
+          label="Delete" 
+          icon="pi pi-trash"
+          severity="danger"
+          [outlined]="true"
+          (click)="delete()">
+        </p-button>
+      </div>
+
+      <!-- Common Actions -->
+      <div class="flex items-center gap-2">
+        <p-button 
+          label="Close" 
+          [text]="true" 
+          severity="secondary" 
+          (click)="visible = false"
+          [disabled]="loading">
+        </p-button>
+        <p-button 
+          *ngIf="!isViewMode"
+          [label]="isEditMode ? 'Update' : 'Create'" 
+          [outlined]="true" 
+          severity="primary" 
+          (click)="save()"
+          [loading]="loading">
+        </p-button>
+      </div>
+    </div>
   </ng-template>
 </p-dialog>

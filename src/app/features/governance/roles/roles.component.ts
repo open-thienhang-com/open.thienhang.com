@@ -43,8 +43,8 @@ interface RoleStats {
   selector: 'app-roles',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
+    CommonModule,
+    FormsModule,
     RoleComponent,
     ButtonModule,
     TableModule,
@@ -121,7 +121,7 @@ export class RolesComponent implements OnInit {
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
     private loadingService: LoadingService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Initialize pagination with valid numbers
@@ -133,15 +133,15 @@ export class RolesComponent implements OnInit {
 
   loadRoles(): void {
     this.loading = true;
-    
+
     // Show beautiful loading animation
     this.loadingService.showPageLoading('Loading roles...', 'bars');
-    
+
     // Ensure pagination parameters are valid numbers
     const currentPage = Number(this.currentPage) || 0;
     const pageSize = Number(this.pageSize) || 10;
     const offset = currentPage * pageSize;
-    
+
     // Debug logging
     console.log('Loading roles with params:', {
       currentPage,
@@ -150,7 +150,7 @@ export class RolesComponent implements OnInit {
       originalCurrentPage: this.currentPage,
       originalPageSize: this.pageSize
     });
-    
+
     const params = {
       limit: pageSize,
       offset: offset,
@@ -278,7 +278,7 @@ export class RolesComponent implements OnInit {
   toggleRoleStatus(role: Role): void {
     const newStatus = !role.is_active;
     const action = newStatus ? 'activate' : 'deactivate';
-    
+
     this.governanceServices.updateRole(role.kid, { is_active: newStatus }).subscribe({
       next: (response) => {
         if (response.success) {

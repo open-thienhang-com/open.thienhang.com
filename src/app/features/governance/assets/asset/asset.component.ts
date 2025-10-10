@@ -50,6 +50,7 @@ export class AssetComponent extends AppBaseComponent {
   visible = false;
   loading = false;
   isEditMode = false;
+  isViewMode = false;
 
   // Form validation
   formErrors: any = {};
@@ -134,6 +135,7 @@ export class AssetComponent extends AppBaseComponent {
     this.originalAsset = {};
     this.title = 'Create Asset';
     this.isEditMode = false;
+    this.isViewMode = false;
     this.formErrors = {};
     this.visible = true;
   }
@@ -144,6 +146,7 @@ export class AssetComponent extends AppBaseComponent {
     this.originalAsset = { ...asset };
     this.title = 'Edit Asset';
     this.isEditMode = true;
+    this.isViewMode = false;
     this.formErrors = {};
     this.visible = true;
   }
@@ -154,6 +157,7 @@ export class AssetComponent extends AppBaseComponent {
     this.originalAsset = { ...asset };
     this.title = 'Asset Details';
     this.isEditMode = false;
+    this.isViewMode = true;
     this.formErrors = {};
     this.visible = true;
   }
@@ -205,6 +209,12 @@ export class AssetComponent extends AppBaseComponent {
         });
       }
     });
+  }
+
+  // Callback to refresh after delete
+  refreshAfterDelete = () => {
+    this.visible = false;
+    this.onSave.emit();
   }
 
   // Cancel and close modal

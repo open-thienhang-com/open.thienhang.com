@@ -311,15 +311,15 @@ export class AssetsComponent extends AppBaseComponent implements OnInit, OnDestr
       filters.status = this.selectedStatus.value;
     }
 
-  this.governanceServices.getAssets(filters).subscribe({
+    this.governanceServices.getAssets(filters).subscribe({
       next: (res) => {
         this.assets = res;
         this.filteredAssets = res.data;
         this.totalRecords = res.total || 0;
         this.updateStats();
 
-  // Keep paginator first index in sync after receiving data (in case API changed totals)
-  this.firstRecord = this.currentPage * this.tableRowsPerPage;
+        // Keep paginator first index in sync after receiving data (in case API changed totals)
+        this.firstRecord = this.currentPage * this.tableRowsPerPage;
 
         // Cache the result
         this.cache.set(requestKey, {

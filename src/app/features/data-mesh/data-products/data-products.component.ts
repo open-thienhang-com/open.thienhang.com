@@ -56,7 +56,7 @@ export class DataProductsComponent implements OnInit {
   filteredProducts: DataProduct[] = [];
   loading = false;
   searchTerm = '';
-  
+
   filters = {
     domain: '',
     status: '',
@@ -65,7 +65,7 @@ export class DataProductsComponent implements OnInit {
 
   viewMode: 'grid' | 'table' = 'grid';
   showFilters: boolean = false;
-  
+
   // Pagination
   totalRecords = 0;
   pageSize = 12;
@@ -119,7 +119,7 @@ export class DataProductsComponent implements OnInit {
     private router: Router,
     private messageService: MessageService,
     private loadingService: LoadingService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadDataProducts();
@@ -169,7 +169,7 @@ export class DataProductsComponent implements OnInit {
       this.domainOptions = [{ label: 'All Domains', value: '' }];
       return;
     }
-    
+
     const uniqueDomains = [...new Set(this.dataProducts.map(product => product.domain))];
     this.domainOptions = [
       { label: 'All Domains', value: '' },
@@ -181,7 +181,7 @@ export class DataProductsComponent implements OnInit {
   }
 
   formatDomainName(domainKey: string): string {
-    return domainKey.split('_').map(word => 
+    return domainKey.split('_').map(word =>
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
   }
@@ -207,9 +207,9 @@ export class DataProductsComponent implements OnInit {
       this.filteredProducts = [];
       return;
     }
-    
+
     this.filteredProducts = this.dataProducts.filter(product => {
-      const matchesSearch = !this.searchTerm || 
+      const matchesSearch = !this.searchTerm ||
         product.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         (product.description && product.description.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
         (product.domain && product.domain.toLowerCase().includes(this.searchTerm.toLowerCase()));

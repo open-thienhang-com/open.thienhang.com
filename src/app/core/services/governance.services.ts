@@ -256,8 +256,22 @@ export class GovernanceServices {
   }
 
   getUser(id: string): Observable<ApiResponse<User>> {
-    return this.http.get<User>(`${this.baseUrl}/governance/users/user/${id}`)
-      .pipe(map(response => this.wrapResponse(response)));
+    return this.http.get<any>(`${this.baseUrl}/governance/users/user/${id}`)
+      .pipe(
+        map(response => {
+          // Handle response that already has 'data' property
+          if (response && typeof response === 'object' && 'data' in response) {
+            return {
+              data: response.data,
+              total: response.total,
+              message: response.message,
+              success: true
+            } as ApiResponse<User>;
+          }
+          // Otherwise wrap the response
+          return this.wrapResponse(response);
+        })
+      );
   }
 
   createUser(user: User): Observable<ApiResponse<User>> {
@@ -308,8 +322,22 @@ export class GovernanceServices {
   }
 
   getTeam(id: string): Observable<ApiResponse<Team>> {
-    return this.http.get<Team>(`${this.baseUrl}/governance/teams/team/${id}`)
-      .pipe(map(response => this.wrapResponse(response)));
+    return this.http.get<any>(`${this.baseUrl}/governance/teams/team/${id}`)
+      .pipe(
+        map(response => {
+          // Handle response that already has 'data' property
+          if (response && typeof response === 'object' && 'data' in response) {
+            return {
+              data: response.data,
+              total: response.total,
+              message: response.message,
+              success: true
+            } as ApiResponse<Team>;
+          }
+          // Otherwise wrap the response
+          return this.wrapResponse(response);
+        })
+      );
   }
 
   createTeam(team: Team): Observable<ApiResponse<Team>> {
@@ -360,8 +388,22 @@ export class GovernanceServices {
   }
 
   getAccount(id: string): Observable<ApiResponse<Account>> {
-    return this.http.get<Account>(`${this.baseUrl}/governance/accounts/account/${id}`)
-      .pipe(map(response => this.wrapResponse(response)));
+    return this.http.get<any>(`${this.baseUrl}/governance/accounts/account/${id}`)
+      .pipe(
+        map(response => {
+          // Handle response that already has 'data' property
+          if (response && typeof response === 'object' && 'data' in response) {
+            return {
+              data: response.data,
+              total: response.total,
+              message: response.message,
+              success: true
+            } as ApiResponse<Account>;
+          }
+          // Otherwise wrap the response
+          return this.wrapResponse(response);
+        })
+      );
   }
 
   updateAccount(id: string, account: Partial<Account>): Observable<ApiResponse<Account>> {
@@ -558,8 +600,22 @@ export class GovernanceServices {
 
   getPermission(id: string): Observable<ApiResponse<Permission>> {
     const cacheKey = `permission_${id}`;
-    const httpObservable = this.http.get<Permission>(`${this.baseUrl}/governance/permissions/permission/${id}`)
-      .pipe(map(response => this.wrapResponse(response)));
+    const httpObservable = this.http.get<any>(`${this.baseUrl}/governance/permissions/permission/${id}`)
+      .pipe(
+        map(response => {
+          // Handle response that already has 'data' property
+          if (response && typeof response === 'object' && 'data' in response) {
+            return {
+              data: response.data,
+              total: response.total,
+              message: response.message,
+              success: true
+            } as ApiResponse<Permission>;
+          }
+          // Otherwise wrap the response
+          return this.wrapResponse(response);
+        })
+      );
 
     // Return cached observable with 5-minute TTL
     return this.cacheService.getCachedObservable<ApiResponse<Permission>>(cacheKey, httpObservable, 5 * 60 * 1000);

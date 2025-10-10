@@ -1,4 +1,4 @@
-import { Component, Injector, OnInit } from '@angular/core';
+import { Component, Injector, OnInit, ViewChild } from '@angular/core';
 import { Button } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { GovernanceServices } from '../../../core/services/governance.services';
@@ -22,6 +22,7 @@ import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { PermissionComponent } from './permission/permission.component';
 
 @Component({
   selector: 'app-permissions',
@@ -44,12 +45,15 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
     OverlayPanelModule,
     TreeModule,
     ToastModule,
-    ConfirmDialogModule
+    ConfirmDialogModule,
+    PermissionComponent
   ],
   providers: [MessageService],
   templateUrl: './permissions.component.html',
 })
 export class PermissionsComponent extends AppBaseComponent implements OnInit {
+  @ViewChild('permissionDetail') permissionDetail!: PermissionComponent;
+
   permissions: any = { data: [], total: 0 };
   loading = false;
 
@@ -96,7 +100,6 @@ export class PermissionsComponent extends AppBaseComponent implements OnInit {
   selectedScope = null;
 
   // UI state
-  showCreateDialog = false;
   showFilters = false;
 
   constructor(
@@ -116,7 +119,7 @@ export class PermissionsComponent extends AppBaseComponent implements OnInit {
   getPermissions = (page = 0) => {
     this.isTableLoading = true;
     this.loading = true;
-    
+
     this.governanceServices.getPermissions({
       offset: page * this.tableRowsPerPage,
       size: this.tableRowsPerPage
@@ -191,7 +194,7 @@ export class PermissionsComponent extends AppBaseComponent implements OnInit {
     this.selectedAction = null;
     this.selectedScope = null;
     this.getPermissions(0);
-    
+
     this.messageService.add({
       severity: 'info',
       summary: 'Filters Cleared',
@@ -201,7 +204,8 @@ export class PermissionsComponent extends AppBaseComponent implements OnInit {
 
   // Toggle create dialog
   toggleCreateDialog() {
-    this.showCreateDialog = !this.showCreateDialog;
+    // Use permissionDetail component reference from template
+    // Will be called via template: permissionDetail.show()
   }
 
   // Utility methods
@@ -261,12 +265,12 @@ export class PermissionsComponent extends AppBaseComponent implements OnInit {
 
   viewPermission(permission: any) {
     console.log('View permission:', permission);
-    // TODO: Implement view permission modal
+    // Will be handled by template reference to permissionDetail component
   }
 
   editPermission(permission: any) {
     console.log('Edit permission:', permission);
-    // TODO: Implement edit permission modal
+    // Will be handled by template reference to permissionDetail component
   }
 
   getPermissionColor(action: string): string {
@@ -332,7 +336,7 @@ export class PermissionsComponent extends AppBaseComponent implements OnInit {
         console.log('Response.data type:', typeof response?.data);
         console.log('Is data array?:', Array.isArray(response?.data));
         console.log('Data content:', response?.data);
-        
+
         this.messageService.add({
           severity: 'info',
           summary: 'API Test',

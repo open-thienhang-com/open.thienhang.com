@@ -322,7 +322,7 @@
                     [text]="true" 
                     severity="info" 
                     size="small"
-                    (click)="viewUser(user)"
+                    (click)="userDetail.view(user)"
                     pTooltip="View Details">
                   </p-button>
                   <p-button 
@@ -331,7 +331,7 @@
                     [text]="true" 
                     severity="secondary" 
                     size="small"
-                    (click)="userDetail.show(user._id)"
+                    (click)="userDetail.edit(user)"
                     pTooltip="Edit User">
                   </p-button>
                   <p-button 
@@ -436,7 +436,7 @@
                 [text]="true" 
                 severity="info" 
                 size="small"
-                (click)="userDetail.show(user._id)"
+                (click)="userDetail.view(user)"
                 pTooltip="View User">
               </p-button>
               <p-button 
@@ -444,7 +444,7 @@
                 [text]="true" 
                 severity="secondary" 
                 size="small"
-                (click)="userDetail.show(user._id)"
+                (click)="userDetail.edit(user)"
                 pTooltip="Edit User">
               </p-button>
               <p-button 

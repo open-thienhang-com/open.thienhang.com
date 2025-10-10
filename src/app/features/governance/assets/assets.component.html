@@ -356,7 +356,7 @@
                       [text]="true" 
                       severity="info" 
                       size="small"
-                      (click)="viewAsset(asset)"
+                      (click)="assetDetail.view(asset)"
                       pTooltip="View Asset">
                     </p-button>
                     <p-button 
@@ -421,7 +421,7 @@
                     [text]="true" 
                     severity="info" 
                     size="small"
-                    (click)="viewAsset(asset)"
+                    (click)="assetDetail.view(asset)"
                     pTooltip="View">
                   </p-button>
                   <p-button 
@@ -449,9 +449,9 @@
 
       <!-- Card View with larger cards and better layout -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" *ngIf="viewMode === 'card' && (assets?.data?.length || 0) > 0">
-        <div *ngFor="let asset of (filteredAssets || [])" 
+     <div *ngFor="let asset of (filteredAssets || [])" 
              class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 hover:border-green-300 hover:scale-[1.02] cursor-pointer"
-             (click)="viewAsset(asset)">
+       (click)="assetDetail.view(asset)">
           <div class="flex items-start justify-between mb-4">
             <div class="flex items-center gap-3 flex-1 min-w-0">
               <div class="w-14 h-14 bg-gradient-to-br rounded-lg flex items-center justify-center animate-pulse"
@@ -520,12 +520,12 @@
           
           <!-- Actions -->
           <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
-            <p-button 
+                    <p-button 
               icon="pi pi-eye" 
               [text]="true" 
               severity="info" 
               size="small"
-              (click)="viewAsset(asset); $event.stopPropagation()"
+              (click)="assetDetail.view(asset); $event.stopPropagation()"
               pTooltip="View Asset Details">
             </p-button>
             <p-button 
@@ -604,165 +604,3 @@
 
 <!-- Asset Detail Modal -->
 <app-asset #assetDetail (onSave)="refreshAssets()"></app-asset>
-
-<!-- Asset Detail View Modal -->
-<p-dialog 
-  [(visible)]="showAssetDetailModal" 
-  [modal]="true" 
-  [closable]="true" 
-  [draggable]="false"
-  [resizable]="false"
-  [style]="{ width: '90vw', maxWidth: '800px' }"
-  header="Asset Details"
-  (onHide)="closeAssetDetailModal()">
-  
-  <div class="p-6" *ngIf="selectedAsset">
-    <!-- Asset Header -->
-    <div class="flex items-start gap-6 mb-6 pb-6 border-b border-gray-200">
-      <div class="w-16 h-16 bg-gradient-to-br rounded-lg flex items-center justify-center"
-           [ngClass]="getAssetColor(selectedAsset.type)">
-        <i class="text-white text-2xl" [ngClass]="getAssetIcon(selectedAsset.type)"></i>
-      </div>
-      <div class="flex-1 min-w-0">
-        <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ selectedAsset.name || 'Untitled Asset' }}</h1>
-        <div class="flex items-center gap-4 flex-wrap">
-          <p-tag 
-            [value]="selectedAsset.type || 'Unknown'" 
-            severity="secondary" 
-            icon="pi pi-tag">
-          </p-tag>
-          <p-tag 
-            [value]="selectedAsset.status || 'Active'" 
-            [severity]="getSeverity(selectedAsset.status)" 
-            icon="pi pi-circle">
-          </p-tag>
-          <p-tag 
-            [value]="selectedAsset.sensitivity || 'Low'" 
-            [severity]="getSensitivitySeverity(selectedAsset.sensitivity)" 
-            icon="pi pi-shield">
-          </p-tag>
-        </div>
-      </div>
-    </div>
-
-    <!-- Asset Details Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- Basic Information -->
-      <div class="space-y-4">
-        <h3 class="text-lg font-semibold text-gray-900 mb-3">Basic Information</h3>
-        
-        <div class="space-y-3">
-          <div *ngIf="selectedAsset.description">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <p class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">{{ selectedAsset.description }}</p>
-          </div>
-          
-          <div *ngIf="selectedAsset.location">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
-            <div class="flex items-center gap-2 text-sm text-gray-600">
-              <i class="pi pi-map-marker text-gray-400"></i>
-              <span class="break-all">{{ selectedAsset.location }}</span>
-            </div>
-          </div>
-          
-          <div *ngIf="selectedAsset.source">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Source</label>
-            <div class="flex items-center gap-2 text-sm text-gray-600">
-              <i class="pi pi-link text-gray-400"></i>
-              <span class="break-all">{{ selectedAsset.source }}</span>
-            </div>
-          </div>
-          
-          <div *ngIf="selectedAsset.owner">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Owner</label>
-            <div class="flex items-center gap-2 text-sm text-gray-600">
-              <i class="pi pi-user text-gray-400"></i>
-              <span>{{ selectedAsset.owner }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Technical Details -->
-      <div class="space-y-4">
-        <h3 class="text-lg font-semibold text-gray-900 mb-3">Technical Details</h3>
-        
-        <div class="space-y-3">
-          <div *ngIf="selectedAsset.category">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-            <p class="text-sm text-gray-600">{{ selectedAsset.category }}</p>
-          </div>
-          
-          <div *ngIf="selectedAsset._id">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Asset ID</label>
-            <div class="flex items-center gap-2">
-              <code class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">{{ selectedAsset._id }}</code>
-              <p-button 
-                icon="pi pi-copy" 
-                [text]="true" 
-                size="small" 
-                severity="secondary"
-                (click)="copyToClipboard(selectedAsset._id)"
-                pTooltip="Copy ID">
-              </p-button>
-            </div>
-          </div>
-          
-          <div *ngIf="selectedAsset.createdAt">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Created</label>
-            <p class="text-sm text-gray-600">{{ selectedAsset.createdAt | date:'medium' }}</p>
-          </div>
-          
-          <div *ngIf="selectedAsset.updatedAt">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Last Updated</label>
-            <p class="text-sm text-gray-600">{{ selectedAsset.updatedAt | date:'medium' }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tags Section -->
-    <div class="mt-6 pt-6 border-t border-gray-200" *ngIf="selectedAsset.tags && selectedAsset.tags.length > 0">
-      <h3 class="text-lg font-semibold text-gray-900 mb-3">Tags</h3>
-      <div class="flex flex-wrap gap-2">
-        <p-tag 
-          *ngFor="let tag of selectedAsset.tags" 
-          [value]="tag" 
-          severity="secondary">
-        </p-tag>
-      </div>
-    </div>
-
-    <!-- Metadata Section -->
-    <div class="mt-6 pt-6 border-t border-gray-200" *ngIf="selectedAsset.metadata">
-      <h3 class="text-lg font-semibold text-gray-900 mb-3">Metadata</h3>
-      <div class="bg-gray-50 p-4 rounded-lg">
-        <pre class="text-sm text-gray-600 whitespace-pre-wrap">{{ selectedAsset.metadata | json }}</pre>
-      </div>
-    </div>
-
-    <!-- Actions -->
-    <div class="flex items-center gap-3 mt-6 pt-6 border-t border-gray-200">
-      <p-button 
-        label="Edit Asset" 
-        icon="pi pi-pencil" 
-        severity="primary"
-        (click)="assetDetail.edit(selectedAsset); closeAssetDetailModal()">
-      </p-button>
-      <p-button 
-        label="Delete Asset" 
-        icon="pi pi-trash" 
-        severity="danger"
-        [outlined]="true"
-        (click)="onDeleteAsset($event, selectedAsset._id); closeAssetDetailModal()">
-      </p-button>
-      <p-button 
-        label="Close" 
-        icon="pi pi-times" 
-        severity="secondary"
-        [outlined]="true"
-        (click)="closeAssetDetailModal()">
-      </p-button>
-    </div>
-  </div>
-</p-dialog>

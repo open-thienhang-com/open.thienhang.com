@@ -1,10 +1,10 @@
-import {Component, Injector, OnInit} from '@angular/core';
-import {Button} from 'primeng/button';
-import {TableModule} from 'primeng/table';
-import {Tag} from 'primeng/tag';
-import {AppBaseComponent} from '../../../core/base/app-base.component';
-import {GovernanceServices} from '../../../core/services/governance.services';
-import {AccountComponent} from './account/account.component';
+import { Component, Injector, OnInit, ViewChild } from '@angular/core';
+import { Button } from 'primeng/button';
+import { TableModule } from 'primeng/table';
+import { Tag } from 'primeng/tag';
+import { AppBaseComponent } from '../../../core/base/app-base.component';
+import { GovernanceServices } from '../../../core/services/governance.services';
+import { AccountComponent } from './account/account.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
@@ -51,15 +51,17 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
   templateUrl: './accounts.component.html',
 })
 export class AccountsComponent extends AppBaseComponent implements OnInit {
+  @ViewChild('accountDetail') accountDetail!: AccountComponent;
+
   accounts: any;
   filteredAccounts: any[] = [];
   totalRecords: number = 0;
   currentPage: number = 0;
   pageSize: number = 10;
-  
+
   // View mode
   viewMode: 'list' | 'card' = 'list';
-  
+
   // Stats
   stats = {
     totalAccounts: 0,
@@ -67,14 +69,14 @@ export class AccountsComponent extends AppBaseComponent implements OnInit {
     pendingAccounts: 0,
     lockedAccounts: 0
   };
-  
+
   // Filters
   showFilters: boolean = false;
   searchTerm: string = '';
   selectedStatus: any = null;
   selectedType: any = null;
   selectedDepartment: any = null;
-  
+
   // Page size options
   pageSizeOptions = [
     { label: '10', value: 10 },
@@ -82,7 +84,7 @@ export class AccountsComponent extends AppBaseComponent implements OnInit {
     { label: '50', value: 50 },
     { label: '100', value: 100 }
   ];
-  
+
   // Options for dropdowns
   statusOptions = [
     { label: 'Active', value: 'active' },
@@ -90,14 +92,14 @@ export class AccountsComponent extends AppBaseComponent implements OnInit {
     { label: 'Pending', value: 'pending' },
     { label: 'Locked', value: 'locked' }
   ];
-  
+
   typeOptions = [
     { label: 'Employee', value: 'employee' },
     { label: 'Contractor', value: 'contractor' },
     { label: 'Admin', value: 'admin' },
     { label: 'Service Account', value: 'service' }
   ];
-  
+
   departmentOptions = [
     { label: 'IT', value: 'it' },
     { label: 'Sales', value: 'sales' },
@@ -123,7 +125,7 @@ export class AccountsComponent extends AppBaseComponent implements OnInit {
     this.isTableLoading = true;
     this.currentPage = page;
     this.governanceServices.getAccounts({
-      offset: page * this.pageSize, 
+      offset: page * this.pageSize,
       size: this.pageSize
     }).subscribe(res => {
       this.accounts = res;
@@ -168,34 +170,34 @@ export class AccountsComponent extends AppBaseComponent implements OnInit {
 
   filterAccounts() {
     if (!this.accounts?.data) return;
-    
+
     let filtered = [...this.accounts.data];
-    
+
     // Search filter
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(account => 
+      filtered = filtered.filter(account =>
         (account.full_name && account.full_name.toLowerCase().includes(term)) ||
         (account.email && account.email.toLowerCase().includes(term)) ||
         (account.username && account.username.toLowerCase().includes(term))
       );
     }
-    
+
     // Status filter
     if (this.selectedStatus) {
       filtered = filtered.filter(account => account.status === this.selectedStatus);
     }
-    
+
     // Type filter
     if (this.selectedType) {
       filtered = filtered.filter(account => account.type === this.selectedType);
     }
-    
+
     // Department filter
     if (this.selectedDepartment) {
       filtered = filtered.filter(account => account.department === this.selectedDepartment);
     }
-    
+
     this.filteredAccounts = filtered;
   }
 

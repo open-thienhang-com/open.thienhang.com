@@ -581,7 +581,7 @@
                     [text]="true" 
                     severity="info" 
                     size="small"
-                    (click)="viewAccount(account)"
+                    (click)="accountDetail.view(account)"
                     pTooltip="View Account">
                   </p-button>
                   <p-button 
@@ -590,7 +590,7 @@
                     [text]="true" 
                     severity="secondary" 
                     size="small"
-                    (click)="accountDetail.show(account._id)"
+                    (click)="accountDetail.edit(account)"
                     pTooltip="Edit Account">
                   </p-button>
                   <p-button 

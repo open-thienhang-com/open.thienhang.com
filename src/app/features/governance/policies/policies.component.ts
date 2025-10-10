@@ -42,8 +42,8 @@ interface PolicyStats {
   selector: 'app-policies',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
+    CommonModule,
+    FormsModule,
     PolicyComponent,
     LoadingComponent,
     ButtonModule,
@@ -128,7 +128,7 @@ export class PoliciesComponent implements OnInit {
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
     private loadingService: LoadingService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Initialize pagination with valid numbers
@@ -140,7 +140,7 @@ export class PoliciesComponent implements OnInit {
 
   loadPolicies(): void {
     this.loading = true;
-    
+
     // Show beautiful loading animation
     this.loadingService.showPageLoading('Loading policies...', 'data-flow');
 
@@ -148,7 +148,7 @@ export class PoliciesComponent implements OnInit {
     const currentPage = Number(this.currentPage) || 0;
     const pageSize = Number(this.pageSize) || 10;
     const offset = currentPage * pageSize;
-    
+
     // Debug logging
     console.log('Loading policies with params:', {
       currentPage,
@@ -157,7 +157,7 @@ export class PoliciesComponent implements OnInit {
       originalCurrentPage: this.currentPage,
       originalPageSize: this.pageSize
     });
-    
+
     const params = {
       limit: pageSize,
       offset: offset,
@@ -287,8 +287,8 @@ export class PoliciesComponent implements OnInit {
 
   togglePolicyStatus(policy: Policy): void {
     const action = policy.enabled ? 'disable' : 'enable';
-    const serviceCall = policy.enabled ? 
-      this.governanceServices.disablePolicy(policy.kid) : 
+    const serviceCall = policy.enabled ?
+      this.governanceServices.disablePolicy(policy.kid) :
       this.governanceServices.enablePolicy(policy.kid);
 
     serviceCall.subscribe({

@@ -1,4 +1,4 @@
-import { Component, Injector, OnInit } from '@angular/core';
+import { Component, Injector, OnInit, ViewChild } from '@angular/core';
 import { UserComponent } from './user/user.component';
 import { Button } from 'primeng/button';
 import { TableModule } from 'primeng/table';
@@ -36,6 +36,8 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
   templateUrl: './users.component.html',
 })
 export class UsersComponent extends AppBaseComponent implements OnInit {
+  @ViewChild('userDetail') userDetail!: UserComponent;
+
   users: any[] = [];
   filteredUsers: any[] = [];
 
@@ -73,6 +75,11 @@ export class UsersComponent extends AppBaseComponent implements OnInit {
 
   // Pagination
   totalRecords: number = 0;
+  tableRowsPerPage: number = 10;
+  currentPage: number = 0;
+
+  // Loading state
+  isTableLoading: boolean = false;
 
   constructor(
     private injector: Injector,
@@ -83,65 +90,34 @@ export class UsersComponent extends AppBaseComponent implements OnInit {
 
   ngOnInit() {
     this.getUsers();
-    this.loadTeamOptions();
   }
 
   getUsers = (page = 0) => {
     this.isTableLoading = true;
-    // Force use mock data for testing
-    setTimeout(() => {
-      this.users = [
-        {
-          _id: '1',
-          first_name: 'John',
-          last_name: 'Doe',
-          email: 'john.doe@company.com',
-          role: 'admin',
-          status: 'active',
-          is_active: true,
-          teams: ['team1'],
-          created_at: new Date(),
-          last_login: new Date()
-        },
-        {
-          _id: '2',
-          first_name: 'Jane',
-          last_name: 'Smith',
-          email: 'jane.smith@company.com',
-          role: 'manager',
-          status: 'active',
-          is_active: true,
-          teams: ['team2'],
-          created_at: new Date(),
-          last_login: new Date()
-        },
-        {
-          _id: '3',
-          first_name: 'Bob',
-          last_name: 'Johnson',
-          email: 'bob.johnson@company.com',
-          role: 'user',
-          status: 'pending',
-          is_active: false,
-          teams: [],
-          created_at: new Date(),
-          last_login: null
-        }
-      ];
-      this.filteredUsers = [...this.users];
-      this.totalRecords = this.users.length;
-      this.calculateStats();
-      this.isTableLoading = false;
-    }, 100);
-  }
+    const params = {
+      size: this.tableRowsPerPage,
+      offset: page * this.tableRowsPerPage,
+      search: this.searchTerm || undefined,
+      status: this.selectedStatus?.value || undefined,
+      role: this.selectedRole?.value || undefined,
+      team_id: this.selectedTeam?.value || undefined
+    };
 
-  loadTeamOptions() {
-    // Load teams for filter dropdown
-    this.governanceServices.getTeams({}).subscribe(res => {
-      this.teamOptions = res.data.map(team => ({
-        label: team.name,
-        value: team._id
-      }));
+    this.governanceServices.getUsers(params).subscribe({
+      next: (res) => {
+        if (res && res.data) {
+          this.users = res.data;
+          this.filteredUsers = [...this.users];
+          this.totalRecords = res.total || this.users.length;
+          this.calculateStats();
+        }
+        this.isTableLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading users:', error);
+        this.showError('Failed to load users');
+        this.isTableLoading = false;
+      }
     });
   }
 

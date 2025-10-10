@@ -27,7 +27,7 @@
           [(ngModel)]="asset.name" 
           autocomplete="off"
           [class.p-invalid]="formErrors.name"
-          [disabled]="loading" />
+          [disabled]="loading || isViewMode" />
         <label for="name">Asset Name *</label>
       </p-floatlabel>
       <small class="p-error" *ngIf="formErrors.name">{{ formErrors.name }}</small>
@@ -44,7 +44,7 @@
           optionValue="value"
           placeholder="Select Type"
           [class.p-invalid]="formErrors.type"
-          [disabled]="loading"
+          [disabled]="loading || isViewMode"
           class="w-full">
         </p-dropdown>
         <label for="type">Asset Type *</label>
@@ -61,7 +61,7 @@
           id="source" 
           [(ngModel)]="asset.source" 
           autocomplete="off"
-          [disabled]="loading" />
+          [disabled]="loading || isViewMode" />
         <label for="source">Source System</label>
       </p-floatlabel>
     </div>
@@ -75,7 +75,7 @@
           id="location" 
           [(ngModel)]="asset.location" 
           autocomplete="off"
-          [disabled]="loading" />
+          [disabled]="loading || isViewMode" />
         <label for="location">Location</label>
       </p-floatlabel>
     </div>
@@ -89,7 +89,7 @@
           id="owner" 
           [(ngModel)]="asset.owner" 
           autocomplete="off"
-          [disabled]="loading" />
+          [disabled]="loading || isViewMode" />
         <label for="owner">Owner</label>
       </p-floatlabel>
     </div>
@@ -105,7 +105,7 @@
           optionValue="value"
           placeholder="Select Sensitivity"
           [class.p-invalid]="formErrors.sensitivity"
-          [disabled]="loading"
+          [disabled]="loading || isViewMode"
           class="w-full">
         </p-dropdown>
         <label for="sensitivity">Sensitivity Level *</label>
@@ -123,7 +123,7 @@
           optionLabel="label"
           optionValue="value"
           placeholder="Select Status"
-          [disabled]="loading"
+          [disabled]="loading || isViewMode"
           class="w-full">
         </p-dropdown>
         <label for="status">Status</label>
@@ -140,7 +140,7 @@
           optionLabel="label"
           optionValue="value"
           placeholder="Select Category"
-          [disabled]="loading"
+          [disabled]="loading || isViewMode"
           class="w-full">
         </p-dropdown>
         <label for="category">Category</label>
@@ -154,7 +154,7 @@
           id="tags"
           [(ngModel)]="asset.tags"
           placeholder="Add tags..."
-          [disabled]="loading"
+          [disabled]="loading || isViewMode"
           class="w-full">
         </p-chips>
         <label for="tags">Tags</label>
@@ -172,26 +172,47 @@
           cols="30" 
           style="resize: vertical" 
           class="w-full"
-          [disabled]="loading"></textarea>
+          [disabled]="loading || isViewMode"></textarea>
         <label for="description">Description</label>
       </p-floatlabel>
     </div>
   </div>
 
   <ng-template #footer>
-    <div class="flex justify-end gap-3">
-      <p-button 
-        label="Cancel" 
-        [text]="true" 
-        severity="secondary" 
-        (click)="cancel()"
-        [disabled]="loading" />
-      <p-button 
-        [label]="isEditMode ? 'Update' : 'Create'" 
-        [icon]="loading ? 'pi pi-spin pi-spinner' : (isEditMode ? 'pi pi-check' : 'pi pi-plus')"
-        severity="primary" 
-        (click)="save()"
-        [disabled]="loading" />
+    <div class="flex justify-between w-full items-center">
+      <div class="text-sm text-gray-500" *ngIf="isViewMode">Last updated: {{ asset.updatedAt | date:'short' }}</div>
+      <div class="flex justify-end gap-3">
+        <p-button 
+          label="Close" 
+          [text]="true" 
+          severity="secondary" 
+          (click)="cancel()"
+          [disabled]="loading" />
+
+        <p-button 
+          *ngIf="isViewMode" 
+          label="Edit" 
+          icon="pi pi-pencil"
+          severity="primary"
+          (click)="isViewMode=false; isEditMode=true; title='Edit Asset'" />
+
+        <p-button 
+          *ngIf="!isViewMode" 
+          [label]="isEditMode ? 'Update' : 'Create'" 
+          [icon]="loading ? 'pi pi-spin pi-spinner' : (isEditMode ? 'pi pi-check' : 'pi pi-plus')"
+          severity="primary" 
+          (click)="save()"
+          [disabled]="loading" />
+
+        <p-button 
+          *ngIf="isEditMode && asset._id" 
+          label="Delete" 
+          icon="pi pi-trash" 
+          severity="danger"
+          [outlined]="true"
+          (click)="confirmOnDelete($event, governanceServices.deleteAsset(asset._id), refreshAfterDelete)">
+        </p-button>
+      </div>
     </div>
   </ng-template>
 </p-dialog>

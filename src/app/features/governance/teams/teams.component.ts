@@ -1,9 +1,9 @@
-import {Component, Injector, OnInit} from '@angular/core';
-import {TeamComponent} from '../teams/team/team.component';
-import {Button} from 'primeng/button';
-import {TableModule} from 'primeng/table';
-import {AppBaseComponent} from '../../../core/base/app-base.component';
-import {GovernanceServices} from '../../../core/services/governance.services';
+import { Component, Injector, OnInit, ViewChild } from '@angular/core';
+import { TeamComponent } from '../teams/team/team.component';
+import { Button } from 'primeng/button';
+import { TableModule } from 'primeng/table';
+import { AppBaseComponent } from '../../../core/base/app-base.component';
+import { GovernanceServices } from '../../../core/services/governance.services';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
@@ -33,27 +33,29 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
   templateUrl: './teams.component.html',
 })
 export class TeamsComponent extends AppBaseComponent implements OnInit {
+  @ViewChild('teamDetail') teamDetail!: TeamComponent;
+
   teams: any[] = [];
   filteredTeams: any[] = [];
-  
+
   // View mode
   viewMode: 'list' | 'card' = 'card';
-  
+
   // Filters
   showFilters: boolean = false;
-  
+
   // Stats
   totalTeams: number = 0;
   activeTeams: number = 0;
   totalMembers: number = 0;
   projectTeams: number = 0;
-  
+
   // Filters
   searchTerm: string = '';
   selectedType: any = null;
   selectedStatus: any = null;
   selectedOwner: any = null;
-  
+
   // Options for dropdowns
   typeOptions = [
     { label: 'Project Team', value: 'project' },
@@ -61,15 +63,15 @@ export class TeamsComponent extends AppBaseComponent implements OnInit {
     { label: 'Working Group', value: 'working_group' },
     { label: 'Committee', value: 'committee' }
   ];
-  
+
   statusOptions = [
     { label: 'Active', value: 'active' },
     { label: 'Inactive', value: 'inactive' },
     { label: 'Archived', value: 'archived' }
   ];
-  
+
   ownerOptions: any[] = [];
-  
+
   // Pagination
   totalRecords: number = 0;
   itemsPerPage: number = 12;
@@ -88,7 +90,7 @@ export class TeamsComponent extends AppBaseComponent implements OnInit {
 
   getTeams = (page = 0) => {
     this.isTableLoading = true;
-    this.governanceServices.getTeams({offset: page, size: this.itemsPerPage}).subscribe(res => {
+    this.governanceServices.getTeams({ offset: page, size: this.itemsPerPage }).subscribe(res => {
       this.teams = res.data;
       this.filteredTeams = [...this.teams];
       this.totalRecords = res.total || this.teams.length;
@@ -116,14 +118,14 @@ export class TeamsComponent extends AppBaseComponent implements OnInit {
 
   filterTeams() {
     this.filteredTeams = this.teams.filter(team => {
-      const matchesSearch = !this.searchTerm || 
+      const matchesSearch = !this.searchTerm ||
         team.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         team.description?.toLowerCase().includes(this.searchTerm.toLowerCase());
-      
+
       const matchesType = !this.selectedType || team.type === this.selectedType;
       const matchesStatus = !this.selectedStatus || team.status === this.selectedStatus;
       const matchesOwner = !this.selectedOwner || team.owner === this.selectedOwner;
-      
+
       return matchesSearch && matchesType && matchesStatus && matchesOwner;
     });
   }

@@ -1,41 +1,156 @@
-<p-dialog [(visible)]="visible" [modal]="true" [style]="{ width: '50rem' }">
-  <ng-template #header>
-    <div class="inline-flex items-center justify-center gap-2">
-      <span class="font-bold whitespace-nowrap">{{ title }}</span>
+<p-dialog [(visible)]="visible" [modal]="true" [style]="{width: '50vw'}" [draggable]="false"
+          [resizable]="false">
+  <ng-template pTemplate="header">
+    <div class="flex items-center gap-2">
+      <i class="pi pi-user text-xl"></i>
+      <span class="font-semibold text-xl">{{ title }}</span>
     </div>
   </ng-template>
-  <div class="grid grid-flow-row grid-cols-2 gap-4 mt-3">
-    <p-floatlabel variant="on">
-      <input class="w-full" pInputText id="name" [(ngModel)]="account.name" autocomplete="off"/>
-      <label for="name">Name</label>
-    </p-floatlabel>
-    <p-floatlabel variant="on">
-      <input class="w-full" pInputText id="type" [(ngModel)]="account.type" autocomplete="off"/>
-      <label for="type">Type</label>
-    </p-floatlabel>
-    <p-floatlabel variant="on">
-      <input class="w-full" pInputText id="source" [(ngModel)]="account.source" autocomplete="off"/>
-      <label for="source">Source</label>
-    </p-floatlabel>
-    <p-floatlabel variant="on">
-      <input class="w-full" pInputText id="location" [(ngModel)]="account.location" autocomplete="off"/>
-      <label for="location">Location</label>
-    </p-floatlabel>
-    <p-floatlabel variant="on">
-      <input class="w-full" pInputText id="owner" [(ngModel)]="account.owner" autocomplete="off"/>
-      <label for="owner">Owner</label>
-    </p-floatlabel>
-    <p-floatlabel variant="on">
-      <input class="w-full" pInputText id="sensitivity" [(ngModel)]="account.sensitivity" autocomplete="off"/>
-      <label for="sensitivity">Sensitive</label>
-    </p-floatlabel>
-    <p-floatlabel variant="on" class="col-span-2">
-      <textarea pTextarea id="description" [(ngModel)]="account.description" rows="3" cols="30" style="resize: none" class="w-full h-full"></textarea>
-      <label for="description">Description</label>
-    </p-floatlabel>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-8">
+    <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
   </div>
-  <ng-template #footer>
-    <p-button label="Cancel" [text]="true" severity="secondary" (click)="visible = false"/>
-    <p-button label="Save" [outlined]="true" severity="secondary" (click)="save()"/>
+
+  <!-- View Mode -->
+  <div *ngIf="isViewMode && !loading" class="space-y-6">
+    <!-- Account Header -->
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <h3 class="text-2xl font-bold text-gray-800 mb-2">{{ account.full_name || account.email }}</h3>
+          <div class="flex items-center gap-2 text-gray-600 mb-2">
+            <span class="font-mono text-sm bg-white px-3 py-1 rounded border">{{ account.identify || account._id }}</span>
+            <button pButton type="button" icon="pi pi-copy" 
+                    class="p-button-text p-button-sm" 
+                    (click)="copyToClipboard(account.identify || account._id)"
+                    pTooltip="Copy ID"></button>
+          </div>
+          <div class="flex items-center gap-2">
+            <p-tag [value]="getStatusLabel(account.is_active)" 
+                   [severity]="getStatusSeverity(account.is_active)"></p-tag>
+            <p-tag *ngIf="account.is_verified" value="Verified" severity="success" icon="pi pi-check"></p-tag>
+            <p-tag *ngIf="!account.is_verified" value="Unverified" severity="warning" icon="pi pi-exclamation-triangle"></p-tag>
+          </div>
+        </div>
+        <div *ngIf="account.image" class="ml-4">
+          <img [src]="account.image" alt="Account avatar" class="w-20 h-20 rounded-full border-2 border-gray-300">
+        </div>
+      </div>
+    </div>
+
+    <!-- Account Information -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div class="text-sm text-gray-500 mb-1">Email</div>
+        <div class="font-medium text-gray-800 flex items-center gap-2">
+          <i class="pi pi-envelope text-blue-600"></i>
+          <span>{{ account.email || 'N/A' }}</span>
+        </div>
+      </div>
+
+      <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div class="text-sm text-gray-500 mb-1">Full Name</div>
+        <div class="font-medium text-gray-800 flex items-center gap-2">
+          <i class="pi pi-user text-purple-600"></i>
+          <span>{{ account.full_name || 'N/A' }}</span>
+        </div>
+      </div>
+
+      <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div class="text-sm text-gray-500 mb-1">Username</div>
+        <div class="font-medium text-gray-800 flex items-center gap-2">
+          <i class="pi pi-at text-green-600"></i>
+          <span>{{ account.username || 'N/A' }}</span>
+        </div>
+      </div>
+
+      <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div class="text-sm text-gray-500 mb-1">Type</div>
+        <div class="font-medium text-gray-800">{{ account.type || 'N/A' }}</div>
+      </div>
+
+      <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div class="text-sm text-gray-500 mb-1">Department</div>
+        <div class="font-medium text-gray-800">{{ account.department || 'N/A' }}</div>
+      </div>
+
+      <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div class="text-sm text-gray-500 mb-1">Status</div>
+        <div class="font-medium text-gray-800">{{ account.status || 'N/A' }}</div>
+      </div>
+    </div>
+
+    <!-- Metadata -->
+    <p-divider></p-divider>
+    <div class="grid grid-cols-2 gap-4 text-sm">
+      <div>
+        <span class="text-gray-500">Created:</span>
+        <span class="ml-2 text-gray-700">{{ account.createdAt | date:'medium' || 'N/A' }}</span>
+      </div>
+      <div>
+        <span class="text-gray-500">Updated:</span>
+        <span class="ml-2 text-gray-700">{{ account.updatedAt | date:'medium' || 'N/A' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit/Create Mode -->
+  <div *ngIf="!isViewMode && !loading" class="space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <p-floatLabel>
+        <input pInputText id="full_name" [(ngModel)]="account.full_name" class="w-full"/>
+        <label for="full_name">Full Name</label>
+      </p-floatLabel>
+
+      <p-floatLabel>
+        <input pInputText id="username" [(ngModel)]="account.username" class="w-full"/>
+        <label for="username">Username</label>
+      </p-floatLabel>
+    </div>
+
+    <p-floatLabel>
+      <input pInputText id="email" [(ngModel)]="account.email" type="email" class="w-full" required/>
+      <label for="email">Email *</label>
+    </p-floatLabel>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <p-floatLabel>
+        <input pInputText id="type" [(ngModel)]="account.type" class="w-full"/>
+        <label for="type">Type</label>
+      </p-floatLabel>
+
+      <p-floatLabel>
+        <input pInputText id="department" [(ngModel)]="account.department" class="w-full"/>
+        <label for="department">Department</label>
+      </p-floatLabel>
+    </div>
+
+    <p-floatLabel>
+      <input pInputText id="image" [(ngModel)]="account.image" class="w-full"/>
+      <label for="image">Image URL</label>
+    </p-floatLabel>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-between w-full">
+      <div>
+        <!-- No delete for accounts as per business logic -->
+      </div>
+      <div class="flex gap-2">
+        <button pButton type="button" label="Cancel" icon="pi pi-times" 
+                class="p-button-outlined" 
+                (click)="visible = false"></button>
+        <button *ngIf="isViewMode" pButton type="button" label="Edit" icon="pi pi-pencil" 
+                (click)="switchToEditMode()"></button>
+        <button *ngIf="!isViewMode && isEditMode" pButton type="button" 
+                label="Update" 
+                icon="pi pi-check" 
+                [loading]="loading"
+                (click)="save()"></button>
+      </div>
+    </div>
   </ng-template>
 </p-dialog>
+
+<p-toast></p-toast>

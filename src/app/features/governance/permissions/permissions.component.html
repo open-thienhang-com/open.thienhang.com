@@ -74,14 +74,14 @@
             icon="pi pi-plus" 
             severity="primary"
             size="small"
-            (click)="toggleCreateDialog()"
+            (click)="permissionDetail.show()"
             class="sm:hidden">
           </p-button>
           <p-button 
             icon="pi pi-plus" 
             severity="primary"
             [rounded]="true"
-            (click)="toggleCreateDialog()"
+            (click)="permissionDetail.show()"
             pTooltip="Add Permission"
             class="hidden sm:inline-flex">
           </p-button>
@@ -354,7 +354,7 @@
                     [text]="true" 
                     severity="info" 
                     size="small"
-                    (click)="viewPermission(permission)"
+                    (click)="permissionDetail.view(permission)"
                     pTooltip="View Permission">
                   </p-button>
                   <p-button 
@@ -363,7 +363,7 @@
                     [text]="true" 
                     severity="secondary" 
                     size="small"
-                    (click)="editPermission(permission)"
+                    (click)="permissionDetail.edit(permission)"
                     pTooltip="Edit Permission">
                   </p-button>
                   <p-button 
@@ -443,7 +443,7 @@
                 [text]="true" 
                 severity="info" 
                 size="small"
-                (click)="viewPermission(permission)"
+                (click)="permissionDetail.view(permission)"
                 pTooltip="View Permission">
               </p-button>
               <p-button 
@@ -451,7 +451,7 @@
                 [text]="true" 
                 severity="secondary" 
                 size="small"
-                (click)="editPermission(permission)"
+                (click)="permissionDetail.edit(permission)"
                 pTooltip="Edit Permission">
               </p-button>
               <p-button 
@@ -499,78 +499,5 @@
     </div>
 </div>
 
-<!-- Create Permission Dialog -->
-<p-dialog 
-  header="Create New Permission" 
-  [(visible)]="showCreateDialog" 
-  [modal]="true" 
-  [style]="{width: '600px'}"
-  [draggable]="false">
-  
-  <div class="space-y-4">
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2">Permission Name</label>
-      <input type="text" pInputText placeholder="Enter permission name" class="w-full" />
-    </div>
-    
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2">Permission Code</label>
-      <input type="text" pInputText placeholder="resource:action (e.g., users:create)" class="w-full" />
-    </div>
-    
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Resource</label>
-        <p-dropdown 
-          [options]="resourceOptions" 
-          optionLabel="label" 
-          optionValue="value"
-          placeholder="Select resource"
-          class="w-full">
-        </p-dropdown>
-      </div>
-      
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Action</label>
-        <p-dropdown 
-          [options]="actionOptions" 
-          optionLabel="label" 
-          optionValue="value"
-          placeholder="Select action"
-          class="w-full">
-        </p-dropdown>
-      </div>
-    </div>
-    
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2">Scope</label>
-      <p-dropdown 
-        [options]="scopeOptions" 
-        optionLabel="label" 
-        optionValue="value"
-        placeholder="Select scope"
-        class="w-full">
-      </p-dropdown>
-    </div>
-    
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-      <textarea pInputTextarea placeholder="Describe what this permission allows" class="w-full h-24"></textarea>
-    </div>
-  </div>
-  
-  <ng-template pTemplate="footer">
-    <div class="flex justify-end gap-3">
-      <p-button 
-        label="Cancel" 
-        [outlined]="true" 
-        (onClick)="showCreateDialog = false">
-      </p-button>
-      <p-button 
-        label="Create Permission" 
-        (onClick)="showCreateDialog = false">
-      </p-button>
-    </div>
-  </ng-template>
-  
-</p-dialog>
+<!-- Permission Detail Modal -->
+<app-permission #permissionDetail (onSave)="refreshPermissions()"></app-permission>
