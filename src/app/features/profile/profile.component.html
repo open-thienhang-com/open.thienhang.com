@@ -416,7 +416,7 @@
           
           <div class="card-content">
             <div class="space-y-4">
-              <div *ngFor="let session of profile.sessions; let i = index" class="session-item">
+              <div *ngFor="let session of visibleSessions; let i = index" class="session-item">
                 
                 <div class="session-header">
                   <div class="session-info">
@@ -425,7 +425,7 @@
                     </div>
                     <div class="session-details">
                       <div class="session-title">{{ getDeviceInfo(session.device) }}</div>
-                      <div class="session-subtitle">{{ 'profile.sessions.sessionNumber' | translate }} #{{ i + 1 }}</div>
+                      <div class="session-subtitle">{{ 'profile.sessions.sessionNumber' | translate }} #{{ getSessionIndex(session) + 1 }}</div>
                     </div>
                   </div>
                   <div class="session-status">
@@ -460,6 +460,13 @@
                       <div class="metadata-value">{{ session.location || ('common.unknown' | translate) }}</div>
                     </div>
                   </div>
+                </div>
+
+                <!-- Show more / Show less control if there are more sessions than the preview -->
+                <div *ngIf="profile.sessions?.length > _sessionsPreviewCount" class="flex justify-center mt-2">
+                  <button pButton type="button" class="p-button-text" (click)="toggleShowAllSessions()">
+                    {{ showAllSessions ? ('profile.sessions.showLess' | translate) : ('profile.sessions.showMore' | translate) }}
+                  </button>
                 </div>
 
                 <div class="session-footer">

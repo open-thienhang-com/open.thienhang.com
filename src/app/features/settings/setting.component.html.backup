@@ -1,0 +1,682 @@
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    <!-- Page Header -->
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Settings</h1>
+      <p class="text-gray-600 dark:text-gray-400">Manage your account settings and preferences</p>
+    </div>
+
+    <!-- Main Container with Sidebar -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Sidebar Navigation -->
+      <div class="lg:col-span-3">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sticky top-4">
+          <nav class="space-y-1">
+            <button 
+              *ngFor="let section of settingSections"
+              (click)="activeSection = section.id"
+              [class.bg-primary-50]="activeSection === section.id"
+              [class.text-primary-600]="activeSection === section.id"
+              [class.border-primary-500]="activeSection === section.id"
+              class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-700 border border-transparent"
+              type="button">
+              <i [class]="section.icon" class="text-lg"></i>
+              <div class="flex-1">
+                <div class="font-medium">{{ section.label }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ section.description }}</div>
+              </div>
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Content Area -->
+      <div class="lg:col-span-9">
+        <div class="space-y-6">
+          <!-- Profile Section -->
+          <div *ngIf="activeSection === 'profile'" class="space-y-6">
+            <!-- Profile Card -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+              <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-user text-primary-500 text-xl"></i>
+                  <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Profile Information</h2>
+                </div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Update your account's profile information</p>
+              </div>
+
+              <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <!-- Avatar Section -->
+                  <div class="text-center">
+                    <p-avatar 
+                      [image]="profile.avatar" 
+                      size="xlarge" 
+                      shape="circle"
+                      class="mb-4">
+                    </p-avatar>
+                    <h3 class="font-semibold text-lg mb-1">{{ profile.firstName }} {{ profile.lastName }}</h3>
+                    <p class="text-sm text-gray-500 mb-3">{{ profile.role }}</p>
+                    <p-fileUpload 
+                      mode="basic" 
+                      chooseLabel="Change Photo"
+                      accept="image/*"
+                      maxFileSize="5000000"
+                      (onUpload)="onAvatarUpload($event)"
+                      [auto]="true"
+                      class="w-full">
+                    </p-fileUpload>
+                  </div>
+
+                  <!-- Profile Form -->
+                  <div class="md:col-span-2">
+                    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">First Name *</label>
+                          <input type="text" pInputText formControlName="firstName" class="w-full" 
+                                 [class.ng-invalid]="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched">
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Last Name *</label>
+                          <input type="text" pInputText formControlName="lastName" class="w-full"
+                                 [class.ng-invalid]="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched">
+                        </div>
+
+                        <div class="md:col-span-2">
+                          <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Email *</label>
+                          <input type="email" pInputText formControlName="email" class="w-full"
+                                 [class.ng-invalid]="profileForm.get('email')?.invalid && profileForm.get('email')?.touched">
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Phone</label>
+                          <input type="tel" pInputText formControlName="phone" class="w-full">
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Department</label>
+                          <p-dropdown [options]="departmentOptions" formControlName="department" 
+                                     placeholder="Select Department" class="w-full"></p-dropdown>
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Role</label>
+                          <input type="text" pInputText formControlName="role" class="w-full" disabled>
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Timezone</label>
+                          <p-dropdown [options]="timezoneOptions" formControlName="timezone" 
+                                     placeholder="Select Timezone" class="w-full"></p-dropdown>
+                        </div>
+                      </div>
+
+                      <div class="flex justify-end gap-3 mt-6">
+                        <button pButton type="button" label="Cancel" severity="secondary" class="p-button-outlined"></button>
+                        <button pButton type="submit" label="Save Changes" icon="pi pi-check" 
+                               [disabled]="profileForm.invalid"></button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Active Sessions -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+              <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <i class="pi pi-clock text-primary-500 text-xl"></i>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Active Sessions</h2>
+                  </div>
+                  <button pButton type="button" icon="pi pi-refresh" class="p-button-text p-button-sm" 
+                          (click)="refreshData()" [loading]="localLoading"></button>
+                </div>
+              </div>
+
+              <div class="p-6">
+                <div *ngIf="localLoading" class="text-center py-8">
+                  <i class="pi pi-spin pi-spinner text-3xl text-primary-500"></i>
+                  <p class="text-gray-500 mt-2">Loading sessions...</p>
+                </div>
+
+                <div *ngIf="!localLoading && sessions?.length === 0" class="text-center py-8">
+                  <i class="pi pi-info-circle text-4xl text-gray-400 mb-2"></i>
+                  <p class="text-gray-500">No active sessions found</p>
+                </div>
+
+                <div *ngIf="!localLoading && sessions?.length > 0">
+                  <div class="overflow-x-auto">
+                    <table class="w-full">
+                      <thead>
+                        <tr class="text-left border-b border-gray-200 dark:border-gray-700">
+                          <th class="pb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Device</th>
+                          <th class="pb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Session ID</th>
+                          <th class="pb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Expires</th>
+                          <th class="pb-3 text-sm font-semibold text-gray-700 dark:text-gray-300 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tr *ngFor="let s of sessions" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                          <td class="py-3">
+                            <div class="flex items-center gap-2">
+                              <i class="pi pi-desktop text-gray-400"></i>
+                              <span class="text-sm">{{ s.device }}</span>
+                            </div>
+                          </td>
+                          <td class="py-3 text-sm font-mono text-gray-600 dark:text-gray-400">{{ maskSession(s.session) }}</td>
+                          <td class="py-3 text-sm text-gray-600 dark:text-gray-400">{{ formatRemaining(s.remaining_seconds) }}</td>
+                          <td class="py-3 text-right">
+                            <button pButton type="button" label="Revoke" icon="pi pi-times" 
+                                   class="p-button-sm p-button-danger p-button-outlined" 
+                                   (click)="revokeSession(s.session)"></button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div class="flex justify-end mt-4">
+                    <button pButton type="button" label="Revoke All Other Sessions" icon="pi pi-sign-out" 
+                           severity="warning" class="p-button-outlined" 
+                           (click)="revokeOtherSessions()"></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Security Section -->
+          <div *ngIf="activeSection === 'security'" class="space-y-6">
+                  <div>
+                    <p-card>
+                      <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+                        <div class="space-y-4">
+                          <div>
+                            <label class="block text-sm font-medium mb-2">Current Password</label>
+                            <input type="password" pInputText formControlName="currentPassword" class="w-full">
+                          </div>
+                          <div>
+                            <label class="block text-sm font-medium mb-2">New Password</label>
+                            <input type="password" pInputText formControlName="newPassword" class="w-full">
+                          </div>
+                          <div>
+                            <label class="block text-sm font-medium mb-2">Confirm New Password</label>
+                            <input type="password" pInputText formControlName="confirmPassword" class="w-full">
+                          </div>
+                          <button pButton type="submit" label="Change Password" class="p-button-warning w-full"></button>
+                        </div>
+                      </form>
+                    </p-card>
+                  </div>
+
+                  <div>
+                    <p-card>
+                      <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <label class="block text-sm font-medium">Two-Factor Authentication</label>
+                            <p class="text-xs text-surface-600 dark:text-surface-400">Add an extra layer of security</p>
+                          </div>
+                          <p-inputSwitch [(ngModel)]="securitySettings.twoFactorEnabled"></p-inputSwitch>
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium mb-2">Session Timeout</label>
+                          <p-dropdown [options]="sessionTimeoutOptions" [(ngModel)]="securitySettings.sessionTimeout" class="w-full"></p-dropdown>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <label class="block text-sm font-medium">Login Notifications</label>
+                            <p class="text-xs text-surface-600 dark:text-surface-400">Get notified of new logins</p>
+                          </div>
+                          <p-inputSwitch [(ngModel)]="securitySettings.loginNotifications"></p-inputSwitch>
+                        </div>
+
+                        <button pButton type="button" label="Save Security Settings" class="p-button-primary w-full" (click)="saveSecuritySettings()"></button>
+                      </div>
+                    </p-card>
+                  </div>
+                </div>
+              </p-accordionTab>
+
+              <p-accordionTab header="User Management">
+                <div class="mb-4 flex justify-between items-center">
+                  <div>
+                    <h4 class="font-semibold">Users</h4>
+                    <p class="text-sm text-surface-600">Manage and view all users</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 bg-primary-100 rounded-full text-sm">{{ allUsers.length }} Users</span>
+                    <button pButton type="button" label="Refresh" icon="pi pi-refresh" class="p-button-outlined p-button-sm" (click)="refreshData()"></button>
+                  </div>
+                </div>
+
+                <div class="max-w-md mb-4">
+                  <span class="p-input-icon-left w-full"><i class="pi pi-search"></i>
+                    <input type="text" pInputText [(ngModel)]="userSearchText" (input)="filterUsers()" placeholder="Search users..." class="w-full">
+                  </span>
+                </div>
+
+                <p-table [value]="filteredUsers" [paginator]="true" [rows]="10" styleClass="p-datatable-striped">
+                  <ng-template pTemplate="header">
+                    <tr><th>User</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th></tr>
+                  </ng-template>
+                  <ng-template pTemplate="body" let-user>
+                    <tr>
+                      <td><div class="flex items-center gap-3"><p-avatar [label]="getUserInitials(user)" size="normal" styleClass="bg-primary-100 text-primary-700"></p-avatar><div><div class="font-medium">{{ user.full_name || 'Unknown' }}</div><div class="text-sm">ID: {{ user.identify }}</div></div></div></td>
+                      <td>{{ user.email }}</td>
+                      <td><p-tag [value]="getRoleDisplayText(user.role || 'user')" [severity]="getRoleSeverity(user.role || 'user')"></p-tag></td>
+                      <td><p-tag [value]="getUserStatus(user)" [severity]="getUserStatusSeverity(user)"></p-tag></td>
+                      <td>{{ formatDate(user.created_at) }}</td>
+                    </tr>
+                  </ng-template>
+                </p-table>
+              </p-accordionTab>
+
+              <p-accordionTab header="Data & Privacy">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <p-card>
+                      <p class="text-surface-600">Download a copy of your data including profile and activity history.</p>
+                      <button pButton type="button" label="Export My Data" class="p-button-outlined w-full mt-3" (click)="exportData()"></button>
+                    </p-card>
+                  </div>
+                  <div>
+                    <p-card>
+                      <p class="text-surface-600">Permanently delete your account and all associated data. This action cannot be undone.</p>
+                      <button pButton type="button" label="Delete Account" class="p-button-danger w-full mt-3" (click)="deleteAccount()"></button>
+                    </p-card>
+                  </div>
+                </div>
+              </p-accordionTab>
+            </p-accordion>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Notifications Tab -->
+      <p-tabPanel header="Notifications" leftIcon="pi pi-bell">
+        <p-card>
+          <ng-template pTemplate="header">
+            <div class="flex items-center gap-2 p-4">
+              <i class="pi pi-bell text-primary-500"></i>
+              <h3 class="text-lg font-semibold">Notification Preferences</h3>
+            </div>
+          </ng-template>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <h4 class="font-medium text-surface-900 dark:text-surface-50">Communication</h4>
+              
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">Email Notifications</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Receive notifications via email</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="notificationSettings.emailNotifications"></p-inputSwitch>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">Push Notifications</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Receive browser notifications</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="notificationSettings.pushNotifications"></p-inputSwitch>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">SMS Notifications</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Receive text messages</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="notificationSettings.smsNotifications"></p-inputSwitch>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <h4 class="font-medium text-surface-900 dark:text-surface-50">Content</h4>
+              
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">Marketing Emails</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Product updates and newsletters</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="notificationSettings.marketingEmails"></p-inputSwitch>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">Security Alerts</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Important security notifications</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="notificationSettings.securityAlerts"></p-inputSwitch>
+              </div>
+            </div>
+          </div>
+
+          <p-divider></p-divider>
+
+          <div class="flex justify-end">
+            <button 
+              pButton 
+              type="button" 
+              label="Save Notification Settings" 
+              class="p-button-primary"
+              (click)="saveNotificationSettings()">
+            </button>
+          </div>
+        </p-card>
+      </p-tabPanel>
+
+      <!-- Appearance Tab -->
+      <p-tabPanel header="Appearance" leftIcon="pi pi-palette">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Theme & Style -->
+          <p-card>
+            <ng-template pTemplate="header">
+              <div class="flex items-center gap-2 p-4">
+                <i class="pi pi-palette text-primary-500"></i>
+                <h3 class="text-lg font-semibold">Theme & Style</h3>
+              </div>
+            </ng-template>
+            
+            <div class="space-y-4">
+              <!-- UI Style -->
+              <div>
+                <label class="block text-sm font-medium mb-2">UI Style</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <div *ngFor="let style of uiStyleOptions" 
+                       class="p-3 border rounded-lg cursor-pointer transition-all duration-200 hover:border-primary-500"
+                       [class.border-primary-500]="appearanceSettings.uiStyle === style.value"
+                       [class.bg-primary-50]="appearanceSettings.uiStyle === style.value"
+                       (click)="appearanceSettings.uiStyle = style.value; onUiStyleChange()">
+                    <div class="font-medium">{{ style.label }}</div>
+                    <div class="text-xs text-surface-600 dark:text-surface-400">{{ style.description }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Theme -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Theme</label>
+                <p-selectButton 
+                  [options]="themeOptions" 
+                  [(ngModel)]="appearanceSettings.theme"
+                  (onChange)="onThemeChange()"
+                  optionLabel="label" 
+                  optionValue="value"
+                  class="w-full">
+                </p-selectButton>
+              </div>
+
+              <!-- Layout Style -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Layout Style</label>
+                <p-dropdown 
+                  [options]="layoutStyleOptions"
+                  [(ngModel)]="appearanceSettings.layoutStyle"
+                  placeholder="Select layout style"
+                  class="w-full">
+                </p-dropdown>
+              </div>
+
+              <!-- Sidebar Style -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Sidebar Style</label>
+                <p-dropdown 
+                  [options]="sidebarStyleOptions"
+                  [(ngModel)]="appearanceSettings.sidebarStyle"
+                  placeholder="Select sidebar style"
+                  class="w-full">
+                </p-dropdown>
+              </div>
+            </div>
+          </p-card>
+
+          <!-- Colors -->
+          <p-card>
+            <ng-template pTemplate="header">
+              <div class="flex items-center gap-2 p-4">
+                <i class="pi pi-palette text-primary-500"></i>
+                <h3 class="text-lg font-semibold">Colors</h3>
+              </div>
+            </ng-template>
+            
+            <div class="space-y-4">
+              <!-- Primary Color -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Primary Color</label>
+                <div class="flex items-center gap-2 mb-2">
+                  <p-colorPicker 
+                    [(ngModel)]="appearanceSettings.primaryColor"
+                    format="hex"
+                    class="flex-shrink-0">
+                  </p-colorPicker>
+                  <input 
+                    type="text" 
+                    pInputText 
+                    [(ngModel)]="appearanceSettings.primaryColor"
+                    class="flex-1 text-sm">
+                </div>
+                <div class="flex gap-2 flex-wrap">
+                  <div *ngFor="let preset of colorPresets"
+                       class="w-8 h-8 rounded-full cursor-pointer border-2 border-surface-200 hover:border-surface-400 transition-colors"
+                       [style.backgroundColor]="preset.value"
+                       (click)="selectColorPreset(preset.value, 'primary')"
+                       [title]="preset.name">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Accent Color -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Accent Color</label>
+                <div class="flex items-center gap-2 mb-2">
+                  <p-colorPicker 
+                    [(ngModel)]="appearanceSettings.accentColor"
+                    format="hex"
+                    class="flex-shrink-0">
+                  </p-colorPicker>
+                  <input 
+                    type="text" 
+                    pInputText 
+                    [(ngModel)]="appearanceSettings.accentColor"
+                    class="flex-1 text-sm">
+                </div>
+                <div class="flex gap-2 flex-wrap">
+                  <div *ngFor="let preset of colorPresets"
+                       class="w-8 h-8 rounded-full cursor-pointer border-2 border-surface-200 hover:border-surface-400 transition-colors"
+                       [style.backgroundColor]="preset.value"
+                       (click)="selectColorPreset(preset.value, 'accent')"
+                       [title]="preset.name">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </p-card>
+
+          <!-- Typography -->
+          <p-card>
+            <ng-template pTemplate="header">
+              <div class="flex items-center gap-2 p-4">
+                <i class="pi pi-font text-primary-500"></i>
+                <h3 class="text-lg font-semibold">Typography</h3>
+              </div>
+            </ng-template>
+            
+            <div class="space-y-4">
+              <!-- Font Family -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Font Family</label>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                  <p-chip *ngFor="let font of fontPresets"
+                          [label]="font.name"
+                          [removable]="false"
+                          class="cursor-pointer"
+                          [class.bg-primary-100]="appearanceSettings.fontFamily === font.value"
+                          (click)="selectFontPreset(font.value)">
+                  </p-chip>
+                </div>
+                <input 
+                  type="text" 
+                  pInputText 
+                  [(ngModel)]="appearanceSettings.fontFamily"
+                  placeholder="Custom font family"
+                  class="w-full">
+              </div>
+
+              <!-- Font Size -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Font Size</label>
+                <p-selectButton 
+                  [options]="fontSizeOptions" 
+                  [(ngModel)]="appearanceSettings.fontSize"
+                  optionLabel="label" 
+                  optionValue="value"
+                  class="w-full">
+                </p-selectButton>
+              </div>
+
+              <!-- Border Radius -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Border Radius</label>
+                <p-selectButton 
+                  [options]="borderRadiusOptions" 
+                  [(ngModel)]="appearanceSettings.borderRadius"
+                  optionLabel="label" 
+                  optionValue="value"
+                  class="w-full">
+                </p-selectButton>
+              </div>
+            </div>
+          </p-card>
+
+          <!-- Visual Effects -->
+          <p-card>
+            <ng-template pTemplate="header">
+              <div class="flex items-center gap-2 p-4">
+                <i class="pi pi-sparkles text-primary-500"></i>
+                <h3 class="text-lg font-semibold">Visual Effects</h3>
+              </div>
+            </ng-template>
+            
+            <div class="space-y-4">
+              <!-- Background Pattern -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Background Pattern</label>
+                <p-dropdown 
+                  [options]="backgroundPatternOptions"
+                  [(ngModel)]="appearanceSettings.backgroundPattern"
+                  placeholder="Select background pattern"
+                  class="w-full">
+                </p-dropdown>
+              </div>
+
+              <!-- Animation Toggle -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">Animations</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Enable smooth transitions and animations</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="appearanceSettings.animationEnabled"></p-inputSwitch>
+              </div>
+
+              <!-- Shadow Toggle -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">Shadows</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Enable drop shadows and depth effects</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="appearanceSettings.shadowEnabled"></p-inputSwitch>
+              </div>
+
+              <!-- Sidebar Collapsed -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">Sidebar Collapsed</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Keep sidebar collapsed by default</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="appearanceSettings.sidebarCollapsed"></p-inputSwitch>
+              </div>
+
+              <!-- Compact Mode -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-medium">Compact Mode</label>
+                  <p class="text-xs text-surface-600 dark:text-surface-400">Reduce spacing and padding</p>
+                </div>
+                <p-inputSwitch [(ngModel)]="appearanceSettings.compactMode"></p-inputSwitch>
+              </div>
+            </div>
+          </p-card>
+        </div>
+
+        <!-- Legacy Settings -->
+        <div class="mt-6">
+          <p-card>
+            <ng-template pTemplate="header">
+              <div class="flex items-center gap-2 p-4">
+                <i class="pi pi-cog text-primary-500"></i>
+                <h3 class="text-lg font-semibold">Legacy Settings</h3>
+              </div>
+            </ng-template>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">Language</label>
+                <p-dropdown 
+                  [options]="languageOptions"
+                  [(ngModel)]="appearanceSettings.language"
+                  placeholder="Select language"
+                  class="w-full">
+                </p-dropdown>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium mb-2">Date Format</label>
+                <p-dropdown 
+                  [options]="dateFormatOptions"
+                  [(ngModel)]="appearanceSettings.dateFormat"
+                  placeholder="Select date format"
+                  class="w-full">
+                </p-dropdown>
+              </div>
+            </div>
+          </p-card>
+        </div>
+
+        <p-divider></p-divider>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-between">
+          <button 
+            pButton 
+            type="button" 
+            label="Reset to Default" 
+            severity="secondary"
+            icon="pi pi-refresh"
+            (click)="resetAppearanceSettings()">
+          </button>
+          <button 
+            pButton 
+            type="button" 
+            label="Save Appearance Settings" 
+            class="p-button-primary"
+            icon="pi pi-check"
+            (click)="saveAppearanceSettings()">
+          </button>
+        </div>
+      </p-tabPanel>
+
+      
+    </p-tabView>
+  </div>
+
+  <!-- Toast Messages -->
+  <p-toast></p-toast>
+</div>

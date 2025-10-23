@@ -10,6 +10,7 @@ import { ThemeService } from '../../core/services/theme.service';
 import { LoadingService, LoadingState } from '../../core/services/loading.service';
 import { LoadingComponent } from '../../shared/component/loading/loading.component';
 import { Subject, takeUntil } from 'rxjs';
+import { AppSwitcherService, AppKey } from '../../core/services/app-switcher.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -29,6 +30,7 @@ import { Subject, takeUntil } from 'rxjs';
 export class MainLayoutComponent implements OnInit, OnDestroy {
   collapsed = false;
   sidebarOpen = false;
+  currentApp: AppKey = 'all';
   loadingState: LoadingState = {
     isLoading: false,
     message: 'Loading...',
@@ -49,10 +51,18 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
 
   constructor(
     private themeService: ThemeService,
-    private loadingService: LoadingService
+    private loadingService: LoadingService,
+    private appSwitcher: AppSwitcherService
   ) { }
 
   ngOnInit() {
+    // Subscribe to current app changes
+    this.appSwitcher.currentApp$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(appKey => {
+        this.currentApp = appKey;
+      });
+
     // Show beautiful loading animation on page refresh/initial load
     this.showInitialLoading();
 

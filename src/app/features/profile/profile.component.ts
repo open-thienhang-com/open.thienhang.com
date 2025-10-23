@@ -46,6 +46,9 @@ export class ProfileComponent extends AppBaseComponent implements OnInit {
   currentDate = new Date();
   loading = false;
   userSearchText = '';
+  // Sessions display control
+  showAllSessions = false;
+  _sessionsPreviewCount = 4; // show first 4 sessions by default
 
   // Table columns for users
   userColumns = [
@@ -197,6 +200,24 @@ export class ProfileComponent extends AppBaseComponent implements OnInit {
       return 'Safari Browser';
     }
     return 'Unknown Device';
+  }
+
+  // Visible sessions for the profile page (limits rendering when many sessions exist)
+  get visibleSessions(): any[] {
+    if (!this.profile || !Array.isArray(this.profile.sessions)) return [];
+    return this.showAllSessions ? this.profile.sessions : this.profile.sessions.slice(0, this._sessionsPreviewCount);
+  }
+
+  // Toggle showing all sessions
+  toggleShowAllSessions() {
+    this.showAllSessions = !this.showAllSessions;
+  }
+
+  // Helper to compute the global session index (1-based) for display
+  getSessionIndex(session: any): number {
+    if (!this.profile || !Array.isArray(this.profile.sessions)) return 0;
+    const idx = this.profile.sessions.indexOf(session);
+    return idx >= 0 ? idx : 0;
   }
 
   getAccessLevel(level: string): string {

@@ -64,6 +64,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/governance/users/users.component').then(m => m.UsersComponent),
       },
       {
+        path: 'governance/users/:kid',
+        loadComponent: () => import('./features/governance/users/user-detail.component').then(m => m.UserDetailComponent),
+      },
+      {
         path: 'governance/permissions',
         loadComponent: () => import('./features/governance/permissions/permissions.component').then(m => m.PermissionsComponent),
       },
@@ -78,6 +82,18 @@ export const routes: Routes = [
       {
         path: 'marketplace',
         loadComponent: () => import('./features/marketplace/marketplace.component').then(m => m.MarketplaceComponent),
+      },
+      {
+        path: 'blogger',
+        loadComponent: () => import('./features/blogger/blogger-overview.component').then(m => m.BloggerOverviewComponent),
+      },
+      {
+        path: 'ad-manager',
+        loadComponent: () => import('./features/ad-manager/ad-manager-overview.component').then(m => m.AdManagerOverviewComponent),
+      },
+      {
+        path: 'hotel',
+        loadComponent: () => import('./features/hotel/hotel-overview.component').then(m => m.HotelOverviewComponent),
       },
       {
         path: 'profile',

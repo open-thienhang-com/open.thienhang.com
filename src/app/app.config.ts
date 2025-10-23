@@ -10,6 +10,7 @@ import { credentialsInterceptor } from './core/interceptor/with-credentials.inte
 import { AuthServices } from './core/services/auth.services';
 import { TimeoutInterceptor } from './core/interceptor/timeout.interceptor';
 import { ErrorInterceptor } from './core/interceptor/error.interceptor';
+import { Auth401Interceptor } from './core/interceptor/auth-401.interceptor';
 
 export function initApp(): () => Promise<void> {
   // No-op initializer: do not call /authentication/me during app bootstrap
@@ -42,6 +43,11 @@ export const appConfig: ApplicationConfig = {
     {
       provide: HTTP_INTERCEPTORS,
       useClass: ErrorInterceptor,
+      multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: Auth401Interceptor,
       multi: true
     },
   ],

@@ -11,11 +11,15 @@ import { SelectButtonModule } from 'primeng/selectbutton';
 import { StyleClassModule } from 'primeng/styleclass';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { InputTextModule } from 'primeng/inputtext';
+import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { Router } from '@angular/router';
 import { I18nService } from '../../../core/services/i18n.service';
 import { SearchService, SearchResult } from '../../../core/services/search.service';
 import { SearchResultsComponent } from '../../../shared/components/search-results/search-results.component';
 import { CurrentUserComponent } from '../sidebar/current-user/current-user.component';
+import { AppSwitcherService, AppKey } from '../../../core/services/app-switcher.service';
 
 const presets = {
   Aura,
@@ -39,6 +43,8 @@ export interface ThemeState {
     SelectButtonModule,
     ToggleSwitchModule,
     InputTextModule,
+    DialogModule,
+    ButtonModule,
     SearchResultsComponent,
     CurrentUserComponent
   ],
@@ -71,6 +77,25 @@ export class HeaderComponent {
 
   i18nService = inject(I18nService);
 
+  appSwitcher = inject(AppSwitcherService);
+  private router = inject(Router);
+
+  apps: { key: AppKey; label: string; icon: string }[] = [
+    { key: 'all', label: 'All Apps', icon: 'pi pi-th-large' },
+    { key: 'retail', label: 'Retail Service', icon: 'pi pi-shopping-bag' },
+    { key: 'catalog', label: 'Data Catalog', icon: 'pi pi-search' },
+    { key: 'governance', label: 'Governance', icon: 'pi pi-shield' },
+    { key: 'marketplace', label: 'Marketplace', icon: 'pi pi-shopping-cart' },
+    { key: 'blogger', label: 'Blogger', icon: 'pi pi-pencil' },
+    { key: 'hotel', label: 'Hotel', icon: 'pi pi-building' },
+    { key: 'admanager', label: 'Ad Manager', icon: 'pi pi-bullhorn' },
+    { key: 'settings', label: 'Settings', icon: 'pi pi-cog' }
+  ];
+
+  selectedApp = this.appSwitcher.getCurrent();
+  showAppMatrix = false;
+  private _workspaceHighlight = false;
+
   currentLanguage = computed(() => this.i18nService.getCurrentLanguage());
 
   themeState = signal<ThemeState>(null);
@@ -88,12 +113,32 @@ export class HeaderComponent {
   constructor() {
     this.themeState.set({ ...this.loadthemeState() });
 
+    // keep selectedApp in sync with global app switcher and play a short highlight
+    this.appSwitcher.currentApp$.subscribe((k: AppKey) => {
+      this.selectedApp = k;
+      this.playWorkspaceHighlight();
+    });
+
     effect(() => {
       const state = this.themeState();
 
       this.savethemeState(state);
       this.handleDarkModeTransition(state);
     });
+  }
+
+  get workspaceLabel(): string {
+    const app = this.apps.find(a => a.key === this.selectedApp);
+    return app ? app.label : 'All Apps';
+  }
+
+  get workspaceHighlight(): boolean {
+    return this._workspaceHighlight;
+  }
+
+  private playWorkspaceHighlight() {
+    this._workspaceHighlight = true;
+    setTimeout(() => (this._workspaceHighlight = false), 600);
   }
 
   ngOnInit() {
@@ -594,5 +639,39 @@ export class HeaderComponent {
     if (!this.elementRef.nativeElement.contains(event.target)) {
       this.clearSearch();
     }
+  }
+
+  openAppMatrix(): void {
+    this.showAppMatrix = true;
+  }
+
+  closeAppMatrix(): void {
+    this.showAppMatrix = false;
+  }
+
+  selectAppKey(key: AppKey): void {
+    this.appSwitcher.selectApp(key);
+    this.selectedApp = key;
+    // navigate to the corresponding dashboard / root for the selected app
+    const routeForApp: Record<AppKey, string> = {
+      all: '/dashboard',
+      retail: '/retail',
+      catalog: '/discovery/data-catalog',
+      governance: '/governance/policies',
+      marketplace: '/marketplace',
+      blogger: '/blogger',
+      hotel: '/hotel',
+      admanager: '/ad-manager',
+      settings: '/settings'
+    };
+
+    const target = routeForApp[key] || '/dashboard';
+    try {
+      this.router.navigate([target]);
+    } catch (e) {
+      // ignore in non-browser env or during server-side rendering
+    }
+
+    this.closeAppMatrix();
   }
 }

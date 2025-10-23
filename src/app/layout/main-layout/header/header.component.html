@@ -40,6 +40,43 @@
         <app-current-user></app-current-user>
       </li>
 
+      <!-- App selector: open matrix dialog -->
+      <li>
+        <button type="button"
+                class="inline-flex items-center justify-center w-8 h-8 p-0 rounded border border-surface-200 dark:border-surface-600 surface-0 dark:surface-800"
+                aria-haspopup="dialog"
+                (click)="openAppMatrix()"
+                aria-label="Open app switcher">
+          <i class="pi pi-th-large dark:text-white"></i>
+        </button>
+
+  <!-- Workspace badge -->
+  <span class="workspace-badge ml-2" [class.highlight]="workspaceHighlight">{{ workspaceLabel }}</span>
+
+        <p-dialog 
+          header="All Applications" 
+          [(visible)]="showAppMatrix" 
+          [modal]="true" 
+          [style]="{ width: '720px', maxWidth: '90vw' }" 
+          [closable]="true" 
+          (onHide)="closeAppMatrix()"
+          styleClass="app-matrix-dialog">
+          <div class="apps-matrix-grid">
+            <button *ngFor="let app of apps" type="button"
+                    class="app-tile"
+                    [class.active]="selectedApp === app.key"
+                    (click)="selectAppKey(app.key)"
+                    [attr.aria-label]="app.label">
+              <div class="app-icon-wrapper" [attr.data-app]="app.key">
+                <i [class]="app.icon"></i>
+              </div>
+              <span class="app-label">{{ app.label }}</span>
+              <i class="pi pi-check check-icon" *ngIf="selectedApp === app.key"></i>
+            </button>
+          </div>
+        </p-dialog>
+      </li>
+
       <!-- Language Selector -->
       <li class="relative">
         <button

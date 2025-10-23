@@ -9,7 +9,8 @@
   </div>
 
   <!-- Sidebar -->
-  <div class="fixed inset-y-0 left-0 z-40 transition-all duration-300 lg:relative lg:translate-x-0"
+  <div *ngIf="!(currentApp === 'all' || currentApp === 'settings' || currentApp === 'marketplace')"
+       class="fixed inset-y-0 left-0 z-40 transition-all duration-300 lg:relative lg:translate-x-0"
        [class.w-64]="!collapsed"
        [class.w-16]="collapsed"
        [class.-translate-x-full]="!sidebarOpen && !collapsed"

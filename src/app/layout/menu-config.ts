@@ -105,5 +105,5 @@ export const menu: MenuItem[] = [
             { label: 'Contracts', url: '/data-contracts', icon: 'pi pi-file-check' }
         ]
     },
-    { label: 'Settings', url: '/settings', icon: 'pi pi-cog' }
+    // Settings intentionally removed from sidebar menu config; Settings is a standalone app
 ];

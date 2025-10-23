@@ -1,3 +1,4 @@
+import { Router } from '@angular/router';
 import { Component, Injector, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
@@ -14,11 +15,15 @@ import { AvatarModule } from 'primeng/avatar';
 import { FileUploadModule } from 'primeng/fileupload';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 import { ProfileServices } from '../../core/services/profile.services';
 import { HttpClient } from '@angular/common/http';
 import { ThemeService, ThemeSettings } from '../../core/services/theme.service';
 import { SliderModule } from 'primeng/slider';
 import { ColorPickerModule } from 'primeng/colorpicker';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { SkeletonModule } from 'primeng/skeleton';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { ChipModule } from 'primeng/chip';
 import { TableModule } from 'primeng/table';
@@ -100,14 +105,52 @@ interface AppearanceSettings {
     TableModule,
     TagModule,
     TooltipModule,
-    BadgeModule
-    , AccordionModule
+    BadgeModule,
+    AccordionModule
+    , ConfirmDialogModule
   ],
   templateUrl: './setting.component.html',
   styleUrls: ['./setting.component.scss'],
-  providers: [MessageService]
+  providers: [MessageService, ConfirmationService]
 })
 export class SettingsComponent implements OnInit {
+  // Non-collapsing sidebar sections for stable two-column layout
+  settingSections = [
+    { key: 'profile', label: 'Profile', icon: 'pi pi-user' },
+    { key: 'security', label: 'Security & Password', icon: 'pi pi-lock' },
+    { key: 'users', label: 'User Management', icon: 'pi pi-users' },
+    { key: 'data', label: 'Data & Privacy', icon: 'pi pi-database' },
+    { key: 'notifications', label: 'Notifications', icon: 'pi pi-bell' },
+    { key: 'appearance', label: 'Appearance', icon: 'pi pi-palette' }
+  ];
+  activeSection: string = 'profile';
+
+  // Switch the right-hand panel to the named section
+  switchSection(sectionKey: string) {
+    if (!sectionKey) return;
+    this.activeSection = sectionKey;
+    // Keep tab index in sync for any existing deep-links
+    switch (sectionKey) {
+      case 'profile':
+      case 'security':
+      case 'users':
+      case 'data':
+        this.activeTabIndex = 0;
+        break;
+      case 'notifications':
+        this.activeTabIndex = 1;
+        break;
+      case 'appearance':
+        this.activeTabIndex = 2;
+        break;
+      default:
+        this.activeTabIndex = 0;
+    }
+    // If user opened the User Management section, fetch users from API
+    if (sectionKey === 'users') {
+      this.fetchUsersForManagement();
+    }
+  }
   profileForm: FormGroup;
   passwordForm: FormGroup;
   activeTabIndex: number = 0;
@@ -274,10 +317,16 @@ export class SettingsComponent implements OnInit {
   loading = false;
   userSearchText = '';
 
+  // Management-specific loading state
+  managementLoading = false;
+  managementUsersLoaded = false;
+
   // Local profile & session management
   sessions: any[] = [];
   localProfileSource = 'http://localhost:8080';
   localLoading = false;
+
+  // NOTE: navigation-based user detail view (navigates to dedicated page)
 
   // Table columns for users
   userColumns = [
@@ -297,6 +346,8 @@ export class SettingsComponent implements OnInit {
     private themeService: ThemeService,
     private route: ActivatedRoute,
     private userService: UserService,
+    private confirmationService: ConfirmationService,
+    private router: Router,
     public i18nService: I18nService
   ) {
     this.initializeForms();
@@ -504,6 +555,17 @@ export class SettingsComponent implements OnInit {
     this.uploadAvatar(file);
   }
 
+  onAvatarError(event: Event) {
+    // Fallback avatar if image fails to load
+    try {
+      this.profile.avatar = '/assets/images/avatar.jpg';
+      const imgEl = event && event.target as HTMLImageElement;
+      if (imgEl) imgEl.src = this.profile.avatar;
+    } catch (e) {
+      // ignore
+    }
+  }
+
   private uploadAvatar(file: File): void {
     const uploadUrl = `${this.localProfileSource}/data-mesh/data-mesh/domains/files/upload/supabase`;
     const form = new FormData();
@@ -549,13 +611,23 @@ export class SettingsComponent implements OnInit {
   }
 
   deleteAccount(): void {
-    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Account Deletion',
-        detail: 'Account deletion request submitted'
-      });
-    }
+    this.confirmationService.confirm({
+      header: 'Confirm Account Deletion',
+      message: 'Are you sure you want to delete your account? This action cannot be undone.',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        // accepted -> perform deletion request (currently a placeholder)
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Account Deletion',
+          detail: 'Account deletion request submitted'
+        });
+      },
+      reject: () => {
+        // user rejected -> optional feedback
+        this.messageService.add({ severity: 'info', summary: 'Cancelled', detail: 'Account deletion cancelled' });
+      }
+    });
   }
 
   // Profile management methods (from Profile component)
@@ -568,6 +640,9 @@ export class SettingsComponent implements OnInit {
         this.allUsers = res?.data || [];
         this.filteredUsers = [...this.allUsers];
         this.loading = false;
+        // If users were loaded as part of the page init, mark management as loaded
+        // so the Users panel will render the table immediately (no extra spinner)
+        this.managementUsersLoaded = true;
       },
       error: (err) => {
         console.error('Error loading users:', err);
@@ -593,6 +668,28 @@ export class SettingsComponent implements OnInit {
 
   refreshData() {
     this.loadProfileData();
+  }
+
+  /**
+   * Fetch users for the 'User Management' panel. Uses UserService.getAllUsers()
+   */
+  fetchUsersForManagement(forceRefresh: boolean = false) {
+    if (this.managementUsersLoaded && !forceRefresh) return;
+    this.managementLoading = true;
+
+    this.userService.getAllUsers().subscribe({
+      next: (res) => {
+        this.managementLoading = false;
+        this.managementUsersLoaded = true;
+        this.allUsers = res?.data || [];
+        this.filteredUsers = [...this.allUsers];
+      },
+      error: (err) => {
+        this.managementLoading = false;
+        console.error('Failed to load users for management:', err);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load users' });
+      }
+    });
   }
 
   // --- Local profile & session helpers ---
@@ -704,6 +801,77 @@ export class SettingsComponent implements OnInit {
         console.error('Error revoking other sessions:', err);
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to revoke other sessions' });
       }
+    });
+  }
+
+  // --- Helpers used by the Users table template ---
+  getUserInitials(user: any): string {
+    if (!user) return '';
+    const first = (user.first_name || '').toString().trim();
+    const last = (user.last_name || '').toString().trim();
+    if (first || last) return ((first.charAt(0) || '') + (last.charAt(0) || '')).toUpperCase();
+    if (user.full_name) return user.full_name.split(' ').map((s: string) => s.charAt(0)).slice(0, 2).join('').toUpperCase();
+    return '';
+  }
+
+  getRoleDisplayText(role: string): string {
+    if (!role) return 'User';
+    const r = role.toLowerCase();
+    if (r.includes('admin')) return 'Administrator';
+    if (r.includes('owner')) return 'Owner';
+    if (r.includes('editor')) return 'Editor';
+    if (r.includes('viewer') || r.includes('read')) return 'Viewer';
+    return role.charAt(0).toUpperCase() + role.slice(1);
+  }
+
+  getRoleSeverity(role: string): string {
+    if (!role) return 'info';
+    const r = role.toLowerCase();
+    if (r.includes('admin') || r.includes('owner')) return 'danger';
+    if (r.includes('editor')) return 'warning';
+    return 'info';
+  }
+
+  getUserStatus(user: any): string {
+    if (!user) return 'Unknown';
+    // common field names for active/enabled
+    const active = user.is_active ?? user.active ?? user.enabled ?? user.isEnabled;
+    if (active === true || active === 'true' || active === 1) return 'Active';
+    if (active === false || active === 'false' || active === 0) return 'Inactive';
+    return 'Unknown';
+  }
+
+  getUserStatusSeverity(user: any): string {
+    const status = this.getUserStatus(user).toLowerCase();
+    if (status === 'active') return 'success';
+    if (status === 'inactive') return 'danger';
+    return 'info';
+  }
+
+  formatDate(date: any): string {
+    if (!date) return '-';
+    try {
+      const d = new Date(date);
+      if (isNaN(d.getTime())) return date.toString();
+      return d.toLocaleDateString();
+    } catch (e) {
+      return date.toString();
+    }
+  }
+
+  // Navigate to the dedicated user detail page
+  viewUser(user: any): void {
+    if (!user) return;
+    const userId = user.kid || user._id || user.id;
+    if (!userId) {
+      this.messageService.add({ severity: 'warn', summary: 'View User', detail: 'Unable to determine user id' });
+      return;
+    }
+
+    // Navigate to the new route which will load the user detail component
+    this.router.navigate(['/governance/users', userId]).catch(err => {
+      console.error('Navigation to user detail failed', err);
+      this.messageService.add({ severity: 'error', summary: 'Navigation failed', detail: 'Unable to open user detail page' });
     });
   }
 }

@@ -4,12 +4,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { GovernanceServices, Policy } from '../../../../core/services/governance.services';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { getApiBase } from '../../../../core/config/api-config';
 import { MessageService } from 'primeng/api';
 
 // PrimeNG imports
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { AvatarModule } from 'primeng/avatar';
 import { TagModule } from 'primeng/tag';
 import { BadgeModule } from 'primeng/badge';
 import { ToastModule } from 'primeng/toast';
@@ -30,8 +32,10 @@ import { InputSwitchModule } from 'primeng/inputswitch';
   imports: [
     CommonModule,
     FormsModule,
+    HttpClientModule,
     ButtonModule,
     CardModule,
+    AvatarModule,
     TagModule,
     BadgeModule,
     ToastModule,
@@ -62,7 +66,19 @@ export class PolicyDetailComponent implements OnInit, OnDestroy {
     private governanceServices: GovernanceServices,
     private messageService: MessageService,
     private confirmationService: ConfirmationService
+    ,
+    private http: HttpClient
   ) { }
+
+  getInitials(user: any): string {
+    if (!user) return '';
+    const first = (user.first_name || '').toString().trim();
+    const last = (user.last_name || '').toString().trim();
+    if (first || last) return ((first.charAt(0) || '') + (last.charAt(0) || '')).toUpperCase();
+    if (user.name) return user.name.split(' ').map((s: string) => s.charAt(0)).slice(0, 2).join('').toUpperCase();
+    if (user.kid) return user.kid.substring(0, 2).toUpperCase();
+    return '';
+  }
 
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
@@ -87,15 +103,33 @@ export class PolicyDetailComponent implements OnInit, OnDestroy {
     this.governanceServices.getPolicy(this.policyId).subscribe({
       next: (response) => {
         console.log('Policy API response:', response);
-        if (response.success && response.data) {
-          this.policy = response.data;
+        // governanceServices wraps responses; but sometimes the API returns the raw object
+        const raw = (response && (response as any).data) ? (response as any).data : response;
+        if (raw && raw.kid) {
+          this.policy = this.normalizePolicy(raw as any);
           console.log('Policy loaded successfully:', this.policy);
         } else {
-          console.warn('Policy not found or invalid response:', response);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Policy Not Found',
-            detail: 'The policy you\'re looking for doesn\'t exist or has been deleted.'
+          // Fallback: try a relative path which may be proxied (e.g., http://localhost:4200/governance/policies/:id)
+          console.warn('Policy not found in wrapped response, attempting fallback fetch for', this.policyId);
+          this.http.get<any>(`/governance/policies/${encodeURIComponent(this.policyId)}`).subscribe({
+            next: (fallback) => {
+              const candidate = (fallback && fallback.data) ? fallback.data : fallback;
+              if (candidate && candidate.kid) {
+                this.policy = this.normalizePolicy(candidate as any);
+                console.log('Policy loaded from fallback endpoint:', this.policy);
+              } else {
+                console.warn('Fallback fetch returned invalid policy:', fallback);
+                this.messageService.add({
+                  severity: 'error',
+                  summary: 'Policy Not Found',
+                  detail: 'The policy you\'re looking for doesn\'t exist or has been deleted.'
+                });
+              }
+            },
+            error: (err) => {
+              console.error('Fallback fetch error:', err);
+              this.messageService.add({ severity: 'error', summary: 'Policy Not Found', detail: 'Failed to load policy details.' });
+            }
           });
         }
         this.loading = false;
@@ -126,6 +160,31 @@ export class PolicyDetailComponent implements OnInit, OnDestroy {
         this.loading = false;
       }
     });
+  }
+
+  /**
+   * Normalize a raw policy object from the API into the Policy interface the UI expects.
+   */
+  private normalizePolicy(raw: any): Policy {
+    if (!raw) return raw;
+    const p: any = { ...raw };
+    // Ensure arrays exist
+    p.subjects = Array.isArray(raw.subjects) ? raw.subjects : (raw.subjects ? [raw.subjects] : []);
+    p.roles = Array.isArray(raw.roles) ? raw.roles : (raw.roles ? [raw.roles] : []);
+    p.permissions = Array.isArray(raw.permissions) ? raw.permissions : (raw.permissions ? [raw.permissions] : []);
+    p.resources = Array.isArray(raw.resources) ? raw.resources : (raw.resources ? [raw.resources] : []);
+    p.role_details = Array.isArray(raw.role_details) ? raw.role_details : [];
+    p.permission_details = Array.isArray(raw.permission_details) ? raw.permission_details : [];
+    p.user_details = Array.isArray(raw.user_details) ? raw.user_details : [];
+    p.team_details = Array.isArray(raw.team_details) ? raw.team_details : [];
+    p.asset_details = Array.isArray(raw.asset_details) ? raw.asset_details : [];
+    p.affected_assets_total = raw.affected_assets_total ?? 0;
+    p.policy_rules_total = raw.policy_rules_total ?? 0;
+    p.total_subjects = raw.total_subjects ?? (p.subjects ? p.subjects.length : 0);
+    p.total_roles = raw.total_roles ?? (p.role_details ? p.role_details.length : (p.roles ? p.roles.length : 0));
+    p.total_permissions = raw.total_permissions ?? (p.permission_details ? p.permission_details.length : (p.permissions ? p.permissions.length : 0));
+    p.total_resources = raw.total_resources ?? (p.resources ? p.resources.length : 0);
+    return p as Policy;
   }
 
   goBack(): void {
@@ -229,13 +288,20 @@ export class PolicyDetailComponent implements OnInit, OnDestroy {
   }
 
   formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    if (!dateString) return '-';
+    try {
+      const d = new Date(dateString);
+      if (isNaN(d.getTime())) return dateString?.toString() || '-';
+      return d.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (e) {
+      return dateString?.toString() || '-';
+    }
   }
 
   copyToClipboard(text: string): void {
