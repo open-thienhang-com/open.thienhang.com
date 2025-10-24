@@ -99,10 +99,10 @@
             <tr>
               <th>Asset Name</th>
               <th>Type</th>
-              <th>Location</th>
-              <th>Sensitivity</th>
-              <th>Source</th>
-              <th>Status</th>
+              <th *ngIf="showLocationColumn">Location</th>
+              <th *ngIf="showSensitivityColumn">Sensitivity</th>
+              <th *ngIf="showSourceColumn">Source</th>
+              <th *ngIf="showStatusColumn">Status</th>
             </tr>
           </ng-template>
           
@@ -118,19 +118,19 @@
                   [severity]="getAssetTypeSeverity(asset.type)">
                 </p-tag>
               </td>
-              <td>
+              <td *ngIf="showLocationColumn">
                 <code class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-700">{{ asset.location || 'N/A' }}</code>
               </td>
-              <td>
+              <td *ngIf="showSensitivityColumn">
                 <p-tag 
                   [value]="asset.sensitivity" 
                   [severity]="getSensitivitySeverity(asset.sensitivity)">
                 </p-tag>
               </td>
-              <td>
+              <td *ngIf="showSourceColumn">
                 <span class="text-sm text-gray-600">{{ asset.source || 'N/A' }}</span>
               </td>
-              <td>
+              <td *ngIf="showStatusColumn">
                 <p-tag 
                   [value]="asset.status" 
                   [severity]="getStatusSeverity(asset.status)">

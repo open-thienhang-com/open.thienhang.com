@@ -149,6 +149,39 @@ export class PermissionComponent extends AppBaseComponent {
         if (res.data) {
           console.log('Using res.data:', res.data);
           this.permission = res.data;
+          // Normalize assets: prefer assets_with_names (rich objects), fall back to assets (strings)
+          try {
+            if (Array.isArray(this.permission.assets_with_names) && this.permission.assets_with_names.length) {
+              // Use assets_with_names directly but ensure fields expected by the template exist
+              this.permission.assets = this.permission.assets_with_names.map((a: any) => ({
+                kid: a.kid || null,
+                name: a.name || a.kid || 'N/A',
+                type: a.type || '',
+                location: a.location || '',
+                sensitivity: a.sensitivity || '',
+                source: a.source || '',
+                status: a.status || ''
+              }));
+            } else if (Array.isArray(this.permission.assets) && this.permission.assets.length && typeof this.permission.assets[0] === 'string') {
+              // Map simple string list to objects for the table
+              this.permission.assets = this.permission.assets.map((kid: string) => ({
+                kid,
+                name: kid,
+                type: '',
+                location: '',
+                sensitivity: '',
+                source: '',
+                status: ''
+              }));
+            } else if (!Array.isArray(this.permission.assets)) {
+              this.permission.assets = [];
+            }
+          } catch (err) {
+            console.warn('Failed to normalize permission assets:', err);
+            this.permission.assets = this.permission.assets || [];
+          }
+          // Update which optional columns should be shown in the template
+          this.updateAssetColumnVisibility();
         } else {
           console.log('Using res directly:', res);
           this.permission = res;
@@ -243,6 +276,28 @@ export class PermissionComponent extends AppBaseComponent {
       case 'resource': return 'warning';
       case 'data': return 'primary';
       default: return 'secondary';
+    }
+  }
+
+  // Columns visibility flags for assets table
+  showLocationColumn = false;
+  showSensitivityColumn = false;
+  showSourceColumn = false;
+  showStatusColumn = false;
+
+  // Update visibility of optional asset columns based on actual asset data
+  private updateAssetColumnVisibility() {
+    try {
+      const assets = Array.isArray(this.permission?.assets) ? this.permission.assets : [];
+      this.showLocationColumn = assets.some((a: any) => !!(a && a.location));
+      this.showSensitivityColumn = assets.some((a: any) => !!(a && a.sensitivity));
+      this.showSourceColumn = assets.some((a: any) => !!(a && a.source));
+      this.showStatusColumn = assets.some((a: any) => !!(a && a.status));
+    } catch (err) {
+      this.showLocationColumn = false;
+      this.showSensitivityColumn = false;
+      this.showSourceColumn = false;
+      this.showStatusColumn = false;
     }
   }
 
