@@ -22,6 +22,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
 import { InputSwitchModule } from 'primeng/inputswitch';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-role-detail',
@@ -42,7 +43,8 @@ import { InputSwitchModule } from 'primeng/inputswitch';
     ProgressBarModule,
     TooltipModule,
     ConfirmDialogModule,
-    InputSwitchModule
+    InputSwitchModule,
+    InputTextModule
   ],
   templateUrl: './role-detail.component.html',
   styleUrls: ['./role-detail.component.scss'],
@@ -52,6 +54,7 @@ export class RoleDetailComponent implements OnInit, OnDestroy {
   role: RoleDetail | null = null;
   loading = false;
   roleId: string | null = null;
+  expandedRows: { [key: string]: boolean } = {};
   
   private destroy$ = new Subject<void>();
 
@@ -210,6 +213,33 @@ export class RoleDetailComponent implements OnInit, OnDestroy {
     }
   }
 
+  getSensitivitySeverity(sensitivity: string): string {
+    switch (sensitivity?.toLowerCase()) {
+      case 'high':
+      case 'critical': return 'danger';
+      case 'medium': return 'warning';
+      case 'low': return 'success';
+      default: return 'info';
+    }
+  }
+
+  getAssetIcon(type: string): string {
+    switch (type?.toLowerCase()) {
+      case 'database': return 'pi pi-database';
+      case 'table': return 'pi pi-table';
+      case 'file': return 'pi pi-file';
+      case 'api': return 'pi pi-cloud';
+      case 's3':
+      case 'cloud_storage': return 'pi pi-cloud';
+      case 'dashboard': return 'pi pi-chart-line';
+      case 'report': return 'pi pi-chart-bar';
+      case 'mlmodel': return 'pi pi-sitemap';
+      case 'pipeline': return 'pi pi-arrows-h';
+      case 'notebook': return 'pi pi-book';
+      default: return 'pi pi-box';
+    }
+  }
+
   copyToClipboard(text: string): void {
     navigator.clipboard.writeText(text).then(() => {
       this.messageService.add({
@@ -224,5 +254,11 @@ export class RoleDetailComponent implements OnInit, OnDestroy {
         detail: 'Failed to copy to clipboard'
       });
     });
+  }
+
+  filterPermissions(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    const searchValue = inputElement.value;
+    // PrimeNG table will handle the filtering automatically via globalFilterFields
   }
 }

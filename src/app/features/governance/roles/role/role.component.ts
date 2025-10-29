@@ -1,14 +1,16 @@
-import { Component, EventEmitter, Injector, Output, Input } from '@angular/core';
+import { Component, EventEmitter, Injector, Output, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
-import { FloatLabel } from 'primeng/floatlabel';
-import { InputText } from 'primeng/inputtext';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Textarea } from 'primeng/textarea';
 import { DropdownModule } from 'primeng/dropdown';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ChipModule } from 'primeng/chip';
+import { TableModule } from 'primeng/table';
+import { PaginatorModule } from 'primeng/paginator';
+import { InputText } from 'primeng/inputtext';
+import { Textarea } from 'primeng/textarea';
+import { TooltipModule } from 'primeng/tooltip';
 import { GovernanceServices } from '../../../../core/services/governance.services';
 import { AppBaseComponent } from '../../../../core/base/app-base.component';
 
@@ -25,11 +27,15 @@ import { AppBaseComponent } from '../../../../core/base/app-base.component';
     FormsModule,
     DropdownModule,
     CheckboxModule,
-    ChipModule
+    ChipModule,
+    TableModule,
+    PaginatorModule
   ],
   templateUrl: './role.component.html',
 })
 export class RoleComponent extends AppBaseComponent {
+  /** When true the component renders inline (page) instead of inside a p-dialog */
+  @Input() inline: boolean = false;
   @Input() role: any = null;
   @Output() saveRole = new EventEmitter<void>();
   @Output() cancelRole = new EventEmitter<void>();
@@ -179,9 +185,141 @@ export class RoleComponent extends AppBaseComponent {
     }
   ];
 
+  // Permission matrix structure
+  permissionMatrix: { resource: string; permissions: any[] }[] = [];
+  allResources: string[] = [];
+  allActions: string[] = [];
+
   constructor(private injector: Injector,
     private governanceServices: GovernanceServices) {
     super(injector);
+  }
+
+  ngOnInit(): void {
+    // Ensure role is initialized for inline rendering (no dialog/show call)
+    if (!this.role) {
+      this.role = this.getDefaultRole();
+    }
+
+    // Load initial permissions for inline/page view
+    this.loadPermissions('', 0, 1000); // Load more for matrix view
+  }
+
+  private getDefaultRole() {
+    return {
+      name: '',
+      description: '',
+      permissions: [],
+      type: 'system',
+      contact: []
+    };
+  }
+
+  // Permissions fetched from API
+  permissions: any[] = [];
+  permTotal = 0;
+  permPageSize = 1000; // Load all for matrix view
+  permOffset = 0;
+  permSearch = '';
+  permLoading = false;
+  saving = false;
+  private permSearchTimeout: any = null;
+
+  // Load permissions list from API and build matrix
+  loadPermissions(search: string = '', offset: number = 0, size: number = 1000) {
+    this.permLoading = true;
+    this.permSearch = search;
+    this.permOffset = offset;
+    this.permPageSize = size;
+
+    const params: any = { size, offset };
+    if (search && search.trim()) params.search = search.trim();
+
+    this.governanceServices.getPermissions(params).subscribe({
+      next: (res) => {
+        if (!res) {
+          this.permissions = [];
+          this.permTotal = 0;
+          this.permLoading = false;
+          return;
+        }
+        // res.data expected to be an array of permission objects
+        this.permissions = Array.isArray(res.data) ? res.data : [];
+        this.permTotal = (res as any).total || (this.permissions.length || 0);
+        this.buildPermissionMatrix();
+        this.permLoading = false;
+      },
+      error: (err) => {
+        console.error('Failed to load permissions', err);
+        this.permissions = [];
+        this.permTotal = 0;
+        this.permLoading = false;
+      }
+    });
+  }
+
+  // Build matrix structure from permissions
+  private buildPermissionMatrix(): void {
+    // Group permissions by resource
+    const grouped = new Map<string, any[]>();
+    const actions = new Set<string>();
+
+    this.permissions.forEach(perm => {
+      const resource = perm.resource || 'Other';
+      const action = perm.action || 'execute';
+      
+      actions.add(action);
+      
+      if (!grouped.has(resource)) {
+        grouped.set(resource, []);
+      }
+      grouped.get(resource)!.push(perm);
+    });
+
+    // Convert to array and sort
+    this.permissionMatrix = Array.from(grouped.entries())
+      .map(([resource, permissions]) => ({ resource, permissions }))
+      .sort((a, b) => a.resource.localeCompare(b.resource));
+
+    this.allActions = Array.from(actions).sort();
+    this.allResources = Array.from(grouped.keys()).sort();
+  }
+
+  // Get permission by resource and action for matrix display
+  getPermissionByResourceAction(resource: string, action: string): any {
+    return this.permissions.find(p => p.resource === resource && p.action === action);
+  }
+
+  // Check if a specific resource+action permission is selected
+  isMatrixPermissionSelected(resource: string, action: string): boolean {
+    const perm = this.getPermissionByResourceAction(resource, action);
+    if (!perm) return false;
+    const id = perm.kid || perm.code;
+    return this.role.permissions && this.role.permissions.includes(id);
+  }
+
+  // Toggle a specific resource+action permission
+  toggleMatrixPermission(resource: string, action: string, selected: boolean): void {
+    const perm = this.getPermissionByResourceAction(resource, action);
+    if (!perm) return;
+    
+    const id = perm.kid || perm.code;
+    this.togglePermission(id, selected);
+  }
+
+  onPermSearch(term: string) {
+    // debounce
+    if (this.permSearchTimeout) clearTimeout(this.permSearchTimeout);
+    this.permSearchTimeout = setTimeout(() => {
+      this.loadPermissions(term, 0, this.permPageSize);
+    }, 300);
+  }
+
+  onPermPage(event: any) {
+    // event.first (offset), event.rows (page size)
+    const offset = event.first || 0;
+    const size = event.rows || this.permPageSize;
+    this.loadPermissions(this.permSearch, offset, size);
   }
 
   save() {
@@ -190,77 +328,112 @@ export class RoleComponent extends AppBaseComponent {
       this.role.permissions = [];
     }
 
+    // Ensure permissions stored are permission 'kid' values (preferred)
+    this.role.permissions = (this.role.permissions || []).map(p => {
+      if (!p) return p;
+      if (typeof p === 'string') return p; // already a string id
+      return p.kid || p.code || p;
+    });
+
+    // Generate a role.kid based on name if not present
+    if (!this.role.kid && this.role.name) {
+      this.role.kid = this.generateKidFromName(this.role.name);
+    }
+
+    const payload = { ...this.role, permissions: this.role.permissions };
+
     const saveObservable = this.role._id ?
-      this.governanceServices.updateRole(this.role._id, this.role) :
-      this.governanceServices.createRole(this.role);
+      this.governanceServices.updateRole(this.role._id, payload) :
+      this.governanceServices.createRole(payload);
+    // Call real API
+    this.saving = true;
+    saveObservable.subscribe({
+      next: (res) => {
+        this.saving = false;
+        if (!res || !res.success) {
+          this.showError(res && (res as any).message ? (res as any).message : 'Failed to save role');
+          return;
+        }
+        this.showSuccess(this.role._id ? 'Role updated successfully' : 'Role created successfully');
+        // hide dialog only when not inline
+        if (!this.inline) {
+          this.visible = false;
+        }
+        this.role = this.getDefaultRole();
+        this.saveRole.emit();
+      },
+      error: (err) => {
+        this.saving = false;
+        console.error('Failed to save role', err);
+        this.showError('Failed to save role');
+      }
+    });
+  }
 
-    // Mock implementation - replace with actual service call
-    setTimeout(() => {
-      this.showSuccess(this.role._id ? 'Role updated successfully' : 'Role created successfully');
-      this.visible = false;
-      this.role = { permissions: [] };
-      this.saveRole.emit();
-    }, 500);
-
-    // Uncomment for actual API call:
-    // saveObservable.subscribe(res => {
-    //   if (!res) {
-    //     return;
-    //   }
-    //   this.showSuccess(this.role._id ? 'Updated successfully' : 'Created successfully');
-    //   this.visible = false;
-    //   this.role = { permissions: [] };
-    //   this.onSave.emit();
-    // });
+  private generateKidFromName(name: string): string {
+    const slug = (name || '')
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 50);
+    const suffix = Date.now().toString(36).slice(-6);
+    return `${slug}-${suffix}`;
   }
 
   show(id?) {
     this.visible = true;
-    
-    // Initialize with all required fields to prevent null reference errors
-    const defaultRole = {
-      name: '',
-      description: '',
-      permissions: [],
-      type: 'custom',
-      level: 'standard',
-      scope: 'team',
-      risk_level: 'Medium'
-    };
 
+    // Initialize with default fields to prevent null reference errors
     if (id) {
       this.title = 'Edit Role';
       // Set default first to prevent template errors during loading
-      this.role = { ...defaultRole };
-      
-      // Mock implementation - replace with actual service call
-      setTimeout(() => {
-        // Find mock role data
-        const mockRole = {
-          _id: id,
-          name: 'Sample Role',
-          description: 'Sample role description',
-          type: 'custom',
-          level: 'standard',
-          scope: 'team',
-          risk_level: 'Medium',
-          permissions: ['data_read_team', 'report_view', 'dashboard_view'],
-          inherits_from: 'Data User'
-        };
-        this.role = { ...mockRole };
-      }, 200);
+      this.role = { ...this.getDefaultRole() };
 
-      // Uncomment for actual API call:
-      // this.governanceServices.getRole(id).subscribe(res => {
-      //   if (!res) {
-      //     return;
-      //   }
-      //   this.role = res.data;
-      // });
+      // Load the role from API
+      this.governanceServices.getRoleDetail(id).subscribe({
+        next: (res) => {
+          if (!res || !res.data) {
+            return;
+          }
+          const rd: any = res.data;
+          // Map detailed permission objects to codes if needed
+          const perms = Array.isArray(rd.permissions) ? rd.permissions.map((p: any) => p.kid || p.code || p) : [];
+          this.role = {
+            ...rd,
+            permissions: perms
+          };
+        },
+        error: (err) => {
+          console.error('Failed to load role detail', err);
+          this.showError('Failed to load role data');
+        }
+      });
+
+      // Load permissions for edit view
+      this.loadPermissions('', 0, this.permPageSize);
     } else {
       this.title = 'Create Role';
-      this.role = { ...defaultRole };
+      this.role = { ...this.getDefaultRole() };
+      // Load permissions when creating a new role
+      this.loadPermissions('', 0, this.permPageSize);
     }
+  }
+
+  onCancelClick() {
+    // If inline (page), emit cancel so the parent can navigate away.
+    if (this.inline) {
+      this.cancelRole.emit();
+    } else {
+      // hide dialog only
+      this.visible = false;
+      this.cancelRole.emit();
+    }
+  }
+
+  onDialogHide() {
+    // Dialog was closed by the user
+    this.cancelRole.emit();
   }
 
   // Permission management methods
@@ -300,14 +473,8 @@ export class RoleComponent extends AppBaseComponent {
   }
 
   selectAllPermissions(): void {
-    this.role.permissions = [];
-    this.permissionCategories.forEach(category => {
-      category.permissions.forEach(permission => {
-        if (!this.role.permissions.includes(permission.value)) {
-          this.role.permissions.push(permission.value);
-        }
-      });
-    });
+    // Select all currently loaded permissions (use kid if available)
+    this.role.permissions = (this.permissions || []).map(p => p.kid || p.code || p);
   }
 
   clearAllPermissions(): void {

@@ -181,8 +181,7 @@ export class SidebarComponent implements OnInit, OnChanges {
         { label: 'Roles', url: '/governance/roles', icon: 'pi pi-id-card' },
         { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building' },
         { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
-        { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' },
-        { label: 'Contracts', url: '/data-contracts', icon: 'pi pi-file-check' }
+        { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' }
       ]
     },
     {
@@ -304,8 +303,7 @@ export class SidebarComponent implements OnInit, OnChanges {
           { label: 'Roles', url: '/governance/roles', icon: 'pi pi-id-card' },
           { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building' },
           { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
-          { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' },
-          { label: 'Contracts', url: '/data-contracts', icon: 'pi pi-file-check' }
+          { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' }
         ]
       },
       // Settings removed from global sidebar to make it a standalone app (top-right selector)
@@ -445,18 +443,22 @@ export class SidebarComponent implements OnInit, OnChanges {
       return;
     }
 
-    // Special-case: for Governance app - flatten all governance items (no collapse/expand, just show all items)
+    // Special-case: for Governance app - keep the Governance group as a single top-level group
+    // with its items nested underneath (do NOT flatten items to root). This ensures the
+    // Governance menu header remains and its submenus appear under it.
     if (key === 'governance') {
       const governanceGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('governance'));
-      if (governanceGroup && governanceGroup.items) {
-        // Flatten all items into a single group with expanded = true (no collapse needed)
-        const flatGroup = {
-          label: 'Governance',
-          icon: 'pi pi-shield',
+      if (governanceGroup) {
+        // Keep a single Governance parent group and show it expanded so subitems are visible.
+        // Clone the object to avoid mutating the original sidebarGroups state.
+        const copy = {
+          label: governanceGroup.label,
+          icon: governanceGroup.icon,
           expanded: true,
-          items: governanceGroup.items
-        };
-        this.visibleGroups = [flatGroup];
+          items: governanceGroup.items || []
+        } as any;
+
+        this.visibleGroups = this.orderGroupsForApp([copy], key);
         return;
       }
     }

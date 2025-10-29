@@ -90,15 +90,6 @@ export class SearchService {
       category: 'Data Mesh',
       tags: ['data', 'products', 'catalog']
     },
-    {
-      id: 'data-contracts',
-      title: 'Data Contracts',
-      description: 'Manage data contracts and agreements',
-      type: 'page',
-      url: '/data-contracts',
-      category: 'Data Mesh',
-      tags: ['contracts', 'agreements', 'data']
-    },
 
     // Governance
     {

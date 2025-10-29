@@ -556,7 +556,7 @@ export class GovernanceServices {
   getRoleDetail(id: string): Observable<ApiResponse<RoleDetail>> {
     console.log('Fetching role detail with ID:', id);
     const cacheKey = `role_detail_${id}`;
-    const httpObservable = this.http.get<RoleDetail>(`${this.baseUrl}/governance/roles/${id}`)
+    const httpObservable = this.http.get<RoleDetail>(`${this.baseUrl}/governance/role/${id}`)
       .pipe(
         tap(response => console.log('Raw role detail API response:', response)),
         map(response => this.wrapResponse(response)),
@@ -573,17 +573,17 @@ export class GovernanceServices {
   }
 
   updateRole(id: string, role: Partial<Role>): Observable<ApiResponse<Role>> {
-    return this.http.patch<Role>(`${this.baseUrl}/governance/roles/${id}`, role)
+    return this.http.patch<Role>(`${this.baseUrl}/governance/role/${id}`, role)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   updateRoleStatus(id: string, is_active: boolean): Observable<ApiResponse<Role>> {
-    return this.http.patch<Role>(`${this.baseUrl}/governance/roles/${id}/status`, { is_active })
+    return this.http.patch<Role>(`${this.baseUrl}/governance/role/${id}/status`, { is_active })
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   deleteRole(id: string): Observable<ApiResponse<any>> {
-    return this.http.delete<any>(`${this.baseUrl}/governance/roles/${id}`)
+    return this.http.delete<any>(`${this.baseUrl}/governance/role/${id}`)
       .pipe(map(response => this.wrapResponse(response)));
   }
 

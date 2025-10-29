@@ -37,7 +37,7 @@ import { CardModule } from 'primeng/card';
           <p-tabPanel header="General Info" leftIcon="pi pi-info-circle">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <p-card>
+                <p-card class="w-full">
                   <div class="mb-2 flex items-center gap-2"><i class="pi pi-link"></i><span class="font-semibold text-gray-700">Source:</span> {{ asset?.source || 'N/A' }}</div>
                   <div class="mb-2 flex items-center gap-2"><i class="pi pi-align-left"></i><span class="font-semibold text-gray-700">Description:</span> {{ asset?.description || 'N/A' }}</div>
                   <div class="mb-2 flex items-center gap-2"><i class="pi pi-calendar-plus"></i><span class="font-semibold text-gray-700">Created At:</span><span *ngIf="asset?.created_at; else noCreated">{{ asset.created_at | date:'short' }}</span><ng-template #noCreated><span class="text-gray-400">N/A</span></ng-template></div>
@@ -45,7 +45,7 @@ import { CardModule } from 'primeng/card';
                 </p-card>
               </div>
               <div>
-                <p-card>
+                <p-card class="w-full">
                   <div class="mb-2 flex items-center gap-2"><i class="pi pi-lock"></i><span class="font-semibold text-gray-700">Classification:</span> {{ asset?.classification || 'N/A' }}</div>
                   <div class="mb-2 flex items-center gap-2"><i class="pi pi-refresh"></i><span class="font-semibold text-gray-700">Version:</span> {{ asset?.version || 'N/A' }}</div>
                   <div class="mb-2 flex items-center gap-2"><i class="pi pi-server"></i><span class="font-semibold text-gray-700">Integration Status:</span> {{ asset?.integration_status || 'N/A' }}</div>
@@ -57,13 +57,13 @@ import { CardModule } from 'primeng/card';
           
           <p-tabPanel header="Domain & Product" leftIcon="pi pi-sitemap">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <p-card header="Domain Information" *ngIf="asset?.domain">
+              <p-card class="w-full" header="Domain Information" *ngIf="asset?.domain">
                 <div class="mb-2 flex items-center gap-2"><i class="pi pi-building"></i><span class="font-semibold text-gray-700">Domain ID:</span> {{ asset.domain.domain_id || 'N/A' }}</div>
                 <div class="mb-2 flex items-center gap-2"><i class="pi pi-tag"></i><span class="font-semibold text-gray-700">Domain Name:</span> {{ asset.domain.domain_name || 'N/A' }}</div>
                 <div class="mb-2 flex items-center gap-2"><i class="pi pi-user"></i><span class="font-semibold text-gray-700">Domain Owner:</span> {{ asset.domain.domain_owner || 'N/A' }}</div>
                 <div class="mb-2 flex items-center gap-2"><i class="pi pi-align-left"></i><span class="font-semibold text-gray-700">Description:</span> {{ asset.domain.description || 'N/A' }}</div>
               </p-card>
-              <p-card header="Data Product Information" *ngIf="asset?.data_product">
+              <p-card class="w-full" header="Data Product Information" *ngIf="asset?.data_product">
                 <div class="mb-2 flex items-center gap-2"><i class="pi pi-box"></i><span class="font-semibold text-gray-700">Product ID:</span> {{ asset.data_product.product_id || 'N/A' }}</div>
                 <div class="mb-2 flex items-center gap-2"><i class="pi pi-tag"></i><span class="font-semibold text-gray-700">Product Name:</span> {{ asset.data_product.product_name || 'N/A' }}</div>
                 <div class="mb-2 flex items-center gap-2"><i class="pi pi-user"></i><span class="font-semibold text-gray-700">Product Owner:</span> {{ asset.data_product.product_owner || 'N/A' }}</div>
@@ -75,18 +75,18 @@ import { CardModule } from 'primeng/card';
           
           <p-tabPanel header="Tags & Compliance" leftIcon="pi pi-tags">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <p-card header="Tags">
+              <p-card class="w-full" header="Tags">
                 <div class="flex flex-wrap gap-2">
                   <span *ngFor="let tag of asset?.tags" class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs">{{ tag }}</span>
                   <span *ngIf="!asset?.tags?.length" class="text-gray-400">No tags</span>
                 </div>
               </p-card>
-              <p-card header="Discovery Tags" *ngIf="asset?.discovery_tags?.length">
+              <p-card class="w-full" header="Discovery Tags" *ngIf="asset?.discovery_tags?.length">
                 <div class="flex flex-wrap gap-2">
                   <span *ngFor="let tag of asset.discovery_tags" class="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-xs">{{ tag }}</span>
                 </div>
               </p-card>
-              <p-card header="Compliance Tags">
+              <p-card class="w-full" header="Compliance Tags">
                 <div class="flex flex-wrap gap-2">
                   <span *ngFor="let tag of asset?.compliance_tags" class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs">{{ tag }}</span>
                   <span *ngIf="!asset?.compliance_tags?.length" class="text-gray-400">No compliance tags</span>
@@ -97,7 +97,7 @@ import { CardModule } from 'primeng/card';
           
           <p-tabPanel header="Quality & Docs" leftIcon="pi pi-check">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <p-card header="Quality Rules">
+              <p-card class="w-full" header="Quality Rules">
                 <div *ngIf="asset?.quality_rules?.length; else noQuality">
                   <ul class="list-disc pl-6 text-gray-700">
                     <li *ngFor="let rule of asset.quality_rules">{{ rule }}</li>
@@ -105,7 +105,7 @@ import { CardModule } from 'primeng/card';
                 </div>
                 <ng-template #noQuality><span class="text-gray-400">No quality rules</span></ng-template>
               </p-card>
-              <p-card header="Documentation Links">
+              <p-card class="w-full" header="Documentation Links">
                 <div *ngIf="asset?.documentation_links?.length; else noDocs">
                   <ul class="list-disc pl-6 text-blue-700">
                     <li *ngFor="let link of asset.documentation_links"><a [href]="link" target="_blank" class="underline flex items-center gap-1"><i class="pi pi-external-link"></i>{{ link }}</a></li>
@@ -118,7 +118,7 @@ import { CardModule } from 'primeng/card';
           
           <p-tabPanel header="Schema & Business" leftIcon="pi pi-database">
             <div class="grid grid-cols-1 gap-6">
-              <p-card header="Schema Information" *ngIf="asset?.schema">
+              <p-card class="w-full" header="Schema Information" *ngIf="asset?.schema">
                 <div class="mb-2 flex items-center gap-2"><i class="pi pi-code"></i><span class="font-semibold text-gray-700">Schema Type:</span> {{ asset.schema.schema_type || 'N/A' }}</div>
                 <div class="mb-2 flex items-center gap-2"><i class="pi pi-link"></i><span class="font-semibold text-gray-700">Registry URL:</span> {{ asset.schema.schema_registry_url || 'N/A' }}</div>
                 <div class="mb-2 flex items-center gap-2"><i class="pi pi-tag"></i><span class="font-semibold text-gray-700">Schema Version:</span> {{ asset.schema.schema_version || 'N/A' }}</div>
@@ -127,7 +127,7 @@ import { CardModule } from 'primeng/card';
                   <pre class="bg-gray-100 p-3 rounded mt-2 text-sm overflow-x-auto">{{ asset.schema.schema_definition }}</pre>
                 </div>
               </p-card>
-              <p-card header="Business Glossary" *ngIf="asset?.business_glossary?.length">
+              <p-card class="w-full" header="Business Glossary" *ngIf="asset?.business_glossary?.length">
                 <div *ngFor="let term of asset.business_glossary" class="mb-4 p-3 border rounded">
                   <div class="font-semibold text-blue-700 mb-1">{{ term.term }}</div>
                   <div class="text-gray-600 mb-2">{{ term.definition }}</div>
@@ -144,7 +144,7 @@ import { CardModule } from 'primeng/card';
           
           <p-tabPanel header="Lineage & Access" leftIcon="pi pi-share-alt">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <p-card header="Data Lineage" *ngIf="asset?.lineage">
+              <p-card class="w-full" header="Data Lineage" *ngIf="asset?.lineage">
                 <div *ngIf="asset.lineage.inputs?.length" class="mb-4">
                   <span class="font-semibold text-gray-700 flex items-center gap-2"><i class="pi pi-arrow-right"></i>Inputs:</span>
                   <ul class="list-disc pl-6 mt-1">
@@ -164,7 +164,7 @@ import { CardModule } from 'primeng/card';
                   </ul>
                 </div>
               </p-card>
-              <p-card header="Access Controls" *ngIf="asset?.access_controls">
+              <p-card class="w-full" header="Access Controls" *ngIf="asset?.access_controls">
                 <div *ngIf="asset.access_controls.admin?.length" class="mb-3">
                   <span class="font-semibold text-red-700 flex items-center gap-2"><i class="pi pi-shield"></i>Admin:</span>
                   <ul class="list-disc pl-6 mt-1">
@@ -189,7 +189,7 @@ import { CardModule } from 'primeng/card';
           
           <p-tabPanel header="Audit & Policies" leftIcon="pi pi-save">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <p-card header="Audit Log" *ngIf="asset?.audit_log?.length">
+              <p-card class="w-full" header="Audit Log" *ngIf="asset?.audit_log?.length">
                 <div class="max-h-64 overflow-y-auto">
                   <div *ngFor="let log of asset.audit_log" class="mb-3 p-2 border rounded">
                     <div class="font-semibold text-sm">{{ log.action }}</div>
@@ -198,7 +198,7 @@ import { CardModule } from 'primeng/card';
                   </div>
                 </div>
               </p-card>
-              <p-card header="Policies">
+              <p-card class="w-full" header="Policies">
                 <div class="mb-2 flex items-center gap-2"><i class="pi pi-save"></i><span class="font-semibold text-gray-700">Backup Policy:</span> {{ asset?.backup_policy || 'N/A' }}</div>
                 <div class="mb-2 flex items-center gap-2"><i class="pi pi-clock"></i><span class="font-semibold text-gray-700">Retention Policy:</span> {{ asset?.retention_policy || 'N/A' }}</div>
               </p-card>
@@ -223,7 +223,7 @@ export class AssetDetailComponent implements OnInit {
   loading: boolean = false;
   error: string = '';
 
-  constructor(private route: ActivatedRoute, private dataAssetsService: DataAssetsService) {}
+  constructor(private route: ActivatedRoute, private dataAssetsService: DataAssetsService) { }
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -234,8 +234,8 @@ export class AssetDetailComponent implements OnInit {
           // Handle API response structure
           this.asset = response?.data || response;
           if (this.asset) {
-            this.assetKeys = Object.keys(this.asset).filter(k => 
-              !['name','type','subtype','owner','status','_id','kid'].includes(k)
+            this.assetKeys = Object.keys(this.asset).filter(k =>
+              !['name', 'type', 'subtype', 'owner', 'status', '_id', 'kid'].includes(k)
             );
           } else {
             // Provide a minimal asset structure if no data returned

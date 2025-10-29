@@ -76,10 +76,6 @@ export const routes: Routes = [
         loadComponent: () => import('./features/governance/permissions/permissions.component').then(m => m.PermissionsComponent),
       },
       {
-        path: 'data-contracts',
-        loadComponent: () => import('./features/data-contracts/data-contracts.component').then(m => m.DataContractsComponent),
-      },
-      {
         path: 'dashboard',
         loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
       },

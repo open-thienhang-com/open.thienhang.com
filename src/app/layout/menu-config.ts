@@ -101,8 +101,7 @@ export const menu: MenuItem[] = [
             { label: 'Teams', url: '/governance/teams', icon: 'pi pi-users' },
             { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
             { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building' },
-            { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' },
-            { label: 'Contracts', url: '/data-contracts', icon: 'pi pi-file-check' }
+            { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' }
         ]
     },
     // Settings intentionally removed from sidebar menu config; Settings is a standalone app

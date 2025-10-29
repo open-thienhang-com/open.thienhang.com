@@ -15,6 +15,8 @@ import { DividerModule } from 'primeng/divider';
 import { DropdownModule } from 'primeng/dropdown';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-permission',
@@ -182,6 +184,10 @@ export class PermissionComponent extends AppBaseComponent {
           }
           // Update which optional columns should be shown in the template
           this.updateAssetColumnVisibility();
+
+          // If assets are empty but we have asset identifiers in other fields, try to
+          // enrich assets by fetching asset names from the governance asset API.
+          this.enrichAssetsWithNamesIfNeeded();
         } else {
           console.log('Using res directly:', res);
           this.permission = res;
@@ -200,6 +206,106 @@ export class PermissionComponent extends AppBaseComponent {
         this.visible = false;
       }
     });
+  }
+
+  // If permission.assets is empty or contains entries without a name, attempt to
+  // fetch asset details (name, type, location, etc.) from the API using
+  // GovernanceServices.getAsset which has an internal cache.
+  private enrichAssetsWithNamesIfNeeded() {
+    try {
+      const assets = Array.isArray(this.permission?.assets) ? this.permission.assets : [];
+
+      // Collect candidate asset ids from multiple possible fields
+      const ids = new Set<string>();
+
+      // permission.assets may be an array of strings (ids) or objects with kid/_id
+      (this.permission.assets || []).forEach((a: any) => {
+        if (!a) return;
+        if (typeof a === 'string') ids.add(a);
+        else if (a.kid) ids.add(a.kid);
+        else if (a._id) ids.add(a._id);
+      });
+
+      // permission.asset_details may contain objects or ids
+      (this.permission.asset_details || []).forEach((a: any) => {
+        if (!a) return;
+        if (typeof a === 'string') ids.add(a);
+        else if (a.kid) ids.add(a.kid);
+        else if (a._id) ids.add(a._id);
+      });
+
+      // permission.resources sometimes contains asset ids/paths
+      (this.permission.resources || []).forEach((r: any) => {
+        if (!r) return;
+        if (typeof r === 'string') ids.add(r);
+      });
+
+      // If there are no candidate ids, nothing to do
+      if (!ids.size) return;
+
+      // If assets already have names for all entries, skip
+      const needFetch = assets.length === 0 || assets.some((a: any) => !a || !a.name || a.name === a.kid);
+      if (!needFetch) return;
+
+      // Build an array of observables to fetch each asset
+      const calls = Array.from(ids).map(id =>
+        this.governanceServices.getAsset(id).pipe(
+          map(res => res?.data || null),
+          catchError(err => {
+            console.warn('Failed to fetch asset', id, err);
+            return of(null);
+          })
+        )
+      );
+
+      forkJoin(calls).subscribe(results => {
+        const fetched = (results || []).filter(r => r);
+        if (!fetched.length) return;
+
+        // Merge fetched assets into permission.assets, preferring existing fields
+        const merged: any[] = [];
+        fetched.forEach((a: any) => {
+          merged.push({
+            kid: a.kid || a._id || a.id || a.kid || null,
+            name: a.name || a.title || a.kid || a._id || 'N/A',
+            type: a.type || a.category || '',
+            location: a.location || a.store || '',
+            sensitivity: a.sensitivity || a.classification || '',
+            source: a.source || '',
+            status: a.status || ''
+          });
+        });
+
+        // If permission.assets already had entries, try to merge by kid
+        const existingByKid = new Map<string, any>();
+        (this.permission.assets || []).forEach((ex: any) => {
+          const key = ex?.kid || ex?._id || ex?.id || ex?.name;
+          if (key) existingByKid.set(key, ex);
+        });
+
+        merged.forEach(m => {
+          const key = m.kid || m.name;
+          const existing = existingByKid.get(key);
+          if (existing) {
+            // keep extra fields from existing
+            this.permission.assets.push(Object.assign({}, existing, m));
+            existingByKid.delete(key);
+          } else {
+            this.permission.assets.push(m);
+          }
+        });
+
+        // If assets was initially empty, replace with merged
+        if (!Array.isArray(this.permission.assets) || this.permission.assets.length === 0) {
+          this.permission.assets = merged;
+        }
+
+        // Recompute visibility columns
+        this.updateAssetColumnVisibility();
+      });
+    } catch (err) {
+      console.warn('enrichAssetsWithNamesIfNeeded failed', err);
+    }
   }
 
   // Delete permission with confirmation

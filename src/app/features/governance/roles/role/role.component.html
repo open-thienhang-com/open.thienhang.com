@@ -1,190 +1,386 @@
-<p-dialog [(visible)]="visible" [modal]="true" [style]="{ width: '80rem', maxHeight: '90vh' }" [closable]="true" [resizable]="false">
-  <ng-template #header>
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
-        <i class="pi pi-shield text-white text-lg"></i>
-      </div>
-      <div>
-        <h2 class="text-xl font-bold text-gray-900">{{ title }}</h2>
-        <p class="text-sm text-gray-500">Configure role permissions and settings</p>
-      </div>
-    </div>
-  </ng-template>
-
-  <div class="space-y-6 p-1" *ngIf="role">
-    <!-- Basic Information -->
-    <div class="bg-gray-50 rounded-lg p-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <p-floatlabel>
-          <input class="w-full" pInputText id="name" [(ngModel)]="role.name" autocomplete="off" required/>
-          <label for="name">Role Name *</label>
-        </p-floatlabel>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Role Type</label>
-          <p-dropdown 
-            [options]="typeOptions" 
-            [(ngModel)]="role.type" 
-            placeholder="Select type"
-            class="w-full">
-          </p-dropdown>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Access Level</label>
-          <p-dropdown 
-            [options]="levelOptions" 
-            [(ngModel)]="role.level" 
-            placeholder="Select level"
-            class="w-full">
-          </p-dropdown>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Scope</label>
-          <p-dropdown 
-            [options]="scopeOptions" 
-            [(ngModel)]="role.scope" 
-            placeholder="Select scope"
-            class="w-full">
-          </p-dropdown>
-        </div>
-
-        <div class="md:col-span-2">
-          <p-floatlabel>
-            <textarea pTextarea id="description" [(ngModel)]="role.description" rows="3" 
-                     style="resize: none" class="w-full"></textarea>
-            <label for="description">Description</label>
-          </p-floatlabel>
-        </div>
-      </div>
-    </div>
-
-    <!-- Role Inheritance -->
-    <div class="bg-gray-50 rounded-lg p-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Role Inheritance</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Inherits From</label>
-          <p-dropdown 
-            [options]="inheritanceOptions" 
-            [(ngModel)]="role.inherits_from" 
-            placeholder="Select parent role (optional)"
-            [showClear]="true"
-            class="w-full">
-          </p-dropdown>
-          <small class="text-gray-500 mt-1">This role will inherit all permissions from the selected parent role</small>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Risk Level</label>
-          <p-dropdown 
-            [options]="riskOptions" 
-            [(ngModel)]="role.risk_level" 
-            placeholder="Select risk level"
-            class="w-full">
-          </p-dropdown>
-        </div>
-      </div>
-    </div>
-
-    <!-- Permissions -->
-    <div class="bg-gray-50 rounded-lg p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-gray-900">Permissions</h3>
-        <div class="flex items-center gap-2">
-          <p-button 
-            label="Select All" 
-            icon="pi pi-check" 
-            severity="secondary" 
-            size="small"
-            [text]="true"
-            (click)="selectAllPermissions()">
-          </p-button>
-          <p-button 
-            label="Clear All" 
-            icon="pi pi-times" 
-            severity="secondary" 
-            size="small"
-            [text]="true"
-            (click)="clearAllPermissions()">
-          </p-button>
-        </div>
-      </div>
-
-      <div class="space-y-4">
-        <div *ngFor="let category of permissionCategories" class="border border-gray-200 rounded-lg">
-          <div class="bg-white p-4 border-b border-gray-200">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <i class="text-lg text-gray-600" [ngClass]="category.icon"></i>
-                <div>
-                  <h4 class="font-medium text-gray-900">{{ category.name }}</h4>
-                  <p class="text-sm text-gray-500">{{ category.description }}</p>
-                </div>
-              </div>
-              <p-checkbox 
-                [ngModel]="isCategorySelected(category)"
-                (ngModelChange)="toggleCategory(category, $event)"
-                [binary]="true">
-              </p-checkbox>
+<ng-container *ngIf="inline; else dialogTemplate">
+  <div class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between py-4">
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
+              <i class="pi pi-shield text-white"></i>
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold text-gray-900">{{ title }}</h1>
+              <p class="text-sm text-gray-500">{{ getSelectedPermissionsCount() }} permissions selected</p>
             </div>
           </div>
-          
-          <div class="p-4 bg-gray-50">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              <div *ngFor="let permission of category.permissions" class="flex items-center gap-2">
-                <p-checkbox 
-                  [ngModel]="isPermissionSelected(permission.value)"
-                  (ngModelChange)="togglePermission(permission.value, $event)"
-                  [binary]="true">
-                </p-checkbox>
-                <label class="text-sm text-gray-700 cursor-pointer" 
-                       (click)="togglePermission(permission.value, !isPermissionSelected(permission.value))">
-                  {{ permission.label }}
-                </label>
-              </div>
-            </div>
+          <div class="flex items-center gap-2">
+            <p-button 
+              label="Cancel" 
+              icon="pi pi-times"
+              severity="secondary" 
+              [outlined]="true"
+              (click)="onCancelClick()">
+            </p-button>
+            <p-button 
+              label="Save Role" 
+              icon="pi pi-save"
+              severity="primary" 
+              (click)="save()"
+              [disabled]="!isFormValid() || saving"
+              [loading]="saving">
+            </p-button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- User Assignment Preview -->
-    <div class="bg-gray-50 rounded-lg p-6" *ngIf="role.users && role.users.length > 0">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Current Assignments</h3>
-      <div class="flex flex-wrap gap-2">
-        <p-chip *ngFor="let user of role.users" [label]="user" [removable]="true" 
-                (onRemove)="removeUser(user)">
-        </p-chip>
+    <!-- Main content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" *ngIf="role">
+      <!-- Basic Information -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-base font-semibold text-gray-900">Basic Information</h3>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Role Name *</label>
+              <input class="w-full" pInputText [(ngModel)]="role.name" placeholder="Enter role name" autocomplete="off" required/>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Role Type</label>
+              <p-dropdown 
+                [options]="typeOptions" 
+                [(ngModel)]="role.type" 
+                placeholder="Select type"
+                class="w-full"
+                [style]="{'width': '100%'}">
+              </p-dropdown>
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+              <textarea pTextarea [(ngModel)]="role.description" rows="3" 
+                       placeholder="Describe the role's purpose and responsibilities"
+                       style="resize: none" class="w-full"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Permissions Matrix -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-semibold text-gray-900">Permissions Matrix</h3>
+            <p class="text-sm text-gray-500 mt-1">Select permissions by resource and action</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <p-button 
+              label="Select All" 
+              icon="pi pi-check" 
+              severity="secondary" 
+              size="small"
+              [outlined]="true"
+              (click)="selectAllPermissions()">
+            </p-button>
+            <p-button 
+              label="Clear All" 
+              icon="pi pi-times" 
+              severity="danger" 
+              size="small"
+              [outlined]="true"
+              (click)="clearAllPermissions()">
+            </p-button>
+          </div>
+        </div>
+
+        <div class="p-6">
+          <!-- Search -->
+          <div class="mb-4">
+            <div class="relative">
+              <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+              <input 
+                pInputText 
+                type="text" 
+                class="w-full pl-10" 
+                placeholder="Search permissions by resource or action..." 
+                (input)="onPermSearch($any($event.target).value)" />
+            </div>
+          </div>
+
+          <!-- Loading state -->
+          <div *ngIf="permLoading" class="text-center py-8">
+            <i class="pi pi-spin pi-spinner text-4xl text-blue-500"></i>
+            <p class="text-gray-500 mt-2">Loading permissions...</p>
+          </div>
+
+          <!-- Matrix view -->
+          <div *ngIf="!permLoading && permissionMatrix.length > 0" class="border border-gray-200 rounded-lg overflow-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="sticky left-0 z-10 bg-gray-50 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200">
+                    Resource
+                  </th>
+                  <th *ngFor="let action of allActions" 
+                      class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {{ action }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr *ngFor="let group of permissionMatrix" class="hover:bg-gray-50">
+                  <td class="sticky left-0 z-10 bg-white px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">
+                    {{ group.resource }}
+                  </td>
+                  <td *ngFor="let action of allActions" class="px-6 py-4 text-center">
+                    <ng-container *ngIf="getPermissionByResourceAction(group.resource, action) as perm">
+                      <p-checkbox 
+                        [ngModel]="isMatrixPermissionSelected(group.resource, action)"
+                        (ngModelChange)="toggleMatrixPermission(group.resource, action, $event)"
+                        [binary]="true"
+                        [pTooltip]="perm.name + ': ' + (perm.description || 'No description')"
+                        tooltipPosition="top">
+                      </p-checkbox>
+                    </ng-container>
+                    <span *ngIf="!getPermissionByResourceAction(group.resource, action)" class="text-gray-300">—</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Empty state -->
+          <div *ngIf="!permLoading && permissionMatrix.length === 0" class="text-center py-8">
+            <i class="pi pi-inbox text-4xl text-gray-300 mb-2"></i>
+            <p class="text-gray-500">No permissions found</p>
+            <p class="text-sm text-gray-400 mt-1">Try adjusting your search</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
+</ng-container>
 
-  <ng-template #footer>
-    <div class="flex items-center justify-between w-full">
-      <div class="flex items-center gap-2">
-        <i class="pi pi-info-circle text-blue-500"></i>
-        <span class="text-sm text-gray-600">
-          {{ getSelectedPermissionsCount() }} permissions selected
-        </span>
+<ng-template #dialogTemplate>
+  <p-dialog [(visible)]="visible" [modal]="true" [style]="{ width: '80rem', maxHeight: '90vh' }" [closable]="true" [resizable]="false" (onHide)="onDialogHide()">
+    <ng-template #header>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
+          <i class="pi pi-shield text-white text-lg"></i>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold text-gray-900">{{ title }}</h2>
+          <p class="text-sm text-gray-500">Configure role permissions and settings</p>
+        </div>
       </div>
-      <div class="flex items-center gap-2">
-        <p-button 
-          label="Cancel" 
-          [text]="true" 
-          severity="secondary" 
-          (click)="visible = false">
-        </p-button>
-        <p-button 
-          label="Save Role" 
-          icon="pi pi-save"
-          severity="primary" 
-          (click)="save()"
-          [disabled]="!isFormValid()">
-        </p-button>
+    </ng-template>
+
+    <div class="space-y-6 p-1" *ngIf="role">
+      <!-- original dialog content inserted here (same as inline content) -->
+      <!-- Basic Information -->
+      <div class="bg-gray-50 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <p-floatlabel>
+            <input class="w-full" pInputText id="name" [(ngModel)]="role.name" autocomplete="off" required/>
+            <label for="name">Role Name *</label>
+          </p-floatlabel>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Role Type</label>
+            <p-dropdown 
+              [options]="typeOptions" 
+              [(ngModel)]="role.type" 
+              placeholder="Select type"
+              class="w-full">
+            </p-dropdown>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Access Level</label>
+            <p-dropdown 
+              [options]="levelOptions" 
+              [(ngModel)]="role.level" 
+              placeholder="Select level"
+              class="w-full">
+            </p-dropdown>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Scope</label>
+            <p-dropdown 
+              [options]="scopeOptions" 
+              [(ngModel)]="role.scope" 
+              placeholder="Select scope"
+              class="w-full">
+            </p-dropdown>
+          </div>
+
+          <div class="md:col-span-2">
+            <p-floatlabel>
+              <textarea pTextarea id="description" [(ngModel)]="role.description" rows="3" 
+                       style="resize: none" class="w-full"></textarea>
+              <label for="description">Description</label>
+            </p-floatlabel>
+          </div>
+        </div>
       </div>
+
+      <!-- Role Inheritance -->
+      <div class="bg-gray-50 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Role Inheritance</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Inherits From</label>
+            <p-dropdown 
+              [options]="inheritanceOptions" 
+              [(ngModel)]="role.inherits_from" 
+              placeholder="Select parent role (optional)"
+              [showClear]="true"
+              class="w-full">
+            </p-dropdown>
+            <small class="text-gray-500 mt-1">This role will inherit all permissions from the selected parent role</small>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Risk Level</label>
+            <p-dropdown 
+              [options]="riskOptions" 
+              [(ngModel)]="role.risk_level" 
+              placeholder="Select risk level"
+              class="w-full">
+            </p-dropdown>
+          </div>
+        </div>
+      </div>
+
+      <!-- Permissions -->
+      <div class="bg-gray-50 rounded-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">Permissions</h3>
+          <div class="flex items-center gap-2">
+            <p-button 
+              label="Select All" 
+              icon="pi pi-check" 
+              severity="secondary" 
+              size="small"
+              [text]="true"
+              (click)="selectAllPermissions()">
+            </p-button>
+            <p-button 
+              label="Clear All" 
+              icon="pi pi-times" 
+              severity="secondary" 
+              size="small"
+              [text]="true"
+              (click)="clearAllPermissions()">
+            </p-button>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <!-- API-driven permissions search and list -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search Permissions</label>
+            <div class="flex items-center gap-2">
+              <input pInputText type="text" class="w-full" placeholder="Search permissions by name/code" (input)="onPermSearch($any($event.target).value)" />
+              <p-button icon="pi pi-search" [disabled]="true" [text]="true"></p-button>
+            </div>
+          </div>
+
+          <div class="border border-gray-200 rounded-lg overflow-hidden">
+            <p-table [value]="permissions" [tableStyle]="{'min-width':'100%'}" [loading]="permLoading" styleClass="p-datatable-sm">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th style="width:3rem"></th>
+                  <th>Name</th>
+                  <th>Code</th>
+                  <th>Action</th>
+                  <th>Description</th>
+                  <th style="width:8rem">Assets</th>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="body" let-perm>
+                <tr>
+                  <td>
+                    <p-checkbox [ngModel]="isPermissionSelected(perm.code || perm.kid)" (ngModelChange)="togglePermission(perm.code || perm.kid, $event)" [binary]="true"></p-checkbox>
+                  </td>
+                  <td>
+                    <div class="font-medium text-gray-900">{{ perm.name || perm.kid }}</div>
+                  </td>
+                  <td>
+                    <div class="text-sm text-gray-600">{{ perm.code || perm.kid }}</div>
+                  </td>
+                  <td>
+                    <p-tag [value]="perm.action" styleClass="text-sm px-3"></p-tag>
+                  </td>
+                  <td>
+                    <div class="text-sm text-gray-600">{{ perm.description }}</div>
+                  </td>
+                  <td>
+                    <p-tag [value]="(perm.asset_total || 0) + ' assets'" severity="info"></p-tag>
+                  </td>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="6" class="p-4 text-center text-gray-500">No permissions found</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+
+          <div class="flex justify-end pt-2">
+            <p-paginator [rows]="permPageSize" [totalRecords]="permTotal" [rowsPerPageOptions]="[10,20,50]" (onPageChange)="onPermPage($event)"></p-paginator>
+          </div>
+
+          <!-- legacy grouped permissions removed: UI now uses API-driven list above -->
+        </div>
+      </div>
+
+      <!-- User Assignment Preview -->
+      <div class="bg-gray-50 rounded-lg p-6" *ngIf="role.users && role.users.length > 0">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Current Assignments</h3>
+        <div class="flex flex-wrap gap-2">
+          <p-chip *ngFor="let user of role.users" [label]="user" [removable]="true" 
+                  (onRemove)="removeUser(user)">
+          </p-chip>
+        </div>
+      </div>
+
     </div>
-  </ng-template>
-</p-dialog>
+
+    <ng-template #footer>
+      <div class="flex items-center justify-between w-full">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-info-circle text-blue-500"></i>
+          <span class="text-sm text-gray-600">
+            {{ getSelectedPermissionsCount() }} permissions selected
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <p-button 
+            label="Cancel" 
+            [text]="true" 
+            severity="secondary" 
+            (click)="onCancelClick()">
+          </p-button>
+          <p-button 
+            label="Save Role" 
+            icon="pi pi-save"
+            severity="primary" 
+            (click)="save()"
+            [disabled]="!isFormValid()">
+          </p-button>
+        </div>
+      </div>
+    </ng-template>
+
+    <ng-container *ngTemplateOutlet="footer"></ng-container>
+  </p-dialog>
+</ng-template>

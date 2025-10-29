@@ -186,60 +186,184 @@
               [paginator]="true" 
               [rows]="10" 
               [rowsPerPageOptions]="[10, 25, 50]"
+              [dataKey]="'kid'"
               responsiveLayout="scroll"
               [globalFilterFields]="['name', 'code', 'description']"
-              class="permissions-table">
+              styleClass="permissions-table"
+              [expandedRowKeys]="expandedRows">
               
               <ng-template pTemplate="caption">
                 <div class="table-header">
-                  <h3>Role Permissions ({{ role.permissions.length }})</h3>
+                  <div>
+                    <h3>Role Permissions ({{ role.permissions.length }})</h3>
+                    <p class="table-subtitle">Click on a row to view associated assets</p>
+                  </div>
+                  <span class="p-input-icon-left">
+                    <i class="pi pi-search"></i>
+                    <input 
+                      pInputText 
+                      type="text" 
+                      (input)="filterPermissions($event)" 
+                      placeholder="Search permissions..." 
+                      class="search-input" />
+                  </span>
                 </div>
               </ng-template>
 
               <ng-template pTemplate="header">
                 <tr>
-                  <th>Permission</th>
-                  <th>Code</th>
-                  <th>Action</th>
-                  <th>Assets</th>
-                  <th>Description</th>
+                  <th style="width: 3rem"></th>
+                  <th pSortableColumn="name">
+                    Permission
+                    <p-sortIcon field="name"></p-sortIcon>
+                  </th>
+                  <th pSortableColumn="code" style="width: 150px">
+                    Code
+                    <p-sortIcon field="code"></p-sortIcon>
+                  </th>
+                  <th pSortableColumn="action" style="width: 120px">
+                    Action
+                    <p-sortIcon field="action"></p-sortIcon>
+                  </th>
+                  <th style="width: 100px; text-align: center">Assets</th>
+                  <th style="width: 200px">Description</th>
                 </tr>
               </ng-template>
 
-              <ng-template pTemplate="body" let-permission>
-                <tr>
+              <ng-template pTemplate="body" let-permission let-expanded="expanded">
+                <tr class="permission-row">
+                  <td>
+                    <button 
+                      type="button" 
+                      pButton 
+                      pRipple 
+                      [pRowToggler]="permission"
+                      class="p-button-text p-button-rounded p-button-plain"
+                      [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'">
+                    </button>
+                  </td>
                   <td>
                     <div class="permission-name">
                       <strong>{{ permission.name }}</strong>
+                      <span class="permission-kid">{{ permission.kid }}</span>
                     </div>
                   </td>
                   <td>
-                    <p-chip [label]="permission.code" class="permission-code"></p-chip>
+                    <p-chip 
+                      [label]="permission.code" 
+                      styleClass="permission-code-chip">
+                    </p-chip>
                   </td>
                   <td>
                     <p-tag 
+                      *ngIf="permission.action"
                       [value]="permission.action" 
                       [severity]="getActionSeverity(permission.action)">
                     </p-tag>
+                    <span *ngIf="!permission.action" class="text-muted">N/A</span>
                   </td>
-                  <td>
+                  <td style="text-align: center">
                     <p-badge 
                       [value]="permission.assets?.length || 0" 
-                      severity="info">
+                      [severity]="(permission.assets?.length || 0) > 0 ? 'info' : 'secondary'">
                     </p-badge>
                   </td>
                   <td>
-                    <span class="permission-description">{{ permission.description }}</span>
+                    <span class="permission-description">
+                      {{ permission.description || 'No description available' }}
+                    </span>
+                  </td>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="rowexpansion" let-permission>
+                <tr>
+                  <td colspan="6" class="expanded-row-content">
+                    <div class="permission-expansion">
+                      <div class="expansion-header">
+                        <h4>
+                          <i class="pi pi-database"></i>
+                          Associated Assets
+                          <p-badge 
+                            [value]="permission.assets?.length || 0" 
+                            severity="info">
+                          </p-badge>
+                        </h4>
+                      </div>
+
+                      <div class="assets-grid" *ngIf="permission.assets && permission.assets.length > 0">
+                        <div *ngFor="let asset of permission.assets" class="asset-card">
+                          <div class="asset-card-header">
+                            <div class="asset-icon">
+                              <i [class]="getAssetIcon(asset.type)"></i>
+                            </div>
+                            <div class="asset-main-info">
+                              <strong class="asset-name">{{ asset.name }}</strong>
+                              <span class="asset-kid" *ngIf="asset.kid">{{ asset.kid }}</span>
+                            </div>
+                          </div>
+                          
+                          <div class="asset-card-body">
+                            <div class="asset-meta-row">
+                              <div class="meta-item">
+                                <span class="meta-label">Type:</span>
+                                <p-tag 
+                                  [value]="asset.type" 
+                                  severity="secondary" 
+                                  styleClass="asset-type-tag">
+                                </p-tag>
+                              </div>
+                              
+                              <div class="meta-item" *ngIf="asset.source">
+                                <span class="meta-label">Source:</span>
+                                <span class="meta-value">
+                                  <i class="pi pi-server"></i>
+                                  {{ asset.source }}
+                                </span>
+                              </div>
+                              
+                              <div class="meta-item" *ngIf="asset.location">
+                                <span class="meta-label">Location:</span>
+                                <span class="meta-value">
+                                  <i class="pi pi-map-marker"></i>
+                                  {{ asset.location }}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <div class="asset-status-row" *ngIf="asset.sensitivity || asset.status">
+                              <p-tag 
+                                *ngIf="asset.sensitivity"
+                                [value]="'Sensitivity: ' + asset.sensitivity" 
+                                [severity]="getSensitivitySeverity(asset.sensitivity)"
+                                styleClass="status-badge">
+                              </p-tag>
+                              <p-tag 
+                                *ngIf="asset.status"
+                                [value]="asset.status" 
+                                [severity]="asset.status === 'active' ? 'success' : 'danger'"
+                                styleClass="status-badge">
+                              </p-tag>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="no-assets-message" *ngIf="!permission.assets || permission.assets.length === 0">
+                        <i class="pi pi-info-circle"></i>
+                        <span>No assets associated with this permission</span>
+                      </div>
+                    </div>
                   </td>
                 </tr>
               </ng-template>
 
               <ng-template pTemplate="emptymessage">
                 <tr>
-                  <td colspan="5" class="text-center">
+                  <td colspan="6" class="text-center">
                     <div class="empty-state">
                       <i class="pi pi-shield empty-icon"></i>
-                      <p>No permissions assigned to this role</p>
+                      <p>No permissions found</p>
                     </div>
                   </td>
                 </tr>
