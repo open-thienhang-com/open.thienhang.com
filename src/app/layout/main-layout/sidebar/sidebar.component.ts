@@ -29,22 +29,7 @@ import { TooltipModule } from 'primeng/tooltip';
   ],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
-  animations: [
-    trigger('expandCollapse', [
-      state('void', style({ height: '0px', opacity: 0 })),
-      state('*', style({ height: '*', opacity: 1 })),
-      transition('void <=> *', animate('300ms ease-in-out')),
-    ]),
-    trigger('workspaceChange', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'translateX(-8px)' }),
-        animate('220ms ease-out', style({ opacity: 1, transform: 'translateX(0)' })),
-      ]),
-      transition(':leave', [
-        animate('180ms ease-in', style({ opacity: 0, transform: 'translateX(-6px)' })),
-      ]),
-    ]),
-  ],
+  animations: [],
 
 })
 export class SidebarComponent implements OnInit, OnChanges {
@@ -54,8 +39,6 @@ export class SidebarComponent implements OnInit, OnChanges {
   appKey: AppKey = 'all';
 
   visibleGroups: any[] = [];
-  // Used to force Angular to re-evaluate the list and play transition
-  workspaceToggleKey = 0;
 
   // Info dialog properties
   infoDialogVisible = false;
@@ -64,6 +47,29 @@ export class SidebarComponent implements OnInit, OnChanges {
   // marketplaceExpanded removed — Marketplace is now a standalone app with its own overview page
 
   sidebarGroups = [
+    {
+      label: 'Overview',
+      icon: 'pi pi-home',
+      expanded: false,
+      items: [
+        { label: 'Dashboard', url: '/dashboard', icon: 'pi pi-home' },
+        { label: 'Search', url: '/search', icon: 'pi pi-search' }
+      ]
+    },
+    {
+      label: 'Data Exploration',
+      icon: 'pi pi-compass',
+      expanded: false,
+      items: [
+        { label: 'Database Explorer', url: '/explore/database', icon: 'pi pi-database' },
+        { label: 'Pipelines', url: '/explore/pipelines', icon: 'pi pi-sliders-h' },
+        { label: 'Topics & Events', url: '/explore/topics', icon: 'pi pi-tags' },
+        { label: 'ML Models', url: '/explore/ml-models', icon: 'pi pi-brain' },
+        { label: 'Containers', url: '/explore/container', icon: 'pi pi-box' },
+        { label: 'Advanced Search', url: '/explore/search', icon: 'pi pi-search' },
+        { label: 'Asset Details', url: '/explore/asset-detail', icon: 'pi pi-info-circle' }
+      ]
+    },
     {
       label: 'Explore',
       icon: 'pi pi-compass',
@@ -80,7 +86,6 @@ export class SidebarComponent implements OnInit, OnChanges {
             { label: 'Quality Metrics', url: '/data-mesh/quality', icon: 'pi pi-chart-bar' }
           ]
         },
-        // Data Exploration moved out to top-level menu
         {
           label: 'Observability',
           icon: 'pi pi-eye',
@@ -95,21 +100,89 @@ export class SidebarComponent implements OnInit, OnChanges {
     },
     {
       label: 'Data Catalog',
-      icon: 'pi pi-search',
+      icon: 'pi pi-database',
       expanded: false,
       items: [
         {
-          label: 'Data Exploration',
+          label: 'Overview',
+          icon: 'pi pi-home',
+          url: '/discovery/data-catalog'
+        },
+        {
+          label: 'Browse Assets',
+          icon: 'pi pi-list',
+          children: [
+            { label: 'All Assets', url: '/discovery/data-catalog?view=all', icon: 'pi pi-th-large' },
+            { label: 'Tables & Views', url: '/discovery/data-catalog?type=table', icon: 'pi pi-table' },
+            { label: 'APIs', url: '/discovery/data-catalog?type=api', icon: 'pi pi-code' },
+            { label: 'Files', url: '/discovery/data-catalog?type=file', icon: 'pi pi-file' },
+            { label: 'Streams', url: '/discovery/data-catalog?type=stream', icon: 'pi pi-cloud' }
+          ]
+        },
+        {
+          label: 'By Domain',
+          icon: 'pi pi-sitemap',
+          children: [
+            { label: 'Customer', url: '/discovery/data-catalog?domain=customer', icon: 'pi pi-users' },
+            { label: 'Product', url: '/discovery/data-catalog?domain=product', icon: 'pi pi-shopping-cart' },
+            { label: 'Order', url: '/discovery/data-catalog?domain=order', icon: 'pi pi-shopping-bag' },
+            { label: 'Analytics', url: '/discovery/data-catalog?domain=analytics', icon: 'pi pi-chart-bar' }
+          ]
+        },
+        {
+          label: 'Data Quality',
+          icon: 'pi pi-shield',
+          children: [
+            { label: 'Quality Score', url: '/discovery/quality/score', icon: 'pi pi-star' },
+            { label: 'Data Profiling', url: '/discovery/quality/profiling', icon: 'pi pi-chart-line' },
+            { label: 'Validation Rules', url: '/discovery/quality/rules', icon: 'pi pi-check-square' },
+            { label: 'Issues & Alerts', url: '/discovery/quality/issues', icon: 'pi pi-exclamation-triangle' }
+          ]
+        },
+        {
+          label: 'Data Lineage',
+          icon: 'pi pi-share-alt',
+          children: [
+            { label: 'Lineage Graph', url: '/discovery/lineage/graph', icon: 'pi pi-sitemap' },
+            { label: 'Impact Analysis', url: '/discovery/lineage/impact', icon: 'pi pi-bolt' },
+            { label: 'Dependency Map', url: '/discovery/lineage/dependencies', icon: 'pi pi-link' }
+          ]
+        },
+        {
+          label: 'Metadata',
+          icon: 'pi pi-info-circle',
+          children: [
+            { label: 'Business Glossary', url: '/discovery/metadata/glossary', icon: 'pi pi-book' },
+            { label: 'Tags & Labels', url: '/discovery/metadata/tags', icon: 'pi pi-tag' },
+            { label: 'Classifications', url: '/discovery/metadata/classifications', icon: 'pi pi-lock' },
+            { label: 'Owners & Stewards', url: '/discovery/metadata/owners', icon: 'pi pi-user' }
+          ]
+        },
+        {
+          label: 'Search & Discovery',
           icon: 'pi pi-search',
           children: [
-            { label: 'Database', url: '/explore/database', icon: 'pi pi-database' },
-            { label: 'Pipelines', url: '/explore/pipelines', icon: 'pi pi-sliders-h' },
-            { label: 'Topics', url: '/explore/topics', icon: 'pi pi-tags' },
-            { label: 'ML Models', url: '/explore/ml-models', icon: 'pi pi-brain' },
-            { label: 'Container', url: '/explore/container', icon: 'pi pi-box' },
-            { label: 'Search', url: '/explore/search', icon: 'pi pi-search' }
+            { label: 'Advanced Search', url: '/discovery/search/advanced', icon: 'pi pi-filter' },
+            { label: 'Recently Accessed', url: '/discovery/search/recent', icon: 'pi pi-clock' },
+            { label: 'Popular Assets', url: '/discovery/search/popular', icon: 'pi pi-star-fill' },
+            { label: 'Recommendations', url: '/discovery/search/recommendations', icon: 'pi pi-thumbs-up' }
           ]
         }
+      ]
+    },
+    {
+      label: 'Governance',
+      icon: 'pi pi-shield',
+      expanded: false,
+      items: [
+        { label: 'Permissions', url: '/governance/permissions', icon: 'pi pi-key' },
+        { label: 'Teams', url: '/governance/teams', icon: 'pi pi-users' },
+        { label: 'Policies', url: '/governance/policies', icon: 'pi pi-lock' },
+        { label: 'Roles', url: '/governance/roles', icon: 'pi pi-id-card' },
+        { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building' },
+        { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
+        { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' },
+        { label: 'Contracts', url: '/data-contracts', icon: 'pi pi-file-check' }
       ]
     },
     {
@@ -165,21 +238,6 @@ export class SidebarComponent implements OnInit, OnChanges {
             { label: 'Campaigns', url: '/retail/campaigns', icon: 'pi pi-megaphone' }
           ]
         }
-      ]
-    },
-    {
-      label: 'Governance',
-      icon: 'pi pi-shield',
-      expanded: false,
-      items: [
-        { label: 'Permissions', url: '/governance/permissions', icon: 'pi pi-key' },
-        { label: 'Teams', url: '/governance/teams', icon: 'pi pi-users' },
-        { label: 'Policies', url: '/governance/policies', icon: 'pi pi-lock' },
-        { label: 'Roles', url: '/governance/roles', icon: 'pi pi-id-card' },
-        { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building' },
-        { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
-        { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' },
-        { label: 'Contracts', url: '/data-contracts', icon: 'pi pi-file-check' }
       ]
     }
   ];
@@ -283,47 +341,29 @@ export class SidebarComponent implements OnInit, OnChanges {
   }
 
   trackByGroup(index: number, item: any) {
-    return item?.label + '::' + index + '::' + this.workspaceToggleKey;
+    return item?.label + '::' + index;
   }
 
   computeVisibleGroups() {
-    if (!this.sidebarGroups || this.appKey === 'all') {
-      this.visibleGroups = this.orderGroupsForApp(this.sidebarGroups, this.appKey);
+    // Treat a missing or 'all' appKey as the unified sidebar view
+    if (!this.sidebarGroups || !this.appKey || this.appKey === 'all') {
+      this.visibleGroups = this.orderGroupsForApp(this.sidebarGroups || [], 'all');
       return;
     }
 
     const key = this.appKey;
-    // Special-case: for Catalog app, show only Data Exploration, Data Mesh and Observability
+    // Special-case: for Catalog app, show Data Catalog and Data Exploration groups
     if (key === 'catalog') {
       const byLabel = (lbl: string) => this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes(lbl));
 
-      // Data Exploration -> the 'Data Catalog' group in our config
-      const dataExploration = byLabel('data catalog') || byLabel('catalog') || null;
-
-      // Find the 'Explore' group and extract its child groups 'Data Mesh' and 'Observability'
-      const exploreGroup = byLabel('explore') || null;
-      let dataMeshGroup = null as any;
-      let observabilityGroup = null as any;
-      if (exploreGroup && exploreGroup.items) {
-        const dm = exploreGroup.items.find((it: any) => (it.label || '').toLowerCase().includes('data mesh') || (it.label || '').toLowerCase().includes('data-mesh') || (it.label || '').toLowerCase().includes('data mesh'));
-        const obs = exploreGroup.items.find((it: any) => (it.label || '').toLowerCase().includes('observability') || (it.label || '').toLowerCase().includes('observe'));
-        if (dm) {
-          const dmItems = (dm as any).children ?? (dm as any).items ?? [];
-          dataMeshGroup = { label: dm.label, icon: dm.icon || 'pi pi-sitemap', expanded: false, items: dmItems };
-        }
-        if (obs) {
-          const obsItems = (obs as any).children ?? (obs as any).items ?? [];
-          observabilityGroup = { label: obs.label, icon: obs.icon || 'pi pi-eye', expanded: false, items: obsItems };
-        }
-      }
+      const dataCatalog = byLabel('data catalog') || null;
+      const dataExploration = byLabel('data exploration') || null;
 
       const groups: any[] = [];
+      if (dataCatalog) groups.push(dataCatalog);
       if (dataExploration) groups.push(dataExploration);
-      if (dataMeshGroup) groups.push(dataMeshGroup);
-      if (observabilityGroup) groups.push(observabilityGroup);
 
       this.visibleGroups = this.orderGroupsForApp(groups, key);
-      this.workspaceToggleKey++;
       return;
     }
 
@@ -358,7 +398,6 @@ export class SidebarComponent implements OnInit, OnChanges {
       groups.unshift({ label: 'Retail Overview', icon: 'pi pi-shopping-bag', expanded: false, items: [{ label: 'Overview', url: '/retail', icon: 'pi pi-chart-bar' }] });
 
       this.visibleGroups = this.orderGroupsForApp(groups, key);
-      this.workspaceToggleKey++;
       return;
     }
 
@@ -403,7 +442,6 @@ export class SidebarComponent implements OnInit, OnChanges {
 
       // If nothing matched, keep sidebar empty for these apps per request
       this.visibleGroups = this.orderGroupsForApp(groups, key);
-      this.workspaceToggleKey++;
       return;
     }
 
@@ -419,7 +457,6 @@ export class SidebarComponent implements OnInit, OnChanges {
           items: governanceGroup.items
         };
         this.visibleGroups = [flatGroup];
-        this.workspaceToggleKey++;
         return;
       }
     }
@@ -431,15 +468,14 @@ export class SidebarComponent implements OnInit, OnChanges {
     });
 
     this.visibleGroups = this.orderGroupsForApp(filtered, key);
-
-    // Flip a small key so Angular treats the list as changed and plays animation
-    this.workspaceToggleKey++;
   }
 
   // Derive an AppKey from a router URL (handles deep links like /governance/policies/123)
   deriveAppFromUrl(url: string): AppKey | null {
     if (!url) return null;
     const p = url.split('?')[0].toLowerCase();
+    // Treat root path as the 'all' application so the unified sidebar is shown
+    if (p === '/' || p === '') return 'all';
     if (p.startsWith('/governance')) return 'governance';
     if (p.startsWith('/retail')) return 'retail';
     if (p.startsWith('/discovery') || p.startsWith('/explore') || p.startsWith('/data-catalog') || p.startsWith('/explore')) return 'catalog';

@@ -52,6 +52,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/governance/roles/roles.component').then(m => m.RolesComponent),
       },
       {
+        path: 'governance/roles/new',
+        loadComponent: () => import('./features/governance/roles/role-create/role-create.component').then(m => m.RoleCreateComponent),
+      },
+      {
         path: 'governance/roles/:id',
         loadComponent: () => import('./features/governance/roles/role-detail/role-detail.component').then(m => m.RoleDetailComponent),
       },

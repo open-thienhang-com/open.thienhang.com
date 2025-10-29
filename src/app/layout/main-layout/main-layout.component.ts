@@ -29,7 +29,9 @@ import { AppSwitcherService, AppKey } from '../../core/services/app-switcher.ser
 })
 export class MainLayoutComponent implements OnInit, OnDestroy {
   collapsed = false;
-  sidebarOpen = false;
+  // Initialize sidebarOpen to true immediately so sidebar is visible on page load/refresh
+  // (The template CSS will hide it on mobile via responsive classes)
+  sidebarOpen = true;
   currentApp: AppKey = 'all';
   loadingState: LoadingState = {
     isLoading: false,

@@ -82,7 +82,7 @@
             icon="pi pi-plus" 
             severity="primary"
             size="small"
-            (onClick)="openRoleModal()"
+            [routerLink]="['/governance/roles/new']"
             class="sm:hidden">
           </p-button>
           <!-- 7. Add New Button (Desktop) -->
@@ -90,7 +90,7 @@
             icon="pi pi-plus" 
             severity="primary"
             [rounded]="true"
-            (onClick)="openRoleModal()"
+            [routerLink]="['/governance/roles/new']"
             pTooltip="Add Role"
             class="hidden sm:inline-flex">
           </p-button>
@@ -340,7 +340,7 @@
                   label="Add Role" 
                   icon="pi pi-plus" 
                   severity="primary"
-                  (onClick)="openRoleModal()">
+                  [routerLink]="['/governance/roles/new']">
                 </p-button>
               </div>
             </td>
@@ -441,7 +441,7 @@
         label="Create Role" 
         icon="pi pi-plus" 
         severity="primary"
-        (onClick)="openRoleModal()">
+        [routerLink]="['/governance/roles/new']">
       </p-button>
     </div>
 </div>

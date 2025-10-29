@@ -251,12 +251,12 @@ export class GovernanceServices {
   // Users Management
   getUsers(params?: any): Observable<ApiResponse<User[]>> {
     const httpParams = this.buildHttpParams(params);
-    return this.http.get<User[]>(`${this.baseUrl}/governance/users/users`, { params: httpParams })
+    return this.http.get<User[]>(`${this.baseUrl}/governance/users`, { params: httpParams })
       .pipe(map(response => this.wrapArrayResponse(response)));
   }
 
   getUser(id: string): Observable<ApiResponse<User>> {
-    return this.http.get<any>(`${this.baseUrl}/governance/users/user/${id}`)
+    return this.http.get<any>(`${this.baseUrl}/governance/users/${id}`)
       .pipe(
         map(response => {
           // Handle response that already has 'data' property
@@ -275,54 +275,54 @@ export class GovernanceServices {
   }
 
   createUser(user: User): Observable<ApiResponse<User>> {
-    return this.http.post<User>(`${this.baseUrl}/governance/users/user`, user)
+    return this.http.post<User>(`${this.baseUrl}/governance/users`, user)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   updateUser(id: string, user: Partial<User>): Observable<ApiResponse<User>> {
-    return this.http.patch<User>(`${this.baseUrl}/governance/users/user/${id}`, user)
+    return this.http.patch<User>(`${this.baseUrl}/governance/users/${id}`, user)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   deleteUser(id: string): Observable<ApiResponse<any>> {
-    return this.http.delete<any>(`${this.baseUrl}/governance/users/user/${id}`)
+    return this.http.delete<any>(`${this.baseUrl}/governance/users/${id}`)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   activateUser(id: string): Observable<ApiResponse<User>> {
-    return this.http.post<User>(`${this.baseUrl}/governance/users/user/${id}/activate`, {})
+    return this.http.post<User>(`${this.baseUrl}/governance/users/${id}/activate`, {})
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   deactivateUser(id: string): Observable<ApiResponse<User>> {
-    return this.http.post<User>(`${this.baseUrl}/governance/users/user/${id}/deactivate`, {})
+    return this.http.post<User>(`${this.baseUrl}/governance/users/${id}/deactivate`, {})
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   assignUserToTeam(userId: string, teamId: string): Observable<ApiResponse<any>> {
-    return this.http.post<any>(`${this.baseUrl}/governance/users/user/${userId}/team/${teamId}`, {})
+    return this.http.post<any>(`${this.baseUrl}/governance/users/${userId}/team/${teamId}`, {})
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   removeUserFromTeam(userId: string, teamId: string): Observable<ApiResponse<any>> {
-    return this.http.delete<any>(`${this.baseUrl}/governance/users/user/${userId}/team/${teamId}`)
+    return this.http.delete<any>(`${this.baseUrl}/governance/users/${userId}/team/${teamId}`)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   getUserTeams(userId: string): Observable<ApiResponse<Team[]>> {
-    return this.http.get<Team[]>(`${this.baseUrl}/governance/users/user/${userId}/teams`)
+    return this.http.get<Team[]>(`${this.baseUrl}/governance/users/${userId}/teams`)
       .pipe(map(response => this.wrapArrayResponse(response)));
   }
 
   // Teams Management
   getTeams(params?: any): Observable<ApiResponse<Team[]>> {
     const httpParams = this.buildHttpParams(params);
-    return this.http.get<Team[]>(`${this.baseUrl}/governance/teams/teams`, { params: httpParams })
+    return this.http.get<Team[]>(`${this.baseUrl}/governance/teams`, { params: httpParams })
       .pipe(map(response => this.wrapArrayResponse(response)));
   }
 
   getTeam(id: string): Observable<ApiResponse<Team>> {
-    return this.http.get<any>(`${this.baseUrl}/governance/teams/team/${id}`)
+    return this.http.get<any>(`${this.baseUrl}/governance/teams/${id}`)
       .pipe(
         map(response => {
           // Handle response that already has 'data' property
@@ -341,54 +341,54 @@ export class GovernanceServices {
   }
 
   createTeam(team: Team): Observable<ApiResponse<Team>> {
-    return this.http.post<Team>(`${this.baseUrl}/governance/teams/team`, team)
+    return this.http.post<Team>(`${this.baseUrl}/governance/teams`, team)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   updateTeam(id: string, team: Partial<Team>): Observable<ApiResponse<Team>> {
-    return this.http.patch<Team>(`${this.baseUrl}/governance/teams/team/${id}`, team)
+    return this.http.patch<Team>(`${this.baseUrl}/governance/teams/${id}`, team)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   deleteTeam(id: string): Observable<ApiResponse<any>> {
-    return this.http.delete<any>(`${this.baseUrl}/governance/teams/team/${id}`)
+    return this.http.delete<any>(`${this.baseUrl}/governance/teams/${id}`)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   activateTeam(id: string): Observable<ApiResponse<Team>> {
-    return this.http.post<Team>(`${this.baseUrl}/governance/teams/team/${id}/activate`, {})
+    return this.http.post<Team>(`${this.baseUrl}/governance/teams/${id}/activate`, {})
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   deactivateTeam(id: string): Observable<ApiResponse<Team>> {
-    return this.http.post<Team>(`${this.baseUrl}/governance/teams/team/${id}/deactivate`, {})
+    return this.http.post<Team>(`${this.baseUrl}/governance/teams/${id}/deactivate`, {})
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   getTeamMembers(teamId: string): Observable<ApiResponse<User[]>> {
-    return this.http.get<User[]>(`${this.baseUrl}/governance/teams/team/${teamId}/members`)
+    return this.http.get<User[]>(`${this.baseUrl}/governance/teams/${teamId}/members`)
       .pipe(map(response => this.wrapArrayResponse(response)));
   }
 
   addTeamMember(teamId: string, userId: string): Observable<ApiResponse<any>> {
-    return this.http.post<any>(`${this.baseUrl}/governance/teams/team/${teamId}/member/${userId}`, {})
+    return this.http.post<any>(`${this.baseUrl}/governance/teams/${teamId}/member/${userId}`, {})
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   removeTeamMember(teamId: string, userId: string): Observable<ApiResponse<any>> {
-    return this.http.delete<any>(`${this.baseUrl}/governance/teams/team/${teamId}/member/${userId}`)
+    return this.http.delete<any>(`${this.baseUrl}/governance/teams/${teamId}/member/${userId}`)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   // Accounts Management
   getAccounts(params?: any): Observable<ApiResponse<Account[]>> {
     const httpParams = this.buildHttpParams(params);
-    return this.http.get<Account[]>(`${this.baseUrl}/governance/accounts/accounts`, { params: httpParams })
+    return this.http.get<Account[]>(`${this.baseUrl}/governance/accounts`, { params: httpParams })
       .pipe(map(response => this.wrapArrayResponse(response)));
   }
 
   getAccount(id: string): Observable<ApiResponse<Account>> {
-    return this.http.get<any>(`${this.baseUrl}/governance/accounts/account/${id}`)
+    return this.http.get<any>(`${this.baseUrl}/governance/accounts/${id}`)
       .pipe(
         map(response => {
           // Handle response that already has 'data' property
@@ -407,7 +407,7 @@ export class GovernanceServices {
   }
 
   updateAccount(id: string, account: Partial<Account>): Observable<ApiResponse<Account>> {
-    return this.http.patch<Account>(`${this.baseUrl}/governance/accounts/account/${id}`, account)
+    return this.http.patch<Account>(`${this.baseUrl}/governance/accounts/${id}`, account)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
@@ -437,7 +437,7 @@ export class GovernanceServices {
 
   getAsset(id: string): Observable<ApiResponse<Asset>> {
     const cacheKey = `asset_${id}`;
-    const httpObservable = this.http.get<Asset>(`${this.baseUrl}/governance/assets/asset/${id}`)
+    const httpObservable = this.http.get<Asset>(`${this.baseUrl}/governance/assets/${id}`)
       .pipe(map(response => this.wrapResponse(response)));
 
     // Return cached observable with 5-minute TTL
@@ -448,7 +448,7 @@ export class GovernanceServices {
     // Clear assets cache when creating new asset
     this.clearAssetsCache();
 
-    return this.http.post<Asset>(`${this.baseUrl}/governance/assets/asset`, asset)
+    return this.http.post<Asset>(`${this.baseUrl}/governance/assets`, asset)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
@@ -457,7 +457,7 @@ export class GovernanceServices {
     this.clearAssetsCache();
     this.cacheService.delete(`asset_${id}`);
 
-    return this.http.patch<Asset>(`${this.baseUrl}/governance/assets/asset/${id}`, asset)
+    return this.http.patch<Asset>(`${this.baseUrl}/governance/assets/${id}`, asset)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
@@ -466,7 +466,7 @@ export class GovernanceServices {
     this.clearAssetsCache();
     this.cacheService.delete(`asset_${id}`);
 
-    return this.http.delete<any>(`${this.baseUrl}/governance/assets/asset/${id}`)
+    return this.http.delete<any>(`${this.baseUrl}/governance/assets/${id}`)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
@@ -486,7 +486,7 @@ export class GovernanceServices {
   getPolicies(params?: any): Observable<ApiResponse<PaginatedResponse<Policy>>> {
     const cacheKey = `policies_${JSON.stringify(params || {})}`;
     const httpParams = this.buildHttpParams(params);
-    const httpObservable = this.http.get<PaginatedResponse<Policy>>(`${this.baseUrl}/governance/policies/`, { params: httpParams })
+    const httpObservable = this.http.get<PaginatedResponse<Policy>>(`${this.baseUrl}/governance/policies`, { params: httpParams })
       .pipe(map(response => this.wrapResponse(response)));
 
     // Return cached observable with 5-minute TTL
@@ -546,7 +546,7 @@ export class GovernanceServices {
   getRoles(params?: any): Observable<ApiResponse<PaginatedResponse<Role>>> {
     const cacheKey = `roles_${JSON.stringify(params || {})}`;
     const httpParams = this.buildHttpParams(params);
-    const httpObservable = this.http.get<PaginatedResponse<Role>>(`${this.baseUrl}/governance/roles/roles/`, { params: httpParams })
+    const httpObservable = this.http.get<PaginatedResponse<Role>>(`${this.baseUrl}/governance/roles`, { params: httpParams })
       .pipe(map(response => this.wrapResponse(response)));
 
     // Return cached observable with 5-minute TTL
@@ -556,7 +556,7 @@ export class GovernanceServices {
   getRoleDetail(id: string): Observable<ApiResponse<RoleDetail>> {
     console.log('Fetching role detail with ID:', id);
     const cacheKey = `role_detail_${id}`;
-    const httpObservable = this.http.get<RoleDetail>(`${this.baseUrl}/governance/roles/roles/${id}`)
+    const httpObservable = this.http.get<RoleDetail>(`${this.baseUrl}/governance/roles/${id}`)
       .pipe(
         tap(response => console.log('Raw role detail API response:', response)),
         map(response => this.wrapResponse(response)),
@@ -568,22 +568,22 @@ export class GovernanceServices {
   }
 
   createRole(role: Partial<Role>): Observable<ApiResponse<Role>> {
-    return this.http.post<Role>(`${this.baseUrl}/governance/roles/role`, role)
+    return this.http.post<Role>(`${this.baseUrl}/governance/roles`, role)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   updateRole(id: string, role: Partial<Role>): Observable<ApiResponse<Role>> {
-    return this.http.patch<Role>(`${this.baseUrl}/governance/roles/role/${id}`, role)
+    return this.http.patch<Role>(`${this.baseUrl}/governance/roles/${id}`, role)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   updateRoleStatus(id: string, is_active: boolean): Observable<ApiResponse<Role>> {
-    return this.http.patch<Role>(`${this.baseUrl}/governance/roles/role/${id}/status`, { is_active })
+    return this.http.patch<Role>(`${this.baseUrl}/governance/roles/${id}/status`, { is_active })
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   deleteRole(id: string): Observable<ApiResponse<any>> {
-    return this.http.delete<any>(`${this.baseUrl}/governance/roles/role/${id}`)
+    return this.http.delete<any>(`${this.baseUrl}/governance/roles/${id}`)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
@@ -591,7 +591,7 @@ export class GovernanceServices {
   getPermissions(params?: any): Observable<ApiResponse<Permission[]>> {
     const cacheKey = `permissions_${JSON.stringify(params || {})}`;
     const httpParams = this.buildHttpParams(params);
-    const httpObservable = this.http.get<Permission[]>(`${this.baseUrl}/governance/permissions/permissions`, { params: httpParams })
+    const httpObservable = this.http.get<Permission[]>(`${this.baseUrl}/governance/permissions`, { params: httpParams })
       .pipe(map(response => this.wrapArrayResponse<Permission>(response)));
 
     // Return cached observable with 5-minute TTL
@@ -600,7 +600,7 @@ export class GovernanceServices {
 
   getPermission(id: string): Observable<ApiResponse<Permission>> {
     const cacheKey = `permission_${id}`;
-    const httpObservable = this.http.get<any>(`${this.baseUrl}/governance/permissions/permission/${id}`)
+    const httpObservable = this.http.get<any>(`${this.baseUrl}/governance/permission/${id}`)
       .pipe(
         map(response => {
           // Handle response that already has 'data' property
@@ -624,53 +624,53 @@ export class GovernanceServices {
   createPermission(permission: Permission): Observable<ApiResponse<Permission>> {
     // Clear permissions cache when creating new permission
     this.cacheService.clear();
-    return this.http.post<Permission>(`${this.baseUrl}/governance/permissions/permission`, permission)
+    return this.http.post<Permission>(`${this.baseUrl}/governance/permission`, permission)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   updatePermission(id: string, permission: Partial<Permission>): Observable<ApiResponse<Permission>> {
     // Clear permissions cache when updating permission
     this.cacheService.clear();
-    return this.http.patch<Permission>(`${this.baseUrl}/governance/permissions/permission/${id}`, permission)
+    return this.http.patch<Permission>(`${this.baseUrl}/governance/permission/${id}`, permission)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   deletePermission(id: string): Observable<ApiResponse<any>> {
     // Clear permissions cache when deleting permission
     this.cacheService.clear();
-    return this.http.delete<any>(`${this.baseUrl}/governance/permissions/permission/${id}`)
+    return this.http.delete<any>(`${this.baseUrl}/governance/permission/${id}`)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   // Bulk permissions operations
   bulkCreatePermissions(permissions: Permission[]): Observable<ApiResponse<Permission[]>> {
     this.cacheService.clear();
-    return this.http.post<Permission[]>(`${this.baseUrl}/governance/permissions/permissions/bulk`, { permissions })
+    return this.http.post<Permission[]>(`${this.baseUrl}/governance/permission/bulk`, { permissions })
       .pipe(map(response => this.wrapArrayResponse(response)));
   }
 
   bulkUpdatePermissions(updates: Array<{ id: string; permission: Partial<Permission> }>): Observable<ApiResponse<Permission[]>> {
     this.cacheService.clear();
-    return this.http.patch<Permission[]>(`${this.baseUrl}/governance/permissions/permissions/bulk`, { updates })
+    return this.http.patch<Permission[]>(`${this.baseUrl}/governance/permission/bulk`, { updates })
       .pipe(map(response => this.wrapArrayResponse(response)));
   }
 
   bulkDeletePermissions(ids: string[]): Observable<ApiResponse<any>> {
     this.cacheService.clear();
-    return this.http.delete<any>(`${this.baseUrl}/governance/permissions/permissions/bulk`, { body: { ids } })
+    return this.http.delete<any>(`${this.baseUrl}/governance/permission/bulk`, { body: { ids } })
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   // Permission assignment operations
   assignPermissionToRole(permissionId: string, roleId: string): Observable<ApiResponse<any>> {
     this.cacheService.clear();
-    return this.http.post<any>(`${this.baseUrl}/governance/permissions/assign`, { permissionId, roleId })
+    return this.http.post<any>(`${this.baseUrl}/governance/permission/assign`, { permissionId, roleId })
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   revokePermissionFromRole(permissionId: string, roleId: string): Observable<ApiResponse<any>> {
     this.cacheService.clear();
-    return this.http.delete<any>(`${this.baseUrl}/governance/permissions/revoke`, { body: { permissionId, roleId } })
+    return this.http.delete<any>(`${this.baseUrl}/governance/permission/revoke`, { body: { permissionId, roleId } })
       .pipe(map(response => this.wrapResponse(response)));
   }
 
@@ -678,14 +678,14 @@ export class GovernanceServices {
   validatePermission(code: string, assetId?: string): Observable<ApiResponse<{ valid: boolean; message?: string }>> {
     const params = assetId ? { code, assetId } : { code };
     const httpParams = this.buildHttpParams(params);
-    return this.http.get<{ valid: boolean; message?: string }>(`${this.baseUrl}/governance/permissions/validate`, { params: httpParams })
+    return this.http.get<{ valid: boolean; message?: string }>(`${this.baseUrl}/governance/permission/validate`, { params: httpParams })
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   // Get permissions by role
   getPermissionsByRole(roleId: string): Observable<ApiResponse<Permission[]>> {
     const cacheKey = `permissions_role_${roleId}`;
-    const httpObservable = this.http.get<Permission[]>(`${this.baseUrl}/governance/permissions/role/${roleId}`)
+    const httpObservable = this.http.get<Permission[]>(`${this.baseUrl}/governance/permission/role/${roleId}`)
       .pipe(map(response => this.wrapArrayResponse<Permission>(response)));
 
     return this.cacheService.getCachedObservable<ApiResponse<Permission[]>>(cacheKey, httpObservable, 5 * 60 * 1000);
@@ -694,7 +694,7 @@ export class GovernanceServices {
   // Get permissions by user
   getPermissionsByUser(userId: string): Observable<ApiResponse<Permission[]>> {
     const cacheKey = `permissions_user_${userId}`;
-    const httpObservable = this.http.get<Permission[]>(`${this.baseUrl}/governance/permissions/user/${userId}`)
+    const httpObservable = this.http.get<Permission[]>(`${this.baseUrl}/governance/permission/user/${userId}`)
       .pipe(map(response => this.wrapArrayResponse<Permission>(response)));
 
     return this.cacheService.getCachedObservable<ApiResponse<Permission[]>>(cacheKey, httpObservable, 5 * 60 * 1000);
@@ -703,7 +703,7 @@ export class GovernanceServices {
   // Get effective permissions (combined from all roles)
   getEffectivePermissions(userId: string): Observable<ApiResponse<Permission[]>> {
     const cacheKey = `effective_permissions_${userId}`;
-    const httpObservable = this.http.get<Permission[]>(`${this.baseUrl}/governance/permissions/effective/${userId}`)
+    const httpObservable = this.http.get<Permission[]>(`${this.baseUrl}/governance/permission/effective/${userId}`)
       .pipe(map(response => this.wrapArrayResponse<Permission>(response)));
 
     return this.cacheService.getCachedObservable<ApiResponse<Permission[]>>(cacheKey, httpObservable, 2 * 60 * 1000); // 2 minutes TTL for effective permissions

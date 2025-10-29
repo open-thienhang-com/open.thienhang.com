@@ -1,4 +1,4 @@
-<div *ngIf="appKey !== 'settings' && appKey !== 'marketplace' && appKey !== 'all' && (visibleGroups && visibleGroups.length > 0)" class="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
+<div class="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
   <!-- Header -->
   <div class="flex header items-center px-4 py-3 border-b border-gray-200 dark:border-gray-700 shrink-0 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20"
        [class.justify-center]="collapsed"
@@ -50,7 +50,7 @@
         </li>
       </ng-container>
   <!-- Accordion Menu Groups -->
-  <li *ngFor="let group of visibleGroups; trackBy: trackByGroup" class="menu-group" [@workspaceChange]>
+  <li *ngFor="let group of visibleGroups; trackBy: trackByGroup" class="menu-group">
         <div class="flex items-center justify-between cursor-pointer p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group menu-group-header"
              [class.justify-center]="collapsed"
              [class.px-2]="collapsed"

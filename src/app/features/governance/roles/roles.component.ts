@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { GovernanceServices, Role, RoleDetail, PaginatedResponse } from '../../../core/services/governance.services';
 import { RoleComponent } from './role/role.component';
 import { ToastService } from '../../../core/services/toast.service';
@@ -46,6 +46,7 @@ interface RoleStats {
     CommonModule,
     FormsModule,
     RoleComponent,
+    RouterModule,
     ButtonModule,
     TableModule,
     TagModule,

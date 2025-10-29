@@ -216,10 +216,23 @@ export class RoleComponent extends AppBaseComponent {
 
   show(id?) {
     this.visible = true;
-    this.role = { permissions: [] };
+    
+    // Initialize with all required fields to prevent null reference errors
+    const defaultRole = {
+      name: '',
+      description: '',
+      permissions: [],
+      type: 'custom',
+      level: 'standard',
+      scope: 'team',
+      risk_level: 'Medium'
+    };
 
     if (id) {
       this.title = 'Edit Role';
+      // Set default first to prevent template errors during loading
+      this.role = { ...defaultRole };
+      
       // Mock implementation - replace with actual service call
       setTimeout(() => {
         // Find mock role data
@@ -246,13 +259,7 @@ export class RoleComponent extends AppBaseComponent {
       // });
     } else {
       this.title = 'Create Role';
-      this.role = {
-        permissions: [],
-        type: 'custom',
-        level: 'standard',
-        scope: 'team',
-        risk_level: 'Medium'
-      };
+      this.role = { ...defaultRole };
     }
   }
 
