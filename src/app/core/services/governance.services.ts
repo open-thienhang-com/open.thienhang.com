@@ -46,9 +46,9 @@ export interface Account {
 }
 
 export interface Asset {
-  _id?: string;
+  _id?: string | null;
   id?: string;
-  kid?: string;
+  kid?: string | null;
   name: string;
   type: string;
   source?: string;
@@ -130,8 +130,8 @@ export interface Role {
   contact?: Array<{
     email: string;
     name: string;
-    phone: string;
-  }>;
+    phone?: string;
+  }> | null;
   created_at?: string;
   updated_at?: string;
   _created_at?: string;
@@ -228,13 +228,15 @@ export interface Permission {
   name: string;
   description: string;
   code: string;
-  resource: string;
+  resource?: string;
   action: string;
-  effect: 'allow' | 'deny';
+  effect?: 'allow' | 'deny';
   conditions?: any;
-  created_at: string;
-  updated_at: string;
-  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+  is_active?: boolean;
+  assets?: Asset[];
+  asset_total?: number;
 }
 
 @Injectable({
@@ -556,10 +558,31 @@ export class GovernanceServices {
   getRoleDetail(id: string): Observable<ApiResponse<RoleDetail>> {
     console.log('Fetching role detail with ID:', id);
     const cacheKey = `role_detail_${id}`;
-    const httpObservable = this.http.get<RoleDetail>(`${this.baseUrl}/governance/role/${id}`)
+    const httpObservable = this.http.get<any>(`${this.baseUrl}/governance/role/${id}`)
       .pipe(
         tap(response => console.log('Raw role detail API response:', response)),
-        map(response => this.wrapResponse(response)),
+        map(response => {
+          // Handle response that already has proper structure
+          if (response && typeof response === 'object') {
+            // If response has direct role properties, wrap it
+            if (response._id || response.kid) {
+              return {
+                data: response as RoleDetail,
+                success: true,
+                message: 'Role detail fetched successfully'
+              } as ApiResponse<RoleDetail>;
+            }
+            // If response already wrapped, return as is
+            if (response.data) {
+              return {
+                data: response.data as RoleDetail,
+                success: response.success !== undefined ? response.success : true,
+                message: response.message || 'Role detail fetched successfully'
+              } as ApiResponse<RoleDetail>;
+            }
+          }
+          return this.wrapResponse(response);
+        }),
         tap(wrappedResponse => console.log('Wrapped role detail response:', wrappedResponse))
       );
 
@@ -568,22 +591,56 @@ export class GovernanceServices {
   }
 
   createRole(role: Partial<Role>): Observable<ApiResponse<Role>> {
+    // Clear cache when creating new role
+    this.cacheService.clear();
     return this.http.post<Role>(`${this.baseUrl}/governance/roles`, role)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
+  createRoleWithPermissions(role: Partial<RoleDetail>): Observable<ApiResponse<RoleDetail>> {
+    // Clear cache when creating new role with permissions
+    this.cacheService.clear();
+    return this.http.post<RoleDetail>(`${this.baseUrl}/governance/role`, role)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
   updateRole(id: string, role: Partial<Role>): Observable<ApiResponse<Role>> {
+    // Clear cache when updating role
+    this.cacheService.clear();
     return this.http.patch<Role>(`${this.baseUrl}/governance/role/${id}`, role)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   updateRoleStatus(id: string, is_active: boolean): Observable<ApiResponse<Role>> {
+    // Clear cache when updating role status
+    this.cacheService.clear();
     return this.http.patch<Role>(`${this.baseUrl}/governance/role/${id}/status`, { is_active })
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   deleteRole(id: string): Observable<ApiResponse<any>> {
+    // Clear cache when deleting role
+    this.cacheService.clear();
     return this.http.delete<any>(`${this.baseUrl}/governance/role/${id}`)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  // Role Permissions Management
+  assignPermissionsToRole(roleId: string, permissionIds: string[]): Observable<ApiResponse<any>> {
+    this.cacheService.clear();
+    return this.http.post<any>(`${this.baseUrl}/governance/role/${roleId}/permissions`, { permissions: permissionIds })
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  removePermissionsFromRole(roleId: string, permissionIds: string[]): Observable<ApiResponse<any>> {
+    this.cacheService.clear();
+    return this.http.delete<any>(`${this.baseUrl}/governance/role/${roleId}/permissions`, { body: { permissions: permissionIds } })
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  updateRolePermissions(roleId: string, permissions: string[]): Observable<ApiResponse<RoleDetail>> {
+    this.cacheService.clear();
+    return this.http.put<RoleDetail>(`${this.baseUrl}/governance/role/${roleId}/permissions`, { permissions })
       .pipe(map(response => this.wrapResponse(response)));
   }
 
@@ -843,6 +900,18 @@ export class GovernanceServices {
 
   validateGovernanceConfiguration(): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/governance/validate`);
+  }
+
+  // Role utilities
+  generateRoleKid(name: string): string {
+    // Convert role name to kid format
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single
+      .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
   }
 
   // Helper method to build HttpParams from object

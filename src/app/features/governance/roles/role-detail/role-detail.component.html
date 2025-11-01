@@ -1,578 +1,127 @@
 <div class="role-detail-container">
   <p-toast></p-toast>
-  <p-confirmDialog></p-confirmDialog>
-
-  <!-- Header -->
-  <div class="header-section">
-    <div class="breadcrumb">
-      <button 
-        pButton 
-        pRipple 
-        icon="pi pi-arrow-left" 
-        class="p-button-text p-button-rounded p-button-secondary"
-        (click)="goBack()">
-      </button>
-      <span class="breadcrumb-text">Governance / Roles / Detail</span>
-    </div>
-    
-    <div class="header-actions" *ngIf="role">
-      <button 
-        pButton 
-        pRipple 
-        label="Edit" 
-        icon="pi pi-pencil" 
-        class="p-button-outlined p-button-primary"
-        (click)="editRole()">
-      </button>
-      <button 
-        pButton 
-        pRipple 
-        [label]="role.is_active ? 'Deactivate' : 'Activate'"
-        [icon]="role.is_active ? 'pi pi-times' : 'pi pi-check'"
-        [class]="role.is_active ? 'p-button-outlined p-button-warning' : 'p-button-outlined p-button-success'"
-        (click)="toggleRoleStatus()">
-      </button>
-      <button 
-        pButton 
-        pRipple 
-        label="Delete" 
-        icon="pi pi-trash" 
-        class="p-button-outlined p-button-danger"
-        (click)="deleteRole()">
-      </button>
-    </div>
-  </div>
 
   <!-- Loading State -->
-  <div *ngIf="loading" class="loading-container">
-    <p-card>
-      <div class="loading-content">
-        <p-skeleton height="2rem" class="mb-3"></p-skeleton>
-        <p-skeleton height="1rem" class="mb-2"></p-skeleton>
-        <p-skeleton height="1rem" class="mb-2"></p-skeleton>
-        <p-skeleton height="1rem" class="mb-4"></p-skeleton>
-        <p-skeleton height="10rem"></p-skeleton>
-      </div>
-    </p-card>
-  </div>
-
-  <!-- Role Content -->
-  <div *ngIf="!loading && role" class="role-content">
-    <!-- Role Header Card -->
-    <p-card class="role-header-card">
-      <div class="role-header">
-        <div class="role-info">
-          <div class="role-title">
-            <h2>{{ role.name }}</h2>
-            <p-tag 
-              [value]="role.type" 
-              [severity]="getRoleTypeSeverity(role.type)"
-              class="role-type-tag">
-            </p-tag>
-            <p-tag 
-              [value]="role.is_active ? 'Active' : 'Inactive'"
-              [severity]="role.is_active ? 'success' : 'danger'"
-              class="status-tag">
-            </p-tag>
-          </div>
-          <p class="role-description">{{ role.description }}</p>
-          <div class="role-meta">
-            <div class="meta-item">
-              <span class="meta-label">Role ID:</span>
-              <span class="meta-value">{{ role.kid }}</span>
-              <button 
-                pButton 
-                pRipple 
-                icon="pi pi-copy" 
-                class="p-button-text p-button-rounded p-button-sm"
-                (click)="copyToClipboard(role.kid)"
-                pTooltip="Copy to clipboard">
-              </button>
-            </div>
-            <div class="meta-item" *ngIf="role.created_at">
-              <span class="meta-label">Created:</span>
-              <span class="meta-value">{{ role.created_at | date:'medium' }}</span>
-            </div>
-            <div class="meta-item" *ngIf="role.updated_at">
-              <span class="meta-label">Updated:</span>
-              <span class="meta-value">{{ role.updated_at | date:'medium' }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="role-stats">
-          <div class="stat-item">
-            <span class="stat-number">{{ role.permissions?.length || 0 }}</span>
-            <span class="stat-label">Permissions</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">{{ role.contact?.length || 0 }}</span>
-            <span class="stat-label">Contacts</span>
-          </div>
-        </div>
-      </div>
-    </p-card>
-
-    <!-- Tabbed Content -->
-    <p-tabView class="role-tabs">
-      <!-- Overview Tab -->
-      <p-tabPanel header="Overview" leftIcon="pi pi-info-circle">
-        <div class="overview-content">
-          <div class="overview-grid">
-            <!-- Contact Information -->
-            <p-card *ngIf="role.contact && role.contact.length > 0" class="contact-card">
-              <ng-template pTemplate="header">
-                <div class="card-header">
-                  <h3>Contact Information</h3>
-                </div>
-              </ng-template>
-              <div class="contact-list">
-                <div *ngFor="let contact of role.contact" class="contact-item">
-                  <div class="contact-info">
-                    <h4>{{ contact.name }}</h4>
-                    <p><i class="pi pi-envelope"></i> {{ contact.email }}</p>
-                    <p *ngIf="contact.phone"><i class="pi pi-phone"></i> {{ contact.phone }}</p>
-                  </div>
-                </div>
-              </div>
-            </p-card>
-
-            <!-- Quick Stats -->
-            <p-card class="stats-card">
-              <ng-template pTemplate="header">
-                <div class="card-header">
-                  <h3>Quick Stats</h3>
-                </div>
-              </ng-template>
-              <div class="stats-grid">
-                <div class="stat-box">
-                  <div class="stat-icon">
-                    <i class="pi pi-shield"></i>
-                  </div>
-                  <div class="stat-content">
-                    <span class="stat-number">{{ role.permissions?.length || 0 }}</span>
-                    <span class="stat-label">Permissions</span>
-                  </div>
-                </div>
-                <div class="stat-box">
-                  <div class="stat-icon">
-                    <i class="pi pi-users"></i>
-                  </div>
-                  <div class="stat-content">
-                    <span class="stat-number">{{ role.users?.length || 0 }}</span>
-                    <span class="stat-label">Users</span>
-                  </div>
-                </div>
-                <div class="stat-box">
-                  <div class="stat-icon">
-                    <i class="pi pi-sitemap"></i>
-                  </div>
-                  <div class="stat-content">
-                    <span class="stat-number">{{ role.teams?.length || 0 }}</span>
-                    <span class="stat-label">Teams</span>
-                  </div>
-                </div>
-              </div>
-            </p-card>
-          </div>
-        </div>
-      </p-tabPanel>
-
-      <!-- Permissions Tab -->
-      <p-tabPanel header="Permissions" leftIcon="pi pi-shield">
-        <div class="permissions-content">
-          <div *ngIf="role.permissions && role.permissions.length > 0; else noPermissions">
-            <p-table 
-              [value]="role.permissions" 
-              [paginator]="true" 
-              [rows]="10" 
-              [rowsPerPageOptions]="[10, 25, 50]"
-              [dataKey]="'kid'"
-              responsiveLayout="scroll"
-              [globalFilterFields]="['name', 'code', 'description']"
-              styleClass="permissions-table"
-              [expandedRowKeys]="expandedRows">
-              
-              <ng-template pTemplate="caption">
-                <div class="table-header">
-                  <div>
-                    <h3>Role Permissions ({{ role.permissions.length }})</h3>
-                    <p class="table-subtitle">Click on a row to view associated assets</p>
-                  </div>
-                  <span class="p-input-icon-left">
-                    <i class="pi pi-search"></i>
-                    <input 
-                      pInputText 
-                      type="text" 
-                      (input)="filterPermissions($event)" 
-                      placeholder="Search permissions..." 
-                      class="search-input" />
-                  </span>
-                </div>
-              </ng-template>
-
-              <ng-template pTemplate="header">
-                <tr>
-                  <th style="width: 3rem"></th>
-                  <th pSortableColumn="name">
-                    Permission
-                    <p-sortIcon field="name"></p-sortIcon>
-                  </th>
-                  <th pSortableColumn="code" style="width: 150px">
-                    Code
-                    <p-sortIcon field="code"></p-sortIcon>
-                  </th>
-                  <th pSortableColumn="action" style="width: 120px">
-                    Action
-                    <p-sortIcon field="action"></p-sortIcon>
-                  </th>
-                  <th style="width: 100px; text-align: center">Assets</th>
-                  <th style="width: 200px">Description</th>
-                </tr>
-              </ng-template>
-
-              <ng-template pTemplate="body" let-permission let-expanded="expanded">
-                <tr class="permission-row">
-                  <td>
-                    <button 
-                      type="button" 
-                      pButton 
-                      pRipple 
-                      [pRowToggler]="permission"
-                      class="p-button-text p-button-rounded p-button-plain"
-                      [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'">
-                    </button>
-                  </td>
-                  <td>
-                    <div class="permission-name">
-                      <strong>{{ permission.name }}</strong>
-                      <span class="permission-kid">{{ permission.kid }}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <p-chip 
-                      [label]="permission.code" 
-                      styleClass="permission-code-chip">
-                    </p-chip>
-                  </td>
-                  <td>
-                    <p-tag 
-                      *ngIf="permission.action"
-                      [value]="permission.action" 
-                      [severity]="getActionSeverity(permission.action)">
-                    </p-tag>
-                    <span *ngIf="!permission.action" class="text-muted">N/A</span>
-                  </td>
-                  <td style="text-align: center">
-                    <p-badge 
-                      [value]="permission.assets?.length || 0" 
-                      [severity]="(permission.assets?.length || 0) > 0 ? 'info' : 'secondary'">
-                    </p-badge>
-                  </td>
-                  <td>
-                    <span class="permission-description">
-                      {{ permission.description || 'No description available' }}
-                    </span>
-                  </td>
-                </tr>
-              </ng-template>
-
-              <ng-template pTemplate="rowexpansion" let-permission>
-                <tr>
-                  <td colspan="6" class="expanded-row-content">
-                    <div class="permission-expansion">
-                      <div class="expansion-header">
-                        <h4>
-                          <i class="pi pi-database"></i>
-                          Associated Assets
-                          <p-badge 
-                            [value]="permission.assets?.length || 0" 
-                            severity="info">
-                          </p-badge>
-                        </h4>
-                      </div>
-
-                      <div class="assets-grid" *ngIf="permission.assets && permission.assets.length > 0">
-                        <div *ngFor="let asset of permission.assets" class="asset-card">
-                          <div class="asset-card-header">
-                            <div class="asset-icon">
-                              <i [class]="getAssetIcon(asset.type)"></i>
-                            </div>
-                            <div class="asset-main-info">
-                              <strong class="asset-name">{{ asset.name }}</strong>
-                              <span class="asset-kid" *ngIf="asset.kid">{{ asset.kid }}</span>
-                            </div>
-                          </div>
-                          
-                          <div class="asset-card-body">
-                            <div class="asset-meta-row">
-                              <div class="meta-item">
-                                <span class="meta-label">Type:</span>
-                                <p-tag 
-                                  [value]="asset.type" 
-                                  severity="secondary" 
-                                  styleClass="asset-type-tag">
-                                </p-tag>
-                              </div>
-                              
-                              <div class="meta-item" *ngIf="asset.source">
-                                <span class="meta-label">Source:</span>
-                                <span class="meta-value">
-                                  <i class="pi pi-server"></i>
-                                  {{ asset.source }}
-                                </span>
-                              </div>
-                              
-                              <div class="meta-item" *ngIf="asset.location">
-                                <span class="meta-label">Location:</span>
-                                <span class="meta-value">
-                                  <i class="pi pi-map-marker"></i>
-                                  {{ asset.location }}
-                                </span>
-                              </div>
-                            </div>
-                            
-                            <div class="asset-status-row" *ngIf="asset.sensitivity || asset.status">
-                              <p-tag 
-                                *ngIf="asset.sensitivity"
-                                [value]="'Sensitivity: ' + asset.sensitivity" 
-                                [severity]="getSensitivitySeverity(asset.sensitivity)"
-                                styleClass="status-badge">
-                              </p-tag>
-                              <p-tag 
-                                *ngIf="asset.status"
-                                [value]="asset.status" 
-                                [severity]="asset.status === 'active' ? 'success' : 'danger'"
-                                styleClass="status-badge">
-                              </p-tag>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="no-assets-message" *ngIf="!permission.assets || permission.assets.length === 0">
-                        <i class="pi pi-info-circle"></i>
-                        <span>No assets associated with this permission</span>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              </ng-template>
-
-              <ng-template pTemplate="emptymessage">
-                <tr>
-                  <td colspan="6" class="text-center">
-                    <div class="empty-state">
-                      <i class="pi pi-shield empty-icon"></i>
-                      <p>No permissions found</p>
-                    </div>
-                  </td>
-                </tr>
-              </ng-template>
-            </p-table>
-          </div>
-
-          <ng-template #noPermissions>
-            <div class="empty-state-card">
-              <p-card>
-                <div class="empty-state">
-                  <i class="pi pi-shield empty-icon"></i>
-                  <h3>No Permissions</h3>
-                  <p>This role has no permissions assigned yet.</p>
-                </div>
-              </p-card>
-            </div>
-          </ng-template>
-        </div>
-      </p-tabPanel>
-
-      <!-- Users Tab -->
-      <p-tabPanel header="Users" leftIcon="pi pi-users">
-        <div class="users-content">
-          <div *ngIf="role.users && role.users.length > 0; else noUsers">
-            <p-table 
-              [value]="role.users" 
-              [paginator]="true" 
-              [rows]="10" 
-              [rowsPerPageOptions]="[10, 25, 50]"
-              responsiveLayout="scroll"
-              class="users-table">
-              
-              <ng-template pTemplate="caption">
-                <div class="table-header">
-                  <h3>Users with this Role ({{ role.users.length }})</h3>
-                </div>
-              </ng-template>
-
-              <ng-template pTemplate="header">
-                <tr>
-                  <th>User</th>
-                  <th>Email</th>
-                  <th>Status</th>
-                  <th>Department</th>
-                  <th>Actions</th>
-                </tr>
-              </ng-template>
-
-              <ng-template pTemplate="body" let-user>
-                <tr>
-                  <td>
-                    <div class="user-info">
-                      <strong>{{ user.name }}</strong>
-                    </div>
-                  </td>
-                  <td>{{ user.email }}</td>
-                  <td>
-                    <p-tag 
-                      [value]="user.is_active ? 'Active' : 'Inactive'"
-                      [severity]="user.is_active ? 'success' : 'danger'">
-                    </p-tag>
-                  </td>
-                  <td>{{ user.department || 'N/A' }}</td>
-                  <td>
-                    <button 
-                      pButton 
-                      pRipple 
-                      icon="pi pi-eye" 
-                      class="p-button-rounded p-button-text p-button-sm"
-                      pTooltip="View User">
-                    </button>
-                  </td>
-                </tr>
-              </ng-template>
-
-              <ng-template pTemplate="emptymessage">
-                <tr>
-                  <td colspan="5" class="text-center">
-                    <div class="empty-state">
-                      <i class="pi pi-users empty-icon"></i>
-                      <p>No users assigned to this role</p>
-                    </div>
-                  </td>
-                </tr>
-              </ng-template>
-            </p-table>
-          </div>
-
-          <ng-template #noUsers>
-            <div class="empty-state-card">
-              <p-card>
-                <div class="empty-state">
-                  <i class="pi pi-users empty-icon"></i>
-                  <h3>No Users</h3>
-                  <p>No users have been assigned to this role yet.</p>
-                </div>
-              </p-card>
-            </div>
-          </ng-template>
-        </div>
-      </p-tabPanel>
-
-      <!-- Teams Tab -->
-      <p-tabPanel header="Teams" leftIcon="pi pi-sitemap">
-        <div class="teams-content">
-          <div *ngIf="role.teams && role.teams.length > 0; else noTeams">
-            <p-table 
-              [value]="role.teams" 
-              [paginator]="true" 
-              [rows]="10" 
-              [rowsPerPageOptions]="[10, 25, 50]"
-              responsiveLayout="scroll"
-              class="teams-table">
-              
-              <ng-template pTemplate="caption">
-                <div class="table-header">
-                  <h3>Teams with this Role ({{ role.teams.length }})</h3>
-                </div>
-              </ng-template>
-
-              <ng-template pTemplate="header">
-                <tr>
-                  <th>Team</th>
-                  <th>Type</th>
-                  <th>Members</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </ng-template>
-
-              <ng-template pTemplate="body" let-team>
-                <tr>
-                  <td>
-                    <div class="team-info">
-                      <strong>{{ team.name }}</strong>
-                      <p class="team-description">{{ team.description }}</p>
-                    </div>
-                  </td>
-                  <td>{{ team.type }}</td>
-                  <td>
-                    <p-badge 
-                      [value]="team.members?.length || 0" 
-                      severity="info">
-                    </p-badge>
-                  </td>
-                  <td>
-                    <p-tag 
-                      [value]="team.is_active ? 'Active' : 'Inactive'"
-                      [severity]="team.is_active ? 'success' : 'danger'">
-                    </p-tag>
-                  </td>
-                  <td>
-                    <button 
-                      pButton 
-                      pRipple 
-                      icon="pi pi-eye" 
-                      class="p-button-rounded p-button-text p-button-sm"
-                      pTooltip="View Team">
-                    </button>
-                  </td>
-                </tr>
-              </ng-template>
-
-              <ng-template pTemplate="emptymessage">
-                <tr>
-                  <td colspan="5" class="text-center">
-                    <div class="empty-state">
-                      <i class="pi pi-sitemap empty-icon"></i>
-                      <p>No teams assigned to this role</p>
-                    </div>
-                  </td>
-                </tr>
-              </ng-template>
-            </p-table>
-          </div>
-
-          <ng-template #noTeams>
-            <div class="empty-state-card">
-              <p-card>
-                <div class="empty-state">
-                  <i class="pi pi-sitemap empty-icon"></i>
-                  <h3>No Teams</h3>
-                  <p>No teams have been assigned to this role yet.</p>
-                </div>
-              </p-card>
-            </div>
-          </ng-template>
-        </div>
-      </p-tabPanel>
-    </p-tabView>
+  <div *ngIf="loading" class="loading-state">
+    <p-progressSpinner></p-progressSpinner>
+    <p>Loading role details...</p>
   </div>
 
   <!-- Error State -->
-  <div *ngIf="!loading && !role" class="error-state">
+  <div *ngIf="!loading && errorMessage" class="error-state">
     <p-card>
-      <div class="error-content">
-        <i class="pi pi-exclamation-triangle error-icon"></i>
-        <h3>Role Not Found</h3>
-        <p>The role you're looking for doesn't exist or has been deleted.</p>
-        <button 
-          pButton 
-          pRipple 
-          label="Go Back" 
-          icon="pi pi-arrow-left"
-          class="p-button-outlined p-button-secondary"
-          (click)="goBack()">
-        </button>
+      <h3>Error Loading Role</h3>
+      <p>{{ errorMessage }}</p>
+      <p-button label="Go Back" icon="pi pi-arrow-left" (onClick)="goBack()"></p-button>
+    </p-card>
+  </div>
+
+  <!-- Role Detail Content -->
+  <div *ngIf="!loading && !errorMessage && role" class="role-detail-content">
+    <p-card>
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <div>
+            <h2>{{ role.name }}</h2>
+            <p class="role-subtitle">{{ role.kid }}</p>
+          </div>
+          <p-button label="Back" icon="pi pi-arrow-left" (onClick)="goBack()"></p-button>
+        </div>
+      </ng-template>
+
+      <div class="role-info">
+        <div class="info-row" *ngIf="role.description">
+          <strong>Description:</strong>
+          <span>{{ role.description || 'No description' }}</span>
+        </div>
+        <div class="info-row">
+          <strong>Type:</strong>
+          <span>{{ role.type || 'N/A' }}</span>
+        </div>
+        <div class="info-row">
+          <strong>Total Permissions:</strong>
+          <span>{{ role.permissions?.length || 0 }}</span>
+        </div>
+        <div class="info-row">
+          <strong>Total Assets:</strong>
+          <span>{{ getTotalAssetsCount() }}</span>
+        </div>
       </div>
+
+      <h3 class="section-title">Permissions & Assets</h3>
+      
+      <!-- PrimeNG Table with RowSpan for Permission Grouping -->
+      <p-table 
+        *ngIf="role.permissions && role.permissions.length > 0"
+        [value]="getExpandedPermissions()" 
+        [tableStyle]="{ 'min-width': '60rem' }"
+        styleClass="p-datatable-gridlines"
+        [rowHover]="true">
+        
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 25%">Permission</th>
+            <th style="width: 10%">Action</th>
+            <th style="width: 20%">Asset Name</th>
+            <th style="width: 10%">Type</th>
+            <th style="width: 25%">Location</th>
+            <th style="width: 10%">Status</th>
+          </tr>
+        </ng-template>
+        
+        <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+          <tr>
+            <!-- Permission column with rowspan -->
+            <td *ngIf="item.isFirstAsset" [attr.rowspan]="item.assetCount">
+              <div class="permission-cell">
+                <strong>{{ item.permission.name }}</strong>
+                <small class="permission-code">{{ item.permission.code }}</small>
+                <p class="permission-desc" *ngIf="item.permission.description">
+                  {{ item.permission.description }}
+                </p>
+                <span class="asset-badge">{{ item.assetCount }} asset(s)</span>
+              </div>
+            </td>
+            
+            <!-- Action column with rowspan -->
+            <td *ngIf="item.isFirstAsset" [attr.rowspan]="item.assetCount">
+              <span class="action-badge action-{{ item.permission.action }}">
+                {{ item.permission.action }}
+              </span>
+            </td>
+            
+            <!-- Asset details (one row per asset) -->
+            <td>
+              <span [class.unknown-asset]="!item.asset.kid">
+                {{ item.asset.name }}
+              </span>
+            </td>
+            <td>
+              <span class="type-badge type-{{ item.asset.type }}">
+                {{ item.asset.type }}
+              </span>
+            </td>
+            <td>
+              <small class="asset-location">{{ item.asset.location }}</small>
+            </td>
+            <td>
+              <span class="status-badge status-{{ item.asset.status }}">
+                {{ item.asset.status }}
+              </span>
+            </td>
+          </tr>
+        </ng-template>
+        
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="6" class="text-center">No permissions or assets found.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <p *ngIf="!role.permissions || role.permissions.length === 0" class="no-data">
+        No permissions assigned to this role.
+      </p>
     </p-card>
   </div>
 </div>

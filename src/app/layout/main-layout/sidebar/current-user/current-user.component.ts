@@ -1,24 +1,18 @@
 import { Component, Injector } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Avatar } from 'primeng/avatar';
-import { Ripple } from 'primeng/ripple';
 import { AppBaseComponent } from '../../../../core/base/app-base.component';
 import { AuthServices } from '../../../../core/services/auth.services';
 import { Menu } from 'primeng/menu';
-import { Button } from 'primeng/button';
 import { MenuItem } from 'primeng/api';
 import { Router } from '@angular/router';
-import { Tag } from 'primeng/tag';
 
 @Component({
   selector: 'app-current-user',
   imports: [
     CommonModule,
     Avatar,
-    Ripple,
-    Menu,
-    Button,
-    Tag
+    Menu
   ],
   templateUrl: './current-user.component.html',
 })

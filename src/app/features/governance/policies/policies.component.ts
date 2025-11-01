@@ -6,7 +6,6 @@ import { GovernanceServices, Policy, PaginatedResponse } from '../../../core/ser
 import { PolicyComponent } from './policy/policy.component';
 import { ToastService } from '../../../core/services/toast.service';
 import { LoadingService } from '../../../core/services/loading.service';
-import { LoadingComponent } from '../../../shared/component/loading/loading.component';
 import { MessageService } from 'primeng/api';
 
 // PrimeNG imports
@@ -45,7 +44,6 @@ interface PolicyStats {
     CommonModule,
     FormsModule,
     PolicyComponent,
-    LoadingComponent,
     ButtonModule,
     TableModule,
     TagModule,

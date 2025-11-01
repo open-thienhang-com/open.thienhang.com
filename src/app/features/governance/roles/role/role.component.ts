@@ -20,7 +20,6 @@ import { AppBaseComponent } from '../../../../core/base/app-base.component';
     CommonModule,
     Button,
     Dialog,
-    FloatLabel,
     InputText,
     ReactiveFormsModule,
     Textarea,
@@ -29,7 +28,8 @@ import { AppBaseComponent } from '../../../../core/base/app-base.component';
     CheckboxModule,
     ChipModule,
     TableModule,
-    PaginatorModule
+    PaginatorModule,
+    TooltipModule
   ],
   templateUrl: './role.component.html',
 })
@@ -46,37 +46,11 @@ export class RoleComponent extends AppBaseComponent {
   // Dropdown options
   typeOptions = [
     { label: 'System', value: 'system' },
-    { label: 'Standard', value: 'standard' },
-    { label: 'Custom', value: 'custom' }
+    { label: 'Business', value: 'business' },
+    { label: 'Governance', value: 'governance' }
   ];
 
-  levelOptions = [
-    { label: 'Basic', value: 'basic' },
-    { label: 'Standard', value: 'standard' },
-    { label: 'Advanced', value: 'advanced' },
-    { label: 'Admin', value: 'admin' }
-  ];
-
-  scopeOptions = [
-    { label: 'Global', value: 'global' },
-    { label: 'Department', value: 'department' },
-    { label: 'Team', value: 'team' },
-    { label: 'Project', value: 'project' }
-  ];
-
-  riskOptions = [
-    { label: 'Low', value: 'Low' },
-    { label: 'Medium', value: 'Medium' },
-    { label: 'High', value: 'High' }
-  ];
-
-  inheritanceOptions = [
-    { label: 'Data User', value: 'Data User' },
-    { label: 'Data Analyst', value: 'Data Analyst' },
-    { label: 'Data Steward', value: 'Data Steward' }
-  ];
-
-  // Permission categories and definitions
+  // Permission categories and definitions (kept for potential future use)
   permissionCategories = [
     {
       name: 'Data Access',
@@ -267,9 +241,9 @@ export class RoleComponent extends AppBaseComponent {
     this.permissions.forEach(perm => {
       const resource = perm.resource || 'Other';
       const action = perm.action || 'execute';
-      
+
       actions.add(action);
-      
+
       if (!grouped.has(resource)) {
         grouped.set(resource, []);
       }
@@ -302,7 +276,7 @@ export class RoleComponent extends AppBaseComponent {
   toggleMatrixPermission(resource: string, action: string, selected: boolean): void {
     const perm = this.getPermissionByResourceAction(resource, action);
     if (!perm) return;
-    
+
     const id = perm.kid || perm.code;
     this.togglePermission(id, selected);
   }
@@ -340,7 +314,19 @@ export class RoleComponent extends AppBaseComponent {
       this.role.kid = this.generateKidFromName(this.role.name);
     }
 
-    const payload = { ...this.role, permissions: this.role.permissions };
+    // Ensure contact array exists
+    if (!this.role.contact) {
+      this.role.contact = [];
+    }
+
+    const payload = {
+      name: this.role.name,
+      description: this.role.description || '',
+      type: this.role.type,
+      permissions: this.role.permissions,
+      kid: this.role.kid,
+      contact: this.role.contact
+    };
 
     const saveObservable = this.role._id ?
       this.governanceServices.updateRole(this.role._id, payload) :
