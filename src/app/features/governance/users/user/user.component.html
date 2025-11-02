@@ -83,6 +83,17 @@
 
   <!-- Edit/Create Mode -->
   <div *ngIf="!isViewMode && !loading" class="space-y-4">
+    <!-- Kid field (show when editing) -->
+    <p-floatLabel *ngIf="isEditMode && user.kid">
+      <input pInputText id="kid_display" [value]="user.kid" class="w-full" disabled/>
+      <label for="kid_display">Kid (Read-only)</label>
+    </p-floatLabel>
+
+    <p-floatLabel>
+      <input pInputText id="email" [(ngModel)]="user.email" type="email" class="w-full" required/>
+      <label for="email">Email *</label>
+    </p-floatLabel>
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <p-floatLabel>
         <input pInputText id="first_name" [(ngModel)]="user.first_name" class="w-full"/>
@@ -96,19 +107,32 @@
     </div>
 
     <p-floatLabel>
-      <input pInputText id="email" [(ngModel)]="user.email" type="email" class="w-full" required/>
-      <label for="email">Email *</label>
-    </p-floatLabel>
-
-    <p-floatLabel>
       <input pInputText id="company" [(ngModel)]="user.company" class="w-full"/>
       <label for="company">Company</label>
     </p-floatLabel>
 
     <p-floatLabel>
-      <input pInputText id="account" [(ngModel)]="user.account" class="w-full"/>
+      <p-dropdown 
+        id="account" 
+        [(ngModel)]="user.account" 
+        [options]="accounts" 
+        optionLabel="label" 
+        optionValue="value"
+        [filter]="true"
+        filterBy="label"
+        placeholder="Select Account"
+        [showClear]="true"
+        appendTo="body"
+        class="w-full">
+      </p-dropdown>
       <label for="account">Account</label>
     </p-floatLabel>
+
+    <!-- Info message for new users -->
+    <div *ngIf="!isEditMode" class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700">
+      <i class="pi pi-info-circle mr-2"></i>
+      User ID (kid) will be generated automatically from email address.
+    </div>
   </div>
 
   <ng-template pTemplate="footer">

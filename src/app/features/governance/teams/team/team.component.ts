@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Injector, Output } from '@angular/core';
+import { Component, EventEmitter, Injector, Output, Input, OnInit } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { FloatLabel } from 'primeng/floatlabel';
@@ -18,6 +18,7 @@ import { DividerModule } from 'primeng/divider';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ChipsModule } from 'primeng/chips';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-team',
@@ -42,7 +43,8 @@ import { ChipsModule } from 'primeng/chips';
   providers: [MessageService],
   templateUrl: './team.component.html',
 })
-export class TeamComponent extends AppBaseComponent {
+export class TeamComponent extends AppBaseComponent implements OnInit {
+  @Input() inline: boolean = false;
   @Output() onSave = new EventEmitter<void>();
 
   team: any = {};
@@ -56,9 +58,31 @@ export class TeamComponent extends AppBaseComponent {
   constructor(
     private injector: Injector,
     private governanceServices: GovernanceServices,
-    public messageService: MessageService
+    public messageService: MessageService,
+    private router: Router
   ) {
     super(injector);
+  }
+
+  ngOnInit() {
+    if (this.inline) {
+      this.visible = true;
+      this.loadMembers();
+    }
+  }
+
+  generateKid(name: string): string {
+    // Convert name to uppercase, replace spaces and special chars with underscores
+    const prefix = name
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '_')
+      .substring(0, 15);
+
+    // Generate random suffix (4 characters)
+    const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+
+    return `TEAM_${prefix}_${randomSuffix}`;
   }
 
   save() {
@@ -68,6 +92,13 @@ export class TeamComponent extends AppBaseComponent {
 
     this.loading = true;
     const teamId = this.team.kid || this.team._id || this.team.id;
+
+    // Generate kid for new teams
+    if (!teamId && this.team.name) {
+      this.team.kid = this.generateKid(this.team.name);
+      console.log('Generated team kid:', this.team.kid);
+    }
+
     const saveObservable = teamId ?
       this.governanceServices.updateTeam(teamId, this.team) :
       this.governanceServices.createTeam(this.team);
@@ -78,10 +109,17 @@ export class TeamComponent extends AppBaseComponent {
           return;
         }
         this.showSuccess(teamId ? 'Updated successfully' : 'Created successfully');
-        this.visible = false;
-        this.team = {};
+
+        if (this.inline) {
+          // Navigate back to teams list for inline mode
+          this.router.navigate(['/governance/teams']);
+        } else {
+          // Close dialog for popup mode
+          this.visible = false;
+          this.team = {};
+          this.onSave.emit();
+        }
         this.loading = false;
-        this.onSave.emit();
       },
       error: (error) => {
         console.error('Error saving team:', error);
@@ -93,6 +131,16 @@ export class TeamComponent extends AppBaseComponent {
         this.loading = false;
       }
     });
+  }
+
+  cancel() {
+    if (this.inline) {
+      // Navigate back to teams list for inline mode
+      this.router.navigate(['/governance/teams']);
+    } else {
+      // Close dialog for popup mode
+      this.visible = false;
+    }
   }
 
   show(id?) {
@@ -167,11 +215,32 @@ export class TeamComponent extends AppBaseComponent {
   }
 
   loadMembers() {
-    this.governanceServices.getUsers({}).subscribe(res => {
-      this.members = res.data.map(item => ({
-        ...item,
-        name: `${item.first_name} ${item.last_name}`
-      }));
+    this.governanceServices.getUsers({ size: 100, offset: 0 }).subscribe({
+      next: (res) => {
+        if (res.data) {
+          this.members = res.data.map(user => {
+            const displayName = user.first_name || user.last_name
+              ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
+              : user.email || user.kid || 'Unknown';
+
+            return {
+              ...user,
+              name: displayName,
+              label: `${displayName} (${user.email || user.kid})`,
+              value: user.kid || user._id
+            };
+          });
+          console.log('Loaded members:', this.members);
+        }
+      },
+      error: (error) => {
+        console.error('Error loading members:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load users'
+        });
+      }
     });
   }
 

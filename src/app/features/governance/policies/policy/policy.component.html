@@ -1,4 +1,310 @@
-<div class="space-y-6">
+<!-- Inline Page Layout -->
+<div *ngIf="inline" class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header with Breadcrumb -->
+    <div class="mb-6">
+      <div class="flex items-center gap-2 text-sm text-gray-600 mb-4">
+        <i class="pi pi-home"></i>
+        <span>Governance</span>
+        <i class="pi pi-angle-right text-xs"></i>
+        <span>Policies</span>
+        <i class="pi pi-angle-right text-xs"></i>
+        <span class="text-blue-600 font-medium">{{ title }}</span>
+      </div>
+      
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+          <i class="pi pi-shield text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
+          <p class="text-gray-600 mt-1">Define access control rules and permissions</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Policy Form Card -->
+    <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-200 space-y-8">
+      
+      <!-- Basic Information -->
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <i class="pi pi-info-circle text-blue-600"></i>
+          Basic Information
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="flex flex-col gap-2">
+            <label for="policy-name-inline" class="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <i class="pi pi-file text-blue-500"></i>
+              Policy Name *
+            </label>
+            <input 
+              id="policy-name-inline"
+              type="text" 
+              pInputText 
+              [(ngModel)]="editingPolicy.name"
+              placeholder="Enter policy name"
+              class="w-full"
+              required />
+            <small class="text-gray-500">A unique name for this policy</small>
+          </div>
+          
+          <div class="flex flex-col gap-2">
+            <label for="policy-type-inline" class="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <i class="pi pi-tag text-purple-500"></i>
+              Policy Type *
+            </label>
+            <p-dropdown 
+              id="policy-type-inline"
+              [(ngModel)]="editingPolicy.type"
+              [options]="typeOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Select policy type"
+              appendTo="body"
+              class="w-full">
+            </p-dropdown>
+            <small class="text-gray-500">Choose the policy category</small>
+          </div>
+        </div>
+        
+        <div class="flex flex-col gap-2 mt-6">
+          <label for="policy-description-inline" class="text-sm font-medium text-gray-700 flex items-center gap-2">
+            <i class="pi pi-align-left text-green-500"></i>
+            Description
+          </label>
+          <textarea 
+            id="policy-description-inline"
+            pTextarea 
+            [(ngModel)]="editingPolicy.description"
+            placeholder="Enter policy description"
+            rows="4"
+            class="w-full">
+          </textarea>
+          <small class="text-gray-500">Describe the purpose and scope of this policy</small>
+        </div>
+      </div>
+
+      <!-- Subjects (Users & Teams) -->
+      <div class="pt-6 border-t">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <i class="pi pi-users text-blue-600"></i>
+          Subjects (Users & Teams)
+        </h2>
+        
+        <div class="flex flex-col gap-2">
+          <label for="policy-subjects" class="text-sm font-medium text-gray-700 flex items-center gap-2">
+            <i class="pi pi-user text-indigo-500"></i>
+            Select Users or Teams
+          </label>
+          <p-multiSelect 
+            id="policy-subjects"
+            [(ngModel)]="editingPolicy.subjects"
+            [options]="subjects"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select users or teams"
+            [filter]="true"
+            display="chip"
+            appendTo="body"
+            class="w-full">
+          </p-multiSelect>
+          <small class="text-gray-500">Who this policy applies to (users or teams)</small>
+        </div>
+      </div>
+
+      <!-- Roles -->
+      <div class="pt-6 border-t">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <i class="pi pi-shield text-blue-600"></i>
+          Roles
+        </h2>
+        
+        <div class="flex flex-col gap-2">
+          <label for="policy-roles" class="text-sm font-medium text-gray-700 flex items-center gap-2">
+            <i class="pi pi-shield text-orange-500"></i>
+            Assign Roles
+          </label>
+          <p-multiSelect 
+            id="policy-roles"
+            [(ngModel)]="editingPolicy.roles"
+            [options]="roles"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select roles"
+            [filter]="true"
+            display="chip"
+            appendTo="body"
+            class="w-full">
+          </p-multiSelect>
+          <small class="text-gray-500">Assign roles to this policy</small>
+        </div>
+      </div>
+
+      <!-- Policy Settings -->
+      <div class="pt-6 border-t">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <i class="pi pi-cog text-blue-600"></i>
+          Policy Settings
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="flex flex-col gap-2">
+            <label for="policy-effect-inline" class="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <i class="pi pi-check-circle text-green-500"></i>
+              Effect
+            </label>
+            <p-dropdown 
+              id="policy-effect-inline"
+              [(ngModel)]="editingPolicy.effect"
+              [options]="effectOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Select effect"
+              appendTo="body"
+              class="w-full">
+            </p-dropdown>
+            <small class="text-gray-500">Allow or deny access</small>
+          </div>
+          
+          <div class="flex flex-col gap-2">
+            <label for="policy-priority-inline" class="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <i class="pi pi-sort-numeric-up text-orange-500"></i>
+              Priority
+            </label>
+            <p-inputNumber 
+              id="policy-priority-inline"
+              [(ngModel)]="editingPolicy.priority"
+              placeholder="0-100"
+              [min]="0" 
+              [max]="100"
+              class="w-full">
+            </p-inputNumber>
+            <small class="text-gray-500">0 = highest priority</small>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label for="policy-classification" class="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <i class="pi pi-shield text-purple-500"></i>
+              Data Classification
+            </label>
+            <p-dropdown 
+              id="policy-classification"
+              [(ngModel)]="editingPolicy.conditions['data_classification']"
+              [options]="classificationOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Select classification"
+              appendTo="body"
+              class="w-full">
+            </p-dropdown>
+            <small class="text-gray-500">Classification level</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conditions -->
+      <div class="pt-6 border-t">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <i class="pi pi-filter text-blue-600"></i>
+          Conditions
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="flex flex-col gap-2">
+            <label for="policy-ip-restriction" class="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <i class="pi pi-globe text-blue-500"></i>
+              IP Restrictions
+            </label>
+            <p-chips 
+              id="policy-ip-restriction"
+              [(ngModel)]="ipRestrictions"
+              placeholder="Add IP or CIDR (e.g., 192.168.1.0/24)"
+              separator=","
+              class="w-full">
+            </p-chips>
+            <small class="text-gray-500">Allowed IP addresses or CIDR ranges</small>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label for="policy-time-restriction" class="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <i class="pi pi-clock text-amber-500"></i>
+              Time Restriction
+            </label>
+            <input 
+              id="policy-time-restriction"
+              type="text" 
+              pInputText 
+              [(ngModel)]="editingPolicy.conditions['time_restriction']"
+              placeholder="e.g., business_hours"
+              class="w-full" />
+            <small class="text-gray-500">When this policy is active</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tags -->
+      <div class="pt-6 border-t">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <i class="pi pi-tags text-blue-600"></i>
+          Tags
+        </h2>
+        
+        <div class="flex flex-col gap-2">
+          <label for="policy-tags" class="text-sm font-medium text-gray-700 flex items-center gap-2">
+            <i class="pi pi-tag text-pink-500"></i>
+            Policy Tags
+          </label>
+          <p-chips 
+            id="policy-tags"
+            [(ngModel)]="editingPolicy.tags"
+            placeholder="Add tags (e.g., security, compliance)"
+            separator=","
+            class="w-full">
+          </p-chips>
+          <small class="text-gray-500">Tags for organizing and categorizing policies</small>
+        </div>
+      </div>
+
+      <!-- Enable Toggle -->
+      <div class="pt-6 border-t">
+        <div class="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <p-checkbox 
+            [(ngModel)]="editingPolicy.enabled" 
+            binary="true"
+            inputId="policy-enabled-inline">
+          </p-checkbox>
+          <label for="policy-enabled-inline" class="text-sm font-medium text-gray-700 flex items-center gap-2 cursor-pointer">
+            <i class="pi pi-power-off text-blue-600"></i>
+            Enable Policy
+          </label>
+          <small class="text-gray-500 ml-auto">Policy will take effect immediately when enabled</small>
+        </div>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="flex justify-end gap-3 pt-6 border-t">
+        <p-button 
+          label="Cancel" 
+          icon="pi pi-times"
+          severity="secondary" 
+          [outlined]="true"
+          (onClick)="cancel()">
+        </p-button>
+        <p-button 
+          label="Save Policy" 
+          icon="pi pi-check"
+          severity="primary"
+          (onClick)="save()">
+        </p-button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog/Modal Layout -->
+<div *ngIf="!inline" class="space-y-6">
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div class="flex flex-col gap-2">
       <label for="policy-name" class="text-sm font-medium text-gray-700">Policy Name *</label>
@@ -25,6 +331,7 @@
         optionLabel="label"
         optionValue="value"
         placeholder="Select policy type"
+        appendTo="body"
         class="w-full">
       </p-dropdown>
     </div>
@@ -55,6 +362,7 @@
         optionLabel="label"
         optionValue="value"
         placeholder="Select effect"
+        appendTo="body"
         class="w-full">
       </p-dropdown>
     </div>

@@ -207,133 +207,84 @@
           </ng-template>
         </div>
 
-        <!-- Permissions -->
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <h3 class="text-lg font-semibold mb-3">Permissions</h3>
-          <div *ngIf="(policy.permission_details && policy.permission_details.length > 0) || (policy.permissions && policy.permissions.length > 0); else noPermissions">
-            <div class="space-y-2">
-              <div *ngFor="let perm of (policy.permission_details && policy.permission_details.length ? policy.permission_details : policy.permissions)">
-                <label class="flex items-center gap-3 bg-gray-50 rounded p-3 border border-gray-200">
-                  <i class="pi pi-check-circle text-green-500"></i>
-                  <div>
-                    <div class="font-medium">{{ perm.name || perm }}</div>
-                    <div class="text-xs text-gray-500">{{ perm.kid ? perm.kid : '' }}</div>
-                  </div>
-                </label>
-              </div>
-            </div>
-          </div>
-          <ng-template #noPermissions>
-            <div class="text-center py-6">
-              <i class="pi pi-key text-gray-400 text-3xl mb-2"></i>
-              <div class="text-gray-500">No Permissions Defined</div>
-            </div>
-          </ng-template>
-        </div>
-
         <!-- Subjects (Users & Teams) -->
         <div class="bg-white rounded-lg shadow-sm p-6">
-          <h3 class="text-lg font-semibold mb-3">Subjects</h3>
-          <div class="space-y-4">
+          <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <i class="pi pi-users text-blue-600"></i>
+            Subjects
+          </h3>
+          <div class="space-y-6">
+            <!-- Users Section -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Users</label>
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-user text-indigo-500"></i>
+                <label class="text-sm font-semibold text-gray-700">Users</label>
+                <p-badge *ngIf="policy.user_details && policy.user_details.length > 0" [value]="policy.user_details.length" severity="info"></p-badge>
+              </div>
               <div *ngIf="policy.user_details && policy.user_details.length > 0; else noUsers">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div *ngFor="let u of policy.user_details" class="bg-white rounded-lg p-3 border border-gray-100 shadow-sm flex items-center gap-3">
-                    <p-avatar [label]="getInitials(u)" size="large" styleClass="bg-primary-100 text-primary-700"></p-avatar>
-                    <div class="flex-1">
-                      <div class="font-medium">{{ (u.first_name || u.last_name) ? ((u.first_name || '') + ' ' + (u.last_name || '')) : (u.kid || 'Unknown') }}</div>
-                      <div class="text-xs text-gray-500">ID: {{ u.kid }}</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div *ngFor="let u of policy.user_details" class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-3">
+                      <p-avatar 
+                        [label]="getInitials(u)" 
+                        size="large" 
+                        styleClass="bg-indigo-600 text-white"
+                        shape="circle">
+                      </p-avatar>
+                      <div class="flex-1 min-w-0">
+                        <div class="font-semibold text-gray-900 truncate">
+                          {{ (u.first_name || u.last_name) ? ((u.first_name || '') + ' ' + (u.last_name || '')).trim() : (u.kid || 'Unknown User') }}
+                        </div>
+                        <div class="text-sm text-indigo-600 truncate">{{ u.email || 'No email' }}</div>
+                        <div class="text-xs text-gray-500 font-mono truncate">ID: {{ u.kid }}</div>
+                      </div>
                     </div>
-                    <div class="text-sm text-gray-500">{{ u.email || '' }}</div>
                   </div>
                 </div>
               </div>
               <ng-template #noUsers>
-                <div class="text-sm text-gray-500">No specific users attached to this policy.</div>
+                <div class="bg-gray-50 rounded-lg p-6 text-center border border-gray-200">
+                  <i class="pi pi-user text-gray-300 text-3xl mb-2"></i>
+                  <div class="text-sm text-gray-500">No users assigned to this policy</div>
+                </div>
               </ng-template>
             </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Teams</label>
+            <!-- Teams Section -->
+            <div class="pt-4 border-t border-gray-200">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-users text-purple-500"></i>
+                <label class="text-sm font-semibold text-gray-700">Teams</label>
+                <p-badge *ngIf="policy.team_details && policy.team_details.length > 0" [value]="policy.team_details.length" severity="warning"></p-badge>
+              </div>
               <div *ngIf="policy.team_details && policy.team_details.length > 0; else noTeams">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div *ngFor="let t of policy.team_details" class="bg-white rounded-lg p-3 border border-gray-100 shadow-sm">
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <div class="font-medium">{{ t.name || t.kid }}</div>
-                        <div class="text-xs text-gray-500">ID: {{ t.kid }}</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div *ngFor="let t of policy.team_details" class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-3">
+                      <div class="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold">
+                        <i class="pi pi-users text-xl"></i>
                       </div>
-                      <div class="text-sm text-gray-500">Members: {{ t.members ? (t.members.length) : '-' }}</div>
+                      <div class="flex-1 min-w-0">
+                        <div class="font-semibold text-gray-900 truncate">{{ t.name || t.kid }}</div>
+                        <div class="text-sm text-purple-600">{{ t.type || 'Team' }}</div>
+                        <div class="flex items-center gap-2 mt-1">
+                          <div class="text-xs text-gray-500 font-mono truncate">ID: {{ t.kid }}</div>
+                          <span class="text-gray-300">•</span>
+                          <div class="text-xs text-gray-600">
+                            <i class="pi pi-users text-xs"></i> {{ t.members ? t.members.length : 0 }} members
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
               <ng-template #noTeams>
-                <div class="text-sm text-gray-500">No teams attached to this policy.</div>
+                <div class="bg-gray-50 rounded-lg p-6 text-center border border-gray-200">
+                  <i class="pi pi-users text-gray-300 text-3xl mb-2"></i>
+                  <div class="text-sm text-gray-500">No teams assigned to this policy</div>
+                </div>
               </ng-template>
-            </div>
-          </div>
-        </div>
-
-        <!-- Resources -->
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <h3 class="text-lg font-semibold mb-3">Resources</h3>
-          <div *ngIf="policy.resources && policy.resources.length > 0; else noResources">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div *ngFor="let resource of policy.resources" class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <div class="flex items-center gap-2">
-                  <i class="pi pi-database text-green-500"></i>
-                  <span class="font-medium text-gray-900">{{ resource }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <ng-template #noResources>
-            <div class="text-center py-6">
-              <i class="pi pi-database text-gray-400 text-3xl mb-2"></i>
-              <div class="text-gray-500">No Resources Specified</div>
-            </div>
-          </ng-template>
-        </div>
-
-        <!-- Audit -->
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <h3 class="text-lg font-semibold mb-3">Audit</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Created</label>
-                <div class="text-sm text-gray-600">
-                  <div>{{ policy.created_at ? formatDate(policy.created_at) : '-' }}</div>
-                  <div *ngIf="policy.created_by" class="text-xs text-gray-500">by {{ policy.created_by }}</div>
-                </div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Last Modified</label>
-                <div class="text-sm text-gray-600">
-                  <div>{{ policy.updated_at ? formatDate(policy.updated_at) : '-' }}</div>
-                  <div *ngIf="policy.updated_by" class="text-xs text-gray-500">by {{ policy.updated_by }}</div>
-                </div>
-              </div>
-            </div>
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Policy Rules</label>
-                <div class="text-2xl font-bold text-blue-600">{{ policy.policy_rules_total }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Total Subjects</label>
-                <div class="text-2xl font-bold text-green-600">{{ policy.total_subjects }}</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Policy JSON -->
-          <div class="mt-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Raw Policy Data</label>
-            <div class="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
-              <pre class="text-sm">{{ policy | json }}</pre>
             </div>
           </div>
         </div>

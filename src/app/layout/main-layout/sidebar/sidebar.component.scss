@@ -1,402 +1,477 @@
-// Sidebar Container
 :host {
   display: block;
   height: 100%;
   position: relative;
 }
 
-// Header Styles
-.header {
-  height: 56px;
-  border-bottom: 1px solid var(--p-content-border-color);
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+.sidebar-container {
+  display: flex;
+  flex-direction: column;
+  /* let the container size to its content; outer fixed sidebar provides viewport height */
+  min-height: 100vh;
+  background: var(--surface-ground);
+  border-right: 1px solid var(--surface-border);
+}
+
+.sidebar-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  height: 60px;
+  border-bottom: 1px solid var(--surface-border);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%);
 
   .logo-container {
-    position: relative;
-    transition: all 0.3s ease;
-
-    &::after {
-      content: '';
-      position: absolute;
-      top: -2px;
-      left: -2px;
-      right: -2px;
-      bottom: -2px;
-      background: linear-gradient(45deg, #3b82f6, #8b5cf6, #3b82f6);
-      border-radius: 10px;
-      z-index: -1;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    &:hover::after {
-      opacity: 0.3;
-    }
-  }
-}
-
-// Navigation Container
-.sidebar-nav {
-  padding: 0.5rem;
-
-  &.collapsed {
-    padding: 0.25rem;
-  }
-
-  &.expanded {
-    padding: 0.5rem 1rem;
-  }
-}
-
-// Menu Items
-.menu-item {
-  margin-bottom: 0.125rem;
-
-  a {
-    position: relative;
-    overflow: hidden;
-
-    &:hover {
-      background: rgba(59, 130, 246, 0.08);
-    }
-  }
-}
-
-// Menu Groups
-.menu-group {
-  margin-bottom: 0.25rem;
-
-  .menu-group-header {
-    position: relative;
-
-    &:hover {
-      background: rgba(59, 130, 246, 0.08);
-    }
-
-    .rotate-180 {
-      transform: rotate(180deg);
-    }
-  }
-
-  .submenu-container {
-    margin-top: 0.25rem;
-    padding-left: 1rem;
-    border-left: 2px solid rgba(156, 163, 175, 0.3);
-
-    .submenu-item {
-      margin-bottom: 0.125rem;
-    }
-
-    .subgroup {
-      .subgroup-header {
-        margin-bottom: 0.25rem;
-        padding: 0.375rem 0.5rem;
-        border-radius: 0.375rem;
-        background: rgba(156, 163, 175, 0.1);
-
-        &:hover {
-          background: rgba(59, 130, 246, 0.08);
-        }
-      }
-
-      .subgroup-children {
-        border-left: 1px solid rgba(156, 163, 175, 0.2);
-        margin-left: 0.5rem;
-        padding-left: 0.5rem;
-
-        a {
-          margin-bottom: 0.0625rem;
-          font-size: 0.875rem;
-          padding: 0.375rem 0.5rem;
-          border-radius: 0.25rem;
-
-          &:hover {
-            background: rgba(59, 130, 246, 0.08) !important;
-          }
-
-          &:last-child {
-            margin-bottom: 0;
-          }
-        }
-      }
-    }
-
-    // Direct items in submenu
-    a:not(.subgroup-children a) {
-      padding: 0.375rem 0.5rem;
-      font-size: 0.875rem;
-      border-radius: 0.25rem;
-
-      &:hover {
-        background: rgba(59, 130, 246, 0.08) !important;
-      }
-    }
-  }
-}
-
-// Collapsed State Styles - Đơn giản hóa
-.sidebar-nav.collapsed {
-
-  .menu-item a,
-  .menu-group-header {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
     justify-content: center;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-
-    span {
-      display: none !important;
-    }
-  }
-
-  .menu-group-header i:last-child {
-    display: none !important;
-  }
-
-  .submenu-container {
-    display: none !important;
-  }
-}
-
-// Responsive Design
-@media (max-width: 1024px) {
-  .header {
-    height: 48px;
-
-    .logo-container {
-      width: 32px;
-      height: 32px;
-    }
-
-    span {
-      font-size: 1rem;
-    }
-  }
-
-  .sidebar-nav {
-    padding: 0.25rem;
-
-    &.expanded {
-      padding: 0.25rem 0.5rem;
-    }
-  }
-
-  .menu-item a,
-  .menu-group-header {
-    padding: 0.5rem;
-    gap: 0.75rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 
     i {
+      color: white;
       font-size: 1.125rem;
     }
-
-    span {
-      font-size: 0.875rem;
-    }
   }
 
-  .submenu-container {
+  .logo-text {
+    font-size: 1.125rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin-left: 0.5rem;
-    padding-left: 0.75rem;
+  }
 
-    .subgroup-header {
-      padding: 0.25rem 0.375rem;
+  .close-btn {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s;
 
-      i {
-        font-size: 0.75rem;
-      }
-
-      span {
-        font-size: 0.75rem;
-      }
+    &:hover {
+      background: var(--surface-hover);
     }
 
-    a {
-      padding: 0.25rem 0.375rem;
-      font-size: 0.8125rem;
+    i {
+      color: var(--text-color-secondary);
     }
   }
 }
 
-@media (max-width: 768px) {
-  .header {
-    height: 44px;
-    padding: 0.5rem 0.75rem;
+.sidebar-content {
+  /* Do not create an internal scroll; allow the sidebar to size with its content.
+     Footer is pinned using margin-top: auto on the footer element. */
+  flex: 0 0 auto;
+  overflow: visible;
+}
 
-    .logo-container {
-      width: 28px;
-      height: 28px;
-    }
+.sidebar-nav {
+  padding: 0.75rem 0.5rem;
 
-    span {
-      font-size: 0.875rem;
-    }
+  &.collapsed {
+    padding: 0.5rem 0.25rem;
+  }
+}
+
+.nav-section {
+  margin-bottom: 1.5rem;
+
+  &:last-child {
+    margin-bottom: 0.5rem;
+  }
+}
+
+.section-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-color-secondary);
+  padding: 0 0.75rem 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  overflow: hidden;
+  transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.28s ease;
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+
+  &.open {
+    max-height: 1200px; // large enough for all items
+    opacity: 1;
+    margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.5rem;
+  color: var(--text-color);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  position: relative;
+
+  i {
+    font-size: 1.125rem;
+    color: var(--text-color-secondary);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
   }
 
-  .sidebar-nav {
-    padding: 0.125rem;
-
-    &.expanded {
-      padding: 0.125rem 0.375rem;
-    }
+  span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .menu-item a,
-  .menu-group-header {
-    padding: 0.375rem 0.5rem;
-    gap: 0.5rem;
+  &:hover {
+    background: var(--surface-hover);
+    color: var(--primary-color);
 
     i {
-      font-size: 1rem;
-    }
-
-    span {
-      font-size: 0.8125rem;
+      color: var(--primary-color);
     }
   }
 
-  .submenu-container {
-    margin-left: 0.25rem;
-    padding-left: 0.5rem;
+  &.active {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    color: var(--primary-color);
+    font-weight: 600;
 
-    .subgroup-header {
-      padding: 0.1875rem 0.25rem;
-
-      i {
-        font-size: 0.6875rem;
-      }
-
-      span {
-        font-size: 0.6875rem;
-      }
+    i {
+      color: var(--primary-color);
     }
 
-    a {
-      padding: 0.1875rem 0.25rem;
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      border-radius: 0 3px 3px 0;
+    }
+  }
+
+  &.sub-link {
+    font-size: 0.8125rem;
+    padding-left: 1rem;
+
+    i {
       font-size: 0.75rem;
     }
   }
 }
 
-// Mobile Styles - Ẩn sidebar trên mobile khi collapsed
-@media (max-width: 640px) {
-  :host {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-    height: 100vh;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
+.group-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 0.75rem;
+  border: none;
+  background: transparent;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-color);
 
-    &.sidebar-open {
-      transform: translateX(0);
+  &:hover {
+    background: var(--surface-hover);
+  }
+
+  &.expanded {
+    background: var(--surface-hover);
+
+    .expand-icon {
+      transform: rotate(180deg);
     }
   }
 
-  .header {
-    height: 48px;
-    padding: 0.75rem;
-
-    .logo-container {
-      width: 32px;
-      height: 32px;
-    }
-
-    span {
-      font-size: 0.9rem;
-    }
+  &.collapsed-sidebar {
+    justify-content: center;
   }
 
-  .sidebar-nav {
-    padding: 0.25rem;
-
-    &.expanded {
-      padding: 0.25rem 0.5rem;
-    }
-  }
-
-  .menu-item a,
-  .menu-group-header {
-    padding: 0.5rem;
-    gap: 0.625rem;
+  .group-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
 
     i {
       font-size: 1.125rem;
+      color: var(--text-color-secondary);
+      flex-shrink: 0;
     }
 
     span {
-      font-size: 0.875rem;
+      white-space: nowrap;
     }
   }
 
-  .submenu-container {
-    margin-left: 0.375rem;
-    padding-left: 0.625rem;
+  .expand-icon {
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+    transition: transform 0.2s ease;
+  }
+}
 
-    .subgroup-header {
-      padding: 0.25rem 0.3125rem;
+.sidebar-footer {
+  /* Pin to bottom of the sidebar container */
+  margin-top: auto;
+  flex-shrink: 0;
+  padding: 0.75rem;
+  border-top: 1px solid var(--surface-border);
+  background: linear-gradient(180deg, var(--surface-ground) 0%, var(--surface-section) 100%);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+
+  &.collapsed {
+    padding: 0.5rem 0.25rem;
+  }
+}
+
+.user-section {
+  margin-bottom: 0.75rem;
+}
+
+.footer-divider {
+  height: 1px;
+  background: var(--surface-border);
+  margin: 0.75rem 0;
+}
+
+.footer-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--text-color);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 0.25rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  i {
+    font-size: 1.125rem;
+    color: var(--text-color-secondary);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .btn-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 0;
+
+    .btn-label {
+      flex: 1;
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 600;
+    }
+
+    i {
+      font-size: 0.75rem;
+      margin-left: 0.5rem;
+    }
+  }
+
+  &:hover {
+    background: var(--surface-hover);
+
+    i {
+      color: var(--primary-color);
+    }
+  }
+
+  &.collapsed {
+    justify-content: center;
+    padding: 0.75rem 0.5rem;
+  }
+
+  &.app-switcher-btn {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+
+    &:hover {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+      border-color: var(--primary-color);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+    }
+
+    i {
+      color: var(--primary-color);
+    }
+  }
+
+  &.settings-btn {
+    &:hover {
+      background: rgba(139, 92, 246, 0.1);
+    }
+
+    &.active {
+      background: rgba(139, 92, 246, 0.1);
+      color: #8b5cf6;
 
       i {
-        font-size: 0.75rem;
-      }
-
-      span {
-        font-size: 0.75rem;
+        color: #8b5cf6;
       }
     }
+  }
+}
 
-    a {
-      padding: 0.25rem 0.3125rem;
-      font-size: 0.8125rem;
+:host ::ng-deep .app-matrix-dialog {
+  .p-dialog-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px 8px 0 0;
+
+    .p-dialog-title {
+      font-weight: 600;
+      font-size: 1.25rem;
+    }
+
+    .p-dialog-header-icon {
+      color: white;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+    }
+  }
+
+  .p-dialog-content {
+    padding: 1.5rem;
+  }
+
+  .apps-matrix-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+
+    @media (max-width: 640px) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+
+    .app-tile {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 1rem;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(249, 250, 251, 0.9) 100%);
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      @media (prefers-color-scheme: dark) {
+        background: linear-gradient(135deg, rgba(31, 41, 55, 0.9) 0%, rgba(17, 24, 39, 0.9) 100%);
+      }
+
+      &:hover {
+        transform: translateY(-4px);
+        border-color: #3b82f6;
+        box-shadow: 0 8px 16px rgba(59, 130, 246, 0.2);
+      }
+
+      &.active {
+        border-color: #3b82f6;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+
+        .app-icon-wrapper {
+          background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+          color: white;
+        }
+
+        .check-icon {
+          display: block;
+        }
+      }
+
+      .app-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+        margin-bottom: 0.75rem;
+        transition: all 0.3s ease;
+
+        i {
+          font-size: 1.5rem;
+          color: #3b82f6;
+        }
+      }
+
+      .app-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-align: center;
+        color: #374151;
+
+        @media (prefers-color-scheme: dark) {
+          color: #f3f4f6;
+        }
+      }
+
+      .check-icon {
+        display: none;
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        color: #3b82f6;
+        font-size: 1.25rem;
+      }
     }
   }
 }
 
-// Dark Mode Enhancements
-@media (prefers-color-scheme: dark) {
-  .menu-group .submenu-container {
-    border-left-color: rgba(75, 85, 99, 0.5);
-  }
-
-  .subgroup .subgroup-children {
-    border-left-color: rgba(75, 85, 99, 0.3);
-  }
-
-  .subgroup-header {
-    background: rgba(75, 85, 99, 0.2);
-  }
-}
-
-// Accessibility Improvements
-@media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none !important;
-    animation: none !important;
-  }
-}
-
-// Focus States
-.menu-item a:focus-visible,
-.menu-group-header:focus-visible,
-.submenu-container a:focus-visible {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-// High Contrast Mode
-@media (prefers-contrast: high) {
-
-  .menu-item a:hover,
-  .menu-group-header:hover,
-  .submenu-container a:hover {
-    background: rgba(59, 130, 246, 0.2);
-    border: 1px solid #3b82f6;
-  }
-}
-
-// Info Dialog Styles
 :host ::ng-deep .info-dialog {
   .p-dialog-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -420,6 +495,11 @@
   .p-dialog-content {
     padding: 1.5rem;
     background: white;
+
+    @media (prefers-color-scheme: dark) {
+      background: #1f2937;
+      color: #f3f4f6;
+    }
 
     .info-content {
       h4 {
@@ -452,96 +532,51 @@
     background: #f8f9fa;
     border-radius: 0 0 8px 8px;
     padding: 1rem 1.5rem;
-  }
-}
 
-// Dark mode support
-:host ::ng-deep .info-dialog {
-  .p-dialog-content {
-    @media (prefers-color-scheme: dark) {
-      background: #1f2937;
-      color: #f3f4f6;
-    }
-  }
-
-  .p-dialog-footer {
     @media (prefers-color-scheme: dark) {
       background: #374151;
     }
   }
 }
 
-// Info button hover effects
-.group:hover .opacity-0 {
-  opacity: 1;
-}
+@media (max-width: 1024px) {
+  .sidebar-header {
+    height: 56px;
+    padding: 0.75rem;
+  }
 
-// Ensure proper spacing for info buttons
-.flex.items-center.gap-1 {
-  button {
-    min-width: 1.5rem;
-    min-height: 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .nav-link {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.8125rem;
+  }
+
+  .group-header {
+    padding: 0.5rem 0.625rem;
   }
 }
 
-// Highlighted Menu Item Styles - Simplified
-.highlighted-menu-item {
-  position: relative;
-  background: rgba(59, 130, 246, 0.05);
-  border-left: 4px solid #3b82f6;
-}
+@media (max-width: 768px) {
+  .sidebar-header {
+    height: 52px;
+    padding: 0.625rem;
 
-// Menu section headers
-.menu-section-header {
-  position: relative;
-  margin-bottom: 0.5rem;
+    .logo-container {
+      width: 32px;
+      height: 32px;
 
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-    border-radius: 1px;
+      i {
+        font-size: 1rem;
+      }
+    }
+
+    .logo-text {
+      font-size: 1rem;
+    }
   }
 }
 
-// Enhanced hover effects - Simplified
-.menu-item-hover {
-  &:hover {
-    background: rgba(59, 130, 246, 0.05);
-  }
-}
-
-// Badge styling - Simplified
-.menu-badge {
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-  color: white;
-  font-weight: 600;
-  font-size: 0.7rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 9999px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-// Improved collapsible menu styles
-.collapsible-menu {
-  border-left: 2px solid transparent;
-  transition: border-color 0.2s ease;
-
-  &.expanded {
-    border-left-color: #3b82f6;
-  }
-}
-
-// Enhanced info button - Simplified
-.info-button {
-  &:hover {
-    background: rgba(59, 130, 246, 0.1);
+@media (prefers-color-scheme: dark) {
+  .sidebar-footer {
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
   }
 }

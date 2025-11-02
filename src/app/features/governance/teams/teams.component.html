@@ -84,14 +84,14 @@
             icon="pi pi-plus" 
             severity="primary"
             size="small"
-            (click)="teamDetail.show()"
+            (click)="createTeam()"
             class="sm:hidden">
           </p-button>
           <p-button 
             icon="pi pi-plus" 
             severity="primary"
             [rounded]="true"
-            (click)="teamDetail.show()"
+            (click)="createTeam()"
             pTooltip="Create Team"
             class="hidden sm:inline-flex">
           </p-button>
@@ -328,7 +328,7 @@
                 label="Create First Team" 
                 icon="pi pi-plus" 
                 severity="primary"
-                (click)="teamDetail.show()">
+                (click)="createTeam()">
               </p-button>
             </td>
           </tr>
@@ -492,7 +492,7 @@
             label="Create First Team" 
             icon="pi pi-plus" 
             severity="primary"
-            (click)="teamDetail.show()">
+            (click)="createTeam()">
           </p-button>
         </div>
       </div>

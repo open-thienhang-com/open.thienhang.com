@@ -40,12 +40,20 @@ export const routes: Routes = [
         loadComponent: () => import('./features/governance/policies/policies.component').then(m => m.PoliciesComponent),
       },
       {
+        path: 'governance/policies/new',
+        loadComponent: () => import('./features/governance/policies/policy-create/policy-create.component').then(m => m.PolicyCreateComponent),
+      },
+      {
         path: 'governance/policies/:id',
         loadComponent: () => import('./features/governance/policies/policy-detail/policy-detail.component').then(m => m.PolicyDetailComponent),
       },
       {
         path: 'governance/teams',
         loadComponent: () => import('./features/governance/teams/teams.component').then(m => m.TeamsComponent),
+      },
+      {
+        path: 'governance/teams/new',
+        loadComponent: () => import('./features/governance/teams/team-create/team-create.component').then(m => m.TeamCreateComponent),
       },
       {
         path: 'governance/roles',

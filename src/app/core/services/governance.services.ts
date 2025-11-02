@@ -16,6 +16,7 @@ export interface ApiResponse<T> {
 export interface User {
   _id?: string;
   id?: string;
+  kid?: string;
   first_name?: string;
   last_name?: string;
   name?: string;
@@ -32,6 +33,8 @@ export interface User {
 export interface Account {
   _id?: string;
   id?: string;
+  identify?: string;
+  image?: string;
   name?: string;
   full_name?: string;
   email?: string;
@@ -40,6 +43,7 @@ export interface Account {
   status?: string;
   department?: string;
   is_active?: boolean;
+  is_verified?: boolean;
   owner?: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -92,8 +96,7 @@ export interface Policy {
   effect: 'allow' | 'deny' | null;
   subjects: string[];
   roles: string[];
-  permissions: string[];
-  resources: string[];
+  // permissions/resources removed from policy model
   domain_id: string | null;
   data_product_id: string | null;
   conditions: any;
@@ -113,8 +116,6 @@ export interface Policy {
   policy_rules_total: number;
   total_subjects: number;
   total_roles: number;
-  total_permissions: number;
-  total_resources: number;
   domain_info: any;
   data_product_info: any;
 }
@@ -160,6 +161,7 @@ export interface PaginatedResponse<T> {
 export interface Team {
   _id?: string;
   id?: string;
+  kid?: string;
   name: string;
   description?: string;
   members?: string[] | any[];
@@ -258,7 +260,7 @@ export class GovernanceServices {
   }
 
   getUser(id: string): Observable<ApiResponse<User>> {
-    return this.http.get<any>(`${this.baseUrl}/governance/users/${id}`)
+    return this.http.get<any>(`${this.baseUrl}/governance/user/${id}`)
       .pipe(
         map(response => {
           // Handle response that already has 'data' property
@@ -277,42 +279,42 @@ export class GovernanceServices {
   }
 
   createUser(user: User): Observable<ApiResponse<User>> {
-    return this.http.post<User>(`${this.baseUrl}/governance/users`, user)
+    return this.http.post<User>(`${this.baseUrl}/governance/user`, user)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   updateUser(id: string, user: Partial<User>): Observable<ApiResponse<User>> {
-    return this.http.patch<User>(`${this.baseUrl}/governance/users/${id}`, user)
+    return this.http.patch<User>(`${this.baseUrl}/governance/user/${id}`, user)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   deleteUser(id: string): Observable<ApiResponse<any>> {
-    return this.http.delete<any>(`${this.baseUrl}/governance/users/${id}`)
+    return this.http.delete<any>(`${this.baseUrl}/governance/user/${id}`)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   activateUser(id: string): Observable<ApiResponse<User>> {
-    return this.http.post<User>(`${this.baseUrl}/governance/users/${id}/activate`, {})
+    return this.http.post<User>(`${this.baseUrl}/governance/user/${id}/activate`, {})
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   deactivateUser(id: string): Observable<ApiResponse<User>> {
-    return this.http.post<User>(`${this.baseUrl}/governance/users/${id}/deactivate`, {})
+    return this.http.post<User>(`${this.baseUrl}/governance/user/${id}/deactivate`, {})
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   assignUserToTeam(userId: string, teamId: string): Observable<ApiResponse<any>> {
-    return this.http.post<any>(`${this.baseUrl}/governance/users/${userId}/team/${teamId}`, {})
+    return this.http.post<any>(`${this.baseUrl}/governance/user/${userId}/team/${teamId}`, {})
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   removeUserFromTeam(userId: string, teamId: string): Observable<ApiResponse<any>> {
-    return this.http.delete<any>(`${this.baseUrl}/governance/users/${userId}/team/${teamId}`)
+    return this.http.delete<any>(`${this.baseUrl}/governance/user/${userId}/team/${teamId}`)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   getUserTeams(userId: string): Observable<ApiResponse<Team[]>> {
-    return this.http.get<Team[]>(`${this.baseUrl}/governance/users/${userId}/teams`)
+    return this.http.get<Team[]>(`${this.baseUrl}/governance/user/${userId}/teams`)
       .pipe(map(response => this.wrapArrayResponse(response)));
   }
 
@@ -324,7 +326,7 @@ export class GovernanceServices {
   }
 
   getTeam(id: string): Observable<ApiResponse<Team>> {
-    return this.http.get<any>(`${this.baseUrl}/governance/teams/${id}`)
+    return this.http.get<any>(`${this.baseUrl}/governance/team/${id}`)
       .pipe(
         map(response => {
           // Handle response that already has 'data' property
@@ -343,7 +345,7 @@ export class GovernanceServices {
   }
 
   createTeam(team: Team): Observable<ApiResponse<Team>> {
-    return this.http.post<Team>(`${this.baseUrl}/governance/teams`, team)
+    return this.http.post<Team>(`${this.baseUrl}/governance/team`, team)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
@@ -390,7 +392,7 @@ export class GovernanceServices {
   }
 
   getAccount(id: string): Observable<ApiResponse<Account>> {
-    return this.http.get<any>(`${this.baseUrl}/governance/accounts/${id}`)
+    return this.http.get<any>(`${this.baseUrl}/governance/account/${id}`)
       .pipe(
         map(response => {
           // Handle response that already has 'data' property
@@ -409,7 +411,7 @@ export class GovernanceServices {
   }
 
   updateAccount(id: string, account: Partial<Account>): Observable<ApiResponse<Account>> {
-    return this.http.patch<Account>(`${this.baseUrl}/governance/accounts/${id}`, account)
+    return this.http.patch<Account>(`${this.baseUrl}/governance/account/${id}`, account)
       .pipe(map(response => this.wrapResponse(response)));
   }
 

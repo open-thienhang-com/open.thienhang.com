@@ -1,6 +1,52 @@
 <p-toast></p-toast>
 
+<!-- Inline Mode (Standalone Page) -->
+<div *ngIf="inline" class="bg-gray-50 min-h-screen p-6">
+  <div class="max-w-5xl mx-auto">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+            <i class="pi pi-users text-white text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
+            <p class="text-gray-600">{{ isEditMode ? 'Update team information' : 'Create a new team' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <ng-container *ngTemplateOutlet="formContent"></ng-container>
+    </div>
+
+    <!-- Actions -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mt-6 flex items-center justify-between">
+      <p-button 
+        label="Cancel" 
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        (click)="cancel()"
+        [disabled]="loading">
+      </p-button>
+      <p-button 
+        [label]="isEditMode ? 'Update Team' : 'Create Team'" 
+        icon="pi pi-check"
+        severity="primary"
+        (click)="save()"
+        [loading]="loading">
+      </p-button>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog Mode (Popup) -->
 <p-dialog 
+  *ngIf="!inline"
   [(visible)]="visible" 
   [modal]="true" 
   [style]="{ width: '90vw', maxWidth: '900px' }"
@@ -137,64 +183,9 @@
   </div>
 
   <!-- Edit/Create Mode -->
-  <div class="grid grid-flow-row grid-cols-2 gap-4 mt-3" *ngIf="!loading && !isViewMode">
-    <p-floatlabel variant="on">
-      <input 
-        class="w-full" 
-        pInputText 
-        id="name" 
-        [(ngModel)]="team.name" 
-        autocomplete="off"
-        [disabled]="loading"/>
-      <label for="name">Name *</label>
-    </p-floatlabel>
-    
-    <p-floatlabel variant="on">
-      <input 
-        class="w-full" 
-        pInputText 
-        id="type" 
-        [(ngModel)]="team.type" 
-        autocomplete="off"
-        [disabled]="loading"/>
-      <label for="type">Type</label>
-    </p-floatlabel>
-
-    <p-floatlabel variant="on" class="col-span-2">
-      <textarea 
-        pTextarea 
-        id="description" 
-        [(ngModel)]="team.description" 
-        rows="3" 
-        cols="30" 
-        style="resize: none" 
-        class="w-full h-full"
-        [disabled]="loading">
-      </textarea>
-      <label for="description">Description</label>
-    </p-floatlabel>
-
-    <p-floatlabel variant="on" class="col-span-2">
-      <p-listbox
-        [(ngModel)]="team.members"
-        [options]="members"
-        optionLabel="name"
-        [filter]="true"
-        filterPlaceholder="Search members"
-        multiple="true"
-        styleClass="w-full"
-        id="members"
-        [disabled]="loading">
-        <ng-template let-option pTemplate="item">
-          <li class="flex items-center gap-2">
-            <i class="pi pi-user"></i>
-            <span>{{ option.name }}</span>
-          </li>
-        </ng-template>
-      </p-listbox>
-      <label for="members">Members</label>
-    </p-floatlabel>
-  </div>
+  <ng-container *ngIf="!loading && !isViewMode">
+    <ng-container *ngTemplateOutlet="formContent"></ng-container>
+  </ng-container>
 
   <ng-template #footer>
     <div class="flex items-center justify-between gap-3">
@@ -234,7 +225,7 @@
           label="Close" 
           [text]="true" 
           severity="secondary" 
-          (click)="visible = false"
+          (click)="cancel()"
           [disabled]="loading">
         </p-button>
         <p-button 
@@ -249,3 +240,84 @@
     </div>
   </ng-template>
 </p-dialog>
+
+<!-- Template for form content (shared between inline and dialog) -->
+<ng-template #formContent>
+  <!-- Loading State -->
+  <div class="flex items-center justify-center p-8" *ngIf="loading">
+    <i class="pi pi-spin pi-spinner text-blue-500 text-2xl"></i>
+  </div>
+
+  <!-- Form -->
+  <div class="grid grid-flow-row grid-cols-2 gap-4" *ngIf="!loading">
+    <p-floatlabel variant="on">
+      <input 
+        class="w-full" 
+        pInputText 
+        id="name-field" 
+        [(ngModel)]="team.name" 
+        autocomplete="off"
+        [disabled]="loading"/>
+      <label for="name-field">Name *</label>
+    </p-floatlabel>
+    
+    <p-floatlabel variant="on">
+      <input 
+        class="w-full" 
+        pInputText 
+        id="type-field" 
+        [(ngModel)]="team.type" 
+        autocomplete="off"
+        [disabled]="loading"/>
+      <label for="type-field">Type</label>
+    </p-floatlabel>
+
+    <p-floatlabel variant="on" class="col-span-2">
+      <textarea 
+        pTextarea 
+        id="description-field" 
+        [(ngModel)]="team.description" 
+        rows="3" 
+        cols="30" 
+        style="resize: none" 
+        class="w-full h-full"
+        [disabled]="loading">
+      </textarea>
+      <label for="description-field">Description</label>
+    </p-floatlabel>
+
+    <div class="col-span-2">
+      <label for="members-field" class="block text-sm font-medium text-gray-700 mb-2">
+        <i class="pi pi-users text-blue-500 mr-2"></i>
+        Team Members
+      </label>
+      <p-multiSelect
+        id="members-field"
+        [(ngModel)]="team.members"
+        [options]="members"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Search and select members"
+        [filter]="true"
+        filterBy="label,email,kid"
+        display="chip"
+        appendTo="body"
+        [showClear]="true"
+        class="w-full"
+        [disabled]="loading">
+        <ng-template let-user pTemplate="item">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+              <i class="pi pi-user text-blue-600 text-xs"></i>
+            </div>
+            <div class="flex-1">
+              <div class="font-medium text-gray-900">{{ user.name }}</div>
+              <div class="text-xs text-gray-500">{{ user.email || user.kid }}</div>
+            </div>
+          </div>
+        </ng-template>
+      </p-multiSelect>
+      <small class="text-gray-500 mt-1 block">Select users to add to this team</small>
+    </div>
+  </div>
+</ng-template>

@@ -95,13 +95,13 @@ export const menu: MenuItem[] = [
         type: 'item',
         expanded: false,
         children: [
-            { label: 'Policies', url: '/governance/policies', icon: 'pi pi-lock' },
-            { label: 'Permissions', url: '/governance/permissions', icon: 'pi pi-key' },
-            { label: 'Roles', url: '/governance/roles', icon: 'pi pi-users' },
             { label: 'Teams', url: '/governance/teams', icon: 'pi pi-users' },
             { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
             { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building' },
-            { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' }
+            { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' },
+            { label: 'Permissions', url: '/governance/permissions', icon: 'pi pi-key' },
+            { label: 'Roles', url: '/governance/roles', icon: 'pi pi-users' },
+            { label: 'Policies', url: '/governance/policies', icon: 'pi pi-lock' }
         ]
     },
     // Settings intentionally removed from sidebar menu config; Settings is a standalone app

@@ -10,6 +10,7 @@ import {
   animate,
 } from '@angular/animations';
 import { AppSwitcherService, AppKey } from '../../../core/services/app-switcher.service';
+import { AuthServices } from '../../../core/services/auth.services';
 
 // PrimeNG imports
 import { DialogModule } from 'primeng/dialog';
@@ -25,7 +26,7 @@ import { TooltipModule } from 'primeng/tooltip';
     DialogModule,
     ButtonModule,
     DividerModule,
-    TooltipModule
+    TooltipModule,
   ],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
@@ -44,18 +45,27 @@ export class SidebarComponent implements OnInit, OnChanges {
   infoDialogVisible = false;
   selectedInfo: MenuInfo | null = null;
 
+  // App matrix dialog
+  showAppMatrix = false;
+  apps: { key: AppKey; label: string; icon: string }[] = [
+    { key: 'all', label: 'All Apps', icon: 'pi pi-th-large' },
+    { key: 'retail', label: 'Retail Service', icon: 'pi pi-shopping-bag' },
+    { key: 'catalog', label: 'Data Catalog', icon: 'pi pi-search' },
+    { key: 'governance', label: 'Governance', icon: 'pi pi-shield' },
+    { key: 'marketplace', label: 'Marketplace', icon: 'pi pi-shopping-cart' },
+    { key: 'blogger', label: 'Blogger', icon: 'pi pi-pencil' },
+    { key: 'hotel', label: 'Hotel', icon: 'pi pi-building' },
+    { key: 'admanager', label: 'Ad Manager', icon: 'pi pi-bullhorn' },
+    { key: 'settings', label: 'Settings', icon: 'pi pi-cog' }
+  ];
+
+  selectedApp: AppKey = 'all';
+  private _workspaceHighlight = false;
+
   // marketplaceExpanded removed — Marketplace is now a standalone app with its own overview page
 
   sidebarGroups = [
-    {
-      label: 'Overview',
-      icon: 'pi pi-home',
-      expanded: false,
-      items: [
-        { label: 'Dashboard', url: '/dashboard', icon: 'pi pi-home' },
-        { label: 'Search', url: '/search', icon: 'pi pi-search' }
-      ]
-    },
+    // Overview group removed per request (Dashboard & Search moved/removed)
     {
       label: 'Data Exploration',
       icon: 'pi pi-compass',
@@ -241,7 +251,21 @@ export class SidebarComponent implements OnInit, OnChanges {
     }
   ];
 
-  constructor(private router: Router, private appSwitcher: AppSwitcherService) { }
+  constructor(private router: Router, private appSwitcher: AppSwitcherService, private authServices: AuthServices) { }
+
+  get workspaceLabel(): string {
+    const app = this.apps.find(a => a.key === this.selectedApp);
+    return app ? app.label : 'All Apps';
+  }
+
+  get workspaceHighlight(): boolean {
+    return this._workspaceHighlight;
+  }
+
+  private playWorkspaceHighlight() {
+    this._workspaceHighlight = true;
+    setTimeout(() => (this._workspaceHighlight = false), 600);
+  }
 
   ngOnInit() {
     // Initialize primary menu structure
@@ -311,10 +335,13 @@ export class SidebarComponent implements OnInit, OnChanges {
 
     // Initialize app selection
     this.appKey = this.appSwitcher.getCurrent();
+    this.selectedApp = this.appKey;
     this.computeVisibleGroups();
 
     this.appSwitcher.currentApp$.subscribe(key => {
       this.appKey = key;
+      this.selectedApp = key;
+      this.playWorkspaceHighlight();
       this.computeVisibleGroups();
     });
 
@@ -342,10 +369,64 @@ export class SidebarComponent implements OnInit, OnChanges {
     return item?.label + '::' + index;
   }
 
+  trackByItem(index: number, item: any) {
+    return item?.label + '::' + index;
+  }
+
+  // Helper: Check if group has items
+  hasItems(group: any): boolean {
+    return group?.items && group.items.length > 0;
+  }
+
+  // Helper: Toggle group expansion
+  toggleGroup(group: any): void {
+    if (this.collapsed || !this.hasItems(group)) return;
+    group.expanded = !group.expanded;
+    // ensure flattened items exist to avoid recomputing in template
+    if (!(group as any)._flattened) {
+      (group as any)._flattened = this.getFlattenedItems(group.items || []);
+    }
+  }
+
+  // Helper: Flatten nested menu items to single level
+  getFlattenedItems(items: any[]): any[] {
+    if (!items || items.length === 0) return [];
+
+    const flattened: any[] = [];
+
+    items.forEach(item => {
+      // If item has children, add them directly (flatten one level)
+      if (item.children && item.children.length > 0) {
+        item.children.forEach((child: any) => {
+          flattened.push({
+            ...child,
+            label: child.label,
+            icon: child.icon || 'pi pi-circle-fill',
+            url: child.url
+          });
+        });
+      } else if (item.url) {
+        // Direct item with URL
+        flattened.push({
+          ...item,
+          icon: item.icon || 'pi pi-circle-fill'
+        });
+      }
+    });
+
+    return flattened;
+  }
+
   computeVisibleGroups() {
     // Treat a missing or 'all' appKey as the unified sidebar view
     if (!this.sidebarGroups || !this.appKey || this.appKey === 'all') {
       this.visibleGroups = this.orderGroupsForApp(this.sidebarGroups || [], 'all');
+      // Đóng tất cả groups mặc định để sidebar không quá dài
+      this.visibleGroups.forEach(g => {
+        g.expanded = false;
+        // precompute flattened items to avoid heavy template calls
+        (g as any)._flattened = this.getFlattenedItems(g.items || []);
+      });
       return;
     }
 
@@ -362,6 +443,11 @@ export class SidebarComponent implements OnInit, OnChanges {
       if (dataExploration) groups.push(dataExploration);
 
       this.visibleGroups = this.orderGroupsForApp(groups, key);
+      // Đóng tất cả groups mặc định
+      this.visibleGroups.forEach(g => {
+        g.expanded = false;
+        (g as any)._flattened = this.getFlattenedItems(g.items || []);
+      });
       return;
     }
 
@@ -396,6 +482,11 @@ export class SidebarComponent implements OnInit, OnChanges {
       groups.unshift({ label: 'Retail Overview', icon: 'pi pi-shopping-bag', expanded: false, items: [{ label: 'Overview', url: '/retail', icon: 'pi pi-chart-bar' }] });
 
       this.visibleGroups = this.orderGroupsForApp(groups, key);
+      // Đóng tất cả groups mặc định
+      this.visibleGroups.forEach(g => {
+        g.expanded = false;
+        (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
+      });
       return;
     }
 
@@ -440,6 +531,8 @@ export class SidebarComponent implements OnInit, OnChanges {
 
       // If nothing matched, keep sidebar empty for these apps per request
       this.visibleGroups = this.orderGroupsForApp(groups, key);
+      // Đóng tất cả groups mặc định
+      this.visibleGroups.forEach(g => g.expanded = false);
       return;
     }
 
@@ -449,16 +542,17 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (key === 'governance') {
       const governanceGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('governance'));
       if (governanceGroup) {
-        // Keep a single Governance parent group and show it expanded so subitems are visible.
+        // Keep a single Governance parent group - đóng mặc định, user sẽ click để mở
         // Clone the object to avoid mutating the original sidebarGroups state.
         const copy = {
           label: governanceGroup.label,
           icon: governanceGroup.icon,
-          expanded: true,
+          expanded: false,
           items: governanceGroup.items || []
         } as any;
 
         this.visibleGroups = this.orderGroupsForApp([copy], key);
+        this.visibleGroups.forEach(g => (g as any)._flattened = this.getFlattenedItems((g as any).items || []));
         return;
       }
     }
@@ -470,6 +564,11 @@ export class SidebarComponent implements OnInit, OnChanges {
     });
 
     this.visibleGroups = this.orderGroupsForApp(filtered, key);
+    // Đóng tất cả groups mặc định
+    this.visibleGroups.forEach(g => {
+      g.expanded = false;
+      (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
+    });
   }
 
   // Derive an AppKey from a router URL (handles deep links like /governance/policies/123)
@@ -598,6 +697,79 @@ export class SidebarComponent implements OnInit, OnChanges {
   hideInfo(): void {
     this.infoDialogVisible = false;
     this.selectedInfo = null;
+  }
+
+  openAppMatrix(): void {
+    this.showAppMatrix = true;
+  }
+
+  closeAppMatrix(): void {
+    this.showAppMatrix = false;
+  }
+
+  // Surface Profile action from current user component
+  openProfile(): void {
+    // Try to resolve user identity from /me and navigate to a user-specific profile route
+    try {
+      this.authServices.getCurrentUser().subscribe((resp: any) => {
+        const user = resp?.data || resp;
+        if (user) {
+          const slug = (user.identify || user.username || user.email || user.full_name || user.fullName || '') as string;
+          // Prefer a short username-like value
+          const short = slug && typeof slug === 'string'
+            ? encodeURIComponent((slug.split('@')[0] || slug).toString().trim().replace(/\s+/g, '-').toLowerCase())
+            : '';
+          if (short) {
+            try { this.router.navigate([`/profile/${short}`]); return; } catch (e) { /* ignore */ }
+          }
+        }
+        // fallback to generic profile route
+        try { this.router.navigate(['/profile']); } catch (e) { /* safe fallback */ }
+      });
+    } catch (e) {
+      try { this.router.navigate(['/profile']); } catch (err) { /* safe fallback */ }
+    }
+  }
+
+  // Surface Logout action from current user component
+  doLogout(): void {
+    // Prefer real logout call when available so session is cleared
+    try {
+      if (this.authServices && typeof this.authServices.logout === 'function') {
+        this.authServices.logout().subscribe(() => this.router.navigate(['/login']));
+        return;
+      }
+    } catch (e) {
+      // fall through to navigation-only fallback
+    }
+
+    try { this.router.navigate(['/login']); } catch (e) { /* safe fallback */ }
+  }
+
+  selectAppKey(key: AppKey): void {
+    this.appSwitcher.selectApp(key);
+    this.selectedApp = key;
+    // navigate to the corresponding dashboard / root for the selected app
+    const routeForApp: Record<AppKey, string> = {
+      all: '/dashboard',
+      retail: '/retail',
+      catalog: '/discovery/data-catalog',
+      governance: '/governance/policies',
+      marketplace: '/marketplace',
+      blogger: '/blogger',
+      hotel: '/hotel',
+      admanager: '/ad-manager',
+      settings: '/settings'
+    };
+
+    const target = routeForApp[key] || '/dashboard';
+    try {
+      this.router.navigate([target]);
+    } catch (e) {
+      // ignore in non-browser env or during server-side rendering
+    }
+
+    this.closeAppMatrix();
   }
 }
 

@@ -4,13 +4,20 @@
 
   .sidebar {
     width: 200px;
+    height: 100%;
     transition: width 0.3s;
     overflow: hidden;
     border-right: 1px solid var(--p-content-border-color);
     background: var(--card-bg);
     box-shadow: 1px 0 3px 1px var(--p-content-border-color);
+
     &.collapsed {
       width: 60px;
+    }
+
+    app-sidebar {
+      display: block;
+      height: 100%;
     }
   }
 
@@ -34,6 +41,7 @@ app-sidebar {
     border-top: 0;
     z-index: 2;
   }
+
   .p-menu-start {
     height: 40px;
   }
@@ -47,9 +55,11 @@ app-header {
   .header {
     box-shadow: 0px 1px 4px 0px var(--p-content-border-color);
   }
+
   .p-inputtext {
     border: none
   }
+
   .p-inputtext:enabled:focus {
     border: none
   }

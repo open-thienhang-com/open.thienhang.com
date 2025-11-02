@@ -32,6 +32,7 @@ import { AppBaseComponent } from '../../../../core/base/app-base.component';
     TooltipModule
   ],
   templateUrl: './role.component.html',
+  styleUrls: ['./role.component.scss']
 })
 export class RoleComponent extends AppBaseComponent {
   /** When true the component renders inline (page) instead of inside a p-dialog */
@@ -198,6 +199,10 @@ export class RoleComponent extends AppBaseComponent {
   permLoading = false;
   saving = false;
   private permSearchTimeout: any = null;
+  // Expanded rows state for p-table row expansion
+  expandedRows: any[] = [];
+  // Track loading state for assets per-permission
+  loadingAssets: { [permissionId: string]: boolean } = {};
 
   // Load permissions list from API and build matrix
   loadPermissions(search: string = '', offset: number = 0, size: number = 1000) {
@@ -230,6 +235,65 @@ export class RoleComponent extends AppBaseComponent {
         this.permLoading = false;
       }
     });
+  }
+
+  /**
+   * Transform permissions array into a flat array for table display with rowspan.
+   * Each permission can have multiple assets, creating one row per asset.
+   */
+  getExpandedPermissions(): any[] {
+    if (!this.permissions || this.permissions.length === 0) return [];
+
+    const expandedRows: any[] = [];
+
+    this.permissions.forEach((permission: any) => {
+      const assetCount = permission.asset_total || 0;
+      const permissionId = permission.kid || permission.code;
+      const isSelected = this.isPermissionSelected(permissionId);
+
+      // Show permission even if it has 0 assets (with a placeholder row)
+      if (assetCount === 0) {
+        expandedRows.push({
+          permission,
+          permissionId,
+          assetCount: 1,
+          isFirstRow: true,
+          isSelected,
+          displayAssets: 'No assets',
+          displayType: '-'
+        });
+      } else {
+        // Create one row to represent the permission (we don't have individual asset details here)
+        expandedRows.push({
+          permission,
+          permissionId,
+          assetCount: 1, // Single row showing asset count
+          isFirstRow: true,
+          isSelected,
+          displayAssets: `${assetCount} asset(s)`,
+          displayType: permission.action || 'read'
+        });
+      }
+    });
+
+    return expandedRows;
+  }
+
+  /**
+   * Toggle selection of a permission (by permission ID)
+   */
+  togglePermissionSelection(permissionId: string, selected: boolean): void {
+    if (!this.role.permissions) {
+      this.role.permissions = [];
+    }
+
+    if (selected) {
+      if (!this.role.permissions.includes(permissionId)) {
+        this.role.permissions.push(permissionId);
+      }
+    } else {
+      this.role.permissions = this.role.permissions.filter(p => p !== permissionId);
+    }
   }
 
   // Build matrix structure from permissions
@@ -296,6 +360,60 @@ export class RoleComponent extends AppBaseComponent {
     this.loadPermissions(this.permSearch, offset, size);
   }
 
+  onRowExpand(event: any) {
+    // event.data is the permission that was expanded
+    const perm = event.data;
+    const permissionId = perm.kid || perm.code;
+
+    // If assets are already present, nothing to do
+    if (perm.assets && Array.isArray(perm.assets) && perm.assets.length > 0) {
+      return;
+    }
+
+    // If asset_total is zero or missing, nothing to load
+    const total = perm.asset_total || 0;
+    if (!total || total === 0) {
+      // ensure assets is an empty array to make template easier
+      perm.assets = [];
+      return;
+    }
+
+    // Lazy-load permission details which should include assets[]
+    if (this.loadingAssets[permissionId]) return; // already loading
+    this.loadingAssets[permissionId] = true;
+
+    this.governanceServices.getPermission(permissionId).subscribe({
+      next: (res) => {
+        try {
+          if (res && res.data) {
+            const detailed: any = res.data;
+            perm.assets = Array.isArray(detailed.assets) ? detailed.assets : [];
+            // also merge any missing metadata like asset_total
+            perm.asset_total = perm.asset_total || detailed.asset_total || (perm.assets ? perm.assets.length : 0);
+          } else {
+            perm.assets = [];
+          }
+        } finally {
+          this.loadingAssets[permissionId] = false;
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load permission assets', permissionId, err);
+        perm.assets = [];
+        this.loadingAssets[permissionId] = false;
+      }
+    });
+  }
+
+  onRowCollapse(event: any) {
+    // console.log('collapsed', event.data);
+  }
+
+  isLoadingAssets(perm: any): boolean {
+    const id = perm.kid || perm.code;
+    return !!(id && this.loadingAssets[id]);
+  }
+
   save() {
     // Ensure permissions array exists
     if (!this.role.permissions) {
@@ -328,12 +446,14 @@ export class RoleComponent extends AppBaseComponent {
       contact: this.role.contact
     };
 
-    const saveObservable = this.role._id ?
+    // Use createRoleWithPermissions for creation so the API endpoint is /governance/role
+    // which accepts a role payload including permissions array (kids)
+    const saveObservable = (this.role._id ?
       this.governanceServices.updateRole(this.role._id, payload) :
-      this.governanceServices.createRole(payload);
+      this.governanceServices.createRoleWithPermissions(payload as any)) as any;
     // Call real API
     this.saving = true;
-    saveObservable.subscribe({
+    (saveObservable as any).subscribe({
       next: (res) => {
         this.saving = false;
         if (!res || !res.success) {

@@ -1,104 +1,127 @@
-<div class="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
-  <!-- Header -->
-  <div class="flex header items-center px-4 py-3 border-b border-gray-200 dark:border-gray-700 shrink-0 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20"
-       [class.justify-center]="collapsed"
-       [class.justify-between]="!collapsed">
-    <div class="flex items-center gap-2" [class.justify-center]="collapsed">
-      <div class="logo-container w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
-        <i class="pi pi-sitemap text-white text-sm"></i>
-      </div>
-      <span class="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent" [class.hidden]="collapsed">
-        Data Management
-      </span>
+<div class="sidebar-container">
+  <!-- Header actions (replaces sidebar-header) -->
+  <div class="header-actions" [class.justify-center]="collapsed">
+    <!-- logo removed per request -->
+
+    <div class="actions-block">
+      <button
+        type="button"
+        class="header-btn app-switcher-header-btn"
+        (click)="openAppMatrix()"
+        [pTooltip]="collapsed ? 'Switch App' : ''"
+        tooltipPosition="right">
+        <i class="pi pi-th-large"></i>
+        <span *ngIf="!collapsed" class="ml-2">{{ workspaceLabel }}</span>
+      </button>
+
+      <button
+        class="logout-header-btn"
+        [class.hidden]="collapsed"
+        (click)="doLogout()"
+        type="button"
+        [pTooltip]="collapsed ? 'Logout' : ''"
+        tooltipPosition="right">
+        <i class="pi pi-sign-out"></i>
+      </button>
+
+      <button 
+        class="close-btn lg:hidden"
+        [class.hidden]="collapsed"
+        (click)="toggle.emit()">
+        <i class="pi pi-times"></i>
+      </button>
     </div>
-    <button 
-      class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-      [class.hidden]="collapsed"
-      (click)="toggle.emit()">
-      <i class="pi pi-times text-gray-600 dark:text-gray-300"></i>
-    </button>
   </div>
 
-  <!-- Navigation Menu -->
-  <div class="overflow-y-auto flex-1 py-2 sidebar-nav" [class.collapsed]="collapsed" [class.expanded]="!collapsed">
-    <ul class="list-none p-0 m-0 space-y-0.5">
-  <!-- Top quick links (only shown for 'all' workspace) -->
-  <ng-container *ngIf="appKey === 'all'">
-        <!-- Dashboard & Overview -->
-        <li class="menu-item">
-          <a [routerLink]="'/dashboard'" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900 transition-all duration-200 group"
-             [class.justify-center]="collapsed"
-             [class.px-2]="collapsed">
-            <i class="pi pi-home text-lg flex-shrink-0"></i>
-            <span class="font-medium text-sm whitespace-nowrap transition-opacity duration-200"
-                  [class.opacity-0]="collapsed"
-                  [class.invisible]="collapsed"
-                  [class.hidden]="collapsed">Dashboard</span>
-          </a>
-        </li>
-        <!-- Retail Services -->
-        <li class="menu-item">
-          <a [routerLink]="'/retail'" class="flex items-center gap-3 p-3 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900 transition-all duration-200 group"
-             [class.justify-center]="collapsed"
-             [class.px-2]="collapsed">
-            <i class="pi pi-shopping-bag text-lg flex-shrink-0"></i>
-            <span class="font-medium text-sm whitespace-nowrap transition-opacity duration-200"
-                  [class.opacity-0]="collapsed"
-                  [class.invisible]="collapsed"
-                  [class.hidden]="collapsed">Retail Overview</span>
-          </a>
-        </li>
-      </ng-container>
-  <!-- Accordion Menu Groups -->
-  <li *ngFor="let group of visibleGroups; trackBy: trackByGroup" class="menu-group">
-        <div class="flex items-center justify-between cursor-pointer p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group menu-group-header"
-             [class.justify-center]="collapsed"
-             [class.px-2]="collapsed"
-             (click)="group.label !== 'Governance' && (group.expanded = !group.expanded)">
-          <div class="flex items-center gap-3 min-w-0">
-            <i [ngClass]="group.icon + ' text-lg flex-shrink-0'"></i>
-            <span class="font-medium text-sm whitespace-nowrap transition-all duration-200"
-                  [class.hidden]="collapsed"
-                  [class.w-0]="collapsed"
-                  [class.overflow-hidden]="collapsed">{{ group.label }}</span>
+  <!-- Navigation - Scrollable Middle Section -->
+  <div class="sidebar-content">
+    <nav class="sidebar-nav" [class.collapsed]="collapsed">
+      
+      <!-- Quick Access Section -->
+      <!-- Quick Access removed per request -->
+
+      <!-- Main Navigation Groups -->
+      <div class="nav-section" *ngFor="let group of visibleGroups; trackBy: trackByGroup">
+        <!-- Group Header - Clickable to expand/collapse -->
+        <button 
+          class="group-header"
+          [class.expanded]="group.expanded"
+          [class.collapsed-sidebar]="collapsed"
+          (click)="!collapsed && toggleGroup(group)"
+          type="button">
+          <div class="group-title">
+            <i [class]="group.icon"></i>
+            <span *ngIf="!collapsed">{{ group.label }}</span>
           </div>
-          <i class="pi pi-chevron-down text-sm flex-shrink-0 transition-all duration-200"
-             [class.rotate-180]="group.expanded"
-             [class.hidden]="collapsed || group.label === 'Governance'"
-             [class.w-0]="collapsed || group.label === 'Governance'"
-             [class.overflow-hidden]="collapsed || group.label === 'Governance'"></i>
-        </div>
-        <!-- Submenu chỉ hiển thị khi không collapsed hoặc là Governance group -->
-        <div *ngIf="(group.expanded || group.label === 'Governance') && !collapsed" class="submenu-container ml-2 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
-          <div *ngFor="let item of group.items" class="submenu-item">
-            <!-- Subgroup with children -->
-            <div *ngIf="item.children" class="subgroup mb-2">
-              <div class="flex items-center gap-2 p-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide subgroup-header">
-                <i [ngClass]="item.icon + ' text-sm flex-shrink-0'"></i>
-                <span class="whitespace-nowrap">{{ item.label }}</span>
-              </div>
-              <div class="subgroup-children ml-2 pl-2 border-l border-gray-300 dark:border-gray-600">
-                <a *ngFor="let subItem of item.children"
-                   [routerLink]="subItem.url"
-                   class="flex items-center gap-2 p-2 rounded hover:bg-blue-50 dark:hover:bg-blue-900 transition-all duration-200 text-sm group/subitem">
-                  <i [ngClass]="subItem.icon + ' text-base flex-shrink-0'"></i>
-                  <span class="whitespace-nowrap">{{ subItem.label }}</span>
-                </a>
-              </div>
-            </div>
-            <!-- Direct item -->
-            <a *ngIf="!item.children"
-               [routerLink]="item.url"
-               class="flex items-center gap-2 p-2 rounded hover:bg-blue-50 dark:hover:bg-blue-900 transition-all duration-200 text-sm group/direct-item">
-              <i [ngClass]="item.icon + ' text-base flex-shrink-0'"></i>
-              <span class="whitespace-nowrap">{{ item.label }}</span>
+          <i 
+            *ngIf="!collapsed && hasItems(group)" 
+            class="pi pi-chevron-down expand-icon"
+            [class.expanded]="group.expanded"></i>
+        </button>
+
+        <!-- Group Items - Flat list (NO nested subgroups) -->
+        <ul class="nav-list" *ngIf="!collapsed && hasItems(group)" [ngClass]="{ open: group.expanded }">
+          <li *ngFor="let item of group._flattened; trackBy: trackByItem">
+            <a 
+              [routerLink]="item.url" 
+              class="nav-link sub-link"
+              routerLinkActive="active"
+              *ngIf="item.url">
+              <i [class]="item.icon"></i>
+              <span>{{ item.label }}</span>
             </a>
-          </div>
-        </div>
-      </li>
-    </ul>
+          </li>
+        </ul>
+      </div>
+
+    </nav>
+  </div>
+
+  <!-- Footer - Fixed at bottom -->
+  <div class="sidebar-footer" [class.collapsed]="collapsed">
+    
+    <!-- User Info removed per request -->
+
+    <!-- Footer now only contains Profile (logout and app-switcher were moved to header) -->
+    <div class="footer-actions">
+      <button
+        type="button"
+        class="footer-btn profile-btn"
+        (click)="openProfile()"
+        [pTooltip]="collapsed ? 'Profile' : ''"
+        tooltipPosition="right">
+        <i class="pi pi-user"></i>
+        <span *ngIf="!collapsed">Profile</span>
+      </button>
+    </div>
   </div>
 </div>
+
+<!-- App Matrix Dialog -->
+<p-dialog 
+  header="All Applications" 
+  [(visible)]="showAppMatrix" 
+  [modal]="true" 
+  appendTo="body"
+  [baseZIndex]="10000"
+  [style]="{ width: '720px', maxWidth: '90vw' }" 
+  [closable]="true" 
+  (onHide)="closeAppMatrix()"
+  styleClass="app-matrix-dialog">
+  <div class="apps-matrix-grid">
+    <button *ngFor="let app of apps" type="button"
+            class="app-tile"
+            [class.active]="selectedApp === app.key"
+            (click)="selectAppKey(app.key)"
+            [attr.aria-label]="app.label">
+      <div class="app-icon-wrapper" [attr.data-app]="app.key">
+        <i [class]="app.icon"></i>
+      </div>
+      <span class="app-label">{{ app.label }}</span>
+      <i class="pi pi-check check-icon" *ngIf="selectedApp === app.key"></i>
+    </button>
+  </div>
+</p-dialog>
 
 <!-- Info Dialog -->
 <p-dialog 

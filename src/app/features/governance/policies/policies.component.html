@@ -75,14 +75,14 @@
             icon="pi pi-plus" 
             severity="primary"
             size="small"
-            (onClick)="openPolicyModal()"
+            (onClick)="createPolicy()"
             class="sm:hidden">
           </p-button>
           <p-button 
             icon="pi pi-plus" 
             severity="primary"
             [rounded]="true"
-            (onClick)="openPolicyModal()"
+            (onClick)="createPolicy()"
             pTooltip="Add Policy"
             class="hidden sm:inline-flex">
           </p-button>
@@ -325,7 +325,7 @@
                     label="Add Policy" 
                     icon="pi pi-plus" 
                     severity="primary"
-                    (onClick)="openPolicyModal()">
+                    (onClick)="createPolicy()">
                   </p-button>
                 </div>
               </td>
@@ -411,7 +411,7 @@
               label="Create Policy" 
               icon="pi pi-plus" 
               severity="primary"
-              (onClick)="openPolicyModal()">
+              (onClick)="createPolicy()">
             </p-button>
           </div>
         </div>
@@ -426,23 +426,7 @@
           label="Create Policy" 
           icon="pi pi-plus" 
           severity="primary"
-          (onClick)="openPolicyModal()">
+          (onClick)="createPolicy()">
         </p-button>
       </div>
 </div>
-
-<!-- Policy Modal -->
-<p-dialog 
-  [(visible)]="showPolicyModal" 
-  header="Policy Details" 
-  [modal]="true" 
-  [closable]="true"
-  [style]="{ width: '90vw', maxWidth: '800px' }"
-  (onHide)="closePolicyModal()">
-  
-  <app-policy 
-    [policy]="selectedPolicy" 
-    (savePolicy)="onPolicySaved()" 
-    (cancelPolicy)="closePolicyModal()">
-  </app-policy>
-</p-dialog>

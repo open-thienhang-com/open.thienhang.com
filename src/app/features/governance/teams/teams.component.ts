@@ -13,6 +13,7 @@ import { PaginatorModule } from 'primeng/paginator';
 import { TooltipModule } from 'primeng/tooltip';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-teams',
@@ -78,7 +79,8 @@ export class TeamsComponent extends AppBaseComponent implements OnInit {
 
   constructor(
     private injector: Injector,
-    private governanceServices: GovernanceServices
+    private governanceServices: GovernanceServices,
+    private router: Router
   ) {
     super(injector)
   }
@@ -218,5 +220,17 @@ export class TeamsComponent extends AppBaseComponent implements OnInit {
       return (member.first_name[0] + member.last_name[0]).toUpperCase();
     }
     return member.name ? member.name.substring(0, 2).toUpperCase() : 'UN';
+  }
+
+  createTeam() {
+    this.router.navigate(['/governance/teams/new']);
+  }
+
+  openTeamModal(team?: any) {
+    if (team) {
+      this.teamDetail.edit(team);
+    } else {
+      this.teamDetail.show();
+    }
   }
 }

@@ -69,7 +69,8 @@ body {
   margin: 0px;
   min-height: 100vh;
   overflow-x: hidden;
-  overflow-y: auto;
+  /* Prevent body scrolling so only the main app content scrolls. Main's .content area handles scrolling. */
+  overflow-y: hidden;
   background-color: var(--body-bg);
   font-weight: 400;
   color: var(--body-text-color);
@@ -256,6 +257,18 @@ main {
   z-index: 1 !important;
 }
 
+/* Ensure the main element is scrollable (vertical) even when body overflow is hidden.
+   This makes the page content area respond to mouse wheel / touch scroll gestures.
+*/
+main[role="main"],
+main,
+.main,
+.content,
+.flex-1.overflow-auto {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Enhanced modal transition */
 .p-dialog-enter {
   animation: modal-fade-in 0.3s ease-out;
@@ -343,6 +356,63 @@ main {
   to {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+/* --- GLOBAL: Force sidebar pinned left and main content offset --- */
+/* This lives in global styles to avoid relying on component-scoped attribute selectors
+   (e.g. _ngcontent-...), ensuring the layout is consistent and the sidebar footer
+   remains pinned and does not scroll with the main content. */
+.app-layout {
+  position: relative;
+}
+
+.app-layout .sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 220px;
+  /* default visible width */
+  min-width: 60px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 50;
+}
+
+.app-layout .sidebar.collapsed {
+  width: 64px;
+}
+
+/* Ensure the inner sidebar component fills the fixed container */
+.app-layout .sidebar app-sidebar,
+.app-layout .sidebar>app-sidebar {
+  display: block;
+  height: 100%;
+}
+
+/* Offset main content so it doesn't sit under the fixed sidebar */
+.app-layout .main {
+  margin-left: 220px;
+}
+
+.app-layout .sidebar.collapsed~.main,
+.app-layout .main.sidebar-collapsed {
+  margin-left: 64px;
+}
+
+/* Small responsive tweak */
+@media (max-width: 768px) {
+  .app-layout .sidebar {
+    position: fixed;
+    width: 200px;
+    transform: translateX(0);
+  }
+
+  .app-layout .main {
+    margin-left: 200px;
   }
 }
 

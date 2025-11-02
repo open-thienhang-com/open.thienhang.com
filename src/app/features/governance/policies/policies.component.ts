@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { GovernanceServices, Policy, PaginatedResponse } from '../../../core/services/governance.services';
-import { PolicyComponent } from './policy/policy.component';
 import { ToastService } from '../../../core/services/toast.service';
 import { LoadingService } from '../../../core/services/loading.service';
 import { MessageService } from 'primeng/api';
@@ -43,7 +42,7 @@ interface PolicyStats {
   imports: [
     CommonModule,
     FormsModule,
-    PolicyComponent,
+    RouterModule,
     ButtonModule,
     TableModule,
     TagModule,
@@ -266,6 +265,10 @@ export class PoliciesComponent implements OnInit {
 
   setViewMode(mode: 'list' | 'card'): void {
     this.viewMode = mode;
+  }
+
+  createPolicy(): void {
+    this.router.navigate(['/governance/policies/new']);
   }
 
   openPolicyModal(policy: Policy | null = null): void {

@@ -12,6 +12,7 @@ import { DividerModule } from 'primeng/divider';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
+import { DropdownModule } from 'primeng/dropdown';
 
 @Component({
   selector: 'app-user',
@@ -26,7 +27,8 @@ import { ButtonModule } from 'primeng/button';
     TagModule,
     TooltipModule,
     DividerModule,
-    ToastModule
+    ToastModule,
+    DropdownModule
   ],
   providers: [MessageService],
   templateUrl: './user.component.html',
@@ -41,12 +43,28 @@ export class UserComponent extends AppBaseComponent {
   isEditMode = false;
   isViewMode = false;
 
+  accounts: any[] = [];
+
   constructor(
     private injector: Injector,
     private governanceServices: GovernanceServices,
     public messageService: MessageService
   ) {
     super(injector);
+  }
+
+  generateKid(email: string): string {
+    // Extract username from email and create kid
+    const username = email.split('@')[0];
+    const prefix = username
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '_')
+      .substring(0, 10);
+
+    // Generate random suffix (4 characters)
+    const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+
+    return `USER_${prefix}_${randomSuffix}`;
   }
 
   save() {
@@ -56,6 +74,13 @@ export class UserComponent extends AppBaseComponent {
 
     this.loading = true;
     const userId = this.user.kid || this.user._id || this.user.id;
+
+    // Generate kid for new users
+    if (!userId && this.user.email) {
+      this.user.kid = this.generateKid(this.user.email);
+      console.log('Generated kid:', this.user.kid);
+    }
+
     const saveObservable = userId ?
       this.governanceServices.updateUser(userId, this.user) :
       this.governanceServices.createUser(this.user);
@@ -89,6 +114,9 @@ export class UserComponent extends AppBaseComponent {
     this.isEditMode = false;
     this.isViewMode = false;
 
+    // Load accounts dropdown
+    this.loadAccounts();
+
     if (id) {
       this.title = 'Edit User';
       this.isEditMode = true;
@@ -96,6 +124,22 @@ export class UserComponent extends AppBaseComponent {
     } else {
       this.title = 'Create User';
     }
+  }
+
+  loadAccounts() {
+    this.governanceServices.getAccounts({ size: 100, offset: 0 }).subscribe({
+      next: (res) => {
+        if (res.data) {
+          this.accounts = res.data.map(account => ({
+            label: `${account.full_name || account.email} (${account.identify || account._id})`,
+            value: account._id
+          }));
+        }
+      },
+      error: (error) => {
+        console.error('Error loading accounts:', error);
+      }
+    });
   }
 
   // View user in read-only mode
