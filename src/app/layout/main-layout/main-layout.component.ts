@@ -1,6 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HeaderComponent } from "./header/header.component";
 import { RouterOutlet } from "@angular/router";
 import { SidebarComponent } from "./sidebar/sidebar.component";
 import { FooterComponent } from "./footer/footer.component";
@@ -16,7 +15,6 @@ import { AppSwitcherService, AppKey } from '../../core/services/app-switcher.ser
   selector: 'app-main-layout',
   imports: [
     CommonModule,
-    HeaderComponent,
     RouterOutlet,
     SidebarComponent,
     FooterComponent,

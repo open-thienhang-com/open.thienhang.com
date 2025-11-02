@@ -1,35 +1,160 @@
 <div class="sidebar-container">
-  <!-- Header actions (replaces sidebar-header) -->
-  <div class="header-actions" [class.justify-center]="collapsed">
-    <!-- logo removed per request -->
+  <!-- Header actions with Search & Tools -->
+  <div class="header-actions" [class.collapsed]="collapsed">
+    <!-- Search Bar - Only visible when not collapsed -->
+    <div class="search-container" *ngIf="!collapsed">
+      <input type="text" 
+             pInputText 
+             [(ngModel)]="searchKeyword" 
+             placeholder="Search..."
+             (keyup.enter)="performSearch()"
+             (input)="onSearchInput()"
+             class="search-input">
+      <i class="pi pi-search search-icon" (click)="performSearch()"></i>
+      
+      <!-- Search Results Overlay -->
+      <div class="search-overlay" *ngIf="showSearchResults">
+        <app-search-results
+          [results]="searchResults$ | async"
+          [isSearching]="isSearching$ | async"
+          [popularSearches]="popularSearches"
+          (clear)="clearSearch()"
+          (resultClick)="onSearchResultClick($event)">
+        </app-search-results>
+      </div>
+    </div>
 
-    <div class="actions-block">
+    <!-- Action Buttons Row -->
+    <div class="actions-row" [class.justify-center]="collapsed">
+      <!-- App Switcher -->
       <button
         type="button"
         class="header-btn app-switcher-header-btn"
         (click)="openAppMatrix()"
-        [pTooltip]="collapsed ? 'Switch App' : ''"
+        [pTooltip]="workspaceLabel"
         tooltipPosition="right">
         <i class="pi pi-th-large"></i>
-        <span *ngIf="!collapsed" class="ml-2">{{ workspaceLabel }}</span>
       </button>
 
+      <!-- Language Selector -->
       <button
-        class="logout-header-btn"
-        [class.hidden]="collapsed"
+        pStyleClass="@next"
+        enterFromClass="hidden"
+        enterActiveClass="animate-scalein"
+        leaveToClass="hidden"
+        leaveActiveClass="animate-fadeout"
+        [hideOnOutsideClick]="true"
+        type="button"
+        class="header-btn"
+        [pTooltip]="collapsed ? 'Language' : ''"
+        tooltipPosition="right"
+        *ngIf="!collapsed">
+        <i class="pi pi-globe"></i>
+      </button>
+      <div class="dropdown-menu language-menu hidden" *ngIf="!collapsed">
+        <button 
+          (click)="changeLanguage('vi')"
+          class="dropdown-item"
+          [class.active]="currentLanguage() === 'vi'">
+          <span class="text-lg">🇻🇳</span>
+          <span class="text-sm">Tiếng Việt</span>
+          <i *ngIf="currentLanguage() === 'vi'" class="pi pi-check text-green-500 ml-auto"></i>
+        </button>
+        <button 
+          (click)="changeLanguage('en')"
+          class="dropdown-item"
+          [class.active]="currentLanguage() === 'en'">
+          <span class="text-lg">🇺🇸</span>
+          <span class="text-sm">English</span>
+          <i *ngIf="currentLanguage() === 'en'" class="pi pi-check text-green-500 ml-auto"></i>
+        </button>
+      </div>
+
+      <!-- Theme Toggle -->
+      <button type="button"
+              class="header-btn"
+              (click)="onThemeToggler()"
+              [pTooltip]="collapsed ? 'Theme' : ''"
+              tooltipPosition="right">
+        <i [ngClass]="'pi ' + iconClass()"></i>
+      </button>
+
+      <!-- Color Palette -->
+      <button
+        pStyleClass="@next"
+        enterFromClass="hidden"
+        enterActiveClass="animate-scalein"
+        leaveToClass="hidden"
+        leaveActiveClass="animate-fadeout"
+        [hideOnOutsideClick]="true"
+        type="button"
+        class="header-btn"
+        [pTooltip]="collapsed ? 'Colors' : ''"
+        tooltipPosition="right"
+        *ngIf="!collapsed">
+        <i class="pi pi-palette"></i>
+      </button>
+      <div class="dropdown-menu color-menu hidden" *ngIf="!collapsed">
+        <div class="color-section">
+          <span class="section-label">Primary Colors</span>
+          <div class="color-grid">
+            @for (primaryColor of primaryColors(); track primaryColor.name) {
+              <button
+                type="button"
+                [title]="primaryColor.name"
+                (click)="updateColors($event, 'primary', primaryColor)"
+                class="color-swatch"
+                [class.selected]="selectedPrimaryColor() === primaryColor.name"
+                [ngStyle]="{
+                  'background-color': primaryColor.name === 'noir' ? 'var(--text-color)' : primaryColor.palette['500']
+                }">
+              </button>
+            }
+          </div>
+        </div>
+        <div class="color-section">
+          <span class="section-label">Surface Colors</span>
+          <div class="color-grid">
+            @for (surface of surfaces; track surface.name) {
+              <button
+                type="button"
+                [title]="surface.name"
+                (click)="updateColors($event, 'surface', surface)"
+                class="color-swatch"
+                [class.selected]="selectedSurfaceColor() === surface.name"
+                [ngStyle]="{
+                  'background-color': surface.palette['500']
+                }">
+              </button>
+            }
+          </div>
+        </div>
+        <div class="color-section">
+          <span class="section-label">Preset</span>
+          <p-selectbutton [options]="presets" [ngModel]="selectedPreset()" (ngModelChange)="onPresetChange($event)"
+                          [unselectable]="false" size="small"/>
+        </div>
+        <div class="color-section">
+          <span class="section-label">Ripple Effect</span>
+          <p-toggleswitch [(ngModel)]="ripple"/>
+        </div>
+      </div>
+
+      <!-- Logout - only when not collapsed -->
+      <button
+        class="header-btn logout-btn"
+        *ngIf="!collapsed"
         (click)="doLogout()"
         type="button"
-        [pTooltip]="collapsed ? 'Logout' : ''"
+        [pTooltip]="'Logout'"
         tooltipPosition="right">
         <i class="pi pi-sign-out"></i>
       </button>
+    </div>
 
-      <button 
-        class="close-btn lg:hidden"
-        [class.hidden]="collapsed"
-        (click)="toggle.emit()">
-        <i class="pi pi-times"></i>
-      </button>
+    <!-- App Name Label - Below actions row -->
+    <div class="app-name-label" *ngIf="!collapsed">
+      <span class="app-name">{{ workspaceLabel }}</span>
     </div>
   </div>
 
