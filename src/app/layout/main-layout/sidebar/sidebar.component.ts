@@ -86,7 +86,7 @@ export class SidebarComponent implements OnInit, OnChanges {
   platformId = inject(PLATFORM_ID);
   config: PrimeNG = inject(PrimeNG);
   i18nService = inject(I18nService);
-  
+
   // Search functionality
   searchService = inject(SearchService);
   searchResults$ = this.searchService.searchResults$;
@@ -104,14 +104,14 @@ export class SidebarComponent implements OnInit, OnChanges {
   iconClass = computed(() => this.themeState().darkTheme ? 'pi-sun' : 'pi-moon');
   currentLanguage = computed(() => this.i18nService.getCurrentLanguage());
   transitionComplete = signal<boolean>(false);
-  
+
   presets = Object.keys(presets);
-  
+
   primaryColors = computed(() => {
     const presetPalette = presets[this.themeState().preset].primitive;
     const colors = [
-      'emerald', 'green', 'lime', 'orange', 'amber', 'yellow', 
-      'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 
+      'emerald', 'green', 'lime', 'orange', 'amber', 'yellow',
+      'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet',
       'purple', 'fuchsia', 'pink', 'rose',
     ];
     const palettes = [{ name: 'noir', palette: {} }];
