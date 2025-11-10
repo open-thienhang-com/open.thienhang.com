@@ -136,7 +136,8 @@ export const routes: Routes = [
       },
       {
         path: 'data-mesh/data-products',
-        loadComponent: () => import('./features/data-mesh/data-products/data-products.component').then(m => m.DataProductsComponent),
+        // Use Marketplace UI for listing, but backend/API remains data-mesh/data-products
+        loadComponent: () => import('./features/marketplace/marketplace.component').then(m => m.MarketplaceComponent),
       },
       {
         path: 'data-mesh/data-products/:domain/:id',

@@ -12,6 +12,7 @@ import { DataProdDetailComponent } from '../data-product/data-prod-detail/data-p
 import { I18nService } from '../../core/services/i18n.service';
 import { getApiBase } from '../../core/config/api-config';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 interface DataProduct {
@@ -60,7 +61,8 @@ export class MarketplaceComponent implements OnInit {
 
   constructor(
     private i18nService: I18nService,
-    private http: HttpClient
+    private http: HttpClient,
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -165,6 +167,14 @@ export class MarketplaceComponent implements OnInit {
   }
 
   openProductDetail(product: DataProduct) {
+    // Preserve existing detail routing behavior: navigate to data-product detail route
+    if (product?.domain && product?.id) {
+      try { this.router.navigate(['/data-mesh/data-products', product.domain, product.id]); return; } catch (e) { /* ignore */ }
+    }
+    if (product?.id) {
+      try { this.router.navigate(['/data-mesh/data-products', product.id]); return; } catch (e) { /* ignore */ }
+    }
+    // Fallback to dialog if navigation isn't possible
     this.selectedProduct = product;
     this.showProductDetail = true;
   }
