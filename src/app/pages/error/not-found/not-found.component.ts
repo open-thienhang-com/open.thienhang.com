@@ -42,7 +42,7 @@ import { Router, RouterModule } from '@angular/router';
             </li>
             <li class="flex items-center">
               <i class="pi pi-check text-green-500 mr-2"></i>
-              Navigate back to the dashboard
+              Navigate to the Marketplace
             </li>
           </ul>
         </div>
@@ -52,7 +52,7 @@ import { Router, RouterModule } from '@angular/router';
             (click)="goHome()"
             class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center">
             <i class="pi pi-home mr-2"></i>
-            Go to Dashboard
+            Go to Marketplace
           </button>
           
           <button 
@@ -85,13 +85,13 @@ import { Router, RouterModule } from '@angular/router';
   `]
 })
 export class NotFoundComponent {
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   goBack() {
     window.history.back();
   }
 
   goHome() {
-    this.router.navigate(['/dashboard']);
+    this.router.navigate(['/marketplace']);
   }
 }

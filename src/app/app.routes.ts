@@ -83,10 +83,7 @@ export const routes: Routes = [
         path: 'governance/permissions',
         loadComponent: () => import('./features/governance/permissions/permissions.component').then(m => m.PermissionsComponent),
       },
-      {
-        path: 'dashboard',
-        loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
-      },
+      // Dashboard removed — root now redirects to Marketplace
       {
         path: 'marketplace',
         loadComponent: () => import('./features/marketplace/marketplace.component').then(m => m.MarketplaceComponent),
@@ -304,13 +301,10 @@ export const routes: Routes = [
         path: 'observability/audit-log',
         loadComponent: () => import('./features/observability/audit-log/audit-log.component').then(m => m.AuditLogComponent),
       },
-      {
-        path: 'explore/:id',
-        loadComponent: () => import('./features/explore/asset-detail.component').then(m => m.AssetDetailComponent),
-      },
+      // Asset detail route removed per request
       {
         path: '',
-        redirectTo: 'dashboard',
+        redirectTo: 'marketplace',
         pathMatch: 'full',
       },
     ],

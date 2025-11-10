@@ -31,7 +31,7 @@ export class BreadcrumbComponent implements OnInit {
     // For now, we'll create a simple implementation
     this.items = [
       { label: 'Home', url: '/' },
-      { label: 'Dashboard', url: '/dashboard' }
+      { label: 'Marketplace', url: '/marketplace' }
     ];
   }
 }

@@ -46,7 +46,7 @@ import { Router, RouterModule } from '@angular/router';
             (click)="goHome()"
             class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center">
             <i class="pi pi-home mr-2"></i>
-            Go to Dashboard
+            Go to Marketplace
           </button>
           
           <div class="flex justify-center space-x-6 text-sm text-gray-500 dark:text-gray-400">
@@ -72,13 +72,13 @@ import { Router, RouterModule } from '@angular/router';
   `]
 })
 export class ForbiddenComponent {
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   goBack() {
     window.history.back();
   }
 
   goHome() {
-    this.router.navigate(['/dashboard']);
+    this.router.navigate(['/marketplace']);
   }
 }

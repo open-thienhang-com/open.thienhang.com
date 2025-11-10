@@ -210,8 +210,7 @@ export class SidebarComponent implements OnInit, OnChanges {
   // App matrix dialog
   showAppMatrix = false;
   apps: { key: AppKey; label: string; icon: string }[] = [
-    { key: 'all', label: 'All Apps', icon: 'pi pi-th-large' },
-  { key: 'retail', label: 'Retail Service', icon: 'pi pi-shopping-bag' },
+    { key: 'retail', label: 'Retail Service', icon: 'pi pi-shopping-bag' },
     { key: 'governance', label: 'Governance', icon: 'pi pi-shield' },
     { key: 'marketplace', label: 'Marketplace', icon: 'pi pi-shopping-cart' },
     { key: 'blogger', label: 'Blogger', icon: 'pi pi-pencil' },
@@ -238,7 +237,7 @@ export class SidebarComponent implements OnInit, OnChanges {
         { label: 'ML Models', url: '/explore/ml-models', icon: 'pi pi-brain' },
         { label: 'Containers', url: '/explore/container', icon: 'pi pi-box' },
         { label: 'Advanced Search', url: '/explore/search', icon: 'pi pi-search' },
-        { label: 'Asset Details', url: '/explore/asset-detail', icon: 'pi pi-info-circle' }
+        // Asset Details removed per request
       ]
     },
     {
@@ -269,7 +268,7 @@ export class SidebarComponent implements OnInit, OnChanges {
         }
       ]
     },
-    
+
     {
       label: 'Governance',
       icon: 'pi pi-shield',
@@ -377,26 +376,26 @@ export class SidebarComponent implements OnInit, OnChanges {
         // Response structure from log: { data: { full_name, email, identify, ... }, message, total }
         // The actual user info is inside resp.data.data or resp.data
         let userData: any = resp;
-        
+
         console.log('Raw response:', resp);
-        
+
         // Unwrap ApiResponse wrapper
         if (userData?.data) {
           userData = userData.data;
           console.log('After first unwrap:', userData);
         }
-        
+
         // If still wrapped in another data layer
         if (userData?.data && typeof userData.data === 'object') {
           userData = userData.data;
           console.log('After second unwrap:', userData);
         }
-        
+
         // Check for user wrapper
         if (userData?.user) {
           userData = userData.user;
         }
-        
+
         console.log('Final user data:', userData);
         console.log('full_name:', userData?.full_name);
         this.currentUser.set(userData);
@@ -517,7 +516,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     const idx = url.indexOf('?');
     return idx === -1 ? url : url.substring(0, idx);
   }
-  
+
 
   // Helper: Check if group has items
   hasItems(group: any): boolean {
@@ -565,7 +564,7 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   computeVisibleGroups() {
     // DEBUG: log entry and state
-    try { console.debug('[SIDEBAR] computeVisibleGroups entry', { appKey: this.appKey, collapsed: this.collapsed, sidebarGroupsLen: (this.sidebarGroups || []).length }); } catch (e) {}
+    try { console.debug('[SIDEBAR] computeVisibleGroups entry', { appKey: this.appKey, collapsed: this.collapsed, sidebarGroupsLen: (this.sidebarGroups || []).length }); } catch (e) { }
 
     // Treat a missing or 'all' appKey as the unified sidebar view
     if (!this.sidebarGroups || !this.appKey || this.appKey === 'all') {
@@ -576,7 +575,7 @@ export class SidebarComponent implements OnInit, OnChanges {
         // precompute flattened items to avoid heavy template calls
         (g as any)._flattened = this.getFlattenedItems(g.items || []);
       });
-      try { console.debug('[SIDEBAR] computeVisibleGroups -> visibleGroups (all):', this.visibleGroups.map((g:any)=>({label:g.label, items: (g.items||[]).length, flattened: (g._flattened||[]).length}))); } catch(e) {}
+      try { console.debug('[SIDEBAR] computeVisibleGroups -> visibleGroups (all):', this.visibleGroups.map((g: any) => ({ label: g.label, items: (g.items || []).length, flattened: (g._flattened || []).length }))); } catch (e) { }
       return;
     }
 
@@ -638,7 +637,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       pseudo._flattened = items;
 
       this.visibleGroups = [pseudo];
-      try { console.debug('[SIDEBAR] computeVisibleGroups -> marketplace pseudo items:', { itemsCount: items.length, sample: items.slice(0,6) }); } catch(e) {}
+      try { console.debug('[SIDEBAR] computeVisibleGroups -> marketplace pseudo items:', { itemsCount: items.length, sample: items.slice(0, 6) }); } catch (e) { }
       // ensure flattened items exist
       this.visibleGroups.forEach(g => (g as any)._flattened = (g as any)._flattened || this.getFlattenedItems((g as any).items || []));
       return;
@@ -690,23 +689,17 @@ export class SidebarComponent implements OnInit, OnChanges {
       return;
     }
 
-    // Special-case: for Governance app - keep the Governance group as a single top-level group
-    // with its items nested underneath (do NOT flatten items to root). This ensures the
-    // Governance menu header remains and its submenus appear under it.
+    // Special-case: for Governance app - render its child menu items directly (no parent header)
     if (key === 'governance') {
       const governanceGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('governance'));
       if (governanceGroup) {
-        // Keep a single Governance parent group - đóng mặc định, user sẽ click để mở
-        // Clone the object to avoid mutating the original sidebarGroups state.
-        const copy = {
-          label: governanceGroup.label,
-          icon: governanceGroup.icon,
-          expanded: false,
-          items: governanceGroup.items || []
-        } as any;
+        // Promote children into a pseudo-group without header
+        const items: any[] = this.getFlattenedItems(governanceGroup.items || []);
+        const pseudo = { label: '', icon: '', expanded: false, _noHeader: true, items } as any;
+        pseudo._flattened = items;
 
-        this.visibleGroups = this.orderGroupsForApp([copy], key);
-        this.visibleGroups.forEach(g => (g as any)._flattened = this.getFlattenedItems((g as any).items || []));
+        this.visibleGroups = [pseudo];
+        this.visibleGroups.forEach(g => (g as any)._flattened = (g as any)._flattened || this.getFlattenedItems((g as any).items || []));
         return;
       }
     }
@@ -723,7 +716,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       g.expanded = false;
       (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
     });
-    try { console.debug('[SIDEBAR] computeVisibleGroups -> visibleGroups (filtered):', this.visibleGroups.map((g:any)=>({label:g.label, items: (g.items||[]).length, flattened: (g._flattened||[]).length}))); } catch(e) {}
+    try { console.debug('[SIDEBAR] computeVisibleGroups -> visibleGroups (filtered):', this.visibleGroups.map((g: any) => ({ label: g.label, items: (g.items || []).length, flattened: (g._flattened || []).length }))); } catch (e) { }
   }
 
   // Derive an AppKey from a router URL (handles deep links like /governance/policies/123)
@@ -734,7 +727,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (p === '/' || p === '') return 'all';
     if (p.startsWith('/governance')) return 'governance';
     if (p.startsWith('/retail')) return 'retail';
-  if (p.startsWith('/discovery') || p.startsWith('/explore') || p.startsWith('/data-catalog')) return 'all';
+    if (p.startsWith('/discovery') || p.startsWith('/explore') || p.startsWith('/data-catalog')) return 'all';
     if (p.startsWith('/marketplace')) return 'marketplace';
     if (p.startsWith('/blogger') || p.startsWith('/posts') || p.startsWith('/blog')) return 'blogger';
     if (p.startsWith('/hotel')) return 'hotel';
@@ -906,9 +899,9 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.selectedApp = key;
     // navigate to the corresponding dashboard / root for the selected app
     const routeForApp: Record<AppKey, string> = {
-      all: '/dashboard',
+      all: '/marketplace',
       retail: '/retail',
-  catalog: '/dashboard',
+      catalog: '/marketplace',
       governance: '/governance/policies',
       marketplace: '/marketplace',
       blogger: '/blogger',
@@ -917,7 +910,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       settings: '/settings'
     };
 
-    const target = routeForApp[key] || '/dashboard';
+    const target = routeForApp[key] || '/marketplace';
     try {
       this.router.navigate([target]);
     } catch (e) {

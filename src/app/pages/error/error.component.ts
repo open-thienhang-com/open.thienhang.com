@@ -53,7 +53,7 @@ import { ButtonModule } from 'primeng/button';
               
               <button 
                 pButton 
-                label="Go to Dashboard" 
+                label="Go to Marketplace" 
                 icon="pi pi-home" 
                 (click)="goToDashboard()">
               </button>
@@ -190,7 +190,7 @@ export class ErrorPageComponent implements OnInit {
   }
 
   goToDashboard() {
-    this.router.navigate(['/dashboard']);
+    this.router.navigate(['/marketplace']);
   }
 
   goToLogin() {

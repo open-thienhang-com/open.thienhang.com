@@ -22,15 +22,15 @@ export class SearchService {
   public isSearching$: Observable<boolean> = this.isSearching.asObservable();
 
   private searchIndex: SearchResult[] = [
-    // Dashboard & Overview
+    // Marketplace landing (formerly dashboard)
     {
-      id: 'dashboard',
-      title: 'Dashboard',
-      description: 'Main dashboard with data mesh overview and metrics',
+      id: 'marketplace-landing',
+      title: 'Marketplace',
+      description: 'Data marketplace and integrations',
       type: 'page',
-      url: '/dashboard',
+      url: '/marketplace',
       category: 'Overview',
-      tags: ['dashboard', 'overview', 'metrics', 'analytics']
+      tags: ['marketplace', 'integrations', 'data']
     },
 
     // Retail Services
