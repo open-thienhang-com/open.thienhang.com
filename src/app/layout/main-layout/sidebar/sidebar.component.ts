@@ -74,6 +74,8 @@ export class SidebarComponent implements OnInit, OnChanges {
   appKey: AppKey = 'all';
 
   visibleGroups: any[] = [];
+  // Temporary debug flag to show sidebar state in UI while troubleshooting
+  showDebug = true;
 
   // Info dialog properties
   infoDialogVisible = false;
@@ -562,6 +564,9 @@ export class SidebarComponent implements OnInit, OnChanges {
   }
 
   computeVisibleGroups() {
+    // DEBUG: log entry and state
+    try { console.debug('[SIDEBAR] computeVisibleGroups entry', { appKey: this.appKey, collapsed: this.collapsed, sidebarGroupsLen: (this.sidebarGroups || []).length }); } catch (e) {}
+
     // Treat a missing or 'all' appKey as the unified sidebar view
     if (!this.sidebarGroups || !this.appKey || this.appKey === 'all') {
       this.visibleGroups = this.orderGroupsForApp(this.sidebarGroups || [], 'all');
@@ -571,6 +576,7 @@ export class SidebarComponent implements OnInit, OnChanges {
         // precompute flattened items to avoid heavy template calls
         (g as any)._flattened = this.getFlattenedItems(g.items || []);
       });
+      try { console.debug('[SIDEBAR] computeVisibleGroups -> visibleGroups (all):', this.visibleGroups.map((g:any)=>({label:g.label, items: (g.items||[]).length, flattened: (g._flattened||[]).length}))); } catch(e) {}
       return;
     }
 
@@ -612,6 +618,29 @@ export class SidebarComponent implements OnInit, OnChanges {
         g.expanded = false;
         (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
       });
+      return;
+    }
+
+    // Special-case: when Marketplace app selected, render child menu items of
+    // Data Exploration + Explore directly (no parent headers)
+    if (key === 'marketplace') {
+      const byLabel = (lbl: string) => this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes(lbl));
+      const dataExploration = byLabel('data exploration');
+      const exploreGroup = byLabel('explore');
+
+      // Collect flattened items from both groups (promote children)
+      const items: any[] = [];
+      if (dataExploration) items.push(...this.getFlattenedItems(dataExploration.items || []));
+      if (exploreGroup) items.push(...this.getFlattenedItems(exploreGroup.items || []));
+
+      // Create a pseudo-group with no header - template will render items directly
+      const pseudo = { label: '', icon: '', expanded: false, _noHeader: true, items } as any;
+      pseudo._flattened = items;
+
+      this.visibleGroups = [pseudo];
+      try { console.debug('[SIDEBAR] computeVisibleGroups -> marketplace pseudo items:', { itemsCount: items.length, sample: items.slice(0,6) }); } catch(e) {}
+      // ensure flattened items exist
+      this.visibleGroups.forEach(g => (g as any)._flattened = (g as any)._flattened || this.getFlattenedItems((g as any).items || []));
       return;
     }
 
@@ -694,6 +723,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       g.expanded = false;
       (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
     });
+    try { console.debug('[SIDEBAR] computeVisibleGroups -> visibleGroups (filtered):', this.visibleGroups.map((g:any)=>({label:g.label, items: (g.items||[]).length, flattened: (g._flattened||[]).length}))); } catch(e) {}
   }
 
   // Derive an AppKey from a router URL (handles deep links like /governance/policies/123)

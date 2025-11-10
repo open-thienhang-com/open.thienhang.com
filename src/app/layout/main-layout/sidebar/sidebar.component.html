@@ -156,6 +156,19 @@
     <div class="app-name-label" *ngIf="!collapsed">
       <span class="app-name">{{ workspaceLabel }}</span>
     </div>
+
+    <!-- Debug info (temporary) -->
+    <div class="sidebar-debug p-2 text-xs text-gray-600 dark:text-gray-300" *ngIf="showDebug && !collapsed">
+      <div><strong>DEBUG</strong></div>
+      <div>appKey: <code>{{ appKey }}</code></div>
+      <div>visibleGroups: <code>{{ visibleGroups?.length }}</code></div>
+      <div *ngIf="visibleGroups && visibleGroups.length">
+        <span *ngFor="let g of visibleGroups; let i = index">
+          <code>{{ i+1 }}:{{ g.label || '(no-label)' }}[items={{ (g.items||[]).length }}|flat={{ (g._flattened||[]).length }}]</code>
+          <span *ngIf="i < (visibleGroups.length -1)">, </span>
+        </span>
+      </div>
+    </div>
   </div>
 
   <!-- Navigation - Scrollable Middle Section -->
@@ -167,25 +180,28 @@
 
       <!-- Main Navigation Groups -->
       <div class="nav-section" *ngFor="let group of visibleGroups; trackBy: trackByGroup">
-        <!-- Group Header - Clickable to expand/collapse -->
-        <button 
-          class="group-header"
-          [class.expanded]="group.expanded"
-          [class.collapsed-sidebar]="collapsed"
-          (click)="!collapsed && toggleGroup(group)"
-          type="button">
-          <div class="group-title">
-            <i [class]="group.icon"></i>
-            <span *ngIf="!collapsed">{{ group.label }}</span>
-          </div>
-          <i 
-            *ngIf="!collapsed && hasItems(group)" 
-            class="pi pi-chevron-down expand-icon"
-            [class.expanded]="group.expanded"></i>
-        </button>
+        <!-- Group Header - Clickable to expand/collapse. Omit when _noHeader flag is set -->
+        <ng-container *ngIf="!group._noHeader">
+          <button 
+            class="group-header"
+            [class.expanded]="group.expanded"
+            [class.collapsed-sidebar]="collapsed"
+            (click)="!collapsed && toggleGroup(group)"
+            type="button">
+            <div class="group-title">
+              <i [class]="group.icon"></i>
+              <span *ngIf="!collapsed">{{ group.label }}</span>
+            </div>
+            <i 
+              *ngIf="!collapsed && hasItems(group)" 
+              class="pi pi-chevron-down expand-icon"
+              [class.expanded]="group.expanded"></i>
+          </button>
+        </ng-container>
 
-        <!-- Group Items - Flat list (NO nested subgroups) -->
-        <ul class="nav-list" *ngIf="!collapsed && hasItems(group)" [ngClass]="{ open: group.expanded }">
+  <!-- Group Items - Flat list (NO nested subgroups) -->
+  <!-- Render if group has items or if a flattened item list was provided (pseudo-group) -->
+  <ul class="nav-list" *ngIf="!collapsed && (hasItems(group) || (group._flattened && group._flattened.length > 0))" [ngClass]="{ open: group.expanded || group._noHeader }">
           <li *ngFor="let item of group._flattened; trackBy: trackByItem">
             <a
               [routerLink]="getPath(item.url)"
