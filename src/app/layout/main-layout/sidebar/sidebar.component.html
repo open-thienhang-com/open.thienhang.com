@@ -187,8 +187,9 @@
         <!-- Group Items - Flat list (NO nested subgroups) -->
         <ul class="nav-list" *ngIf="!collapsed && hasItems(group)" [ngClass]="{ open: group.expanded }">
           <li *ngFor="let item of group._flattened; trackBy: trackByItem">
-            <a 
-              [routerLink]="item.url" 
+            <a
+              [routerLink]="getPath(item.url)"
+              [queryParams]="getQueryParams(item.url)"
               class="nav-link sub-link"
               routerLinkActive="active"
               *ngIf="item.url">
@@ -213,10 +214,10 @@
         type="button"
         class="footer-btn profile-btn"
         (click)="openProfile()"
-        [pTooltip]="collapsed ? 'Profile' : ''"
+        [pTooltip]="collapsed ? userFullName() : ''"
         tooltipPosition="right">
         <i class="pi pi-user"></i>
-        <span *ngIf="!collapsed">Profile</span>
+        <span *ngIf="!collapsed">{{ userFullName() }}</span>
       </button>
     </div>
   </div>
@@ -229,7 +230,7 @@
   [modal]="true" 
   appendTo="body"
   [baseZIndex]="10000"
-  [style]="{ width: '720px', maxWidth: '90vw' }" 
+  [style]="{ width: '980px', maxWidth: '95vw' }" 
   [closable]="true" 
   (onHide)="closeAppMatrix()"
   styleClass="app-matrix-dialog">

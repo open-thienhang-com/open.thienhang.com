@@ -567,7 +567,7 @@ export class SettingsComponent implements OnInit {
   }
 
   private uploadAvatar(file: File): void {
-    const uploadUrl = `${this.localProfileSource}/data-mesh/data-mesh/domains/files/upload/supabase`;
+    const uploadUrl = `${this.localProfileSource}/data-mesh/domains/files/upload/supabase`;
     const form = new FormData();
     form.append('file', file, file.name);
 

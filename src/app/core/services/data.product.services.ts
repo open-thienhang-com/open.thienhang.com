@@ -75,7 +75,7 @@ export class DataProductServices {
 
   // Data Products
   getDataProducts(params?: any): Observable<ApiResponse<DataProduct[]>> {
-    const url = `${this.baseUrl}/data-mesh/data-mesh/data-products`;
+    const url = `${this.baseUrl}/data-mesh/data-products`;
     const httpParams = this.buildHttpParams(params);
     return this.http.get<any>(url, { params: httpParams })
       .pipe(
@@ -102,8 +102,8 @@ export class DataProductServices {
 
   getDataProductDetail(id: string, domain?: string): Observable<ApiResponse<DataProduct>> {
     const url = domain
-      ? `${this.baseUrl}/data-mesh/data-mesh/data-products/${domain}/${id}`
-      : `${this.baseUrl}/data-mesh/data-mesh/data-products/${id}`;
+      ? `${this.baseUrl}/data-mesh/data-products/${domain}/${id}`
+      : `${this.baseUrl}/data-mesh/data-products/${id}`;
     return this.http.get<DataProduct>(url)
       .pipe(
         map(response => {

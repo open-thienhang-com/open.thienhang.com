@@ -298,7 +298,7 @@ export class DataProdDetailComponent extends AppBaseComponent implements AfterVi
   }
 
   copyEndpointUrl(endpoint: any) {
-    const baseUrl = '/data-mesh/data-mesh/domains/hotel';
+    const baseUrl = '/data-mesh/domains/hotel';
     const fullUrl = `${baseUrl}${endpoint.path}`;
     navigator.clipboard.writeText(fullUrl);
     console.log('Copied to clipboard:', fullUrl);

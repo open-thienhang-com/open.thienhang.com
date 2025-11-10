@@ -95,6 +95,15 @@ export class SidebarComponent implements OnInit, OnChanges {
   showSearchResults = false;
   searchKeyword = '';
 
+  // User info from API
+  currentUser = signal<any>(null);
+  userFullName = computed(() => {
+    const user = this.currentUser();
+    return user?.full_name || user?.fullName || user?.name || user?.email?.split('@')[0] || 'User';
+  });
+  userEmail = computed(() => this.currentUser()?.email || '');
+  userIdentify = computed(() => this.currentUser()?.identify || '');
+
   // Theme state
   themeState = signal<ThemeState>(null);
   theme = computed(() => (this.themeState()?.darkTheme ? 'dark' : 'light'));
@@ -200,8 +209,7 @@ export class SidebarComponent implements OnInit, OnChanges {
   showAppMatrix = false;
   apps: { key: AppKey; label: string; icon: string }[] = [
     { key: 'all', label: 'All Apps', icon: 'pi pi-th-large' },
-    { key: 'retail', label: 'Retail Service', icon: 'pi pi-shopping-bag' },
-    { key: 'catalog', label: 'Data Catalog', icon: 'pi pi-search' },
+  { key: 'retail', label: 'Retail Service', icon: 'pi pi-shopping-bag' },
     { key: 'governance', label: 'Governance', icon: 'pi pi-shield' },
     { key: 'marketplace', label: 'Marketplace', icon: 'pi pi-shopping-cart' },
     { key: 'blogger', label: 'Blogger', icon: 'pi pi-pencil' },
@@ -259,78 +267,7 @@ export class SidebarComponent implements OnInit, OnChanges {
         }
       ]
     },
-    {
-      label: 'Data Catalog',
-      icon: 'pi pi-database',
-      expanded: false,
-      items: [
-        {
-          label: 'Overview',
-          icon: 'pi pi-home',
-          url: '/discovery/data-catalog'
-        },
-        {
-          label: 'Browse Assets',
-          icon: 'pi pi-list',
-          children: [
-            { label: 'All Assets', url: '/discovery/data-catalog?view=all', icon: 'pi pi-th-large' },
-            { label: 'Tables & Views', url: '/discovery/data-catalog?type=table', icon: 'pi pi-table' },
-            { label: 'APIs', url: '/discovery/data-catalog?type=api', icon: 'pi pi-code' },
-            { label: 'Files', url: '/discovery/data-catalog?type=file', icon: 'pi pi-file' },
-            { label: 'Streams', url: '/discovery/data-catalog?type=stream', icon: 'pi pi-cloud' }
-          ]
-        },
-        {
-          label: 'By Domain',
-          icon: 'pi pi-sitemap',
-          children: [
-            { label: 'Customer', url: '/discovery/data-catalog?domain=customer', icon: 'pi pi-users' },
-            { label: 'Product', url: '/discovery/data-catalog?domain=product', icon: 'pi pi-shopping-cart' },
-            { label: 'Order', url: '/discovery/data-catalog?domain=order', icon: 'pi pi-shopping-bag' },
-            { label: 'Analytics', url: '/discovery/data-catalog?domain=analytics', icon: 'pi pi-chart-bar' }
-          ]
-        },
-        {
-          label: 'Data Quality',
-          icon: 'pi pi-shield',
-          children: [
-            { label: 'Quality Score', url: '/discovery/quality/score', icon: 'pi pi-star' },
-            { label: 'Data Profiling', url: '/discovery/quality/profiling', icon: 'pi pi-chart-line' },
-            { label: 'Validation Rules', url: '/discovery/quality/rules', icon: 'pi pi-check-square' },
-            { label: 'Issues & Alerts', url: '/discovery/quality/issues', icon: 'pi pi-exclamation-triangle' }
-          ]
-        },
-        {
-          label: 'Data Lineage',
-          icon: 'pi pi-share-alt',
-          children: [
-            { label: 'Lineage Graph', url: '/discovery/lineage/graph', icon: 'pi pi-sitemap' },
-            { label: 'Impact Analysis', url: '/discovery/lineage/impact', icon: 'pi pi-bolt' },
-            { label: 'Dependency Map', url: '/discovery/lineage/dependencies', icon: 'pi pi-link' }
-          ]
-        },
-        {
-          label: 'Metadata',
-          icon: 'pi pi-info-circle',
-          children: [
-            { label: 'Business Glossary', url: '/discovery/metadata/glossary', icon: 'pi pi-book' },
-            { label: 'Tags & Labels', url: '/discovery/metadata/tags', icon: 'pi pi-tag' },
-            { label: 'Classifications', url: '/discovery/metadata/classifications', icon: 'pi pi-lock' },
-            { label: 'Owners & Stewards', url: '/discovery/metadata/owners', icon: 'pi pi-user' }
-          ]
-        },
-        {
-          label: 'Search & Discovery',
-          icon: 'pi pi-search',
-          children: [
-            { label: 'Advanced Search', url: '/discovery/search/advanced', icon: 'pi pi-filter' },
-            { label: 'Recently Accessed', url: '/discovery/search/recent', icon: 'pi pi-clock' },
-            { label: 'Popular Assets', url: '/discovery/search/popular', icon: 'pi pi-star-fill' },
-            { label: 'Recommendations', url: '/discovery/search/recommendations', icon: 'pi pi-thumbs-up' }
-          ]
-        }
-      ]
-    },
+    
     {
       label: 'Governance',
       icon: 'pi pi-shield',
@@ -431,6 +368,41 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (isPlatformBrowser(this.platformId)) {
       this.onPresetChange(this.themeState().preset);
     }
+
+    // Load current user info
+    this.authServices.getCurrentUser().subscribe({
+      next: (resp: any) => {
+        // Response structure from log: { data: { full_name, email, identify, ... }, message, total }
+        // The actual user info is inside resp.data.data or resp.data
+        let userData: any = resp;
+        
+        console.log('Raw response:', resp);
+        
+        // Unwrap ApiResponse wrapper
+        if (userData?.data) {
+          userData = userData.data;
+          console.log('After first unwrap:', userData);
+        }
+        
+        // If still wrapped in another data layer
+        if (userData?.data && typeof userData.data === 'object') {
+          userData = userData.data;
+          console.log('After second unwrap:', userData);
+        }
+        
+        // Check for user wrapper
+        if (userData?.user) {
+          userData = userData.user;
+        }
+        
+        console.log('Final user data:', userData);
+        console.log('full_name:', userData?.full_name);
+        this.currentUser.set(userData);
+      },
+      error: (err) => {
+        console.error('Failed to load user info:', err);
+      }
+    });
 
     // Initialize primary menu structure
     this.menu = [
@@ -537,6 +509,14 @@ export class SidebarComponent implements OnInit, OnChanges {
     return item?.label + '::' + index;
   }
 
+  // Helper to extract path part from a URL that may contain query string
+  getPath(url?: string): string {
+    if (!url) return '';
+    const idx = url.indexOf('?');
+    return idx === -1 ? url : url.substring(0, idx);
+  }
+  
+
   // Helper: Check if group has items
   hasItems(group: any): boolean {
     return group?.items && group.items.length > 0;
@@ -595,25 +575,6 @@ export class SidebarComponent implements OnInit, OnChanges {
     }
 
     const key = this.appKey;
-    // Special-case: for Catalog app, show Data Catalog and Data Exploration groups
-    if (key === 'catalog') {
-      const byLabel = (lbl: string) => this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes(lbl));
-
-      const dataCatalog = byLabel('data catalog') || null;
-      const dataExploration = byLabel('data exploration') || null;
-
-      const groups: any[] = [];
-      if (dataCatalog) groups.push(dataCatalog);
-      if (dataExploration) groups.push(dataExploration);
-
-      this.visibleGroups = this.orderGroupsForApp(groups, key);
-      // Đóng tất cả groups mặc định
-      this.visibleGroups.forEach(g => {
-        g.expanded = false;
-        (g as any)._flattened = this.getFlattenedItems(g.items || []);
-      });
-      return;
-    }
 
     // Special-case: for Retail app, show only Retail Overview + Inventory Management + Point of Sale + E-commerce + Analytics + Loyalty Program
     if (key === 'retail') {
@@ -743,7 +704,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (p === '/' || p === '') return 'all';
     if (p.startsWith('/governance')) return 'governance';
     if (p.startsWith('/retail')) return 'retail';
-    if (p.startsWith('/discovery') || p.startsWith('/explore') || p.startsWith('/data-catalog') || p.startsWith('/explore')) return 'catalog';
+  if (p.startsWith('/discovery') || p.startsWith('/explore') || p.startsWith('/data-catalog')) return 'all';
     if (p.startsWith('/marketplace')) return 'marketplace';
     if (p.startsWith('/blogger') || p.startsWith('/posts') || p.startsWith('/blog')) return 'blogger';
     if (p.startsWith('/hotel')) return 'hotel';
@@ -757,7 +718,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     // Simple prioritization map: which group labels should appear first per app
     const priorityMap: Record<AppKey, string[]> = {
       retail: ['retail', 'marketplace'],
-      catalog: ['data catalog', 'explore', 'data', 'catalog'],
+      catalog: [],
       blogger: ['blog', 'blogger', 'posts'],
       hotel: ['hotel', 'rooms', 'bookings', 'management'],
       admanager: ['ad', 'ads', 'advert', 'campaign', 'admanager'],
@@ -917,7 +878,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     const routeForApp: Record<AppKey, string> = {
       all: '/dashboard',
       retail: '/retail',
-      catalog: '/discovery/data-catalog',
+  catalog: '/dashboard',
       governance: '/governance/policies',
       marketplace: '/marketplace',
       blogger: '/blogger',
