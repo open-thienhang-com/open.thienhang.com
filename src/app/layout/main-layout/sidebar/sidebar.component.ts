@@ -209,18 +209,65 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   // App matrix dialog
   showAppMatrix = false;
-  apps: { key: AppKey; label: string; icon: string }[] = [
-    { key: 'retail', label: 'Retail Service', icon: 'pi pi-shopping-bag' },
-    { key: 'governance', label: 'Governance', icon: 'pi pi-shield' },
-    { key: 'marketplace', label: 'Marketplace', icon: 'pi pi-shopping-cart' },
-    { key: 'blogger', label: 'Blogger', icon: 'pi pi-pencil' },
-    { key: 'hotel', label: 'Hotel', icon: 'pi pi-building' },
-    { key: 'admanager', label: 'Ad Manager', icon: 'pi pi-bullhorn' },
-    { key: 'settings', label: 'Settings', icon: 'pi pi-cog' }
+  apps: { key: AppKey; label: string; icon: string; gradient: string; description?: string }[] = [
+    {
+      key: 'retail',
+      label: 'Retail Service',
+      icon: 'pi pi-shopping-bag',
+      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      description: 'Point of Sale, Inventory & E-commerce'
+    },
+    {
+      key: 'governance',
+      label: 'Governance',
+      icon: 'pi pi-shield',
+      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      description: 'Permissions, Policies & Compliance'
+    },
+    {
+      key: 'marketplace',
+      label: 'Marketplace',
+      icon: 'pi pi-shopping-cart',
+      gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      description: 'Data Products & Discovery'
+    },
+    {
+      key: 'blogger',
+      label: 'Blogger',
+      icon: 'pi pi-pencil',
+      gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      description: 'Content & Publishing'
+    },
+    {
+      key: 'hotel',
+      label: 'Hotel',
+      icon: 'pi pi-building',
+      gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+      description: 'Booking & Management'
+    },
+    {
+      key: 'admanager',
+      label: 'Ad Manager',
+      icon: 'pi pi-bullhorn',
+      gradient: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+      description: 'Campaign & Analytics'
+    },
+    {
+      key: 'settings',
+      label: 'Settings',
+      icon: 'pi pi-cog',
+      gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+      description: 'Configuration & Preferences'
+    }
   ];
 
   selectedApp: AppKey = 'all';
   private _workspaceHighlight = false;
+
+  // Return only the real apps (no placeholders)
+  appMatrix(): Array<any> {
+    return this.apps;
+  }
 
   // marketplaceExpanded removed — Marketplace is now a standalone app with its own overview page
 

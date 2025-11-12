@@ -246,21 +246,41 @@
   [modal]="true" 
   appendTo="body"
   [baseZIndex]="10000"
-  [style]="{ width: '980px', maxWidth: '95vw' }" 
+  [style]="{ width: '1200px', maxWidth: '96vw' }" 
   [closable]="true" 
   (onHide)="closeAppMatrix()"
   styleClass="app-matrix-dialog">
   <div class="apps-matrix-grid">
-    <button *ngFor="let app of apps" type="button"
+    <button *ngFor="let app of appMatrix(); let i = index" type="button"
             class="app-tile"
             [class.active]="selectedApp === app.key"
+            [attr.data-app-key]="app.key"
             (click)="selectAppKey(app.key)"
             [attr.aria-label]="app.label">
-      <div class="app-icon-wrapper" [attr.data-app]="app.key">
+
+      <!-- App Gradient Background with dynamic color -->
+      <div class="app-background" [style.background]="app.gradient"></div>
+      
+      <!-- Animated gradient overlay -->
+      <div class="gradient-overlay"></div>
+      
+      <!-- App Icon with glow effect -->
+      <div class="app-icon-wrapper">
+        <div class="icon-glow"></div>
         <i [class]="app.icon"></i>
       </div>
-      <span class="app-label">{{ app.label }}</span>
-      <i class="pi pi-check check-icon" *ngIf="selectedApp === app.key"></i>
+      
+      <!-- App Content -->
+      <div class="app-content">
+        <h3 class="app-label">{{ app.label }}</h3>
+        <p class="app-description" *ngIf="app.description">{{ app.description }}</p>
+      </div>
+      
+      <!-- Active indicator badge -->
+      <div class="active-badge" *ngIf="selectedApp === app.key">
+        <i class="pi pi-check"></i>
+      </div>
+
     </button>
   </div>
 </p-dialog>
