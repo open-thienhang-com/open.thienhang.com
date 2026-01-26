@@ -157,18 +157,6 @@
       <span class="app-name">{{ workspaceLabel }}</span>
     </div>
 
-    <!-- Debug info (temporary) -->
-    <div class="sidebar-debug p-2 text-xs text-gray-600 dark:text-gray-300" *ngIf="showDebug && !collapsed">
-      <div><strong>DEBUG</strong></div>
-      <div>appKey: <code>{{ appKey }}</code></div>
-      <div>visibleGroups: <code>{{ visibleGroups?.length }}</code></div>
-      <div *ngIf="visibleGroups && visibleGroups.length">
-        <span *ngFor="let g of visibleGroups; let i = index">
-          <code>{{ i+1 }}:{{ g.label || '(no-label)' }}[items={{ (g.items||[]).length }}|flat={{ (g._flattened||[]).length }}]</code>
-          <span *ngIf="i < (visibleGroups.length -1)">, </span>
-        </span>
-      </div>
-    </div>
   </div>
 
   <!-- Navigation - Scrollable Middle Section -->
@@ -246,7 +234,7 @@
   [modal]="true" 
   appendTo="body"
   [baseZIndex]="10000"
-  [style]="{ width: '1200px', maxWidth: '96vw' }" 
+  [style]="{ width: '90vw', maxWidth: '1200px', minWidth: '600px' }" 
   [closable]="true" 
   (onHide)="closeAppMatrix()"
   styleClass="app-matrix-dialog">
