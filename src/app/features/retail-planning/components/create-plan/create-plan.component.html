@@ -1,0 +1,225 @@
+<div id="content-create-plan" class="tab-content">
+    <div class="p-6">
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Create Delivery Plan</h2>
+            <p class="text-gray-600">Generate optimized delivery routes with fleet configuration and demand data</p>
+        </div>
+
+        <!-- Plan Creation Steps -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-semibold text-gray-900">Planning Steps</h3>
+                <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-1 text-sm">
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span class="text-gray-600">Step 1: Configure Depots</span>
+                    </div>
+                    <div class="flex items-center gap-1 text-sm">
+                        <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span class="text-gray-600">Step 2: Load Demands</span>
+                    </div>
+                    <div class="flex items-center gap-1 text-sm">
+                        <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                        <span class="text-gray-600">Step 3: Configure Fleet</span>
+                    </div>
+                    <div class="flex items-center gap-1 text-sm">
+                        <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+                        <span class="text-gray-600">Step 4: Generate Plan</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step Navigation -->
+            <div class="flex gap-2 mb-6">
+                <button
+                  class="step-btn px-4 py-2 text-white rounded-lg"
+                  [class.bg-blue-600]="currentStep === 1"
+                  [class.bg-gray-600]="currentStep !== 1"
+                  (click)="switchToStep(1)">
+                    <i class="fas fa-building mr-2"></i>Step 1: Depots
+                </button>
+                <button
+                  class="step-btn px-4 py-2 text-white rounded-lg"
+                  [class.bg-blue-600]="currentStep === 2"
+                  [class.bg-gray-600]="currentStep !== 2"
+                  (click)="switchToStep(2)">
+                    <i class="fas fa-upload mr-2"></i>Step 2: Demands
+                </button>
+                <button
+                  class="step-btn px-4 py-2 text-white rounded-lg"
+                  [class.bg-blue-600]="currentStep === 3"
+                  [class.bg-gray-600]="currentStep !== 3"
+                  (click)="switchToStep(3)">
+                    <i class="fas fa-truck mr-2"></i>Step 3: Fleet
+                </button>
+                <button
+                  class="step-btn px-4 py-2 text-white rounded-lg"
+                  [class.bg-blue-600]="currentStep === 4"
+                  [class.bg-gray-600]="currentStep !== 4"
+                  (click)="switchToStep(4)">
+                    <i class="fas fa-play mr-2"></i>Step 4: Generate
+                </button>
+            </div>
+
+            <!-- Step Content -->
+            <div id="stepContent" class="min-h-96">
+                <!-- Step 1: Depots -->
+                <div id="step1" class="step-content" *ngIf="currentStep === 1">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-md font-semibold text-gray-900 mb-4">Start Depot</h4>
+                            <select id="startDepot" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4">
+                                <option value="">Select start depot...</option>
+                            </select>
+                            <div id="startDepotInfo" class="text-sm text-gray-600">
+                                No depot selected
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-md font-semibold text-gray-900 mb-4">End Depot</h4>
+                            <select id="endDepot" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4">
+                                <option value="">Select end depot...</option>
+                            </select>
+                            <div id="endDepotInfo" class="text-sm text-gray-600">
+                                No depot selected
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end mt-6">
+                        <button class="next-step-btn px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" (click)="switchToStep(2)">
+                            Next: Load Demands <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Demands -->
+                <div id="step2" class="step-content" *ngIf="currentStep === 2">
+                    <div class="text-center py-8">
+                        <div class="text-4xl mb-4">📦</div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Load Demand Data</h4>
+                        <p class="text-gray-600 mb-6">Import processed demands from the Demands page or upload CSV files</p>
+
+                        <div class="flex justify-center gap-4">
+                            <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                                <i class="fas fa-link mr-2"></i>Import from Demands
+                            </button>
+                            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-upload mr-2"></i>Upload CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="demandsPreview" class="mt-6 hidden">
+                        <h5 class="text-md font-semibold text-gray-900 mb-4">Demand Preview</h5>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div id="demandsSummary">No demands loaded</div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between mt-6">
+                        <button class="prev-step-btn px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors" (click)="switchToStep(1)">
+                            <i class="fas fa-arrow-left mr-2"></i> Back: Depots
+                        </button>
+                        <button class="next-step-btn px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" (click)="switchToStep(3)">
+                            Next: Configure Fleet <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Fleet -->
+                <div id="step3" class="step-content" *ngIf="currentStep === 3">
+                    <div class="text-center py-8">
+                        <div class="text-4xl mb-4">🚛</div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Configure Fleet</h4>
+                        <p class="text-gray-600 mb-6">Set up your vehicle fleet with capacity and cost information</p>
+                    </div>
+
+                    <div id="fleetConfiguration" class="bg-gray-50 rounded-lg p-4">
+                        <div class="text-center text-gray-500 py-8">
+                            Fleet configuration will be loaded here
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between mt-6">
+                        <button class="prev-step-btn px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors" (click)="switchToStep(2)">
+                            <i class="fas fa-arrow-left mr-2"></i> Back: Demands
+                        </button>
+                        <button class="next-step-btn px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" (click)="switchToStep(4)">
+                            Next: Generate Plan <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Generate -->
+                <div id="step4" class="step-content" *ngIf="currentStep === 4">
+                    <div class="text-center py-8">
+                        <div class="text-4xl mb-4">⚡</div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Generate Delivery Plan</h4>
+                        <p class="text-gray-600 mb-6">Run the optimization algorithm to create efficient delivery routes</p>
+
+                        <div class="bg-gray-50 rounded-lg p-6 max-w-md mx-auto mb-6">
+                            <div class="space-y-4">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Algorithm:</span>
+                                    <span class="font-medium">Genetic Algorithm</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Max Iterations:</span>
+                                    <span class="font-medium">1,000</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Population Size:</span>
+                                    <span class="font-medium">50</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="generatePlanBtn" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-lg">
+                            <i class="fas fa-play mr-2"></i>Generate Plan
+                        </button>
+                    </div>
+
+                    <div class="flex justify-start mt-6">
+                        <button class="prev-step-btn px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors" (click)="switchToStep(3)">
+                            <i class="fas fa-arrow-left mr-2"></i> Back: Fleet
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Plan Results (shown after generation) -->
+        <div id="planResults" class="hidden bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Plan Generated Successfully!</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600" id="totalRoutes">0</div>
+                    <div class="text-sm text-gray-600">Routes Created</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600" id="totalDistance">0 km</div>
+                    <div class="text-sm text-gray-600">Total Distance</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-yellow-600" id="totalCost">0 VND</div>
+                    <div class="text-sm text-gray-600">Total Cost</div>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-eye mr-2"></i>View Plan Details
+                </button>
+                <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                    <i class="fas fa-download mr-2"></i>Export Plan
+                </button>
+                <button class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                    <i class="fas fa-film mr-2"></i>Simulate Routes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

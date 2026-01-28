@@ -1,0 +1,37 @@
+<div id="content-models" class="tab-content">
+  <!-- Models Management Header -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <div>
+          <h2 class="text-xl font-semibold text-gray-900">Models Management</h2>
+          <p class="text-sm text-gray-600 mt-1">Quản lý và sử dụng các models đã train</p>
+        </div>
+        <div class="flex flex-col md:flex-row gap-2 md:gap-3 items-center">
+          <input id="models-search-input" type="text" placeholder="Tìm kiếm tên, loại, version..." class="px-3 py-2 border rounded-md text-sm" style="min-width:180px;" />
+          <select id="models-type-filter" class="px-2 py-2 border rounded-md text-sm">
+            <option value="">Tất cả loại</option>
+            <option value="bilstm">BiLSTM</option>
+            <!-- Thêm các loại model khác nếu có -->
+          </select>
+          <input id="models-version-filter" type="text" placeholder="Version" class="px-3 py-2 border rounded-md text-sm" style="width:110px;" />
+          <button id="refresh-models-btn" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m-15.357-2A8.001 8.001 0 0019.419 15m0 0H15" />
+            </svg>
+            Làm Mới
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="px-6 py-2 flex flex-wrap items-center gap-4">
+      <span id="models-total-count" class="text-sm text-gray-600"></span>
+      <div class="flex gap-2 items-center ml-auto">
+        <button id="models-prev-page" class="px-2 py-1 border rounded text-sm">&lt; Trước</button>
+        <span id="models-page-info" class="text-sm"></span>
+        <button id="models-next-page" class="px-2 py-1 border rounded text-sm">Sau &gt;</button>
+      </div>
+    </div>
+  </div>
+  <!-- (Danh sách models và modal đã được chuyển sang Evaluation) -->
+</div>

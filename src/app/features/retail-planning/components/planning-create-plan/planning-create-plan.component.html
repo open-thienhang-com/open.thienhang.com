@@ -1,0 +1,1845 @@
+<!-- Planning - Create Plan Page -->
+<div class="planning-page" id="planning-create-plan">
+
+  <!-- Page Header -->
+  <app-page-header 
+    title="Auto Planning" 
+    subtitle="Lập lịch tải tự động - Vui lòng điền các tham số bên dưới để lập lịch"
+    icon="🗺️">
+  </app-page-header>
+
+  <!-- Stepper Container -->
+  <div class="planning-stepper-container">
+
+    <!-- Left: Stepper Navigation -->
+    <div class="planning-stepper-nav">
+      <div class="planning-stepper-title">Các bước lập lịch</div>
+
+      <div class="planning-step-item" [class.active]="currentStep === 1" [class.completed]="currentStep > 1" data-step="1" (click)="goToCreatePlanStep(1)" style="cursor: pointer;">
+        <div class="planning-step-indicator">1</div>
+        <div class="planning-step-label">
+          <div class="planning-step-title">Kho hàng và vùng</div>
+          <div class="planning-step-desc">Vùng cần lên lịch và điểm giao hàng</div>
+        </div>
+      </div>
+
+      <div class="planning-step-item" [class.active]="currentStep === 2" [class.completed]="currentStep > 2" data-step="2" (click)="goToCreatePlanStep(2)" style="cursor: pointer;">
+        <div class="planning-step-indicator">2</div>
+        <div class="planning-step-label">
+          <div class="planning-step-title">Sản lượng</div>
+        </div>
+      </div>
+
+      <!-- Merged: Delivery Points moved into Step 1, so this step removed -->
+
+      <div class="planning-step-item" [class.active]="currentStep === 3" [class.completed]="currentStep > 3" data-step="3" (click)="goToCreatePlanStep(3)" style="cursor: pointer;">
+        <div class="planning-step-indicator">3</div>
+        <div class="planning-step-label">
+          <div class="planning-step-title">Phương tiện</div>
+          <div class="planning-step-desc">Lựa chọn xe và tải trọng</div>
+        </div>
+      </div>
+
+      <div class="planning-step-item" [class.active]="currentStep === 4" [class.completed]="currentStep > 4" data-step="4" (click)="goToCreatePlanStep(4)" style="cursor: pointer;">
+        <div class="planning-step-indicator">4</div>
+        <div class="planning-step-label">
+          <div class="planning-step-title">Cài đặt</div>
+          <div class="planning-step-desc">Cấu hình các tùy chọn</div>
+        </div>
+      </div>
+
+      <div class="planning-step-item" [class.active]="currentStep === 5" [class.completed]="currentStep > 5" data-step="5" (click)="goToCreatePlanStep(5)" style="cursor: pointer;">
+        <div class="planning-step-indicator">5</div>
+        <div class="planning-step-label">
+          <div class="planning-step-title">Xem trước</div>
+          <div class="planning-step-desc">Xem lại & tạo lịch tải</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Step Content -->
+    <div class="planning-step-content">
+
+      <!-- STEP 1: REGION & DELIVERY POINTS -->
+      <div class="planning-step-panel" [class.active]="currentStep === 1" id="create-plan-step-1">
+        <div class="planning-step-header">
+          <h3>📍 Vùng cần lên lịch và Điểm giao hàng</h3>
+        </div>
+
+        <div class="planning-step-body">
+          <!-- Delivery Points: 2-Column Layout - Bản đồ trái, Controls & Điểm dừng phải -->
+          <div class="planning-form-section">
+            <!-- Layout: Bản đồ bên trái, Controls bên phải -->
+            <div class="flex gap-4" style="display: flex; gap: 20px; min-height: 650px;">
+              <!-- Left: Bản đồ (chiếm 65% width) -->
+              <div class="flex-1" style="flex: 1.65; position: relative; background: #e5e7eb; border-radius: 10px; overflow: hidden; min-height: 650px; max-height: 650px;">
+                <!-- Map Loading State -->
+                <div *ngIf="!mapLoaded" class="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg">
+                  <div class="text-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-3"></div>
+                    <span class="text-gray-600 font-medium text-sm">Đang tải bản đồ...</span>
+                  </div>
+                </div>
+                
+                <div #createPlanMap id="cp_route_map" class="planning-map-container" [style.opacity]="mapLoaded ? '1' : '0'" [style.pointer-events]="mapLoaded ? 'auto' : 'none'" style="width: 100%; height: 100%; min-height: 650px; transition: opacity 0.3s;"></div>
+
+                <!-- Map Stats -->
+                <div class="planning-map-stats">
+                  <div class="planning-map-stat">
+                    <span class="stat-label">Điểm đã chọn</span>
+                    <span class="stat-value">{{ timelineWarehouses.length }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: Vùng chọn, Tìm kiếm & Điểm dừng (chiếm 35% width) -->
+              <div class="flex flex-col space-y-3" style="flex: 0 0 400px; display: flex; flex-direction: column; gap: 12px; max-height: 650px; overflow-y: auto; padding-right: 8px;">
+                
+                <!-- Region Selection: Nằm trên Tìm bưu cục -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 flex-shrink-0">
+                  <label class="block text-xs font-semibold text-gray-700 mb-2">
+                    🌍 Vùng cần lên lịch <span class="text-red-500">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    (click)="openRegionSelectionModal()"
+                    class="w-full inline-flex items-center justify-between gap-2 px-3 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow transition-all">
+                    <div class="flex items-center gap-2 flex-1 min-w-0">
+                      <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                      </svg>
+                      <span class="truncate">{{ warehouseRegionShortname ? (warehouseRegionShortname + ' - ' + getRegionName(warehouseRegionShortname)) : 'Chọn vùng' }}</span>
+                    </div>
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </button>
+                  <div *ngIf="warehouseRegionShortname && timelineWarehouses.length > 0" class="mt-2 text-xs text-orange-600 font-medium">
+                    ✓ {{ timelineWarehouses.length }} bưu cục đã chọn
+                  </div>
+                </div>
+
+                <!-- Warehouse Search Section -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 flex-shrink-0">
+                  <label class="block text-xs font-semibold text-gray-700 mb-2">🔍 Tìm bưu cục</label>
+                  <div class="relative">
+                    <p-autoComplete 
+                      [(ngModel)]="warehouseSearchQuery"
+                      (completeMethod)="onWarehouseAutoComplete($event)"
+                      (onSelect)="onWarehouseAutoSelect($event)"
+                      field="warehouse_name"
+                      [minLength]="1"
+                      [dropdown]="false"
+                      [forceSelection]="false"
+                      [autoHighlight]="true"
+                      [placeholder]="'Nhập tên bưu cục...'"
+                      class="w-full"
+                      [delay]="300"
+                      styleClass="w-full text-sm">
+                    </p-autoComplete>
+                    <div class="absolute right-2 top-1/2 -translate-y-1/2" *ngIf="warehouseAutoLoading">
+                      <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+                    </div>
+
+                    <!-- Search Results Dropdown -->
+                    <div *ngIf="warehouseSuggestions && warehouseSuggestions.length > 0" class="absolute left-0 mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-50 max-h-52 overflow-auto">
+                      <div *ngFor="let s of warehouseSuggestions; let i = index" 
+                           (click)="onWarehouseResultClick(s)" 
+                           class="py-2 px-3 hover:bg-orange-50 cursor-pointer flex items-start gap-2 border-b border-gray-100 last:border-b-0 rounded transition-colors">
+                        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-white flex items-center justify-center font-semibold text-xs flex-shrink-0">{{ i + 1 }}</div>
+                        <div class="flex-1 min-w-0">
+                          <div class="text-xs font-semibold text-gray-900 truncate">{{ s.warehouse_name }}</div>
+                          <div class="text-xs text-gray-500 truncate">{{ s.district_name }}, {{ s.province_name }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Timeline Section: Điểm dừng -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 flex-shrink-0" style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
+                  <div class="flex items-center justify-between mb-3 flex-shrink-0">
+                    <div class="flex items-center gap-2">
+                      <div class="w-6 h-6 rounded bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                      </div>
+                      <span class="text-sm font-bold text-gray-900">Điểm dừng</span>
+                      <span class="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold">{{ timelineWarehouses.length }}</span>
+                    </div>
+                    <button
+                      *ngIf="timelineWarehouses.length > 0"
+                      type="button"
+                      (click)="clearAllPoints()"
+                      class="px-2 py-1 text-red-500 hover:bg-red-50 rounded text-xs font-medium transition-colors"
+                      title="Xóa tất cả">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                      </svg>
+                    </button>
+                  </div>
+
+                  <!-- Timeline Component - Scrollable area -->
+                  <div *ngIf="timelineWarehouses.length > 0" class="flex-1 overflow-y-auto space-y-1.5 pr-1" style="min-height: 0;">
+                    <div *ngFor="let warehouse of timelineWarehouses; let i = index"
+                         class="flex items-center gap-2 p-2 bg-orange-50/50 border border-orange-200 rounded hover:bg-orange-50 transition-colors group">
+                      <div class="flex items-center justify-center w-7 h-7 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full text-white text-xs font-bold flex-shrink-0">
+                        {{ i + 1 }}
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="font-semibold text-gray-900 text-xs mb-0.5 truncate">{{ warehouse.warehouse_name }}</div>
+                        <div class="text-xs text-gray-500 truncate">{{ warehouse.district_name }}, {{ warehouse.province_name }}</div>
+                      </div>
+                      <button
+                        type="button"
+                        (click)="removeFromTimeline(warehouse)"
+                        class="flex-shrink-0 p-1 text-red-500 hover:bg-red-100 rounded transition-colors opacity-0 group-hover:opacity-100"
+                        title="Xóa">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Empty Timeline State -->
+                  <div *ngIf="timelineWarehouses.length === 0" class="flex-1 flex items-center justify-center text-center py-8 text-gray-400" style="min-height: 150px;">
+                    <div>
+                      <svg class="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      <p class="text-xs font-medium text-gray-400">Chưa có bưu cục nào</p>
+                      <p class="text-xs text-gray-400 mt-1">Chọn vùng hoặc tìm kiếm để thêm</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="planning-step-footer">
+          <div></div>
+          <button type="button" class="planning-btn planning-btn-primary" (click)="goToCreatePlanStep(2)" [disabled]="timelineWarehouses.length === 0">
+            Next: Sản lượng →
+          </button>
+        </div>
+      </div>
+
+      <!-- Region Selection Modal -->
+      <p-dialog
+        [(visible)]="showRegionSelectionModal"
+        [modal]="true"
+        [style]="{width: '950px', maxWidth: '95vw'}"
+        [closable]="true"
+        [dismissableMask]="true"
+        header="Chọn vùng và bưu cục"
+        styleClass="p-fluid"
+        (onHide)="closeRegionSelectionModal()">
+        
+        <div class="space-y-4">
+          <!-- Region Selector - Compact -->
+          <div class="bg-gradient-to-r from-orange-50 to-orange-50/50 border-2 border-orange-200 rounded-xl p-4">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-lg bg-orange-500 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <label class="block text-sm font-bold text-gray-900 mb-1">Chọn vùng <span class="text-red-500">*</span></label>
+                <select
+                  [(ngModel)]="modalSelectedRegion"
+                  (change)="onModalRegionChange()"
+                  class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-sm font-semibold text-gray-900 shadow-sm hover:border-orange-400 transition-colors">
+                  <option value="" disabled>-- Chọn vùng --</option>
+                  <option *ngFor="let region of availableRegions" [value]="region.code">
+                    {{ region.code }} - {{ region.name }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Warehouses List -->
+          <div *ngIf="modalSelectedRegion" class="space-y-3">
+            <!-- Loading State -->
+            <div *ngIf="loadingModalWarehouses" class="flex items-center justify-center py-16 bg-gray-50 rounded-xl border border-gray-200">
+              <div class="text-center">
+                <div class="animate-spin rounded-full h-10 w-10 border-3 border-orange-500 border-t-transparent mx-auto mb-3"></div>
+                <p class="text-sm font-medium text-gray-600">Đang tải danh sách bưu cục...</p>
+              </div>
+            </div>
+
+            <!-- Error State -->
+            <div *ngIf="modalWarehousesError && !loadingModalWarehouses" class="bg-red-50 border-2 border-red-200 rounded-xl p-4">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+                <span class="text-sm font-semibold text-red-700">{{ modalWarehousesError }}</span>
+              </div>
+            </div>
+
+            <!-- Warehouses Table -->
+            <div *ngIf="!loadingModalWarehouses && !modalWarehousesError && modalWarehouses.length > 0" class="space-y-3">
+              <!-- Action Bar - Compact -->
+              <div class="flex items-center justify-between bg-gradient-to-r from-gray-50 to-gray-50/50 rounded-lg px-4 py-2.5 border-2 border-gray-200">
+                <div class="flex items-center gap-3">
+                  <div class="text-xs font-semibold text-gray-700">
+                    Tổng: <span class="text-gray-900 font-bold">{{ modalWarehouses.length }}</span>
+                  </div>
+                  <div class="w-px h-4 bg-gray-300"></div>
+                  <div class="text-xs font-semibold text-orange-600">
+                    Đã chọn: <span class="text-orange-700 font-bold">{{ modalSelectedWarehouses.size }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    (click)="selectAllWarehousesInModal()"
+                    [disabled]="modalSelectedWarehouses.size === modalWarehouses.length"
+                    class="px-3 py-1.5 text-xs font-bold bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-all shadow-sm">
+                    ✓ Tất cả
+                  </button>
+                  <button
+                    type="button"
+                    (click)="deselectAllWarehousesInModal()"
+                    [disabled]="modalSelectedWarehouses.size === 0"
+                    class="px-3 py-1.5 text-xs font-bold bg-red-500 hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-all shadow-sm">
+                    ✕ Bỏ chọn
+                  </button>
+                </div>
+              </div>
+
+              <!-- Warehouses List (Scrollable) - Improved Table -->
+              <div class="border-2 border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm max-h-[420px] overflow-y-auto">
+                <table class="w-full">
+                  <thead class="bg-gradient-to-r from-gray-100 to-gray-50 sticky top-0 z-10 border-b-2 border-gray-200">
+                    <tr>
+                      <th class="px-3 py-2.5 text-left w-12">
+                        <input
+                          type="checkbox"
+                          [checked]="modalSelectedWarehouses.size === modalWarehouses.length && modalWarehouses.length > 0"
+                          (change)="modalSelectedWarehouses.size === modalWarehouses.length ? deselectAllWarehousesInModal() : selectAllWarehousesInModal()"
+                          class="w-4 h-4 text-orange-600 border-gray-400 rounded focus:ring-2 focus:ring-orange-500 cursor-pointer">
+                      </th>
+                      <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase w-12">STT</th>
+                      <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase">Tên bưu cục</th>
+                      <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase">Địa chỉ</th>
+                      <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase w-20">ID</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-150">
+                    <tr *ngFor="let warehouse of modalWarehouses; let i = index"
+                        class="hover:bg-orange-50/50 transition-colors cursor-pointer border-b border-gray-100"
+                        (click)="toggleWarehouseSelection(warehouse)">
+                      <td class="px-3 py-2.5" (click)="$event.stopPropagation()">
+                        <input
+                          type="checkbox"
+                          [checked]="isWarehouseSelectedInModal(warehouse)"
+                          (change)="toggleWarehouseSelection(warehouse)"
+                          class="w-4 h-4 text-orange-600 border-gray-400 rounded focus:ring-2 focus:ring-orange-500 cursor-pointer">
+                      </td>
+                      <td class="px-3 py-2.5 text-sm font-bold text-gray-700">{{ i + 1 }}</td>
+                      <td class="px-3 py-2.5">
+                        <div class="text-sm font-semibold text-gray-900">{{ warehouse.warehouse_name }}</div>
+                      </td>
+                      <td class="px-3 py-2.5">
+                        <div class="text-xs text-gray-600">{{ warehouse.district_name || '-' }}, {{ warehouse.province_name || '-' }}</div>
+                      </td>
+                      <td class="px-3 py-2.5 text-xs text-gray-500 font-mono">{{ warehouse.warehouse_id }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="!loadingModalWarehouses && !modalWarehousesError && modalWarehouses.length === 0 && modalSelectedRegion" class="text-center py-16 bg-gray-50 rounded-xl border-2 border-gray-200">
+              <div class="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-200 flex items-center justify-center">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                </svg>
+              </div>
+              <p class="text-sm font-semibold text-gray-600">Không có bưu cục nào trong vùng này</p>
+            </div>
+
+            <!-- No Region Selected -->
+            <div *ngIf="!modalSelectedRegion" class="text-center py-16 bg-gray-50 rounded-xl border-2 border-gray-200">
+              <div class="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-200 flex items-center justify-center">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                </svg>
+              </div>
+              <p class="text-sm font-semibold text-gray-600">Vui lòng chọn vùng để xem danh sách bưu cục</p>
+            </div>
+          </div>
+        </div>
+
+        <ng-template pTemplate="footer">
+          <div class="flex items-center justify-between w-full pt-2 border-t border-gray-200">
+            <div class="text-sm font-medium text-gray-700">
+              <span *ngIf="modalSelectedRegion && modalWarehouses.length > 0">
+                Đã chọn <span class="text-orange-600 font-bold">{{ modalSelectedWarehouses.size }}</span> / <span class="font-bold">{{ modalWarehouses.length }}</span> bưu cục
+              </span>
+              <span *ngIf="!modalSelectedRegion" class="text-gray-400">Vui lòng chọn vùng</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-button
+                label="Hủy"
+                icon="pi pi-times"
+                (onClick)="closeRegionSelectionModal()"
+                styleClass="p-button-text p-button-sm">
+              </p-button>
+              <p-button
+                label="Xác nhận"
+                icon="pi pi-check"
+                (onClick)="confirmModalSelection()"
+                [disabled]="!modalSelectedRegion || modalSelectedWarehouses.size === 0"
+                styleClass="p-button-primary p-button-sm">
+              </p-button>
+            </div>
+          </div>
+        </ng-template>
+      </p-dialog>
+
+      <!-- STEP 2: DEMANDS (Sản lượng) -->
+      <div class="planning-step-panel" [class.active]="currentStep === 2" id="create-plan-step-2">
+        <div class="planning-step-body">
+          <!-- Error Message -->
+          <div *ngIf="demandsError && !loadingDemands" class="bg-red-50 border-2 border-red-200 rounded-xl p-5 mb-6 shadow-sm">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div>
+                <h4 class="text-red-800 font-bold mb-1">Lỗi tải dữ liệu</h4>
+                <span class="text-red-700">{{ demandsError }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- No warehouses message -->
+          <div *ngIf="!loadingDemands && !demandsError && timelineWarehouses.length === 0" class="bg-gradient-to-r from-orange-50 to-orange-100 border-2 border-orange-200 rounded-xl p-6 mb-6 shadow-sm">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-orange-200 flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div>
+                <h4 class="text-orange-800 font-bold mb-1">Chưa có bưu cục</h4>
+                <p class="text-orange-700">Vui lòng thêm bưu cục vào timeline để xem dữ liệu demands.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Table Section -->
+          <div class="mb-6">
+            <div>
+              <!-- Header Section -->
+              <div class="bg-white border-b-2 border-orange-200 p-6">
+                <div class="flex items-center gap-4 mb-4">
+                  <div class="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center shadow-sm border border-orange-200">
+                    <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <h3 class="text-2xl font-bold mb-1 text-orange-600">Chi tiết Sản lượng theo Bưu cục</h3>
+                    <p class="text-gray-600 text-sm">Phân tích chi tiết sản lượng lấy và giao theo từng bưu cục</p>
+                  </div>
+                </div>
+                <!-- Color Legend and Summary Info -->
+                <div class="flex items-center justify-between mt-4 pt-4 border-t border-orange-200">
+                  <div class="flex items-center gap-3 text-xs">
+                    <div class="flex items-center gap-1.5">
+                      <div class="w-4 h-4 rounded bg-green-100 border border-green-300"></div>
+                      <span class="text-gray-700">Cao hơn TB</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <div class="w-4 h-4 rounded bg-red-100 border border-red-300"></div>
+                      <span class="text-gray-700">Thấp hơn TB</span>
+                    </div>
+                  </div>
+                  <div class="text-sm text-gray-700 font-medium">
+                    Tổng: <span class="text-orange-600 font-bold">{{ demands.length }}</span> bưu cục
+                    <span *ngIf="demandSearchQuery" class="ml-2 text-gray-600">
+                      (Hiển thị: <span class="font-bold text-orange-600">{{ filteredDemands.length }}</span>)
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-6">
+                <!-- Loading -->
+                <div *ngIf="loadingDemands" class="flex items-center justify-center py-20">
+                  <div class="text-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                    <span class="text-sm text-gray-600 font-medium">Đang tải dữ liệu demands...</span>
+                  </div>
+                </div>
+
+                <!-- Demands Table -->
+                <div *ngIf="!loadingDemands && demands.length > 0" class="overflow-hidden">
+                  <p-table [value]="filteredDemands" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+                           currentPageReportTemplate="Hiển thị {first} đến {last} của {totalRecords} bưu cục"
+                           [rowsPerPageOptions]="[5,10,25,50]"
+                           styleClass="p-datatable-sm"
+                           [tableStyle]="{'min-width': '100%'}"
+                           [responsiveLayout]="'scroll'">
+                    <ng-template pTemplate="header">
+                      <tr>
+                        <th class="text-left font-bold text-gray-800 py-4 px-6 bg-gradient-to-r from-orange-50 to-orange-100 border-b-2 border-orange-300">
+                          <button (click)="sortDemands('warehouse_name')" class="flex items-center gap-2 hover:text-orange-700 transition-colors text-gray-800 font-bold">
+                            Bưu cục
+                            <svg *ngIf="demandSortField === 'warehouse_name'" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet">
+                              <path *ngIf="demandSortOrder === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                              <path *ngIf="demandSortOrder === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                          </button>
+                        </th>
+                        <th class="text-right font-bold text-gray-800 py-4 px-6 bg-gradient-to-r from-orange-50 to-orange-100 border-b-2 border-orange-300">
+                          <button (click)="sortDemands('total_pick')" class="flex items-center justify-end gap-2 hover:text-orange-700 transition-colors w-full text-gray-800 font-bold">
+                            Tổng Lấy
+                            <svg *ngIf="demandSortField === 'total_pick'" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet">
+                              <path *ngIf="demandSortOrder === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                              <path *ngIf="demandSortOrder === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                          </button>
+                        </th>
+                        <th class="text-right font-bold text-gray-800 py-4 px-6 bg-gradient-to-r from-orange-50 to-orange-100 border-b-2 border-orange-300">
+                          <button (click)="sortDemands('total_deliver')" class="flex items-center justify-end gap-2 hover:text-orange-700 transition-colors w-full text-gray-800 font-bold">
+                            Tổng Giao
+                            <svg *ngIf="demandSortField === 'total_deliver'" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet">
+                              <path *ngIf="demandSortOrder === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                              <path *ngIf="demandSortOrder === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                          </button>
+                        </th>
+                        <th class="text-center font-bold text-gray-800 py-4 px-6 bg-gradient-to-r from-orange-50 to-orange-100 border-b-2 border-orange-300">
+                          <div class="flex items-center justify-center gap-2">
+                            <span>Ca</span>
+                            <button (click)="openShiftEditorModal()" class="p-1 hover:bg-orange-200 rounded transition-colors" title="Cấu hình ca làm việc">
+                              <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                              </svg>
+                            </button>
+                          </div>
+                        </th>
+                        <th class="text-right font-bold text-gray-800 py-4 px-6 bg-gradient-to-r from-orange-50 to-orange-100 border-b-2 border-orange-300">
+                          Tỉ lệ (Lấy/Giao)
+                        </th>
+                      </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-demand let-rowIndex="rowIndex">
+                      <tr (click)="selectDemand(demand)" 
+                          [ngClass]="{
+                            'bg-orange-50 border-l-4 border-l-orange-500': isDemandSelected(demand),
+                            'bg-white hover:bg-orange-50/50': !isDemandSelected(demand) && rowIndex % 2 === 0,
+                            'bg-gray-50/50 hover:bg-orange-50/50': !isDemandSelected(demand) && rowIndex % 2 === 1
+                          }"
+                          class="cursor-pointer transition-all duration-150 border-b border-gray-200">
+                        <td class="py-4 px-6">
+                          <div>
+                            <div class="text-gray-900 font-semibold text-sm">{{ demand.warehouse_name || '—' }}</div>
+                            <div class="text-xs text-gray-500 mt-1 font-medium">ID: {{ demand.warehouse_id }}</div>
+                          </div>
+                        </td>
+                        <td class="text-right py-4 px-6">
+                          <span class="text-gray-800 font-semibold">{{ demand.total_pick | number }}</span>
+                        </td>
+                        <td class="text-right py-4 px-6">
+                          <span class="text-gray-800 font-semibold">{{ demand.total_deliver | number }}</span>
+                        </td>
+                        <td class="text-center py-4 px-6" (click)="$event.stopPropagation()">
+                          <select 
+                            [value]="demandShiftAssignment.get(demand.warehouse_id || demand.id)"
+                            (change)="setDemandShift(demand, +$any($event.target).value)"
+                            class="text-sm font-semibold px-3 py-1.5 border border-gray-300 rounded-lg bg-white hover:border-orange-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors cursor-pointer">
+                            <option [value]="undefined">—</option>
+                            <option *ngFor="let shift of shifts; let i = index" [value]="i">
+                              {{ shift.name }} ({{ shift.start_hour }}:00 - {{ shift.end_hour }}:00)
+                            </option>
+                          </select>
+                        </td>
+                        <td class="text-right py-4 px-6">
+                          <span class="text-orange-600 font-bold">{{ formatRatio(getDemandRatio(demand)) }}</span>
+                        </td>
+                      </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                      <tr>
+                        <td colspan="5" class="text-center py-16 bg-white">
+                          <div class="flex flex-col items-center gap-4">
+                            <svg class="w-20 h-20 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div class="text-gray-600 font-semibold text-base">
+                              <span *ngIf="demandSearchQuery">Không tìm thấy kết quả cho "{{ demandSearchQuery }}"</span>
+                              <span *ngIf="!demandSearchQuery">Không có dữ liệu</span>
+                            </div>
+                            <button 
+                              *ngIf="demandSearchQuery"
+                              (click)="clearSearch()"
+                              class="px-6 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-semibold shadow-sm"
+                            >
+                              Xóa bộ lọc
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </ng-template>
+                  </p-table>
+                </div>
+
+                <!-- Empty State -->
+                <div *ngIf="!loadingDemands && demands.length === 0 && !demandsError && timelineWarehouses.length > 0" class="flex items-center justify-center py-20">
+                  <div class="text-center">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                    </svg>
+                    <p class="text-gray-600 font-medium">Chưa có dữ liệu sản lượng</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="planning-step-footer">
+          <button type="button" class="planning-btn planning-btn-secondary" (click)="goToCreatePlanStep(1)">← Previous</button>
+          <button type="button" class="planning-btn planning-btn-primary" (click)="goToCreatePlanStep(3)" [disabled]="demands.length === 0">
+            Next: Phương tiện →
+          </button>
+        </div>
+      </div>
+
+      
+
+      <!-- STEP 3: FLEET (Phương tiện) -->
+      <div class="planning-step-panel" [class.active]="currentStep === 3" id="create-plan-step-3">
+        <div class="planning-step-header">
+          <h3>🚛 Cấu hình Phương tiện</h3>
+          <p>Import phương tiện từ CSV hoặc cấu hình thủ công</p>
+        </div>
+
+        <div class="planning-step-body">
+          <div class="planning-fleet-actions">
+            <span class="planning-hint-text">Import phương tiện từ CSV hoặc cấu hình thủ công</span>
+            <div class="planning-action-buttons">
+              <button type="button" class="planning-btn planning-btn-outline">Import CSV</button>
+              <button type="button" class="planning-btn planning-btn-outline">Import JSON</button>
+              <button type="button" class="planning-btn planning-btn-ghost">Xóa tất cả</button>
+            </div>
+          </div>
+
+          <div class="planning-fleet-table">
+            <div id="cp_fleet_table" class="planning-empty-state">
+              <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+              <p>Chưa có phương tiện</p>
+              <span>Import CSV hoặc cấu hình thủ công</span>
+            </div>
+          </div>
+
+          <!-- Fleet Stats -->
+          <div class="planning-fleet-stats">
+            <div class="planning-stat-card orange">
+              <div class="stat-title">Tổng số phương tiện</div>
+              <div class="stat-value">0</div>
+            </div>
+            <div class="planning-stat-card orange-light">
+              <div class="stat-title">Đã chọn</div>
+              <div class="stat-value">0</div>
+            </div>
+            <div class="planning-stat-card orange-dark">
+              <div class="stat-title">Tổng tải trọng</div>
+              <div class="stat-value">0 kg</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="planning-step-footer">
+          <button type="button" class="planning-btn planning-btn-secondary" (click)="goToCreatePlanStep(2)">← Previous</button>
+          <button type="button" class="planning-btn planning-btn-primary" (click)="goToCreatePlanStep(4)">Next: Cài đặt →</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: SETTINGS (Cài đặt) -->
+      <div class="planning-step-panel" [class.active]="currentStep === 4" id="create-plan-step-4">
+        <div class="planning-step-header">
+          <h3>⚙️ Cài đặt Nâng cao</h3>
+          <p>Cấu hình các tham số và ràng buộc routing</p>
+        </div>
+
+        <div class="planning-step-body">
+          <div class="planning-settings-grid">
+            <div class="planning-setting-group">
+              <label>Tốc độ xe (km/h)</label>
+              <input type="number" id="cp_vehicle_speed" class="planning-input" value="40">
+            </div>
+            <div class="planning-setting-group">
+              <label>Thời gian tối đa xe (s)</label>
+              <input type="number" id="cp_vehicle_max_time" class="planning-input" value="86400">
+            </div>
+            <div class="planning-setting-group">
+              <label>Khối lượng nhẹ trung bình (g)</label>
+              <input type="number" id="cp_avg_light_weight" class="planning-input" value="1000">
+            </div>
+            <div class="planning-setting-group">
+              <label>Khối lượng nặng trung bình (g)</label>
+              <input type="number" id="cp_avg_heavy_weight" class="planning-input" value="29000">
+            </div>
+            <div class="planning-setting-group">
+              <label>Giới hạn thời gian giải (s)</label>
+              <input type="number" id="cp_solve_time_limit" class="planning-input" value="60">
+            </div>
+            <div class="planning-setting-group">
+              <label>Thời gian bắt đầu tuyến (phút)</label>
+              <input type="number" id="cp_start_route_time" class="planning-input" value="240">
+            </div>
+            <div class="planning-setting-group">
+              <label>Giới hạn thời gian di chuyển (phút)</label>
+              <input type="number" id="cp_limit_duration_time" class="planning-input" value="180">
+            </div>
+            <div class="planning-setting-group">
+              <label>Dung lượng Kho</label>
+              <input type="number" id="cp_depot_capacity" class="planning-input" value="10">
+            </div>
+            <div class="planning-setting-group">
+              <label>User ID</label>
+              <input type="text" id="cp_user_id" class="planning-input" placeholder="ví dụ: thienht">
+            </div>
+            <div class="planning-setting-group">
+              <label>Chế độ Lập lịch</label>
+              <select id="cp_planning_mode_select" class="planning-select">
+                <option value="delivery_only">Chỉ Giao hàng</option>
+                <option value="pickup_and_delivery">Lấy và Giao</option>
+                <option value="round_trip">Chuyến Khứ hồi</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="planning-step-footer">
+          <button type="button" class="planning-btn planning-btn-secondary" (click)="goToCreatePlanStep(3)">← Previous</button>
+          <button type="button" class="planning-btn planning-btn-primary" (click)="goToCreatePlanStep(5)">Next: Xem trước →</button>
+        </div>
+      </div>
+
+      <!-- STEP 5: SUMMARY (Xem trước) -->
+      <div class="planning-step-panel" [class.active]="currentStep === 5" id="create-plan-step-5">
+        <div class="planning-step-header">
+          <h3>📋 Tóm tắt Kế hoạch</h3>
+          <p>Xem lại cấu hình trước khi tạo lịch tải</p>
+        </div>
+
+        <div class="planning-step-body">
+          <div class="planning-summary-grid">
+
+            <div class="planning-summary-section">
+              <div class="summary-section-header">
+                <span>Thông tin Vùng</span>
+                <button type="button" class="planning-btn-icon small" (click)="goToCreatePlanStep(1)">✏️</button>
+              </div>
+              <div class="summary-row"><span>Vùng cần lên lịch</span><span>{{ warehouseRegionShortname }} - {{ getRegionName(warehouseRegionShortname) }}</span></div>
+              <div class="summary-row"><span>Điểm đã chọn</span><span>{{ timelineWarehouses.length }} điểm</span></div>
+            </div>
+
+            <div class="planning-summary-section">
+              <div class="summary-section-header">
+                <span>Điểm Giao hàng</span>
+                <button type="button" class="planning-btn-icon small" (click)="goToCreatePlanStep(1)">✏️</button>
+              </div>
+              <div class="summary-row"><span>Tổng số điểm</span><span>{{ timelineWarehouses.length }}</span></div>
+              <div class="summary-row"><span>Tổng sản lượng</span><span>{{ getFormattedTotalDemandWeight() }} kg</span></div>
+            </div>
+
+            <div class="planning-summary-section">
+              <div class="summary-section-header">
+                <span>Phương tiện</span>
+                <button type="button" class="planning-btn-icon small" (click)="goToCreatePlanStep(3)">✏️</button>
+              </div>
+              <div class="summary-row"><span>Phương tiện đã chọn</span><span>0</span></div>
+              <div class="summary-row"><span>Tổng tải trọng</span><span>0 kg</span></div>
+            </div>
+
+            <div class="planning-summary-estimate">
+              <div class="estimate-title">Tuyến đường ước tính</div>
+              <div class="estimate-value">{{ timelineWarehouses.length > 0 ? 'Đã sẵn sàng' : 'Chưa đủ dữ liệu' }}</div>
+              <div class="estimate-label">Dựa trên cấu hình hiện tại</div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="planning-step-footer">
+          <button type="button" class="planning-btn planning-btn-secondary" (click)="goToCreatePlanStep(4)">← Previous</button>
+          <div class="planning-footer-actions">
+            <button type="button" class="planning-btn planning-btn-outline">🔎 Xem trước Payload</button>
+            <button type="button" class="planning-btn planning-btn-primary planning-btn-lg">
+              🚀 Tạo Lịch Tải
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Status Bar -->
+  <div id="cp_status_bar" class="planning-status-bar" style="display:none;">
+    <div class="status-info">
+      <span id="cp_status_text">Processing...</span>
+      <span id="cp_status_progress">0%</span>
+    </div>
+    <div class="status-bar">
+      <div class="status-bar-fill" id="cp_progress_bar" style="width:0%"></div>
+    </div>
+  </div>
+
+</div>
+
+<style>
+/* Create Plan Page Styles */
+.planning-page {
+  min-height: 100%;
+}
+
+.planning-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.planning-page-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.planning-title-icon {
+  font-size: 36px;
+}
+
+.planning-page-title h2 {
+  margin: 0 0 4px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.planning-page-title p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.planning-status-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.planning-status-badge.draft {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/* Stepper Container */
+.planning-stepper-container {
+  display: flex;
+  gap: 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  /* allow the container to size to content */
+  min-height: auto;
+}
+
+.planning-stepper-nav {
+  width: 240px;
+  background: #f8fafc;
+  border-radius: 12px 0 0 12px;
+  padding: 20px;
+  border-right: 1px solid #e5e7eb;
+}
+
+.planning-stepper-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 20px;
+}
+
+.planning-step-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: all 0.2s;
+}
+
+.planning-step-item:hover {
+  background: rgba(249, 115, 22, 0.05);
+}
+
+.planning-step-item.active {
+  background: rgba(249, 115, 22, 0.1);
+}
+
+.planning-step-item.active .planning-step-indicator {
+  background: #f97316;
+  color: white;
+}
+
+.planning-step-item.completed .planning-step-indicator {
+  background: #f97316;
+  color: white;
+}
+
+.planning-step-indicator {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.planning-step-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.planning-step-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.planning-step-desc {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* Step Content */
+.planning-step-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.planning-step-panel {
+  display: none;
+  flex-direction: column;
+  /* allow panels to size naturally instead of forcing full height */
+  height: auto;
+}
+
+.planning-step-panel.active {
+  display: flex;
+}
+
+.planning-step-header {
+  padding: 24px 24px 0;
+}
+
+.planning-step-header h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.planning-step-header p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.planning-step-body {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.planning-step-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 0 0 12px 0;
+}
+
+/* Form Elements */
+.planning-form-section {
+  margin-bottom: 20px;
+}
+
+.planning-form-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+}
+
+.planning-form-field {
+  margin-bottom: 12px;
+}
+
+.planning-form-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4b5563;
+  margin-bottom: 6px;
+}
+
+.planning-form-field label .required {
+  color: #ef4444;
+}
+
+.planning-form-hint {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+.planning-select, .planning-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #374151;
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.planning-select:focus, .planning-input:focus {
+  outline: none;
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+/* Depot Grid */
+.planning-depot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.planning-depot-card {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 12px;
+}
+
+.depot-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+.depot-label {
+  color: #6b7280;
+}
+
+.depot-value {
+  color: #374151;
+  font-weight: 500;
+}
+
+/* Mode Selector */
+.planning-mode-selector {
+  display: flex;
+  gap: 12px;
+}
+
+.planning-mode-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.planning-mode-option:hover {
+  border-color: #f97316;
+}
+
+.planning-mode-option.active,
+.planning-mode-option:has(input:checked) {
+  border-color: #f97316;
+  background: rgba(249, 115, 22, 0.05);
+}
+
+.planning-mode-option input {
+  display: none;
+}
+
+.mode-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.mode-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* Buttons */
+.planning-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.planning-btn-primary {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: white;
+}
+
+.planning-btn-primary:hover {
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+.planning-btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.planning-btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+.planning-btn-outline {
+  background: transparent;
+  border: 1px solid #d1d5db;
+  color: #374151;
+}
+
+.planning-btn-outline:hover {
+  background: #f9fafb;
+}
+
+.planning-btn-ghost {
+  background: transparent;
+  color: #6b7280;
+}
+
+.planning-btn-ghost:hover {
+  background: #f3f4f6;
+}
+
+.planning-btn-lg {
+  padding: 12px 28px;
+  font-size: 15px;
+}
+
+.planning-btn-icon {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.planning-btn-icon.small {
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+}
+
+/* Empty State */
+.planning-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.planning-empty-state svg {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.planning-empty-state p {
+  font-size: 15px;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0 0 4px;
+}
+
+.planning-empty-state span {
+  font-size: 13px;
+}
+
+.planning-empty-state.small {
+  padding: 24px;
+}
+
+.planning-empty-state.small svg {
+  width: 32px;
+  height: 32px;
+}
+
+/* Actions Bar */
+.planning-demands-actions, .planning-fleet-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.planning-hint-text {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.planning-action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* Table Container */
+.planning-demands-table-container, .planning-fleet-table {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  min-height: 200px;
+}
+
+/* Fleet Stats */
+.planning-fleet-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.planning-stat-card {
+  padding: 16px;
+  border-radius: 10px;
+}
+
+.planning-stat-card.orange {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+}
+
+.planning-stat-card.orange-light {
+  background: #ffedd5;
+  border: 1px solid #fdba74;
+}
+
+.planning-stat-card.orange-dark {
+  background: #ffedd5;
+  border: 1px solid #fb923c;
+}
+
+.planning-stat-card .stat-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.planning-stat-card .stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Settings Grid */
+.planning-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.planning-setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.planning-setting-group label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+/* Summary Grid */
+.planning-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.planning-summary-section {
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.summary-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 13px;
+}
+
+.summary-row span:first-child {
+  color: #6b7280;
+}
+
+.summary-row span:last-child {
+  font-weight: 600;
+  color: #111827;
+}
+
+.planning-summary-estimate {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  border-radius: 10px;
+  padding: 24px;
+  text-align: center;
+  color: white;
+  grid-column: span 2;
+}
+
+.estimate-title {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+
+.estimate-value {
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.estimate-label {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Footer Actions */
+.planning-footer-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Status Bar */
+.planning-status-bar {
+  background: white;
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-top: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.status-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+#cp_status_text {
+  font-weight: 600;
+  color: #374151;
+}
+
+#cp_status_progress {
+  color: #6b7280;
+}
+
+.status-bar {
+  height: 8px;
+  background: #f3f4f6;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.status-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f97316, #ea580c);
+  transition: width 0.3s;
+}
+
+/* Map Section */
+.planning-points-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 20px;
+  padding: 0 !important;
+  height: 100%;
+}
+
+.planning-map-section {
+  position: relative;
+  background: #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  min-height: 400px;
+}
+
+.planning-map-container {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+}
+
+.planning-map-stats {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.planning-map-stat {
+  background: white;
+  padding: 8px 14px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.planning-map-stat .stat-label {
+  font-size: 10px;
+  color: #6b7280;
+  display: block;
+}
+
+.planning-map-stat .stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Points List */
+.planning-points-list {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.planning-points-header {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.planning-search-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.planning-points-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.planning-points-items {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 350px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .planning-stepper-container {
+    flex-direction: column;
+  }
+
+  .planning-stepper-nav {
+    width: 100%;
+    border-radius: 12px 12px 0 0;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px;
+  }
+
+  .planning-stepper-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+  }
+
+  .planning-stepper-title {
+    display: none;
+  }
+
+  .planning-step-item {
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 16px;
+    margin-bottom: 0;
+    min-width: max-content;
+  }
+
+  .planning-step-label {
+    text-align: center;
+  }
+
+  .planning-step-desc {
+    display: none;
+  }
+
+  .planning-depot-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-points-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-summary-estimate {
+    grid-column: span 1;
+  }
+}
+</style>
+
+<script>
+// Create Plan Step Navigation
+let currentCreatePlanStep = 1;
+
+// Export function immediately to global scope
+window.goToCreatePlanStep = function(step) {
+  console.log('[CreatePlanStep] Going to step:', step);
+
+  // Update step navigation
+  const stepItems = document.querySelectorAll('.planning-step-item');
+  console.log('[CreatePlanStep] Found step items:', stepItems.length);
+
+  stepItems.forEach((item, idx) => {
+    const isActive = idx + 1 === step;
+    const isCompleted = idx + 1 < step;
+
+    item.classList.toggle('active', isActive);
+    if (isCompleted) {
+      item.classList.add('completed');
+    } else {
+      item.classList.remove('completed');
+    }
+  });
+
+  // Update step panels
+  const stepPanels = document.querySelectorAll('.planning-step-panel');
+  console.log('[CreatePlanStep] Found step panels:', stepPanels.length);
+
+  stepPanels.forEach((panel, idx) => {
+    panel.classList.toggle('active', idx + 1 === step);
+  });
+
+  currentCreatePlanStep = step;
+
+  // Update summary when reaching final step (now step 5)
+  if (step === 5) {
+    updateCreatePlanSummary();
+  }
+};
+
+console.log('[CreatePlan] goToCreatePlanStep function registered globally');
+
+function updateCreatePlanSummary() {
+  // Get values and update summary display
+  const startDepot = document.getElementById('cp_start_depot')?.selectedOptions[0]?.text || '-';
+  const endDepot = document.getElementById('cp_end_depot')?.selectedOptions[0]?.text || '-';
+  const mode = document.querySelector('input[name="cp_planning_mode"]:checked')?.value || 'standard';
+
+  const summaryStart = document.getElementById('cp_summary_start');
+  const summaryEnd = document.getElementById('cp_summary_end');
+  const summaryMode = document.getElementById('cp_summary_mode');
+
+  if (summaryStart) summaryStart.textContent = startDepot;
+  if (summaryEnd) summaryEnd.textContent = endDepot;
+  if (summaryMode) summaryMode.textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
+}
+
+// Mode selector - use event delegation instead of immediate binding
+function setupModeSelectorListeners() {
+  document.querySelectorAll('.planning-mode-option').forEach(option => {
+    option.addEventListener('click', function() {
+      document.querySelectorAll('.planning-mode-option').forEach(o => o.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+}
+
+// Initialize create plan
+function initCreatePlan() {
+  console.log('[Planning] Initializing Create Plan...');
+
+  // Setup event listeners
+  setupModeSelectorListeners();
+
+  // Wait for DOM to be ready
+  setTimeout(() => {
+    goToCreatePlanStep(1);
+    loadWarehousesForCreatePlan();
+  }, 100);
+}
+
+// Load warehouses for depot selection
+async function loadWarehousesForCreatePlan() {
+  try {
+    // This would call your API
+    // const response = await fetch('/api/warehouses');
+    // const warehouses = await response.json();
+
+    // Sample data
+    const warehouses = [
+      { id: 'WH001', name: 'Hub HCM - Q7', address: 'Quận 7, TP.HCM', lat: 10.7325, lng: 106.7175 },
+      { id: 'WH002', name: 'Hub HCM - Q12', address: 'Quận 12, TP.HCM', lat: 10.8565, lng: 106.6417 },
+      { id: 'WH003', name: 'Sorting Center TĐ', address: 'Thủ Đức, TP.HCM', lat: 10.8505, lng: 106.7717 }
+    ];
+
+    const startSelect = document.getElementById('cp_start_depot');
+    const endSelect = document.getElementById('cp_end_depot');
+
+    if (startSelect && endSelect) {
+      const options = warehouses.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+      startSelect.innerHTML = '<option value="">-- Select warehouse --</option>' + options;
+      endSelect.innerHTML = '<option value="">-- Select warehouse --</option>' + options;
+    } else {
+      console.warn('[Planning] Depot select elements not found');
+    }
+  } catch (error) {
+    console.error('[Planning] Error loading warehouses:', error);
+  }
+}
+
+function onDepotChange(type) {
+  const select = document.getElementById(`cp_${type}_depot`);
+  const infoCard = document.getElementById(`cp_${type}_depot_info`);
+
+  if (select && select.value) {
+    if (infoCard) infoCard.style.display = 'block';
+    // Update info card with selected depot details
+  } else {
+    if (infoCard) infoCard.style.display = 'none';
+  }
+}
+
+// Stub functions for actions
+function cpImportDemandsCsv() { alert('Import Demands CSV - Coming soon'); }
+function cpImportDemandsJson() { alert('Import Demands JSON - Coming soon'); }
+function cpRefreshDemands() { alert('Refresh Demands - Coming soon'); }
+function cpFilterPoints(query) { console.log('Filter points:', query); }
+
+// Add a new point (max 100 points)
+function cpAddPoint() {
+  const maxPoints = 100;
+  const list = document.getElementById('cp_points_list');
+  const stat = document.getElementById('cp_stat_points');
+  if (!list) return alert('Không tìm thấy danh sách điểm');
+
+  const existing = list.querySelectorAll('.cp-point-item');
+  if (existing.length >= maxPoints) {
+    alert(`Không thể thêm quá ${maxPoints} điểm dừng`);
+    return;
+  }
+
+  // Remove empty state if present
+  const empty = list.querySelector('.planning-empty-state');
+  if (empty) empty.remove();
+
+  const idx = existing.length + 1;
+  const item = document.createElement('div');
+  item.className = 'cp-point-item border border-gray-200 rounded p-3 mb-2 flex items-center justify-between';
+  item.innerHTML = `
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 bg-orange-100 text-orange-700 rounded-full flex items-center justify-center font-semibold">${idx}</div>
+      <div>
+        <div class="font-semibold">Điểm ${idx}</div>
+        <div class="text-xs text-gray-500">Chưa có địa chỉ</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button class="px-3 py-1 text-xs rounded bg-gray-100 hover:bg-gray-200" onclick="cpEditPoint(this)">Sửa</button>
+      <button class="px-3 py-1 text-xs rounded bg-red-100 text-red-700 hover:bg-red-200" onclick="cpRemovePoint(this)">Xóa</button>
+    </div>
+  `;
+
+  list.appendChild(item);
+  if (stat) stat.textContent = String(existing.length + 1);
+}
+
+function cpRemovePoint(btn) {
+  const item = btn.closest('.cp-point-item');
+  if (!item) return;
+  const list = document.getElementById('cp_points_list');
+  item.remove();
+
+  // Re-number remaining points
+  const items = list.querySelectorAll('.cp-point-item');
+  items.forEach((it, i) => {
+    const badge = it.querySelector('div > .w-8');
+    if (badge) badge.textContent = String(i + 1);
+  });
+
+  const stat = document.getElementById('cp_stat_points');
+  if (stat) stat.textContent = String(items.length);
+
+  if (items.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'planning-empty-state small';
+    empty.innerHTML = '<p>No points added</p>';
+    list.appendChild(empty);
+  }
+}
+
+function cpEditPoint(btn) {
+  // Simple prompt-based edit for now
+  const item = btn.closest('.cp-point-item');
+  if (!item) return;
+  const name = prompt('Tên điểm', item.querySelector('.font-semibold').textContent || '');
+  if (name !== null) {
+    item.querySelector('.font-semibold').textContent = name;
+  }
+}
+
+function cpClearPoints() {
+  const list = document.getElementById('cp_points_list');
+  if (!list) return;
+  list.innerHTML = '<div class="planning-empty-state small"><p>No points added</p></div>';
+  const stat = document.getElementById('cp_stat_points');
+  if (stat) stat.textContent = '0';
+}
+function cpImportVehiclesCsv() { alert('Import Vehicles CSV - Coming soon'); }
+function cpImportVehiclesJson() { alert('Import Vehicles JSON - Coming soon'); }
+function cpClearVehicles() { alert('Clear Vehicles - Coming soon'); }
+function cpPreviewPayload() { alert('Preview Payload - Coming soon'); }
+function cpSubmitPlan() {
+  const stat = document.getElementById('cp_stat_points');
+  const totalPoints = stat ? parseInt(stat.textContent || '0', 10) : 0;
+  if (totalPoints > 100) {
+    alert('Không thể tạo kế hoạch: tổng điểm dừng vượt quá 100');
+    return;
+  }
+
+  const statusBar = document.getElementById('cp_status_bar');
+  const progressBar = document.getElementById('cp_progress_bar');
+  const statusProgress = document.getElementById('cp_status_progress');
+  const statusText = document.getElementById('cp_status_text');
+
+  if (statusBar) statusBar.style.display = 'block';
+
+  let progress = 0;
+  const interval = setInterval(() => {
+    progress += 5;
+    if (progressBar) progressBar.style.width = progress + '%';
+    if (statusProgress) statusProgress.textContent = progress + '%';
+    if (progress >= 100) {
+      clearInterval(interval);
+      if (statusText) statusText.textContent = 'Plan created successfully!';
+    }
+  }, 200);
+}
+
+// Make functions globally available (backup - already exported above)
+window.updateCreatePlanSummary = updateCreatePlanSummary;
+window.loadWarehousesForCreatePlan = loadWarehousesForCreatePlan;
+window.onDepotChange = onDepotChange;
+window.cpImportDemandsCsv = cpImportDemandsCsv;
+window.cpImportDemandsJson = cpImportDemandsJson;
+window.cpRefreshDemands = cpRefreshDemands;
+window.cpFilterPoints = cpFilterPoints;
+window.cpAddPoint = cpAddPoint;
+window.cpClearPoints = cpClearPoints;
+window.cpImportVehiclesCsv = cpImportVehiclesCsv;
+window.cpImportVehiclesJson = cpImportVehiclesJson;
+window.cpClearVehicles = cpClearVehicles;
+window.cpPreviewPayload = cpPreviewPayload;
+window.cpSubmitPlan = cpSubmitPlan;
+
+console.log('[CreatePlan] All functions registered:', {
+  goToCreatePlanStep: typeof window.goToCreatePlanStep,
+  initCreatePlan: typeof window.initCreatePlan,
+  updateCreatePlanSummary: typeof window.updateCreatePlanSummary
+});
+
+// Don't auto-init - wait for planning-module.js to call it
+// if (typeof initCreatePlan === 'function') {
+//   initCreatePlan();
+// }
+</script>

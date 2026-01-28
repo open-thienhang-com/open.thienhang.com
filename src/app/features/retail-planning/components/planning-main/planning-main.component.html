@@ -1,0 +1,381 @@
+<!-- Planning Main Component - Auto Planning System -->
+<div id="content-planning" class="tab-content">
+  <div class="w-full h-full">
+
+    <!-- Planning Container with Sidebar -->
+    <div class="planning-dashboard">
+
+      <!-- Planning Sidebar Menu -->
+      <div class="planning-sidebar" id="planning-sidebar">
+        <div class="planning-sidebar-header">
+          <div class="planning-logo">
+            <div class="planning-logo-icon">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="planning-logo-title">Auto Planning</h3>
+              <span class="planning-logo-version">v1.0</span>
+            </div>
+          </div>
+        </div>
+
+        <nav class="planning-nav">
+          <a class="planning-nav-item active" data-page="create-plan" onclick="showPlanningPage('create-plan')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            <span>Create Plan</span>
+          </a>
+          <a class="planning-nav-item" data-page="plan-list" onclick="showPlanningPage('plan-list')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+            </svg>
+            <span>Plan List</span>
+          </a>
+          <a class="planning-nav-item" data-page="demands" onclick="showPlanningPage('demands')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+            </svg>
+            <span>Demands</span>
+          </a>
+          <a class="planning-nav-item" data-page="warehouses" onclick="showPlanningPage('warehouses')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+            <span>Warehouses</span>
+          </a>
+          <a class="planning-nav-item" data-page="productivity" onclick="navigateToPlanningProductivity()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+            <span>Sản lượng</span>
+          </a>
+          <a class="planning-nav-item" data-page="settings" onclick="showPlanningPage('settings')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span>Settings</span>
+          </a>
+        </nav>
+
+        <div class="planning-sidebar-footer">
+        </div>
+      </div>
+
+      <!-- Planning Main Content -->
+      <div class="planning-content" id="planning-content">
+        <!-- Loading State -->
+        <div id="planning-loading" class="planning-loading">
+          <div class="planning-spinner"></div>
+          <p>Loading...</p>
+        </div>
+
+        <!-- Page Content Container -->
+        <div id="planning-page-container">
+          <!-- Pages will be loaded here dynamically -->
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<style>
+/* Planning Dashboard Styles */
+.planning-dashboard {
+  display: flex;
+  height: calc(100vh - 100px);
+  background: #f8fafc;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Sidebar */
+.planning-sidebar {
+  width: 240px;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.planning-sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.planning-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.planning-logo-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.planning-logo-title {
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.planning-logo-version {
+  color: #64748b;
+  font-size: 11px;
+}
+
+/* Navigation */
+.planning-nav {
+  flex: 1;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.planning-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: #94a3b8;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.planning-nav-item:hover {
+  background: rgba(255,255,255,0.05);
+  color: white;
+}
+
+.planning-nav-item.active {
+  background: rgba(249, 115, 22, 0.15);
+  color: #f97316;
+}
+
+.planning-nav-item svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Sidebar Footer */
+.planning-sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.planning-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.planning-status-dot {
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Main Content */
+.planning-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+}
+
+.planning-loading {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #64748b;
+}
+
+.planning-loading.show {
+  display: flex;
+}
+
+.planning-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #f97316;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+#planning-page-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .planning-sidebar {
+    width: 60px;
+  }
+
+  .planning-sidebar-header,
+  .planning-sidebar-footer {
+    display: none;
+  }
+
+  .planning-nav-item span {
+    display: none;
+  }
+
+  .planning-nav-item {
+    justify-content: center;
+    padding: 12px;
+  }
+}
+</style>
+
+<script>
+// Planning Navigation
+function showPlanningPage(pageName) {
+  console.log('[Planning] Showing page:', pageName);
+
+  // Update nav active state
+  document.querySelectorAll('.planning-nav-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.page === pageName);
+  });
+
+  // Show loading
+  const loading = document.getElementById('planning-loading');
+  const container = document.getElementById('planning-page-container');
+
+  if (loading) loading.classList.add('show');
+
+  // Load page content
+  const pageUrl = `components/planning-${pageName}.html`;
+
+  fetch(pageUrl)
+    .then(resp => {
+      if (!resp.ok) throw new Error('Page not found');
+      return resp.text();
+    })
+    .then(html => {
+      if (container) container.innerHTML = html;
+      if (loading) loading.classList.remove('show');
+
+      // Initialize page-specific functionality
+      initPlanningPageFunctions(pageName);
+    })
+    .catch(err => {
+      console.error('[Planning] Error loading page:', err);
+      if (container) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 60px; color: #64748b;">
+            <svg style="width: 64px; height: 64px; margin: 0 auto 16px; opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Page Not Found</p>
+            <p style="font-size: 14px;">The page "${pageName}" is not available yet.</p>
+          </div>
+        `;
+      }
+      if (loading) loading.classList.remove('show');
+    });
+}
+
+// Expose globally
+window.showPlanningPage = showPlanningPage;
+
+// Navigate to planning productivity (Angular component)
+function navigateToPlanningProductivity() {
+  // Update nav active state
+  document.querySelectorAll('.planning-nav-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.page === 'productivity');
+  });
+
+  // Navigate using Angular router
+  if (window.ng && window.ng.getComponent) {
+    // Try to get the Angular injector and router
+    try {
+      const injector = window.ng.getInjector();
+      if (injector) {
+        const router = injector.get(window.ng.core.Router);
+        router.navigate(['/planning-productivity-wrapper']);
+      }
+    } catch (e) {
+      console.error('[Planning] Error navigating to productivity:', e);
+      // Fallback: direct navigation
+      window.location.href = '/planning-productivity-wrapper';
+    }
+  } else {
+    // Fallback for non-Angular context
+    window.location.href = '/planning-productivity-wrapper';
+  }
+}
+
+// Expose globally
+window.navigateToPlanningProductivity = navigateToPlanningProductivity;
+
+// Initialize page-specific functions
+function initPlanningPageFunctions(pageName) {
+  switch(pageName) {
+    case 'create-plan':
+      if (typeof initCreatePlan === 'function') initCreatePlan();
+      break;
+    case 'plan-list':
+      if (typeof loadPlanList === 'function') loadPlanList();
+      break;
+    case 'demands':
+      if (typeof initDemandsPage === 'function') initDemandsPage();
+      break;
+    case 'warehouses':
+      if (typeof loadWarehouses === 'function') loadWarehouses();
+      break;
+    case 'settings':
+      if (typeof loadPlanningSettings === 'function') loadPlanningSettings();
+      break;
+  }
+}
+
+// Initialize planning module
+function initPlanningModule() {
+  console.log('[Planning] Initializing module...');
+  showPlanningPage('create-plan');
+}
+
+// Auto-init when component is shown
+if (document.getElementById('content-planning')) {
+  initPlanningModule();
+}
+</script>

@@ -7,6 +7,7 @@ import { OfflineComponent } from './pages/error/offline.component';
 import { MaintenanceComponent } from './pages/error/maintenance/maintenance.component';
 import { ForbiddenComponent } from './pages/error/forbidden/forbidden.component';
 import { NotFoundComponent } from './pages/error/not-found/not-found.component';
+import { retailPlanningRoutes } from './features/retail-planning/retail-planning.routes';
 
 
 export const routes: Routes = [
@@ -26,6 +27,21 @@ export const routes: Routes = [
   {
     path: 'offline',
     loadComponent: () => import('./pages/error/offline.component').then(m => m.OfflineComponent)
+  },
+  // Public retail planning feature (no authentication required, but still uses main layout + sidebar)
+  {
+    path: '',
+    component: MainLayoutComponent,
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./pages/landing-apps/landing-apps.component').then(m => m.LandingAppsComponent)
+      },
+      {
+        path: 'planning',
+        children: retailPlanningRoutes
+      }
+    ]
   },
   {
     path: '',

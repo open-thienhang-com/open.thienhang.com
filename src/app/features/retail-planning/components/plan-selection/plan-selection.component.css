@@ -1,0 +1,55 @@
+/* Plan Selection Component - Compact Design */
+
+.plan-card {
+  min-height: auto !important;
+  height: fit-content;
+}
+
+/* Compact spacing for plan cards */
+.plan-card > div {
+  flex-shrink: 0;
+}
+
+/* Ensure card body doesn't have excessive padding */
+.plan-card .flex-1 {
+  min-height: 0;
+}
+
+/* Optimize grid gap */
+#plan-list-container {
+  gap: 0.75rem;
+}
+
+/* Upload card optimization */
+.upload-card {
+  min-height: auto;
+}
+
+.plan-icon-container {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(4px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  #plan-list-container {
+    gap: 0.5rem;
+  }
+  
+  .plan-card {
+    min-height: auto;
+  }
+}
+
+/* Ensure stats grid is compact */
+.plan-card .grid {
+  gap: 0.5rem;
+}
+
+/* Compact button styles */
+.plan-card button {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+}

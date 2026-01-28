@@ -1,0 +1,287 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <div class="bg-white shadow-sm border-b border-gray-200">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="py-6">
+        <button (click)="onCancel()" class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+          <span class="text-sm font-semibold">Quay lại Danh mục dữ liệu</span>
+        </button>
+        <div class="flex items-center gap-3 mb-2">
+          <h2 class="text-3xl font-bold text-gray-900">{{ isEditMode ? 'Chỉnh sửa' : 'Tạo' }} Danh mục dữ liệu</h2>
+          <span class="text-xs font-normal px-2 py-1 bg-blue-100 text-blue-700 rounded">Data Mesh</span>
+        </div>
+        <p class="text-sm text-gray-600">Điền thông tin Dataset muốn đồng bộ</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Loading State -->
+    <div *ngIf="loading" class="flex items-center justify-center py-16">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+      <span class="ml-2 text-gray-600">Đang tải...</span>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !loading" class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+      <div class="flex items-center">
+        <svg class="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span class="text-red-700">{{ error }}</span>
+      </div>
+    </div>
+
+    <!-- Form Container -->
+    <div *ngIf="!loading" class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+      <!-- Form Body -->
+      <div class="p-12">
+        <div class="space-y-12">
+          <!-- Type Selection -->
+          <div>
+            <label class="block text-base font-bold text-gray-900 mb-5 flex items-center gap-2">
+              <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+              </svg>
+              Loại Danh mục dữ liệu *
+            </label>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div *ngFor="let type of datasetTypes"
+                   (click)="onTypeSelect(type.id)"
+                   class="cursor-pointer border-2 rounded-lg p-4 text-center transition-all hover:border-gray-400"
+                   [ngClass]="formData.type === type.id ? 'border-orange-500 bg-orange-50' : 'border-gray-300'">
+                <div class="mb-2">
+                  <div class="w-12 h-12 mx-auto mb-2 rounded-lg flex items-center justify-center"
+                       [ngClass]="formData.type === type.id ? 'bg-orange-100' : 'bg-gray-100'">
+                    <svg class="w-6 h-6" [ngClass]="formData.type === type.id ? 'text-orange-600' : 'text-gray-600'"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path *ngIf="type.icon === 'truck'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path>
+                      <path *ngIf="type.icon === 'demand'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                      <path *ngIf="type.icon === 'trip'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                    </svg>
+                  </div>
+                  <div class="text-sm font-medium text-gray-700">{{ type.name }}</div>
+                  <div class="text-xs text-gray-500 mt-1">{{ type.description }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Query Template Selection -->
+          <div *ngIf="showQuerySection" class="space-y-4">
+            <div class="border-l-4 border-purple-500 pl-4">
+              <h3 class="text-xl font-bold text-gray-900 mb-1">Query Template</h3>
+              <p class="text-sm text-gray-600">Chọn query template để tạo Danh mục dữ liệu</p>
+            </div>
+
+            <div class="bg-purple-50 border-2 border-purple-200 rounded-xl p-5">
+              <label class="block text-sm font-bold text-gray-900 mb-3">Chọn Query *</label>
+              <select [(ngModel)]="selectedQueryTemplate"
+                      (ngModelChange)="onQueryTemplateSelect($event)"
+                      class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all">
+                <option [ngValue]="null">-- Chọn query template --</option>
+                <option *ngFor="let template of queryTemplates" [ngValue]="template">
+                  {{ template.name }} - {{ template.description }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Query Parameters -->
+          <div *ngIf="selectedQueryTemplate" class="space-y-4">
+            <div class="border-l-4 border-indigo-500 pl-4">
+              <h3 class="text-xl font-bold text-gray-900 mb-1">Query Parameters</h3>
+              <p class="text-sm text-gray-600">Nhập giá trị cho các tham số của query</p>
+            </div>
+
+            <div class="bg-indigo-50 border-2 border-indigo-200 rounded-xl p-5">
+              <div class="space-y-4">
+                <div *ngFor="let param of selectedQueryTemplate.parameters" class="space-y-2">
+                  <label class="block text-sm font-bold text-gray-900">
+                    {{ param.label }}
+                    <span *ngIf="param.required" class="text-red-500">*</span>
+                  </label>
+
+                  <!-- String input -->
+                  <input *ngIf="param.type === 'string'"
+                         [(ngModel)]="queryParameters[param.name]"
+                         (ngModelChange)="onParameterChange()"
+                         [required]="param.required"
+                         type="text"
+                         class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                         [placeholder]="param.label">
+
+                  <!-- Number input -->
+                  <input *ngIf="param.type === 'number'"
+                         [(ngModel)]="queryParameters[param.name]"
+                         (ngModelChange)="onParameterChange()"
+                         [required]="param.required"
+                         type="number"
+                         class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                         [placeholder]="param.label">
+
+                  <!-- Date input -->
+                  <input *ngIf="param.type === 'date'"
+                         [(ngModel)]="queryParameters[param.name]"
+                         (ngModelChange)="onParameterChange()"
+                         [required]="param.required"
+                         type="date"
+                         class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+
+                  <!-- Select input -->
+                  <select *ngIf="param.type === 'select'"
+                          [(ngModel)]="queryParameters[param.name]"
+                          (ngModelChange)="onParameterChange()"
+                          [required]="param.required"
+                          class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                    <option value="">-- Chọn {{ param.label }} --</option>
+                    <option *ngFor="let option of param.options" [value]="option.value">
+                      {{ option.label }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SQL Preview -->
+          <div *ngIf="showSqlPreview" class="space-y-4">
+            <div class="border-l-4 border-green-500 pl-4">
+              <h3 class="text-xl font-bold text-gray-900 mb-1">SQL Preview</h3>
+              <p class="text-sm text-gray-600">Preview của SQL query với parameters</p>
+            </div>
+
+            <div class="bg-white border-2 border-gray-200 rounded-xl overflow-hidden">
+              <div class="px-5 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200 flex items-center justify-between">
+                <span class="text-sm font-bold text-gray-900">Generated SQL</span>
+                <button (click)="copySqlToClipboard()"
+                        class="px-3 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg text-xs font-medium transition-colors">
+                  <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                  </svg>
+                  Copy
+                </button>
+              </div>
+              <div class="p-5">
+                <pre class="text-sm font-mono bg-gray-50 p-4 rounded-lg overflow-auto border border-gray-200 whitespace-pre-wrap">{{ generatedSql }}</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Basic Info Section -->
+          <div class="space-y-5">
+            <div class="border-l-4 border-orange-500 pl-4">
+              <h3 class="text-xl font-bold text-gray-900 mb-1">Thông tin cơ bản</h3>
+              <p class="text-sm text-gray-600">Các thông tin nhận diện Danh mục dữ liệu</p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold text-gray-900 mb-2">
+                Tên Danh mục dữ liệu *
+                <span class="text-xs font-normal text-red-500 ml-1">(bắt buộc)</span>
+              </label>
+              <input [(ngModel)]="formData.name"
+                     type="text"
+                     required
+                     class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-base transition-all"
+                     placeholder="e.g., Truck Fleet Master Data 2024">
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold text-gray-900 mb-2">Mô tả</label>
+              <textarea [(ngModel)]="formData.description"
+                        rows="4"
+                        class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-base transition-all"
+                        placeholder="Mô tả chi tiết về Danh mục dữ liệu này, use cases, và giá trị mang lại..."></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label class="block text-sm font-bold text-gray-900 mb-2">Owner / Team</label>
+                <input [(ngModel)]="formData.created_by"
+                       type="text"
+                       class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                       placeholder="e.g., Logistics Team">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-gray-900 mb-2">Version</label>
+                <input [(ngModel)]="formData.version"
+                       type="text"
+                       class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                       value="v1">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold text-gray-900 mb-2">Usage / Use Case</label>
+              <input [(ngModel)]="formData.usage"
+                     type="text"
+                     class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                     placeholder="e.g., Route Planning, ML Training, Analytics Dashboard">
+            </div>
+
+            <!-- Quality & Metrics -->
+            <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-5">
+              <div class="text-sm font-bold text-gray-900 mb-4">Chất lượng & Thống kê</div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs text-gray-600 mb-2">Records</label>
+                  <input [(ngModel)]="formData.records"
+                         type="number"
+                         min="0"
+                         class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-600 mb-2">Columns</label>
+                  <input [(ngModel)]="formData.cols"
+                         type="number"
+                         min="0"
+                         class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-600 mb-2">Quality (%)</label>
+                  <input [(ngModel)]="formData.quality"
+                         type="number"
+                         min="0"
+                         max="100"
+                         class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Footer -->
+      <div class="px-8 py-5 border-t-2 border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 flex justify-between items-center">
+        <div class="text-sm text-gray-600">
+          <span class="font-semibold text-red-500">*</span> = Trường bắt buộc
+        </div>
+        <div class="flex gap-3">
+          <button (click)="onCancel()"
+                  [disabled]="saving"
+                  class="px-6 py-2.5 border-2 border-gray-300 rounded-lg hover:bg-white hover:border-gray-400 font-semibold text-gray-700 transition-all disabled:opacity-50">
+            Hủy
+          </button>
+          <button (click)="onSave()"
+                  [disabled]="saving || !isFormValid()"
+                  class="px-8 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-lg font-bold shadow-md hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            <span class="flex items-center gap-2">
+              <svg *ngIf="saving" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+              </svg>
+              <svg *ngIf="!saving" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              {{ saving ? 'Đang lưu...' : (isEditMode ? 'Cập nhật' : 'Lưu') }} Data Product
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

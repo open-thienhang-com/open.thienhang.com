@@ -1,0 +1,78 @@
+<div class="api-config-container">
+  <h3 class="text-lg font-semibold mb-4">API Configuration</h3>
+
+  <!-- Current Environment Display -->
+  <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+    <div class="flex items-center justify-between">
+      <div>
+        <span class="text-sm font-medium text-gray-600">Current Environment:</span>
+        <span class="ml-2 px-2 py-1 text-sm font-semibold rounded"
+              [ngClass]="{
+                'bg-green-100 text-green-800': currentConfig.environment === 'local',
+                'bg-blue-100 text-blue-800': currentConfig.environment === 'production'
+              }">
+          {{ currentConfig.environment | titlecase }}
+        </span>
+      </div>
+      <div class="text-sm text-gray-500">
+        Host: {{ currentConfig.host }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Environment Selection -->
+  <div class="mb-4">
+    <label class="block text-sm font-medium text-gray-700 mb-2">Switch Environment:</label>
+    <div class="space-y-2">
+      <button *ngFor="let config of availableConfigs"
+              (click)="switchEnvironment(config.environment)"
+              class="w-full text-left px-3 py-2 border rounded-lg hover:bg-gray-50 transition-colors"
+              [ngClass]="{
+                'border-blue-500 bg-blue-50': isSelected(config.environment),
+                'border-gray-300': !isSelected(config.environment)
+              }">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="font-medium">{{ config.environment | titlecase }}</div>
+            <div class="text-sm text-gray-500">{{ config.host }}</div>
+          </div>
+          <div *ngIf="isSelected(config.environment)" class="text-blue-500">
+            ✓
+          </div>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Connection Test -->
+  <div class="mb-4">
+    <button (click)="testConnection()"
+            [disabled]="isTestingConnection"
+            class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
+      <span *ngIf="!isTestingConnection">Test Connection</span>
+      <span *ngIf="isTestingConnection" class="flex items-center justify-center">
+        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Testing...
+      </span>
+    </button>
+  </div>
+
+  <!-- Connection Test Result -->
+  <div *ngIf="connectionTestResult" class="p-3 rounded-lg"
+       [ngClass]="{
+         'bg-green-50 border border-green-200': connectionTestResult.success,
+         'bg-red-50 border border-red-200': !connectionTestResult.success
+       }">
+    <div class="text-sm" [innerHTML]="connectionTestResult.message"></div>
+  </div>
+
+  <!-- Help Text -->
+  <div class="mt-4 text-xs text-gray-500">
+    <p>• Local environment connects to your development server</p>
+    <p>• Production environment connects to the live API</p>
+    <p>• Test connection to verify the API is accessible</p>
+  </div>
+</div>

@@ -1,0 +1,263 @@
+<div id="content-plan" class="tab-content">
+  <!-- Page Header -->
+  <app-page-header 
+    title="Evaluation" 
+    subtitle="Đánh giá và phân tích kế hoạch vận chuyển"
+    icon="📊">
+  </app-page-header>
+
+  <div class="w-full p-6">
+    <!-- Tab Navigation -->
+    <div class="mb-6">
+      <div class="border-b border-gray-200">
+        <nav class="flex gap-2 -mb-px" aria-label="Planning Tabs">
+          <button
+            type="button"
+            (click)="switchPlanningTab('selection')"
+            id="tab-btn-selection"
+            class="planning-tab-btn px-4 py-3 text-sm font-medium border-b-2 transition-colors"
+            [ngClass]="{
+              'border-primary text-primary': currentTab === 'selection',
+              'border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300': currentTab !== 'selection'
+            }">
+            📋 Plans
+          </button>
+          <button
+            *ngIf="hasSelectedPlan"
+            type="button"
+            (click)="switchPlanningTab('preview')"
+            id="tab-btn-preview"
+            class="planning-tab-btn px-4 py-3 text-sm font-medium border-b-2 transition-colors"
+            [ngClass]="{
+              'border-primary text-primary': currentTab === 'preview',
+              'border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300': currentTab !== 'preview'
+            }">
+            👁️ Preview
+          </button>
+          <button
+            *ngIf="hasSelectedPlan"
+            type="button"
+            (click)="switchPlanningTab('simulation')"
+            id="tab-btn-simulation"
+            class="planning-tab-btn px-4 py-3 text-sm font-medium border-b-2 transition-colors"
+            [ngClass]="{
+              'border-primary text-primary': currentTab === 'simulation',
+              'border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300': currentTab !== 'simulation'
+            }">
+            🚀 Simulation
+          </button>
+          <button
+            *ngIf="hasSelectedPlan"
+            type="button"
+            (click)="switchPlanningTab('evaluation')"
+            id="tab-btn-evaluation"
+            class="planning-tab-btn px-4 py-3 text-sm font-medium border-b-2 transition-colors"
+            [ngClass]="{
+              'border-primary text-primary': currentTab === 'evaluation',
+              'border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300': currentTab !== 'evaluation'
+            }">
+            📅 Evaluation
+          </button>
+          <button
+            *ngIf="hasSelectedPlan"
+            type="button"
+            (click)="switchPlanningTab('cost')"
+            id="tab-btn-cost"
+            class="planning-tab-btn px-4 py-3 text-sm font-medium border-b-2 transition-colors"
+            [ngClass]="{
+              'border-primary text-primary': currentTab === 'cost',
+              'border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300': currentTab !== 'cost'
+            }">
+            💰 Expenses
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Tab Content Container -->
+    <div id="planning-tab-content" class="min-h-[600px]">
+      <!-- Plan Selection Tab -->
+      <div *ngIf="currentTab === 'selection'">
+        <app-plan-selection
+          [plans]="plans"
+          [loading]="loading"
+          [uploadStatus]="uploadStatus"
+          (viewPlan)="viewPlan($event)"
+          (deletePlan)="deletePlan($event)"
+          (uploadPlan)="uploadPlan($event)">
+        </app-plan-selection>
+      </div>
+
+      <!-- Plan Preview Tab -->
+      <div *ngIf="currentTab === 'preview'">
+        <app-plan-preview [plan]="currentPlan" [planId]="selectedPlanId"></app-plan-preview>
+      </div>
+
+      <!-- Trip Simulation Tab -->
+      <div *ngIf="currentTab === 'simulation'">
+        <app-trip-simulation [planId]="currentPlan?.id || selectedPlanId"></app-trip-simulation>
+      </div>
+
+      <!-- Schedule Evaluation Tab -->
+      <div *ngIf="currentTab === 'evaluation'">
+        <app-evaluation></app-evaluation>
+      </div>
+
+      <!-- Cost Estimation Tab -->
+      <div *ngIf="currentTab === 'cost'">
+        <app-cost-estimation></app-cost-estimation>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 3D Route Visualization Modal -->
+<div id="route-3d-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center" style="display: none;">
+  <div class="bg-white rounded-xl shadow-2xl w-11/12 h-5/6 max-w-7xl overflow-hidden flex flex-col">
+    <!-- Modal Header -->
+    <div class="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+        </svg>
+        <div>
+          <h3 class="text-xl font-bold text-white" id="modal-route-title">Chặng đường 3D</h3>
+          <p class="text-sm text-orange-100" id="modal-route-subtitle">Visualization</p>
+        </div>
+      </div>
+      <button (click)="close3DModal()" class="text-white hover:text-orange-200 transition">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="flex-1 flex overflow-hidden">
+      <!-- 3D Canvas Area -->
+      <div class="flex-1 relative bg-gradient-to-br from-gray-900 to-gray-800">
+        <canvas id="route-3d-canvas" class="w-full h-full"></canvas>
+
+        <!-- Controls Overlay -->
+        <div class="absolute top-4 left-4 bg-white bg-opacity-90 rounded-lg shadow-lg p-3 text-xs space-y-2">
+          <div class="font-bold text-gray-800 mb-2">🎮 Điều khiển</div>
+          <div class="text-gray-600">🖱️ Kéo chuột: Xoay</div>
+          <div class="text-gray-600">⚙️ Scroll: Zoom</div>
+          <div class="text-gray-600">⌨️ Right-click: Pan</div>
+        </div>
+
+        <!-- Stats Overlay -->
+        <div class="absolute top-4 right-4 bg-white bg-opacity-90 rounded-lg shadow-lg p-3 min-w-[200px]">
+          <div class="font-bold text-gray-800 mb-2 text-sm">📊 Thống kê</div>
+          <div class="space-y-1 text-xs">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Tổng điểm:</span>
+              <span class="font-semibold text-gray-900" id="stats-total-stops">0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Khoảng cách:</span>
+              <span class="font-semibold text-gray-900" id="stats-distance">0 km</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Vận tốc TB:</span>
+              <span class="font-semibold text-gray-900" id="stats-avg-speed">0 km/h</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Thời gian ước tính:</span>
+              <span class="font-semibold text-gray-900" id="stats-duration">0h</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="3d-loading" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden">
+          <div class="text-center">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent mb-3"></div>
+            <p class="text-white font-medium">Đang tạo 3D visualization...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Panel -->
+      <div class="w-80 bg-gray-50 border-l border-gray-200 overflow-y-auto">
+        <div class="p-4">
+          <h4 class="font-bold text-gray-800 mb-3 flex items-center gap-2">
+            <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Thông tin chi tiết
+          </h4>
+
+          <!-- Route Info -->
+          <div class="space-y-3" id="route-info-panel">
+            <div class="bg-white rounded-lg border border-gray-200 p-3">
+              <div class="text-xs text-gray-500 mb-1">Mã lộ trình</div>
+              <div class="font-bold text-gray-900" id="info-route-code">-</div>
+            </div>
+
+            <div class="bg-white rounded-lg border border-gray-200 p-3">
+              <div class="text-xs text-gray-500 mb-1">Ngày & Ca</div>
+              <div class="font-semibold text-gray-900" id="info-date-shift">-</div>
+            </div>
+
+            <div class="bg-white rounded-lg border border-gray-200 p-3">
+              <div class="text-xs text-gray-500 mb-1">Loại xe</div>
+              <div class="font-semibold text-gray-900" id="info-vehicle-type">-</div>
+            </div>
+
+            <div class="bg-white rounded-lg border border-gray-200 p-3">
+              <div class="text-xs text-gray-500 mb-2">Sản lượng</div>
+              <div class="space-y-1.5">
+                <div class="flex justify-between text-xs">
+                  <span class="text-gray-600">Lấy hàng:</span>
+                  <span class="font-semibold text-green-600" id="info-pickup">0 kg</span>
+                </div>
+                <div class="flex justify-between text-xs">
+                  <span class="text-gray-600">Giao hàng:</span>
+                  <span class="font-semibold text-blue-600" id="info-delivery">0 kg</span>
+                </div>
+                <div class="flex justify-between text-xs">
+                  <span class="text-gray-600">Load lên xe:</span>
+                  <span class="font-semibold text-orange-600" id="info-loaded">0 kg</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-lg border border-gray-200 p-3">
+              <div class="text-xs text-gray-500 mb-2">Chỉ số hiệu suất</div>
+              <div class="space-y-1.5">
+                <div class="flex justify-between text-xs">
+                  <span class="text-gray-600">Rớt hàng:</span>
+                  <span class="font-semibold" id="info-drop-rate">0%</span>
+                </div>
+                <div class="flex justify-between text-xs">
+                  <span class="text-gray-600">On-time:</span>
+                  <span class="font-semibold" id="info-ontime-rate">0%</span>
+                </div>
+                <div class="flex justify-between text-xs">
+                  <span class="text-gray-600">Lấp đầy:</span>
+                  <span class="font-semibold" id="info-fill-rate">0%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stops List -->
+          <div class="mt-4">
+            <h5 class="font-bold text-gray-800 mb-2 text-sm flex items-center gap-2">
+              <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Danh sách điểm dừng
+            </h5>
+            <div id="stops-list" class="space-y-2 max-h-96 overflow-y-auto">
+              <!-- Stops will be populated here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

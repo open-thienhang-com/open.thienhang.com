@@ -1,0 +1,27 @@
+<div class="landing-wrapper">
+  <div class="landing-header">
+    <h1>Open Mesh Workspace</h1>
+    <p>Chọn ứng dụng để bắt đầu làm việc.</p>
+  </div>
+
+  <div class="landing-grid">
+    <a
+      *ngFor="let app of apps"
+      class="app-card"
+      [routerLink]="app.route"
+      [style.background-image]="app.gradient"
+    >
+      <div class="app-card-overlay"></div>
+      <div class="app-card-content">
+        <div class="app-icon">
+          <i [class]="app.icon"></i>
+        </div>
+        <div class="app-text">
+          <h2>{{ app.label }}</h2>
+          <p>{{ app.description }}</p>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+

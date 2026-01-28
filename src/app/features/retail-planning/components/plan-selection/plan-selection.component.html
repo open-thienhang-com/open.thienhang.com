@@ -1,0 +1,376 @@
+<!-- Plan Selection with Card Grid Layout -->
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6" id="plan-card">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h3 class="text-xl font-bold text-gray-900">Danh Sách Lịch</h3>
+      <p class="text-sm text-gray-500 mt-1">Chọn lịch có sẵn hoặc tạo mới để bắt đầu</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <span id="plans-count" class="text-sm text-gray-600 font-medium">{{ totalFilteredPlans }} lịch</span>
+    </div>
+  </div>
+
+  <!-- Upload Status -->
+  <div *ngIf="uploadStatus" class="mb-4 p-3 rounded-lg"
+       [ngClass]="{
+         'bg-blue-50 border border-blue-200 text-blue-700': uploadStatus.type === 'info',
+         'bg-green-50 border border-green-200 text-green-700': uploadStatus.type === 'success',
+         'bg-red-50 border border-red-200 text-red-700': uploadStatus.type === 'error'
+       }">
+    <div class="flex items-center gap-2">
+      <div *ngIf="uploadStatus.type === 'info'" class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+      <svg *ngIf="uploadStatus.type === 'success'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      <svg *ngIf="uploadStatus.type === 'error'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <span class="text-sm">{{ uploadStatus.message }}</span>
+    </div>
+  </div>
+
+  <!-- Filters and Search Bar -->
+  <div class="mb-6 space-y-4 plan-filters sticky top-4 z-20 bg-white p-3 rounded-md">
+    <!-- Search -->
+    <div class="relative">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+      </div>
+      <input
+        id="plan-search-input"
+        type="text"
+        placeholder="Tìm kiếm lịch theo tên hoặc ID..."
+        class="w-full pl-10 pr-4 py-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchChange()"
+      />
+    </div>
+
+    <!-- Filters -->
+    <div class="flex flex-wrap items-center gap-3">
+      <div class="flex items-center gap-2">
+        <label class="text-sm text-gray-700 font-medium">Sắp xếp:</label>
+        <select
+          id="plan-sort-select"
+          class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+          [(ngModel)]="sortBy"
+          (change)="onSortChange()">
+          <option value="newest">Mới nhất</option>
+          <option value="oldest">Cũ nhất</option>
+          <option value="name-asc">Tên A-Z</option>
+          <option value="name-desc">Tên Z-A</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <label class="text-sm text-gray-700 font-medium">Hiển thị:</label>
+        <select
+          id="plan-per-page-select"
+          class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+          [(ngModel)]="itemsPerPage"
+          (change)="onItemsPerPageChange()">
+          <option value="6">6 lịch</option>
+          <option value="12" selected>12 lịch</option>
+          <option value="24">24 lịch</option>
+          <option value="48">48 lịch</option>
+        </select>
+      </div>
+
+      <div class="ml-auto">
+        <button
+          type="button"
+          id="btn-refresh-plans"
+          (click)="loadPlans()"
+          class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Làm mới
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plan Cards Grid -->
+  <div id="plan-list-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 min-h-[400px] items-stretch">
+    <!-- Upload Card - Compact -->
+    <div class="plan-card upload-card bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-dashed border-orange-300 hover:border-orange-400 transition-all duration-200 flex flex-col">
+      <div class="flex flex-col items-center justify-center text-center flex-1 p-4 min-h-[200px]">
+        <div class="plan-icon-container mb-2">
+          <svg class="w-10 h-10 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+          </svg>
+        </div>
+        <h4 class="text-sm font-bold text-gray-800 mb-1">Tạo Lịch Mới</h4>
+        <p class="text-xs text-gray-600 mb-3 px-2">Kéo thả hoặc click để tải lên</p>
+
+        <div class="flex flex-col items-center gap-1.5 w-full px-2">
+          <input
+            id="plan-file-input"
+            type="file"
+            accept=".json,.xlsx,.xls"
+            (change)="onFileSelected($event)"
+            class="hidden">
+          <label
+            for="plan-file-input"
+            class="w-full px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded cursor-pointer transition-colors text-xs font-semibold text-center">
+            Chọn File
+          </label>
+          <button
+            *ngIf="selectedFile"
+            (click)="onUpload()"
+            class="w-full px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded transition-colors text-xs font-semibold">
+            Upload
+          </button>
+          <p class="text-xs text-gray-500">.xlsx, .xls, .json</p>
+        </div>
+
+        <div *ngIf="selectedFile" class="mt-2 text-xs text-gray-600 px-2 w-full">
+          <p class="truncate" [title]="selectedFile.name">
+            <span class="font-medium">{{ selectedFile.name }}</span>
+          </p>
+          <p class="text-xs text-gray-500">({{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="plans-loading-placeholder" *ngIf="loading" class="col-span-full flex items-center justify-center py-12">
+      <div class="text-center">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-orange-500 mb-2"></div>
+        <p class="text-xs text-gray-500">Đang tải danh sách...</p>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && totalFilteredPlans === 0" class="col-span-full flex items-center justify-center py-12">
+      <div class="text-center">
+        <svg class="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <p class="text-sm text-gray-500">Chưa có lịch nào</p>
+        <p class="text-xs text-gray-400 mt-1">Upload file để tạo lịch mới</p>
+      </div>
+    </div>
+
+    <!-- Plan Cards -->
+    <div *ngFor="let plan of paginatedPlans" 
+         class="plan-card flex flex-col cursor-pointer"
+         (click)="onViewPlan(getPlanId(plan))">
+      <!-- Card Header with Icon -->
+      <div class="px-3 py-4 bg-white flex-shrink-0 relative min-h-[180px]">
+        <!-- Delete Button (Top Right) -->
+        <div class="absolute top-2 right-2 z-10">
+          <button
+            (click)="onDeletePlan(getPlanId(plan)); $event.stopPropagation()"
+            class="p-1 text-gray-400 hover:text-red-500 transition-colors bg-white/80 rounded"
+            title="Xóa">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Icon Container - Centered -->
+        <div class="flex flex-col items-center justify-center pt-1 pb-2">
+          <div class="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg mb-3">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path>
+            </svg>
+          </div>
+          <h4 class="font-bold text-gray-900 text-base text-center truncate w-full px-2 mb-2" [title]="getPlanDisplayName(plan)">{{ getPlanDisplayName(plan) }}</h4>
+          <!-- Date with Calendar Icon -->
+          <div class="flex items-center gap-1 text-xs text-gray-500">
+            <svg class="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <span>{{ plan.created_at ? (plan.created_at | date:'short') : 'N/A' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Body - Compact -->
+      <div class="px-3 py-3 flex-1 flex flex-col bg-white justify-end">
+        <!-- Plan Stats - Two Boxes -->
+        <div class="grid grid-cols-2 gap-2">
+          <div class="text-center p-2 bg-gradient-to-br from-orange-50 to-orange-100 rounded border border-orange-200">
+            <div class="text-xl font-bold text-orange-600 leading-tight">{{ plan.shifts || 0 }}</div>
+            <div class="text-xs text-gray-600 mt-0.5">Chuyến</div>
+          </div>
+          <div class="text-center p-2 bg-gradient-to-br from-purple-50 to-purple-100 rounded border border-purple-200">
+            <div class="text-xl font-bold text-purple-600 leading-tight">{{ plan.vehicles || 0 }}</div>
+            <div class="text-xs text-gray-600 mt-0.5">Xe</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination Controls -->
+  <div class="flex flex-col sm:flex-row items-center justify-between mt-6 pt-6 border-t border-gray-200 gap-4">
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        id="btn-first-page"
+        (click)="goToFirstPage()"
+        [disabled]="currentPage === 1"
+        class="inline-flex items-center justify-center w-8 h-8 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+        </svg>
+      </button>
+      <button
+        type="button"
+        id="btn-prev-page"
+        (click)="goToPrevPage()"
+        [disabled]="currentPage === 1"
+        class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Trước
+      </button>
+    </div>
+
+    <div class="text-sm text-gray-600 font-medium">
+      Trang <span id="current-page" class="font-bold text-primary">{{ currentPage }}</span> / <span id="total-pages" class="font-bold">{{ totalPages }}</span>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        id="btn-next-page"
+        (click)="goToNextPage()"
+        [disabled]="currentPage === totalPages"
+        class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+        Sau
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+      <button
+        type="button"
+        id="btn-last-page"
+        (click)="goToLastPage()"
+        [disabled]="currentPage === totalPages"
+        class="inline-flex items-center justify-center w-8 h-8 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+<style>
+  /* Plan Card - Compact Product Style */
+  .plan-card {
+    @apply bg-white rounded-lg overflow-hidden border border-gray-200 hover:border-orange-300 transition-all duration-200 cursor-pointer flex flex-col;
+    height: 100%;
+    min-height: 200px;
+  }
+
+  .plan-card:hover {
+    @apply shadow-md transform -translate-y-0.5;
+  }
+
+  .plan-card.selected {
+    @apply border-orange-500 ring-2 ring-orange-100;
+  }
+
+  .plan-card-image {
+    @apply relative w-full h-48 bg-gradient-to-br from-orange-100 to-orange-50 overflow-hidden;
+  }
+
+  .plan-card-image img {
+    @apply w-full h-full object-cover;
+  }
+
+  .plan-card-image::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none;
+  }
+
+  .plan-card-badge {
+    @apply absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold text-white shadow-md;
+  }
+
+  .plan-card-badge.active {
+    @apply bg-green-500;
+  }
+
+  .plan-card-badge.inactive {
+    @apply bg-gray-400;
+  }
+
+  .plan-card-content {
+    @apply flex-1 flex flex-col p-5;
+  }
+
+  .plan-card-title {
+    @apply text-lg font-bold text-gray-800 mb-2 line-clamp-2 min-h-[3.5rem];
+  }
+
+  .plan-card-meta {
+    @apply flex flex-col gap-2 text-sm text-gray-600 mb-4 flex-1;
+  }
+
+  .plan-card-meta-item {
+    @apply flex items-center gap-2;
+  }
+
+  .plan-card-meta-item svg {
+    @apply w-4 h-4 text-orange-500 flex-shrink-0;
+  }
+
+  .plan-card-stats {
+    @apply grid grid-cols-3 gap-2 py-3 border-t border-gray-100 mb-3;
+  }
+
+  .plan-card-stat {
+    @apply text-center;
+  }
+
+  .plan-card-stat-value {
+    @apply text-lg font-bold text-orange-600;
+  }
+
+  .plan-card-stat-label {
+    @apply text-xs text-gray-500 mt-1;
+  }
+
+  .plan-card-actions {
+    @apply flex gap-2;
+  }
+
+  .plan-card-btn {
+    @apply flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-150 flex items-center justify-center gap-1;
+  }
+
+  .plan-card-btn svg {
+    @apply w-4 h-4;
+  }
+
+  .plan-card-btn-primary {
+    @apply bg-orange-500 text-white hover:bg-orange-600;
+  }
+
+  .plan-card-btn-secondary {
+    @apply bg-gray-100 text-gray-700 hover:bg-gray-200;
+  }
+
+  /* Upload Card */
+  .upload-card {
+    @apply bg-white rounded-xl;
+  }
+
+  .plan-badge {
+    @apply backdrop-blur-sm bg-white/90;
+  }
+
+  .plan-icon-container {
+    @apply backdrop-blur-sm bg-white/20;
+  }
+</style>

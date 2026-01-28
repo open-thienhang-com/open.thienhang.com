@@ -1,0 +1,140 @@
+<!-- Cost Estimation Component -->
+<div class="bg-white border-2 border-blue-400 shadow mb-6">
+  <div class="px-6 py-4 space-y-4">
+    <!-- Title Row -->
+    <div class="flex items-center justify-between pb-3 border-b border-blue-200">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">💰</span>
+        <h3 class="text-xl font-bold text-blue-900">Ước lượng chi phí vận tải</h3>
+        <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Cost Estimation</span>
+      </div>
+      <button 
+        (click)="calculateCost()"
+        [disabled]="!canCalculate || loading"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        <svg *ngIf="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+        </svg>
+        <div *ngIf="loading" class="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+        <span>{{ loading ? 'Đang tính toán...' : 'Tính Chi Phí' }}</span>
+      </button>
+    </div>
+
+    <!-- Summary Cards -->
+    <div *ngIf="showResults" class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div class="bg-gradient-to-br from-gray-700 to-gray-900 text-white p-4 rounded-lg border-l-4 border-gray-900">
+        <p class="text-xs font-semibold uppercase opacity-90 mb-1">Tổng Chi Phí</p>
+        <p class="text-2xl font-bold">{{ formatCurrency(totals.totalCost) }}</p>
+        <p class="text-xs opacity-75 mt-1">Toàn bộ</p>
+      </div>
+      <div class="bg-gradient-to-br from-yellow-400 to-yellow-600 text-white p-4 rounded-lg border-l-4 border-yellow-700">
+        <p class="text-xs font-semibold uppercase opacity-90 mb-1">Nhiên Liệu</p>
+        <p class="text-2xl font-bold">{{ formatCurrency(totals.fuelCost) }}</p>
+        <p class="text-xs opacity-75 mt-1">{{ totals.totalCost > 0 ? ((totals.fuelCost / totals.totalCost) * 100).toFixed(1) : 0 }}%</p>
+      </div>
+      <div class="bg-gradient-to-br from-orange-400 to-orange-600 text-white p-4 rounded-lg border-l-4 border-orange-700">
+        <p class="text-xs font-semibold uppercase opacity-90 mb-1">Lương Tài Xế</p>
+        <p class="text-2xl font-bold">{{ formatCurrency(totals.salaryCost) }}</p>
+        <p class="text-xs opacity-75 mt-1">{{ totals.totalCost > 0 ? ((totals.salaryCost / totals.totalCost) * 100).toFixed(1) : 0 }}%</p>
+      </div>
+      <div class="bg-gradient-to-br from-blue-400 to-blue-600 text-white p-4 rounded-lg border-l-4 border-blue-700">
+        <p class="text-xs font-semibold uppercase opacity-90 mb-1">Nhà Cung Cấp</p>
+        <p class="text-2xl font-bold">{{ formatCurrency(totals.vendorCost) }}</p>
+        <p class="text-xs opacity-75 mt-1">{{ totals.totalCost > 0 ? ((totals.vendorCost / totals.totalCost) * 100).toFixed(1) : 0 }}%</p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-400 to-purple-600 text-white p-4 rounded-lg border-l-4 border-purple-700">
+        <p class="text-xs font-semibold uppercase opacity-90 mb-1">Chi Phí Khác</p>
+        <p class="text-2xl font-bold">{{ formatCurrency(totals.otherCost) }}</p>
+        <p class="text-xs opacity-75 mt-1">{{ totals.totalCost > 0 ? ((totals.otherCost / totals.totalCost) * 100).toFixed(1) : 0 }}%</p>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!showResults && !loading" class="grid grid-cols-2 lg:grid-cols-5 gap-4 opacity-50">
+      <div class="bg-gradient-to-br from-gray-700 to-gray-900 text-white p-4 rounded-lg border-l-4 border-gray-900">
+        <p class="text-xs font-semibold uppercase opacity-90 mb-1">Tổng Chi Phí</p>
+        <p class="text-2xl font-bold">0 ₫</p>
+      </div>
+      <div class="bg-gradient-to-br from-yellow-400 to-yellow-600 text-white p-4 rounded-lg border-l-4 border-yellow-700">
+        <p class="text-xs font-semibold uppercase opacity-90 mb-1">Nhiên Liệu</p>
+        <p class="text-2xl font-bold">0 ₫</p>
+      </div>
+      <div class="bg-gradient-to-br from-orange-400 to-orange-600 text-white p-4 rounded-lg border-l-4 border-orange-700">
+        <p class="text-xs font-semibold uppercase opacity-90 mb-1">Lương Tài Xế</p>
+        <p class="text-2xl font-bold">0 ₫</p>
+      </div>
+      <div class="bg-gradient-to-br from-blue-400 to-blue-600 text-white p-4 rounded-lg border-l-4 border-blue-700">
+        <p class="text-xs font-semibold uppercase opacity-90 mb-1">Nhà Cung Cấp</p>
+        <p class="text-2xl font-bold">0 ₫</p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-400 to-purple-600 text-white p-4 rounded-lg border-l-4 border-purple-700">
+        <p class="text-xs font-semibold uppercase opacity-90 mb-1">Chi Phí Khác</p>
+        <p class="text-2xl font-bold">0 ₫</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="border-t-2 border-blue-200"></div>
+
+  <!-- Cost Breakdown by Vehicle Type -->
+  <div class="overflow-x-auto">
+    <div class="max-h-[600px] overflow-y-auto">
+      <!-- Loading State -->
+      <div *ngIf="loading" class="px-6 py-8 text-center">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent mb-2"></div>
+        <p class="text-sm text-gray-600">Đang tính chi phí...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!showResults && !loading" class="px-6 py-8 text-center text-sm text-blue-600 uppercase font-semibold">
+        Chọn plan và nhấn "Tính Chi Phí" để xem ước lượng
+      </div>
+
+      <!-- Results Table -->
+      <table *ngIf="showResults && costBreakdown.length > 0" class="w-full divide-y divide-gray-300" style="table-layout: auto;">
+        <thead class="sticky top-0 z-10">
+          <tr class="bg-gradient-to-r from-blue-200 to-blue-100">
+            <th class="px-4 py-3 text-left text-xs font-bold text-gray-900 uppercase" style="min-width: 120px; border-right: 1px solid #d1d5db;">Loại Xe</th>
+            <th class="px-4 py-3 text-center text-xs font-bold text-gray-900 uppercase w-32 border-r border-gray-300">Tải Trọng (kg)</th>
+            <th class="px-4 py-3 text-center text-xs font-bold text-gray-900 uppercase w-24 border-r border-gray-300">Số Xe</th>
+            <th class="px-4 py-3 text-center text-xs font-bold text-gray-900 uppercase w-28 border-r border-gray-300">Số Chuyến</th>
+            <th class="px-4 py-3 text-right text-xs font-bold text-gray-900 uppercase w-32 border-r border-gray-300">Quãng Đường (km)</th>
+            <th class="px-4 py-3 text-right text-xs font-bold text-gray-900 uppercase w-32 border-r border-gray-300">Tỷ Lệ Lấp Đầy</th>
+            <th class="px-4 py-3 text-right text-xs font-bold text-gray-900 uppercase" style="min-width: 140px; border-right: 1px solid #d1d5db;">Nhiên Liệu</th>
+            <th class="px-4 py-3 text-right text-xs font-bold text-gray-900 uppercase" style="min-width: 140px; border-right: 1px solid #d1d5db;">Lương</th>
+            <th class="px-4 py-3 text-right text-xs font-bold text-gray-900 uppercase" style="min-width: 140px; border-right: 1px solid #d1d5db;">NCC</th>
+            <th class="px-4 py-3 text-right text-xs font-bold text-gray-900 uppercase" style="min-width: 140px; border-right: 1px solid #d1d5db;">Chi Phí Khác</th>
+            <th class="px-4 py-3 text-right text-xs font-bold text-gray-900 uppercase" style="min-width: 160px;">Tổng Chi Phí</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y-2 divide-gray-400">
+          <tr *ngFor="let row of costBreakdown" class="hover:bg-gray-50">
+            <td class="px-4 py-3 text-sm font-medium text-gray-900 border-r border-gray-300">{{ row.costType }}</td>
+            <td class="px-4 py-3 text-sm text-center border-r border-gray-300">{{ row.capacity | number:'1.0-0' }}</td>
+            <td class="px-4 py-3 text-sm text-center border-r border-gray-300">{{ row.vehicleCount }}</td>
+            <td class="px-4 py-3 text-sm text-center border-r border-gray-300">{{ row.tripCount }}</td>
+            <td class="px-4 py-3 text-sm text-right border-r border-gray-300">{{ row.distance | number:'1.2-2' }}</td>
+            <td class="px-4 py-3 text-sm text-right border-r border-gray-300">{{ row.avgFill | number:'1.1-1' }}%</td>
+            <td class="px-4 py-3 text-sm text-right font-medium border-r border-gray-300">{{ formatCurrency(row.fuel) }}</td>
+            <td class="px-4 py-3 text-sm text-right font-medium border-r border-gray-300">{{ formatCurrency(row.salary) }}</td>
+            <td class="px-4 py-3 text-sm text-right font-medium border-r border-gray-300">{{ formatCurrency(row.vendor) }}</td>
+            <td class="px-4 py-3 text-sm text-right font-medium border-r border-gray-300">{{ formatCurrency(row.other || 0) }}</td>
+            <td class="px-4 py-3 text-sm text-right font-bold text-blue-900">{{ formatCurrency(row.totalCost) }}</td>
+          </tr>
+          
+          <!-- Total Row -->
+          <tr class="bg-gray-100 font-bold">
+            <td class="px-4 py-3 text-sm font-bold text-gray-900 border-r border-gray-300" [attr.colspan]="4">TỔNG CỘNG</td>
+            <td class="px-4 py-3 text-sm text-right font-bold text-gray-900 border-r border-gray-300">{{ totals.totalDistance | number:'1.2-2' }}</td>
+            <td class="px-4 py-3 text-sm text-right font-bold text-gray-900 border-r border-gray-300">--</td>
+            <td class="px-4 py-3 text-sm text-right font-bold text-gray-900 border-r border-gray-300">{{ formatCurrency(totals.fuelCost) }}</td>
+            <td class="px-4 py-3 text-sm text-right font-bold text-gray-900 border-r border-gray-300">{{ formatCurrency(totals.salaryCost) }}</td>
+            <td class="px-4 py-3 text-sm text-right font-bold text-gray-900 border-r border-gray-300">{{ formatCurrency(totals.vendorCost) }}</td>
+            <td class="px-4 py-3 text-sm text-right font-bold text-gray-900 border-r border-gray-300">{{ formatCurrency(totals.otherCost) }}</td>
+            <td class="px-4 py-3 text-sm text-right font-bold text-blue-900">{{ formatCurrency(totals.totalCost) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

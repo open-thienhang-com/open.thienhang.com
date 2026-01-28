@@ -1,0 +1,207 @@
+<!-- Sản Lượng Component -->
+<div id="content-demand" class="tab-content">
+  <div class="w-full">
+  <!-- Filters Section -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+    <div class="flex items-center gap-2 mb-4">
+      <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+      </svg>
+      <h2 class="text-lg font-bold text-gray-900">Bộ Lọc</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Ngày Bắt Đầu</label>
+        <input type="date" id="demand-filter-start-date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Ngày Kết Thúc</label>
+        <input type="date" id="demand-filter-end-date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Vùng</label>
+        <select id="demand-filter-province" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+          <option value="">Tất cả vùng</option>
+          <option value="Bình Thuận">Bình Thuận</option>
+          <option value="Hà Nội">Hà Nội</option>
+          <option value="TP.HCM">TP.HCM</option>
+          <option value="Đà Nẵng">Đà Nẵng</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Bưu Cục</label>
+        <select id="demand-filter-warehouse" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+          <option value="">Tất cả bưu cục</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mt-4 flex gap-3">
+      <button onclick="window.applyDemandFilters()" class="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors">
+        <span class="flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          Áp Dụng
+        </span>
+      </button>
+      <button onclick="window.resetDemandFilters()" class="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition-colors">
+        Đặt Lại
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-5 rounded-lg shadow-lg">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-semibold opacity-90">Tổng Lấy</span>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+        </svg>
+      </div>
+      <div class="text-3xl font-bold" id="demand-stat-total-pick">0</div>
+      <div class="text-xs opacity-75 mt-1">kg</div>
+    </div>
+
+    <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-5 rounded-lg shadow-lg">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-semibold opacity-90">Tổng Giao</span>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+        </svg>
+      </div>
+      <div class="text-3xl font-bold" id="demand-stat-total-delivery">0</div>
+      <div class="text-xs opacity-75 mt-1">kg</div>
+    </div>
+
+    <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-5 rounded-lg shadow-lg">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-semibold opacity-90">TB Lấy/Ngày</span>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+      </div>
+      <div class="text-3xl font-bold" id="demand-stat-avg-pick">0</div>
+      <div class="text-xs opacity-75 mt-1">kg/ngày</div>
+    </div>
+
+    <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-5 rounded-lg shadow-lg">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-semibold opacity-90">TB Giao/Ngày</span>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+        </svg>
+      </div>
+      <div class="text-3xl font-bold" id="demand-stat-avg-delivery">0</div>
+      <div class="text-xs opacity-75 mt-1">kg/ngày</div>
+    </div>
+  </div>
+
+  <!-- Main Content Grid: 2 columns (70/30 split) -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+    
+    <!-- Left Column: Main Chart + Details Table (70%) -->
+    <div class="lg:col-span-8 space-y-6">
+      
+      <!-- Chart Section -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-lg font-bold text-orange-900">📊 Biểu Đồ Sản Lượng theo Bưu Cục</h2>
+            <p class="text-xs text-gray-500 mt-1">
+              <span id="chart-description">Hiển thị tổng sản lượng lấy/giao theo bưu cục (Top 10)</span>
+            </p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="window.toggleDemandChartType('bar')" id="demand-btn-chart-bar" class="px-3 py-1.5 text-xs font-medium rounded bg-orange-500 text-white">
+              Cột
+            </button>
+            <button onclick="window.toggleDemandChartType('line')" id="demand-btn-chart-line" class="px-3 py-1.5 text-xs font-medium rounded bg-gray-200 text-gray-700">
+              Đường
+            </button>
+          </div>
+        </div>
+        <div style="position: relative; height: 350px; width: 100%;">
+          <canvas id="demandChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Data Table -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-orange-100">
+          <h2 class="text-lg font-bold text-orange-900">📋 Chi Tiết Sản Lượng theo Bưu Cục</h2>
+          <p class="text-xs text-gray-600 mt-1">Dữ liệu chi tiết cho tất cả bưu cục trong khoảng thời gian đã chọn</p>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-300">
+            <thead class="bg-gradient-to-r from-orange-200 to-orange-100">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-bold text-orange-900 uppercase">Bưu Cục</th>
+                <th class="px-4 py-3 text-right text-xs font-bold text-orange-900 uppercase">Tổng Lấy</th>
+                <th class="px-4 py-3 text-right text-xs font-bold text-orange-900 uppercase">Tổng Giao</th>
+                <th class="px-4 py-3 text-right text-xs font-bold text-orange-900 uppercase">TB Lấy/Ngày</th>
+                <th class="px-4 py-3 text-right text-xs font-bold text-orange-900 uppercase">TB Giao/Ngày</th>
+                <th class="px-4 py-3 text-right text-xs font-bold text-orange-900 uppercase">Ngày hoạt động</th>
+              </tr>
+            </thead>
+            <tbody id="demand-table-body" class="bg-white divide-y divide-gray-200">
+              <!-- Data will be populated here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Distribution Charts (30%) -->
+    <div class="lg:col-span-4 space-y-6">
+      
+      <!-- Pickup Hour Distribution Donut -->
+      <div class="bg-white rounded-lg shadow-sm border border-blue-200 p-5">
+        <div class="mb-3">
+          <h3 class="text-base font-bold text-blue-900 flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4"/>
+            </svg>
+            Phân bổ Lấy theo Giờ
+          </h3>
+          <p class="text-xs text-gray-500 mt-1">Tỷ trọng sản lượng lấy theo 24 giờ</p>
+        </div>
+        <div style="position: relative; height: 280px; width: 100%;">
+          <canvas id="pickupHourChart"></canvas>
+        </div>
+        <div class="mt-3 text-xs text-gray-500 text-center">
+          Tổng: <span id="pickup-hour-total" class="font-semibold text-blue-700">0 kg</span>
+        </div>
+      </div>
+
+      <!-- Delivery Shift Distribution Donut -->
+      <div class="bg-white rounded-lg shadow-sm border border-green-200 p-5">
+        <div class="mb-3">
+          <h3 class="text-base font-bold text-green-900 flex items-center gap-2">
+            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7"/>
+            </svg>
+            Phân bổ Giao theo Ca
+          </h3>
+          <p class="text-xs text-gray-500 mt-1">Tỷ trọng sản lượng giao theo ca (Sáng/Trưa/Chiều/Tối)</p>
+        </div>
+        <div style="position: relative; height: 280px; width: 100%;">
+          <canvas id="deliveryShiftChart"></canvas>
+        </div>
+        <div class="mt-3 text-xs text-gray-500 text-center">
+          Tổng: <span id="delivery-shift-total" class="font-semibold text-green-700">0 kg</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+</div>

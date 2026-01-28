@@ -223,6 +223,13 @@ export class SidebarComponent implements OnInit, OnChanges {
       description: 'Permissions, Policies & Compliance'
     },
     {
+      key: 'planning',
+      label: 'Planning',
+      icon: 'pi pi-truck',
+      gradient: 'linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)',
+      description: 'Logistics & Route Planning'
+    },
+    {
       key: 'marketplace',
       label: 'Marketplace',
       icon: 'pi pi-shopping-cart',
@@ -381,6 +388,16 @@ export class SidebarComponent implements OnInit, OnChanges {
             { label: 'Campaigns', url: '/retail/campaigns', icon: 'pi pi-megaphone' }
           ]
         }
+      ]
+    },
+    {
+      label: 'Planning',
+      icon: 'pi pi-truck',
+      expanded: false,
+      items: [
+        { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-cog' },
+        { label: 'Stochastic', url: '/planning/stochastic', icon: 'pi pi-chart-pie' },
+        { label: 'Fleet', url: '/planning/fleet', icon: 'pi pi-truck' }
       ]
     }
   ];
@@ -623,6 +640,20 @@ export class SidebarComponent implements OnInit, OnChanges {
 
     const key = this.appKey;
 
+    // Special-case: for Planning app - chỉ hiển thị group Planning
+    if (key === 'planning') {
+      const planningGroup = this.sidebarGroups.find(
+        g => (g.label || '').toLowerCase().includes('planning')
+      );
+      const groups = planningGroup ? [planningGroup] : [];
+      this.visibleGroups = this.orderGroupsForApp(groups, key);
+      this.visibleGroups.forEach(g => {
+        g.expanded = false;
+        (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
+      });
+      return;
+    }
+
     // Special-case: for Retail app, show only Retail Overview + Inventory Management + Point of Sale + E-commerce + Analytics + Loyalty Program
     if (key === 'retail') {
       const retailGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('retail'));
@@ -767,6 +798,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (p === '/' || p === '') return 'all';
     if (p.startsWith('/governance')) return 'governance';
     if (p.startsWith('/retail')) return 'retail';
+    if (p.startsWith('/planning')) return 'planning';
     if (p.startsWith('/discovery') || p.startsWith('/explore') || p.startsWith('/data-catalog')) return 'all';
     if (p.startsWith('/marketplace')) return 'marketplace';
     if (p.startsWith('/blogger') || p.startsWith('/posts') || p.startsWith('/blog')) return 'blogger';
@@ -782,6 +814,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     const priorityMap: Record<AppKey, string[]> = {
       retail: ['retail', 'marketplace'],
       catalog: [],
+      planning: ['planning'],
       blogger: ['blog', 'blogger', 'posts'],
       hotel: ['hotel', 'rooms', 'bookings', 'management'],
       admanager: ['ad', 'ads', 'advert', 'campaign', 'admanager'],
@@ -944,6 +977,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       catalog: '/marketplace',
       governance: '/governance/policies',
       marketplace: '/marketplace',
+      planning: '/planning/planning-main',
       blogger: '/blogger',
       hotel: '/hotel',
       admanager: '/ad-manager',

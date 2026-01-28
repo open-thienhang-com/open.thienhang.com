@@ -1,0 +1,203 @@
+<div id="content-plan-list" class="tab-content">
+    <div class="p-6">
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Plan Management</h2>
+            <p class="text-gray-600">View, manage, and analyze your delivery plans</p>
+        </div>
+
+        <!-- Plan Filters and Actions -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+            <div class="flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex gap-3">
+                    <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Create New Plan
+                    </button>
+                    <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                        <i class="fas fa-upload mr-2"></i>Import Plan
+                    </button>
+                    <button class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                        <i class="fas fa-download mr-2"></i>Export All
+                    </button>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" placeholder="Search plans..." class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <select class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">All Status</option>
+                        <option value="draft">Draft</option>
+                        <option value="active">Active</option>
+                        <option value="completed">Completed</option>
+                        <option value="archived">Archived</option>
+                    </select>
+                    <select class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Date Range</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Plans Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="plansGrid">
+            <!-- Sample plan cards -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Plan #2024-001</h3>
+                        <p class="text-sm text-gray-600">Hanoi Delivery Routes</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Active</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3 mb-4">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Routes:</span>
+                        <span class="font-semibold">12</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Total Distance:</span>
+                        <span class="font-semibold">245.8 km</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Total Cost:</span>
+                        <span class="font-semibold">2,450,000 VND</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Created:</span>
+                        <span class="font-semibold text-sm">2024-01-15</span>
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <button class="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-eye mr-1"></i>View
+                    </button>
+                    <button class="flex-1 px-3 py-2 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 transition-colors">
+                        <i class="fas fa-edit mr-1"></i>Edit
+                    </button>
+                    <button class="px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Plan #2024-002</h3>
+                        <p class="text-sm text-gray-600">Ho Chi Minh City Routes</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">Draft</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3 mb-4">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Routes:</span>
+                        <span class="font-semibold">8</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Total Distance:</span>
+                        <span class="font-semibold">189.2 km</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Total Cost:</span>
+                        <span class="font-semibold">1,890,000 VND</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Created:</span>
+                        <span class="font-semibold text-sm">2024-01-14</span>
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <button class="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-eye mr-1"></i>View
+                    </button>
+                    <button class="flex-1 px-3 py-2 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 transition-colors">
+                        <i class="fas fa-edit mr-1"></i>Edit
+                    </button>
+                    <button class="px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Add new plan card -->
+            <div class="bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 p-6 flex items-center justify-center hover:bg-gray-100 transition-colors cursor-pointer">
+                <div class="text-center">
+                    <div class="text-4xl text-gray-400 mb-2">+</div>
+                    <div class="text-gray-600 font-medium">Create New Plan</div>
+                    <div class="text-sm text-gray-500 mt-1">Start planning delivery routes</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Plan Statistics -->
+        <div class="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Plan Statistics</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600" id="totalPlans">2</div>
+                    <div class="text-sm text-gray-600">Total Plans</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600" id="activePlans">1</div>
+                    <div class="text-sm text-gray-600">Active Plans</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-yellow-600" id="draftPlans">1</div>
+                    <div class="text-sm text-gray-600">Draft Plans</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600" id="totalSavings">15%</div>
+                    <div class="text-sm text-gray-600">Avg Cost Savings</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+            <div class="space-y-3" id="recentActivity">
+                <div class="flex items-center gap-3 py-2 border-b border-gray-100 last:border-b-0">
+                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-plus text-blue-600 text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-medium text-gray-900">New plan created</div>
+                        <div class="text-xs text-gray-600">Plan #2024-001 - Hanoi Delivery Routes</div>
+                    </div>
+                    <div class="text-xs text-gray-500">2 hours ago</div>
+                </div>
+
+                <div class="flex items-center gap-3 py-2 border-b border-gray-100 last:border-b-0">
+                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-play text-green-600 text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-medium text-gray-900">Plan executed</div>
+                        <div class="text-xs text-gray-600">Plan #2024-001 completed successfully</div>
+                    </div>
+                    <div class="text-xs text-gray-500">5 hours ago</div>
+                </div>
+
+                <div class="flex items-center gap-3 py-2 border-b border-gray-100 last:border-b-0">
+                    <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-edit text-yellow-600 text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-medium text-gray-900">Plan updated</div>
+                        <div class="text-xs text-gray-600">Plan #2024-002 modified fleet configuration</div>
+                    </div>
+                    <div class="text-xs text-gray-500">1 day ago</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

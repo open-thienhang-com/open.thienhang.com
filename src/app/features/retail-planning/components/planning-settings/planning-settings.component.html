@@ -1,0 +1,614 @@
+<!-- Planning - Settings Page -->
+<div class="planning-page" id="planning-settings">
+
+  <!-- Page Header -->
+  <div class="planning-page-header">
+    <div class="planning-page-title">
+      <div class="planning-title-icon">⚙️</div>
+      <div>
+        <h2>Configuration Settings</h2>
+        <p>Manage loading/unloading time configurations by location type and vehicle capacity</p>
+      </div>
+    </div>
+    <div class="planning-page-actions">
+      <button class="planning-btn planning-btn-outline" onclick="loadSettingsFromSample()">
+        📄 Load Sample
+      </button>
+      <button class="planning-btn planning-btn-primary" onclick="loadSettingsFromAPI()">
+        ☁️ Load from API
+      </button>
+    </div>
+  </div>
+
+  <!-- Settings Layout -->
+  <div class="settings-layout">
+
+    <!-- Sidebar Menu -->
+    <div class="settings-sidebar">
+      <div class="settings-menu-header">
+        <h5>📂 Categories</h5>
+      </div>
+
+      <div id="settings_menu" class="settings-menu">
+        <div class="settings-menu-item active" data-type="time" onclick="selectSettingsCategory('time', this)">
+          <span class="menu-icon">⏱️</span>
+          <span class="menu-text">Time Settings</span>
+        </div>
+        <div class="settings-menu-item" data-type="vehicle" onclick="selectSettingsCategory('vehicle', this)">
+          <span class="menu-icon">🚛</span>
+          <span class="menu-text">Vehicle Settings</span>
+        </div>
+        <div class="settings-menu-item" data-type="routing" onclick="selectSettingsCategory('routing', this)">
+          <span class="menu-icon">🗺️</span>
+          <span class="menu-text">Routing Settings</span>
+        </div>
+        <div class="settings-menu-item" data-type="api" onclick="selectSettingsCategory('api', this)">
+          <span class="menu-icon">🔌</span>
+          <span class="menu-text">API Settings</span>
+        </div>
+      </div>
+
+      <div class="settings-menu-info">
+        <div class="info-box">
+          <strong>ℹ️ About Settings</strong>
+          <p>Configuration data stored in Redis with environment-specific isolation, used by planning system for vehicle loading/unloading times.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="settings-content">
+      <div id="settings_content_area">
+        <!-- Loading State -->
+        <div id="settings_loading" class="settings-loading" style="display:none;">
+          <div class="planning-spinner"></div>
+          <p>Loading settings...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="settings_empty" class="settings-empty">
+          <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <p>No settings loaded</p>
+          <span>Click "Load from API" to fetch configuration from server</span>
+        </div>
+
+        <!-- Settings Content (rendered dynamically) -->
+        <div id="settings_data" style="display:none;"></div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<style>
+/* Settings Page Styles */
+.planning-page-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Settings Layout */
+.settings-layout {
+  display: flex;
+  gap: 20px;
+  min-height: 500px;
+}
+
+/* Sidebar */
+.settings-sidebar {
+  width: 260px;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-menu-header {
+  margin-bottom: 20px;
+}
+
+.settings-menu-header h5 {
+  margin: 0;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.settings-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.settings-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #94a3b8;
+}
+
+.settings-menu-item:hover {
+  background: rgba(255,255,255,0.05);
+  color: white;
+}
+
+.settings-menu-item.active {
+  background: rgba(249, 115, 22, 0.15);
+  color: #f97316;
+}
+
+.menu-icon {
+  font-size: 18px;
+}
+
+.menu-text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.settings-menu-info {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.info-box {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
+  padding: 14px;
+  color: white;
+  font-size: 12px;
+}
+
+.info-box strong {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.info-box p {
+  margin: 0;
+  opacity: 0.8;
+  line-height: 1.5;
+}
+
+/* Content Area */
+.settings-content {
+  flex: 1;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+#settings_content_area {
+  padding: 24px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Loading & Empty States */
+.settings-loading, .settings-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.settings-loading .planning-spinner {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+}
+
+.settings-empty svg {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
+
+.settings-empty p {
+  font-size: 16px;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0 0 8px;
+}
+
+.settings-empty span {
+  font-size: 14px;
+}
+
+/* Settings Data */
+.settings-section {
+  margin-bottom: 24px;
+}
+
+.settings-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.settings-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-section-desc {
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* Settings Table */
+.settings-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.settings-table th,
+.settings-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.settings-table th {
+  background: #f8fafc;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.settings-table td {
+  font-size: 14px;
+  color: #374151;
+}
+
+.settings-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.settings-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Editable Input */
+.settings-input {
+  width: 80px;
+  padding: 6px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.settings-input:focus {
+  outline: none;
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+/* Save Button */
+.settings-save-row {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 16px;
+}
+
+/* Form Groups */
+.settings-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.settings-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.settings-form-group label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.settings-form-group input,
+.settings-form-group select {
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .settings-layout {
+    flex-direction: column;
+  }
+
+  .settings-sidebar {
+    width: 100%;
+    flex-direction: row;
+    padding: 16px;
+  }
+
+  .settings-menu-header {
+    display: none;
+  }
+
+  .settings-menu {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .settings-menu-info {
+    display: none;
+  }
+
+  .settings-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+<script>
+// Settings Data
+let settingsData = {};
+let currentSettingsCategory = 'time';
+
+// Select settings category
+function selectSettingsCategory(type, element) {
+  currentSettingsCategory = type;
+
+  // Update menu active state
+  document.querySelectorAll('.settings-menu-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.type === type);
+  });
+
+  // Render settings for category
+  renderSettingsContent();
+}
+
+// Load settings from API
+async function loadSettingsFromAPI() {
+  const loading = document.getElementById('settings_loading');
+  const empty = document.getElementById('settings_empty');
+  const data = document.getElementById('settings_data');
+
+  loading.style.display = 'flex';
+  empty.style.display = 'none';
+  data.style.display = 'none';
+
+  try {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Sample settings data
+    settingsData = {
+      time: {
+        title: 'Time Settings',
+        description: 'Configure loading/unloading times by location type and vehicle capacity',
+        data: [
+          { location_type: 'Hub', capacity_500: 5, capacity_1000: 8, capacity_1500: 12, capacity_2000: 15 },
+          { location_type: 'Sorting', capacity_500: 3, capacity_1000: 5, capacity_1500: 8, capacity_2000: 10 },
+          { location_type: 'Forward', capacity_500: 2, capacity_1000: 3, capacity_1500: 5, capacity_2000: 7 },
+          { location_type: 'Customer', capacity_500: 2, capacity_1000: 3, capacity_1500: 4, capacity_2000: 5 }
+        ]
+      },
+      vehicle: {
+        title: 'Vehicle Settings',
+        description: 'Configure default vehicle parameters',
+        data: {
+          default_speed: 40,
+          max_distance: 200,
+          max_time: 86400,
+          fuel_consumption: 8.5,
+          cost_per_km: 3500
+        }
+      },
+      routing: {
+        title: 'Routing Settings',
+        description: 'Configure OR-Tools solver parameters',
+        data: {
+          solve_time_limit: 60,
+          first_solution_strategy: 'PATH_CHEAPEST_ARC',
+          local_search_metaheuristic: 'GUIDED_LOCAL_SEARCH',
+          depot_capacity: 10,
+          max_vehicles_per_route: 1
+        }
+      },
+      api: {
+        title: 'API Settings',
+        description: 'Configure API endpoints and authentication',
+        data: {
+          base_url: 'https://api.example.com',
+          warehouse_endpoint: '/api/warehouses',
+          planning_endpoint: '/api/planning',
+          timeout: 30000,
+          retry_count: 3
+        }
+      }
+    };
+
+    renderSettingsContent();
+
+  } catch (error) {
+    console.error('[Settings] Error:', error);
+    empty.style.display = 'flex';
+  } finally {
+    loading.style.display = 'none';
+  }
+}
+
+// Load settings from sample
+function loadSettingsFromSample() {
+  loadSettingsFromAPI(); // Same as API for demo
+}
+
+// Render settings content
+function renderSettingsContent() {
+  const data = document.getElementById('settings_data');
+  const empty = document.getElementById('settings_empty');
+  const loading = document.getElementById('settings_loading');
+
+  loading.style.display = 'none';
+
+  if (!settingsData[currentSettingsCategory]) {
+    empty.style.display = 'flex';
+    data.style.display = 'none';
+    return;
+  }
+
+  empty.style.display = 'none';
+  data.style.display = 'block';
+
+  const settings = settingsData[currentSettingsCategory];
+
+  let html = `
+    <div class="settings-section">
+      <div class="settings-section-header">
+        <div>
+          <div class="settings-section-title">
+            ${getCategoryIcon(currentSettingsCategory)} ${settings.title}
+          </div>
+          <div class="settings-section-desc">${settings.description}</div>
+        </div>
+      </div>
+  `;
+
+  // Render based on category type
+  if (currentSettingsCategory === 'time') {
+    html += renderTimeSettings(settings.data);
+  } else {
+    html += renderGenericSettings(settings.data);
+  }
+
+  html += `
+      <div class="settings-save-row">
+        <button class="planning-btn planning-btn-primary" onclick="saveSettings()">
+          💾 Save Changes
+        </button>
+      </div>
+    </div>
+  `;
+
+  data.innerHTML = html;
+}
+
+// Get category icon
+function getCategoryIcon(category) {
+  const icons = {
+    time: '⏱️',
+    vehicle: '🚛',
+    routing: '🗺️',
+    api: '🔌'
+  };
+  return icons[category] || '⚙️';
+}
+
+// Render time settings table
+function renderTimeSettings(data) {
+  return `
+    <table class="settings-table">
+      <thead>
+        <tr>
+          <th>Location Type</th>
+          <th>500kg (min)</th>
+          <th>1000kg (min)</th>
+          <th>1500kg (min)</th>
+          <th>2000kg (min)</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.map(row => `
+          <tr>
+            <td><strong>${row.location_type}</strong></td>
+            <td><input type="number" class="settings-input" value="${row.capacity_500}" data-field="capacity_500"></td>
+            <td><input type="number" class="settings-input" value="${row.capacity_1000}" data-field="capacity_1000"></td>
+            <td><input type="number" class="settings-input" value="${row.capacity_1500}" data-field="capacity_1500"></td>
+            <td><input type="number" class="settings-input" value="${row.capacity_2000}" data-field="capacity_2000"></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+// Render generic settings
+function renderGenericSettings(data) {
+  return `
+    <div class="settings-form-grid">
+      ${Object.entries(data).map(([key, value]) => `
+        <div class="settings-form-group">
+          <label>${formatSettingLabel(key)}</label>
+          <input type="${typeof value === 'number' ? 'number' : 'text'}"
+                 class="planning-input"
+                 value="${value}"
+                 data-field="${key}">
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// Format setting label
+function formatSettingLabel(key) {
+  return key.split('_').map(word =>
+    word.charAt(0).toUpperCase() + word.slice(1)
+  ).join(' ');
+}
+
+// Save settings
+function saveSettings() {
+  // Collect all input values
+  const inputs = document.querySelectorAll('#settings_data input');
+  const updates = {};
+
+  inputs.forEach(input => {
+    const field = input.dataset.field;
+    const value = input.type === 'number' ? parseFloat(input.value) : input.value;
+    updates[field] = value;
+  });
+
+  console.log('[Settings] Saving:', updates);
+  alert('Settings saved successfully!');
+}
+
+// Initialize settings page
+function loadPlanningSettings() {
+  console.log('[Planning] Initializing Settings page...');
+  // Auto-load settings on page init
+  loadSettingsFromAPI();
+}
+
+loadPlanningSettings();
+</script>

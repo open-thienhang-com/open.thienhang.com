@@ -1,0 +1,399 @@
+<div [class]="embedded ? 'h-full bg-white' : 'min-h-screen bg-gray-50'">
+
+  <!-- Main Content -->
+  <div [class]="embedded ? 'w-full p-4' : 'w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-8'">
+    <!-- Loading State -->
+    <div *ngIf="loading" class="flex items-center justify-center py-16">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+      <span class="ml-2 text-gray-600">Đang tải chi tiết...</span>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !loading" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+      <svg class="w-16 h-16 mx-auto mb-3 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <h3 class="text-lg font-semibold text-red-800 mb-2">Lỗi tải dữ liệu</h3>
+      <p class="text-red-700">{{ error }}</p>
+    </div>
+
+    <!-- Dataset Content -->
+    <div *ngIf="dataset && !loading" class="space-y-8">
+      <!-- Demand Dataset Layout -->
+      <div *ngIf="dataset.type === 'demand' && dataset.data && dataset.data.length > 0" class="space-y-6">
+        <!-- Demand Statistics Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 lg:gap-6">
+          <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-lg shadow-lg">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm font-semibold opacity-90">Tổng Bưu Cục</span>
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+            </div>
+            <div class="text-3xl font-bold">{{ getDemandStats().totalWarehouses }}</div>
+            <div class="text-xs opacity-75 mt-1">bưu cục</div>
+          </div>
+
+          <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow-lg">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm font-semibold opacity-90">Tổng Đơn Lấy</span>
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
+              </svg>
+            </div>
+            <div class="text-3xl font-bold">{{ getDemandStats().totalPickOrders | number }}</div>
+            <div class="text-xs opacity-75 mt-1">đơn</div>
+          </div>
+
+          <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-lg shadow-lg">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm font-semibold opacity-90">Tổng Đơn Giao</span>
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+              </svg>
+            </div>
+            <div class="text-3xl font-bold">{{ getDemandStats().totalDeliverOrders | number }}</div>
+            <div class="text-xs opacity-75 mt-1">đơn</div>
+          </div>
+
+          <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-lg shadow-lg">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm font-semibold opacity-90">TB Đơn/Bưu Cục</span>
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+            </div>
+            <div class="text-3xl font-bold">{{ getDemandStats().avgPickOrders }}</div>
+            <div class="text-xs opacity-75 mt-1">đơn lấy</div>
+          </div>
+        </div>
+
+        <!-- Demand Charts -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6 mb-6">
+          <div class="bg-white border border-green-200 rounded-lg shadow-sm p-5">
+            <h5 class="text-sm font-semibold text-green-600 mb-3">Tổng Lấy/Giao</h5>
+            <canvas #demandSummaryCanvas height="200"></canvas>
+          </div>
+          <div class="bg-white border border-green-200 rounded-lg shadow-sm p-5">
+            <h5 class="text-sm font-semibold text-green-600 mb-3">Phân bổ Lấy theo khung giờ</h5>
+            <canvas #demandPickupTimeCanvas height="200"></canvas>
+          </div>
+          <div class="bg-white border border-green-200 rounded-lg shadow-sm p-5">
+            <h5 class="text-sm font-semibold text-green-600 mb-3">Phân bổ Giao theo khung giờ</h5>
+            <canvas #demandDeliveryTimeCanvas height="200"></canvas>
+          </div>
+        </div>
+
+        <!-- Main Bar Chart -->
+        <div class="bg-white border border-green-200 rounded-lg shadow-sm overflow-hidden">
+          <div class="px-6 py-4 bg-gradient-to-r from-green-50 to-green-100 border-b border-green-200">
+            <h4 class="font-semibold text-gray-900">Thống kê Lấy/Giao theo Bưu cục</h4>
+          </div>
+          <div class="p-5">
+            <canvas #demandOrderCanvas height="100"></canvas>
+          </div>
+        </div>
+
+        <!-- Demand Compact Table -->
+        <div class="bg-white border border-green-200 rounded-lg shadow-sm">
+          <div class="px-6 py-4 bg-gradient-to-r from-green-50 to-green-100 border-b border-green-200">
+            <div class="flex items-center justify-between">
+              <h4 class="font-semibold text-gray-900">Dữ liệu Demand</h4>
+              <span class="text-xs text-gray-600">{{ dataset.data.length }} bưu cục</span>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th *ngFor="let key of getDataKeys(dataset.data[0])" class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {{ key }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr *ngFor="let row of dataset.data; let i = index" [ngClass]="i % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
+                  <td *ngFor="let key of getDataKeys(row)" class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ formatCellValue(row[key], key) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Truck Dataset Layout -->
+      <div *ngIf="dataset.type === 'truck' && dataset.data && dataset.data.length > 0" class="space-y-6">
+        <!-- Truck Statistics Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 lg:gap-6">
+          <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow-lg">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm font-semibold opacity-90">Tổng Bưu Cục</span>
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+            </div>
+            <div class="text-3xl font-bold">{{ getTruckStats().totalWarehouses }}</div>
+            <div class="text-xs opacity-75 mt-1">bưu cục</div>
+          </div>
+
+          <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-lg shadow-lg">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm font-semibold opacity-90">Tổng Xe</span>
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+            </div>
+            <div class="text-3xl font-bold">{{ getTruckStats().totalTrucks }}</div>
+            <div class="text-xs opacity-75 mt-1">xe</div>
+          </div>
+
+          <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-lg shadow-lg">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm font-semibold opacity-90">TB Quảng Đường</span>
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+              </svg>
+            </div>
+            <div class="text-3xl font-bold">{{ getTruckStats().avgDistance }}</div>
+            <div class="text-xs opacity-75 mt-1">km</div>
+          </div>
+
+          <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-lg shadow-lg">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm font-semibold opacity-90">TB Vận Tốc</span>
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <div class="text-3xl font-bold">{{ getTruckStats().avgSpeed }}</div>
+            <div class="text-xs opacity-75 mt-1">km/h</div>
+          </div>
+        </div>
+
+        <!-- Truck Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+          <div class="bg-white border border-orange-200 rounded-lg shadow-sm p-6">
+            <h5 class="text-lg font-semibold text-orange-600 mb-4">Phân bổ theo Loại Xe</h5>
+            <div class="relative" style="height: 300px;">
+              <canvas #truckTypeCanvas></canvas>
+            </div>
+          </div>
+          <div class="bg-white border border-orange-200 rounded-lg shadow-sm p-6">
+            <h5 class="text-lg font-semibold text-orange-600 mb-4">Top Nhà Cung Cấp</h5>
+            <div class="relative" style="height: 300px;">
+              <canvas #truckSupplierCanvas></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Truck Data Table -->
+        <div class="bg-white border border-orange-200 rounded-lg shadow-sm overflow-hidden">
+          <div class="px-6 py-4 bg-gradient-to-r from-orange-50 to-orange-100 border-b border-orange-200">
+            <div class="flex items-center justify-between">
+              <h4 class="font-semibold text-gray-900">Danh sách Xe theo Bưu Cục</h4>
+              <span class="text-xs text-gray-600">{{ dataset.data.length }} nhóm xe</span>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-orange-200">
+              <thead class="bg-orange-50">
+                <tr>
+                  <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase tracking-wider">Bưu Cục</th>
+                  <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase tracking-wider">Loại Xe</th>
+                  <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase tracking-wider">Nhà Cung Cấp</th>
+                  <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-orange-700 uppercase tracking-wider">Tổng Xe</th>
+                  <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-orange-700 uppercase tracking-wider">TB Quảng Đường</th>
+                  <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-orange-700 uppercase tracking-wider">TB Thời Gian</th>
+                  <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-orange-700 uppercase tracking-wider">Vận Tốc TB</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-orange-100">
+                <tr *ngFor="let row of dataset.data; let i = index" [ngClass]="i % 2 === 0 ? 'bg-white' : 'bg-orange-50/30'">
+                  <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {{ row['Bưu cục'] || 'N/A' }}
+                  </td>
+                  <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                          [ngClass]="getTruckTypeBadgeClass(row['Loại xe'])">
+                      {{ row['Loại xe'] || 'N/A' }}
+                    </span>
+                  </td>
+                  <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ row['Nhà cung cấp'] || 'N/A' }}
+                  </td>
+                  <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                    {{ row['Tổng xe'] || 0 }}
+                  </td>
+                  <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                    {{ (row['Trung bình quảng đường'] || 0).toFixed(1) }} km
+                  </td>
+                  <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                    {{ (row['Trung bình thời gian'] || 0).toFixed(1) }} h
+                  </td>
+                  <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                    {{ row['Vận tốc trung bình'] ? (row['Vận tốc trung bình']).toFixed(1) + ' km/h' : 'N/A' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hub Dataset Layout -->
+      <div *ngIf="dataset.type === 'hub' && dataset.data && dataset.data.length > 0" class="space-y-6">
+        <!-- Hub Statistics Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 lg:gap-6">
+          <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow-lg">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm font-semibold opacity-90">Tổng Bưu Cục</span>
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+            </div>
+            <div class="text-3xl font-bold">{{ getHubStats().totalWarehouses }}</div>
+            <div class="text-xs opacity-75 mt-1">bưu cục</div>
+          </div>
+
+          <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-lg shadow-lg">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm font-semibold opacity-90">Cả Lấy & Giao</span>
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div class="text-3xl font-bold">{{ getHubStats().fullService }}</div>
+            <div class="text-xs opacity-75 mt-1">{{ getHubStats().fullServicePercent }}%</div>
+          </div>
+
+          <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-lg shadow-lg">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm font-semibold opacity-90">Chỉ Giao</span>
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+              </svg>
+            </div>
+            <div class="text-3xl font-bold">{{ getHubStats().deliveryOnly }}</div>
+            <div class="text-xs opacity-75 mt-1">{{ getHubStats().deliveryOnlyPercent }}%</div>
+          </div>
+
+          <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-lg shadow-lg">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm font-semibold opacity-90">Số Vùng</span>
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/>
+              </svg>
+            </div>
+            <div class="text-3xl font-bold">{{ getHubStats().totalRegions }}</div>
+            <div class="text-xs opacity-75 mt-1">vùng</div>
+          </div>
+        </div>
+
+        <!-- Hub Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+          <div class="bg-white border border-orange-200 rounded-lg shadow-sm p-6">
+            <h5 class="text-lg font-semibold text-orange-600 mb-4">Phân bổ theo Vùng</h5>
+            <div class="relative" style="height: 300px;">
+              <canvas #hubRegionCanvas></canvas>
+            </div>
+          </div>
+          <div class="bg-white border border-orange-200 rounded-lg shadow-sm p-6">
+            <h5 class="text-lg font-semibold text-orange-600 mb-4">Phân bổ theo Loại Bưu Cục</h5>
+            <div class="relative" style="height: 300px;">
+              <canvas #hubTypeCanvas></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hub Data Table -->
+        <div class="bg-white border border-orange-200 rounded-lg shadow-sm overflow-hidden">
+          <div class="px-6 py-4 bg-gradient-to-r from-orange-50 to-orange-100 border-b border-orange-200">
+            <div class="flex items-center justify-between">
+              <h4 class="font-semibold text-gray-900">Danh sách Bưu Cục</h4>
+              <span class="text-xs text-gray-600">{{ dataset.data.length }} bưu cục</span>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-orange-200">
+              <thead class="bg-orange-50">
+                <tr>
+                  <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase tracking-wider">STT</th>
+                  <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase tracking-wider">ID BC</th>
+                  <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase tracking-wider">Tên BC</th>
+                  <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase tracking-wider">Quận/Huyện</th>
+                  <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase tracking-wider">Tỉnh</th>
+                  <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase tracking-wider">Vùng</th>
+                  <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase tracking-wider">Loại BC</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-orange-100">
+                <tr *ngFor="let row of dataset.data; let i = index" [ngClass]="i % 2 === 0 ? 'bg-white' : 'bg-orange-50/30'">
+                  <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
+                    {{ row['STT'] || (i + 1) }}
+                  </td>
+                  <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
+                    {{ row['ID BC'] || '' }}
+                  </td>
+                  <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {{ row['Tên BC'] || '' }}
+                  </td>
+                  <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ row['Quận/Huyện'] || '' }}
+                  </td>
+                  <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ row['Tỉnh'] || '' }}
+                  </td>
+                  <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                          [ngClass]="getRegionBadgeClass(row['Vùng'])">
+                      {{ row['Vùng'] || '' }}
+                    </span>
+                  </td>
+                  <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                          [ngClass]="getHubTypeBadgeClass(row['Loại BC'])">
+                      {{ row['Loại BC'] || '' }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generic Dataset Layout (for other types) -->
+      <div *ngIf="dataset.data && dataset.data.length > 0 && dataset.type !== 'truck' && dataset.type !== 'demand' && dataset.type !== 'hub'" class="space-y-6">
+        <!-- Generic Data Table -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+          <h4 class="text-lg font-semibold text-gray-900 mb-4">Dữ liệu Dataset</h4>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th *ngFor="let key of getDataKeys(dataset.data[0])" class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {{ key }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr *ngFor="let row of dataset.data; let i = index" [ngClass]="i % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
+                  <td *ngFor="let key of getDataKeys(row)" class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ row[key] }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metadata Section -->
+      <div *ngIf="dataset && dataset.metadata" class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 sm:p-6">
+        <h4 class="text-lg font-semibold text-gray-900 mb-4">Metadata</h4>
+        <pre class="text-sm font-mono bg-gray-50 p-3 sm:p-4 rounded-lg overflow-auto border border-gray-200" style="max-height: 400px;">{{ dataset.metadata | json }}</pre>
+      </div>
+    </div>
+  </div>

@@ -1,0 +1,81 @@
+/* Hub Map Styles */
+#hub-map {
+    height: 450px;
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    position: relative;
+    z-index: 1;
+}
+
+/* Ensure map tiles are visible */
+#hub-map .leaflet-container {
+    border-radius: 8px;
+    z-index: 1;
+}
+
+#hub-map .leaflet-tile-pane {
+    z-index: 2;
+}
+
+#hub-map .leaflet-overlay-pane {
+    z-index: 4;
+}
+
+#hub-map .leaflet-marker-pane {
+    z-index: 5;
+}
+
+#hub-map .leaflet-popup-pane {
+    z-index: 6;
+}
+
+#hub-map .leaflet-control-container {
+    z-index: 7;
+}
+
+/* Leaflet overrides */
+.leaflet-container {
+    border-radius: 8px;
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.leaflet-popup-tip {
+    background-color: white;
+}
+
+/* Hub Search Dialog Styles */
+.hub-search-dialog {
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Selected Hubs List */
+.selected-hubs-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.selected-hubs-list .hub-item {
+    transition: background-color 0.2s ease;
+}
+
+.selected-hubs-list .hub-item:hover {
+    background-color: #f9fafb;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #hub-map {
+        height: 350px;
+    }
+
+    .hub-search-dialog {
+        margin: 1rem;
+        max-height: 95vh;
+    }
+}

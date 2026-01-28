@@ -104,5 +104,16 @@ export const menu: MenuItem[] = [
             { label: 'Policies', url: '/governance/policies', icon: 'pi pi-lock' }
         ]
     },
+    {
+        label: 'Planning',
+        icon: 'pi pi-truck',
+        type: 'item',
+        expanded: false,
+        children: [
+            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-cog' },
+            { label: 'Stochastic', url: '/planning/stochastic', icon: 'pi pi-chart-pie' },
+            { label: 'Fleet', url: '/planning/fleet', icon: 'pi pi-truck' },
+        ]
+    },
     // Settings intentionally removed from sidebar menu config; Settings is a standalone app
 ];
