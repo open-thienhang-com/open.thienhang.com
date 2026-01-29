@@ -177,8 +177,8 @@ export class DatasetHubDetailComponent extends DatasetDetailBaseComponent implem
     hubLoadError: string | null = null;
 
     // Charts
-    hubRegionChart: Chart | null = null;
-    hubTypeChart: Chart | null = null;
+    hubRegionChart: any = null;
+    hubTypeChart: any = null;
 
     // Warehouse data
     warehouses: Warehouse[] = [];

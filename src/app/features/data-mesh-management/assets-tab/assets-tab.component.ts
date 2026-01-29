@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { DataAssetsService } from './data-assets.service';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DropdownModule } from 'primeng/dropdown';
@@ -7,14 +8,16 @@ import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-assets-tab',
-  templateUrl: './assets-tab.component.html',
-  styleUrls: ['./assets-tab.component.scss'],
+  standalone: true,
   imports: [
+    CommonModule,
     CheckboxModule,
     DropdownModule,
     PaginatorModule,
     FormsModule
-  ]
+  ],
+  templateUrl: './assets-tab.component.html',
+  styleUrls: ['./assets-tab.component.scss']
 })
 export class AssetsTabComponent implements OnInit {
   @Input() filteredAssets: any[] = [];

@@ -112,7 +112,7 @@ export const menu: MenuItem[] = [
         children: [
             { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-cog' },
             { label: 'Stochastic', url: '/planning/stochastic', icon: 'pi pi-chart-pie' },
-            { label: 'Fleet', url: '/planning/fleet', icon: 'pi pi-truck' },
+            { label: 'Fleet', url: '/planning/fleet', icon: 'pi pi-truck' }
         ]
     },
     // Settings intentionally removed from sidebar menu config; Settings is a standalone app

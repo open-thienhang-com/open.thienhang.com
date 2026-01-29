@@ -1,0 +1,54 @@
+.experiment-card {
+  margin: 0 auto;
+}
+
+.experiment-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.experiment-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  background-color: #f9fafb;
+}
+
+.experiment-item h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.experiment-item p {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.colab-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  background-color: #f9ab00;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  box-shadow: 0 8px 16px rgba(249, 171, 0, 0.35);
+}
+
+.colab-button:hover {
+  background-color: #e69b00;
+  box-shadow: 0 10px 20px rgba(249, 171, 0, 0.45);
+}
+
+.colab-button img {
+  height: 20px;
+}
+

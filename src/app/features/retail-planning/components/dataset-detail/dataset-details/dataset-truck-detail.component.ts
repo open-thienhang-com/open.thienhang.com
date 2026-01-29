@@ -142,8 +142,8 @@ export class DatasetTruckDetailComponent extends DatasetDetailBaseComponent impl
   @ViewChild('truckTypeCanvas') truckTypeCanvas?: ElementRef;
   @ViewChild('truckSupplierCanvas') truckSupplierCanvas?: ElementRef;
 
-  truckTypeChart: Chart | null = null;
-  truckSupplierChart: Chart | null = null;
+  truckTypeChart: any = null;
+  truckSupplierChart: any = null;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: any,

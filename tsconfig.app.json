@@ -4,14 +4,8 @@
       "outDir": "./out-tsc/app",
       "types": []
     },
-    "files": [
-      "src/main.ts",
-      "src/app/features/blogger/blogger-overview.component.ts",
-      "src/app/features/hotel/hotel-overview.component.ts",
-      "src/app/features/ad-manager/ad-manager-overview.component.ts"
-    ],
     "include": [
-      "src/**/*.d.ts"
+      "src/**/*.ts"
     ],
     "exclude": [
       "src/**/*.spec.ts",

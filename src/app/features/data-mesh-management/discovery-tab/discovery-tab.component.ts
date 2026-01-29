@@ -1,7 +1,24 @@
 import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { DropdownModule } from 'primeng/dropdown';
+import { PaginatorModule } from 'primeng/paginator';
+import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-discovery-tab',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    DropdownModule,
+    PaginatorModule,
+    ButtonModule,
+    DialogModule,
+    InputTextModule
+  ],
   templateUrl: './discovery-tab.component.html',
   styleUrls: ['./discovery-tab.component.scss']
 })

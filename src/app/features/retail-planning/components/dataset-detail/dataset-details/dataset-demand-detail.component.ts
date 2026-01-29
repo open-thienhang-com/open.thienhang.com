@@ -166,10 +166,10 @@ export class DatasetDemandDetailComponent extends DatasetDetailBaseComponent imp
   @ViewChild('demandDeliveryTimeCanvas') demandDeliveryTimeCanvas?: ElementRef;
   @ViewChild('demandOrderCanvas') demandOrderCanvas?: ElementRef;
 
-  demandOrderChart: Chart | null = null;
-  demandSummaryChart: Chart | null = null;
-  demandPickupTimeChart: Chart | null = null;
-  demandDeliveryTimeChart: Chart | null = null;
+  demandOrderChart: any = null;
+  demandSummaryChart: any = null;
+  demandPickupTimeChart: any = null;
+  demandDeliveryTimeChart: any = null;
 
 
   constructor(

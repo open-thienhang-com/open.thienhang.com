@@ -399,6 +399,14 @@ export class SidebarComponent implements OnInit, OnChanges {
         { label: 'Stochastic', url: '/planning/stochastic', icon: 'pi pi-chart-pie' },
         { label: 'Fleet', url: '/planning/fleet', icon: 'pi pi-truck' }
       ]
+    },
+    {
+      label: 'Experiment',
+      icon: 'pi pi-flask',
+      expanded: false,
+      items: [
+        { label: 'Experiment → Notebook', url: '/planning/experiment', icon: 'pi pi-book' }
+      ]
     }
   ];
 
@@ -640,12 +648,17 @@ export class SidebarComponent implements OnInit, OnChanges {
 
     const key = this.appKey;
 
-    // Special-case: for Planning app - chỉ hiển thị group Planning
+    // Special-case: for Planning app - hiển thị Planning + Experiment
     if (key === 'planning') {
       const planningGroup = this.sidebarGroups.find(
         g => (g.label || '').toLowerCase().includes('planning')
       );
-      const groups = planningGroup ? [planningGroup] : [];
+      const experimentGroup = this.sidebarGroups.find(
+        g => (g.label || '').toLowerCase().includes('experiment')
+      );
+      const groups: any[] = [];
+      if (planningGroup) groups.push(planningGroup);
+      if (experimentGroup) groups.push(experimentGroup);
       this.visibleGroups = this.orderGroupsForApp(groups, key);
       this.visibleGroups.forEach(g => {
         g.expanded = false;
