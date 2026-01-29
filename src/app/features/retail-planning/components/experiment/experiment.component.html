@@ -1,30 +1,231 @@
-<div class="planning-welcome">
-  <div class="planning-card experiment-card">
-    <div class="planning-header">
-      <div class="avatar-skeleton shimmer"></div>
-      <div class="title-block">
-        <div class="title-row">
+<div class="experiment-container">
+  <!-- Header Section -->
+  <div class="experiment-header">
+    <div class="header-content">
+      <div class="title-section">
+        <i class="pi pi-flask header-icon"></i>
+        <div>
           <h1>Experiment Control Center</h1>
+          <p class="subtitle">Trung tâm thí nghiệm Machine Learning cho hệ thống Planning</p>
         </div>
-        <p>Bảng điều khiển các thí nghiệm Machine Learning cho module Planning.</p>
       </div>
+      
+      <button 
+        pButton 
+        [icon]="showInstructions() ? 'pi pi-eye-slash' : 'pi pi-eye'"
+        [label]="showInstructions() ? 'Ẩn hướng dẫn' : 'Hiện hướng dẫn'"
+        class="p-button-outlined p-button-secondary"
+        (click)="toggleInstructions()"
+      ></button>
     </div>
+  </div>
 
-    <div class="experiment-body">
-      <div class="experiment-item">
-        <h3>Dự báo nhu cầu (Demand Prediction)</h3>
-        <p>Model: XGBoost/LSTM · Dataset: GHN Operational Data</p>
-        <a
-          href="https://colab.research.google.com/github/open-thienhang-com/exp.thienhang.com/blob/main/notebooks/demand_prediction.ipynb"
-          class="colab-button"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab" />
-          <span>Open in Colab</span>
-        </a>
+  <!-- Instructions Section -->
+  <div class="instructions-section" *ngIf="showInstructions()">
+    <p-card>
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <i class="pi pi-info-circle"></i>
+          <h2>Hướng dẫn sử dụng</h2>
+        </div>
+      </ng-template>
+
+      <p-tabView>
+        <!-- Tab: Getting Started -->
+        <p-tabViewPanel header="Bắt đầu" leftIcon="pi pi-play-circle">
+          <div class="tab-content">
+            <h3>Yêu cầu trước khi bắt đầu</h3>
+            <ul class="requirement-list">
+              <li *ngFor="let req of prerequisites">
+                <i class="pi pi-check-circle"></i>
+                <span>{{ req }}</span>
+              </li>
+            </ul>
+
+            <p-divider></p-divider>
+
+            <h3>Các bước thực hiện</h3>
+            <ol class="step-list">
+              <li>Chọn experiment phù hợp với nhu cầu của bạn từ danh sách bên dưới</li>
+              <li>Click vào nút <strong>"Open in Colab"</strong> để mở notebook</li>
+              <li>Đọc kỹ hướng dẫn trong notebook</li>
+              <li>Chạy các cell code theo thứ tự</li>
+              <li>Phân tích kết quả và điều chỉnh nếu cần</li>
+            </ol>
+          </div>
+        </p-tabViewPanel>
+
+        <!-- Tab: Detailed Guides -->
+        <p-tabViewPanel header="Hướng dẫn chi tiết" leftIcon="pi pi-book">
+          <p-accordion [multiple]="true">
+            <p-accordionTab *ngFor="let guide of guides" [header]="guide.title">
+              <ol class="guide-steps">
+                <li *ngFor="let step of guide.steps">{{ step }}</li>
+              </ol>
+            </p-accordionTab>
+          </p-accordion>
+        </p-tabViewPanel>
+
+        <!-- Tab: Tips & Tricks -->
+        <p-tabViewPanel header="Tips & Tricks" leftIcon="pi pi-lightbulb">
+          <div class="tips-grid">
+            <div class="tip-card" *ngFor="let tip of tips">
+              <i class="pi pi-star-fill"></i>
+              <p>{{ tip }}</p>
+            </div>
+          </div>
+        </p-tabViewPanel>
+
+        <!-- Tab: Video Tutorial -->
+        <p-tabViewPanel header="Video hướng dẫn" leftIcon="pi pi-video">
+          <div class="video-section">
+            <div class="video-placeholder">
+              <i class="pi pi-youtube"></i>
+              <p>Video hướng dẫn chi tiết sẽ được cập nhật sớm</p>
+              <button pButton label="Đăng ký nhận thông báo" icon="pi pi-bell" class="p-button-outlined"></button>
+            </div>
+          </div>
+        </p-tabViewPanel>
+      </p-tabView>
+    </p-card>
+  </div>
+  <!-- Experiments Grid -->
+
+  <!-- Featured Notebooks -->
+  <div class="featured-grid">
+    <p-card *ngFor="let f of featuredNotebooks" class="featured-card">
+      <ng-template pTemplate="header">
+        <div class="featured-header">
+          <h3>{{ f.title }}</h3>
+          <p-tag value="Featured" severity="success"></p-tag>
+        </div>
+      </ng-template>
+
+      <div class="featured-content">
+        <p class="description">{{ f.description }}</p>
+        <div class="featured-actions">
+          <a [href]="f.colabLink" target="_blank" rel="noopener noreferrer" class="colab-button">
+            <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab" />
+            <span class="colab-label">Open in Colab</span>
+          </a>
+          <button pButton icon="pi pi-github" class="p-button-outlined" *ngIf="f.githubLink" (click)="window.open(f.githubLink, '_blank')"></button>
+        </div>
       </div>
-    </div>
+    </p-card>
+  </div>
+
+  <!-- Experiments Grid -->
+  <div class="experiments-grid">
+    <p-card *ngFor="let exp of experiments" class="experiment-card">
+      <ng-template pTemplate="header">
+        <div class="experiment-card-header">
+          <div class="header-top">
+            <h3>{{ exp.title }}</h3>
+            <p-tag 
+              [value]="getStatusLabel(exp.status)" 
+              [severity]="getStatusSeverity(exp.status)"
+            ></p-tag>
+          </div>
+          <p class="experiment-id">{{ exp.id }}</p>
+        </div>
+      </ng-template>
+
+      <div class="experiment-content">
+        <p class="description">{{ exp.description }}</p>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <i class="pi pi-cog"></i>
+            <div>
+              <span class="label">Model</span>
+              <span class="value">{{ exp.model }}</span>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <i class="pi pi-database"></i>
+            <div>
+              <span class="label">Dataset</span>
+              <span class="value">{{ exp.dataset }}</span>
+            </div>
+          </div>
+
+          <div class="info-item" *ngIf="exp.accuracy">
+            <i class="pi pi-chart-line"></i>
+            <div>
+              <span class="label">Accuracy</span>
+              <span class="value accuracy">{{ exp.accuracy }}</span>
+            </div>
+          </div>
+
+          <div class="info-item" *ngIf="exp.lastRun">
+            <i class="pi pi-clock"></i>
+            <div>
+              <span class="label">Chạy lần cuối</span>
+              <span class="value">{{ exp.lastRun }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tags">
+          <p-tag *ngFor="let tag of exp.tags" [value]="tag" severity="secondary"></p-tag>
+        </div>
+      </div>
+
+      <ng-template pTemplate="footer">
+        <div class="experiment-actions">
+          <a 
+            [href]="exp.colabLink" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="colab-button"
+          >
+            <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab" />
+            <span class="colab-label">Open in Colab</span>
+          </a>
+
+          <button 
+            pButton 
+            icon="pi pi-github" 
+            class="p-button-outlined p-button-secondary"
+            *ngIf="exp.githubLink"
+            pTooltip="Xem trên GitHub"
+            tooltipPosition="top"
+            (click)="window.open(exp.githubLink, '_blank')"
+          ></button>
+
+          <button 
+            pButton 
+            icon="pi pi-copy" 
+            class="p-button-outlined"
+            pTooltip="Copy Colab Link"
+            tooltipPosition="top"
+          ></button>
+        </div>
+      </ng-template>
+    </p-card>
+  </div>
+
+  <!-- Help Section -->
+  <div class="help-section">
+    <p-card>
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <i class="pi pi-question-circle"></i>
+          <h2>Cần hỗ trợ?</h2>
+        </div>
+      </ng-template>
+
+      <div class="help-content">
+        <p>Nếu bạn gặp vấn đề hoặc có câu hỏi, vui lòng liên hệ:</p>
+        
+        <div class="contact-options">
+          <button pButton label="Mở ticket hỗ trợ" icon="pi pi-ticket" class="p-button-outlined"></button>
+          <button pButton label="Tham gia Slack" icon="pi pi-slack" class="p-button-outlined"></button>
+          <button pButton label="Email: ml-team@ghn.vn" icon="pi pi-envelope" class="p-button-outlined"></button>
+        </div>
+      </div>
+    </p-card>
   </div>
 </div>
 

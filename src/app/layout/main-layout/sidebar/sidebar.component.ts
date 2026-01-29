@@ -405,7 +405,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       icon: 'pi pi-flask',
       expanded: false,
       items: [
-        { label: 'Experiment → Notebook', url: '/planning/experiment', icon: 'pi pi-book' }
+        { label: 'Notebook', url: '/planning/experiment', icon: 'pi pi-book' }
       ]
     }
   ];
