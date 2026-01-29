@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DataMeshServices, Domain } from '../../../core/services/data-mesh.services';
+import { forkJoin } from 'rxjs';
 import { LoadingService } from '../../../core/services/loading.service';
 import { I18nService } from '../../../core/services/i18n.service';
 import { LoadingComponent } from '../../../shared/component/loading/loading.component';
@@ -61,7 +62,7 @@ export class DomainCatalogComponent implements OnInit {
   filteredDomains: Domain[] = [];
   loading = false;
   searchTerm = '';
-  
+
   filters = {
     status: '',
     team: ''
@@ -86,7 +87,7 @@ export class DomainCatalogComponent implements OnInit {
     private messageService: MessageService,
     private loadingService: LoadingService,
     private i18nService: I18nService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.setupFilterOptions();
@@ -111,7 +112,7 @@ export class DomainCatalogComponent implements OnInit {
         if (healthResponse.success && healthResponse.data) {
           this.totalDomains = healthResponse.data.total_domains;
           this.activeDomains = healthResponse.data.active_domains;
-          
+
           // Load detailed domain information
           this.loadDomainDetails(healthResponse.data.domains);
         } else {
@@ -126,42 +127,93 @@ export class DomainCatalogComponent implements OnInit {
   }
 
   loadDomainDetails(domainKeys: string[]): void {
-    // Load detailed information for each domain
-    const domainRequests = domainKeys.map(domainKey => 
+    // Build requests to fetch details for each domain and wait for all to complete
+    const domainRequests = domainKeys.map(domainKey =>
       this.dataMeshServices.getDomainDetails(domainKey)
     );
 
-    // For now, create basic domain objects since detailed endpoint might not have full data
-    this.domains = domainKeys.map(domainKey => ({
-      domain_key: domainKey,
-      name: this.formatDomainName(domainKey),
-      display_name: this.formatDomainName(domainKey),
-      status: 'Active',
-      team: 'Unknown Team',
-      owner: 'Unknown Owner',
-      description: `${this.formatDomainName(domainKey)} domain services`,
-      metrics: { subscribers: Math.floor(Math.random() * 100), quality_score: '85%' },
-      tags: [domainKey.replace('_', ' ')],
-      sla: { availability: '99.5%', freshness: 'Real-time', version: '1.0.0' },
-      data_products: [],
-      contact: { email: `${domainKey}@company.com`, slack: `#${domainKey}`, support: `${domainKey}-support@company.com` }
-    }));
+    if (!domainRequests.length) {
+      this.domains = [];
+      this.filteredDomains = [];
+      this.updateStats();
+      this.extractTeamOptions();
+      this.loading = false;
+      this.loadingService.hide();
+      return;
+    }
 
-    this.filteredDomains = [...this.domains];
-    this.updateStats();
-    this.extractTeamOptions();
-    this.loading = false;
-    this.loadingService.hide();
+    forkJoin(domainRequests).subscribe({
+      next: (responses) => {
+        // responses: ApiResponse<Domain>[]
+        const successfulDomains: Domain[] = responses
+          .filter(r => r && r.success && r.data)
+          .map(r => r.data as Domain);
 
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: `Loaded ${this.domains.length} domains`
+        // If some domains failed, fill them with basic info
+        const failedKeys = domainKeys.filter(k => !successfulDomains.find(d => d.domain_key === k));
+        const fallbackDomains: Domain[] = failedKeys.map(domainKey => ({
+          domain_key: domainKey,
+          name: this.formatDomainName(domainKey),
+          display_name: this.formatDomainName(domainKey),
+          status: 'Active',
+          team: 'Unknown Team',
+          owner: 'Unknown Owner',
+          description: `${this.formatDomainName(domainKey)} domain services`,
+          metrics: { subscribers: Math.floor(Math.random() * 100), quality_score: '85%' },
+          tags: [domainKey.replace('_', ' ')],
+          sla: { availability: '99.5%', freshness: 'Real-time', version: '1.0.0' },
+          data_products: [],
+          contact: { email: `${domainKey}@company.com`, slack: `#${domainKey}`, support: `${domainKey}-support@company.com` }
+        }));
+
+        this.domains = [...successfulDomains, ...fallbackDomains];
+        this.filteredDomains = [...this.domains];
+        this.updateStats();
+        this.extractTeamOptions();
+        this.loading = false;
+        this.loadingService.hide();
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: `Loaded ${this.domains.length} domains`
+        });
+      },
+      error: (error) => {
+        console.error('Error loading domain details:', error);
+        // Fallback to simple domain objects when network errors occur
+        this.domains = domainKeys.map(domainKey => ({
+          domain_key: domainKey,
+          name: this.formatDomainName(domainKey),
+          display_name: this.formatDomainName(domainKey),
+          status: 'Active',
+          team: 'Unknown Team',
+          owner: 'Unknown Owner',
+          description: `${this.formatDomainName(domainKey)} domain services`,
+          metrics: { subscribers: Math.floor(Math.random() * 100), quality_score: '85%' },
+          tags: [domainKey.replace('_', ' ')],
+          sla: { availability: '99.5%', freshness: 'Real-time', version: '1.0.0' },
+          data_products: [],
+          contact: { email: `${domainKey}@company.com`, slack: `#${domainKey}`, support: `${domainKey}-support@company.com` }
+        }));
+
+        this.filteredDomains = [...this.domains];
+        this.updateStats();
+        this.extractTeamOptions();
+        this.loading = false;
+        this.loadingService.hide();
+
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Partial Data',
+          detail: `Loaded ${this.domains.length} domains (some details unavailable)`
+        });
+      }
     });
   }
 
   formatDomainName(domainKey: string): string {
-    return domainKey.split('_').map(word => 
+    return domainKey.split('_').map(word =>
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
   }
@@ -182,7 +234,7 @@ export class DomainCatalogComponent implements OnInit {
     this.totalDomains = this.domains.length;
     this.activeDomains = this.domains.filter(d => d.status === 'Active').length;
     this.totalSubscribers = this.domains.reduce((sum, domain) => sum + domain.metrics.subscribers, 0);
-    
+
     // Calculate average quality score
     const qualityScores = this.domains.map(d => parseFloat(d.metrics.quality_score.replace('%', '')));
     this.averageQuality = qualityScores.reduce((sum, score) => sum + score, 0) / qualityScores.length;
@@ -206,7 +258,7 @@ export class DomainCatalogComponent implements OnInit {
 
   applyFilters(): void {
     this.filteredDomains = this.domains.filter(domain => {
-      const matchesSearch = !this.searchTerm || 
+      const matchesSearch = !this.searchTerm ||
         domain.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         domain.display_name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         domain.description.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
@@ -286,7 +338,7 @@ export class DomainCatalogComponent implements OnInit {
       'it': 'pi-cog',
       'sales': 'pi-chart-line'
     };
-    
+
     const key = domainKey.toLowerCase().split('_')[0];
     return iconMap[key] || 'pi-sitemap';
   }

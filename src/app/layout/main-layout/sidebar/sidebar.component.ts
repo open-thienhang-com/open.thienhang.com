@@ -213,56 +213,56 @@ export class SidebarComponent implements OnInit, OnChanges {
       label: 'Retail Service',
       icon: 'pi pi-shopping-bag',
       gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      description: 'Point of Sale, Inventory & E-commerce'
+      description: ''
     },
     {
       key: 'governance',
       label: 'Governance',
       icon: 'pi pi-shield',
       gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      description: 'Permissions, Policies & Compliance'
+      description: ''
     },
     {
       key: 'planning',
       label: 'Planning',
       icon: 'pi pi-truck',
       gradient: 'linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)',
-      description: 'Logistics & Route Planning'
+      description: ''
     },
     {
       key: 'marketplace',
       label: 'Marketplace',
       icon: 'pi pi-shopping-cart',
       gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      description: 'Data Products & Discovery'
+      description: ''
     },
     {
       key: 'blogger',
       label: 'Blogger',
       icon: 'pi pi-pencil',
       gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-      description: 'Content & Publishing'
+      description: ''
     },
     {
       key: 'hotel',
       label: 'Hotel',
       icon: 'pi pi-building',
       gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-      description: 'Booking & Management'
+      description: ''
     },
     {
       key: 'admanager',
       label: 'Ad Manager',
       icon: 'pi pi-bullhorn',
       gradient: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
-      description: 'Campaign & Analytics'
+      description: ''
     },
     {
       key: 'settings',
       label: 'Settings',
       icon: 'pi pi-cog',
       gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-      description: 'Configuration & Preferences'
+      description: ''
     }
   ];
 
@@ -718,6 +718,19 @@ export class SidebarComponent implements OnInit, OnChanges {
       if (dataExploration) items.push(...this.getFlattenedItems(dataExploration.items || []));
       if (exploreGroup) items.push(...this.getFlattenedItems(exploreGroup.items || []));
 
+      // Fallback: if for any reason the groups are missing or flattening produced no items
+      // (e.g. labels changed or group removed), ensure core Explore items are still present
+      // for the Marketplace view so users can access Database/Pipelines/Topics/Containers/Search.
+      if (!items || items.length === 0) {
+        items.push(
+          { label: 'Database Explorer', url: '/explore/database', icon: 'pi pi-database' },
+          { label: 'Pipelines', url: '/explore/pipelines', icon: 'pi pi-sliders-h' },
+          { label: 'Topics & Events', url: '/explore/topics', icon: 'pi pi-tags' },
+          { label: 'Containers', url: '/explore/container', icon: 'pi pi-box' },
+          { label: 'Advanced Search', url: '/explore/search', icon: 'pi pi-search' }
+        );
+      }
+
       // Create a pseudo-group with no header - template will render items directly
       const pseudo = { label: '', icon: '', expanded: false, _noHeader: true, items } as any;
       pseudo._flattened = items;
@@ -990,7 +1003,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       catalog: '/marketplace',
       governance: '/governance/policies',
       marketplace: '/marketplace',
-      planning: '/planning/planning-main',
+      planning: '/planning',
       blogger: '/blogger',
       hotel: '/hotel',
       admanager: '/ad-manager',
