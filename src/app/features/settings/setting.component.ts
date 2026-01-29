@@ -323,7 +323,7 @@ export class SettingsComponent implements OnInit {
 
   // Local profile & session management
   sessions: any[] = [];
-  localProfileSource = 'http://localhost:8080';
+  localProfileSource = 'https://api.thienhang.com';
   localLoading = false;
 
   // NOTE: navigation-based user detail view (navigates to dedicated page)
@@ -753,7 +753,7 @@ export class SettingsComponent implements OnInit {
       error: (err) => {
         this.localLoading = false;
         console.error('Error fetching local profile:', err);
-        this.messageService.add({ severity: 'error', summary: 'Local API error', detail: 'Failed to call http://localhost:8080/authentication/me' });
+        this.messageService.add({ severity: 'error', summary: 'Local API error', detail: 'Failed to call https://api.thienhang.com/authentication/me' });
       }
     });
   }

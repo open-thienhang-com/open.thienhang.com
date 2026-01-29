@@ -95,7 +95,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 export class UserDetailComponent implements OnInit {
   user: any = null;
   loading = true;
-  localProfileSource = 'http://localhost:8080';
+  localProfileSource = 'https://api.thienhang.com';
 
   constructor(private route: ActivatedRoute, private http: HttpClient) { }
 

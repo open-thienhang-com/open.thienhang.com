@@ -2,7 +2,7 @@ export const DEFAULT_API_BASE = 'https://api.thienhang.com';
 
 export const API_HOSTS = {
     production: 'https://api.thienhang.com',
-    local: 'http://localhost:8080'
+    local: 'https://api.thienhang.com'
 };
 
 export function getApiBase(): string {
