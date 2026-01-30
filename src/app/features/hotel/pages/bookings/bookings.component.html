@@ -1,0 +1,184 @@
+<div class="bookings-page">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1>Bookings Management</h1>
+        <p class="subtitle">Manage all apartment bookings and reservations</p>
+      </div>
+      <button pButton type="button" label="New Booking" icon="pi pi-plus"
+        (click)="openDialog()" class="p-button-primary p-button-lg"></button>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-section">
+    <div class="search-container">
+      <i class="pi pi-search"></i>
+      <input type="text" placeholder="Search by booking ID, apartment, or guest..." 
+        [(ngModel)]="searchQuery" class="search-input">
+    </div>
+    <p class="result-count">{{ filteredBookings.length }} bookings</p>
+  </div>
+
+  <!-- Bookings Table -->
+  <div class="bookings-table-wrapper" *ngIf="!loading; else loadingTemplate">
+    <ng-container *ngIf="filteredBookings.length > 0; else emptyTemplate">
+      <p-table [value]="filteredBookings" styleClass="p-datatable-striped" [paginator]="true" 
+        [rows]="10" [tableStyle]="{ 'min-width': '50rem' }">
+        
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="id">Booking ID <p-sortIcon field="id"></p-sortIcon></th>
+            <th pSortableColumn="apartment_id">Apartment <p-sortIcon field="apartment_id"></p-sortIcon></th>
+            <th pSortableColumn="account_id">Guest ID <p-sortIcon field="account_id"></p-sortIcon></th>
+            <th pSortableColumn="check_in">Check-In <p-sortIcon field="check_in"></p-sortIcon></th>
+            <th pSortableColumn="check_out">Check-Out <p-sortIcon field="check_out"></p-sortIcon></th>
+            <th pSortableColumn="total_price">Total Price <p-sortIcon field="total_price"></p-sortIcon></th>
+            <th pSortableColumn="booking_status">Status <p-sortIcon field="booking_status"></p-sortIcon></th>
+            <th pSortableColumn="payment_status">Payment <p-sortIcon field="payment_status"></p-sortIcon></th>
+            <th>Actions</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-booking>
+          <tr>
+            <td>
+              <span class="booking-id">{{ booking.id }}</span>
+            </td>
+            <td>{{ booking.apartment_id }}</td>
+            <td>{{ booking.account_id }}</td>
+            <td>{{ booking.check_in | date: 'short' }}</td>
+            <td>{{ booking.check_out | date: 'short' }}</td>
+            <td>
+              <span class="price">{{ booking.total_price | currency }}</span>
+            </td>
+            <td>
+              <p-badge [value]="booking.booking_status | titlecase" 
+                [severity]="getStatusSeverity(booking.booking_status)"></p-badge>
+            </td>
+            <td>
+              <p-badge [value]="booking.payment_status | titlecase" 
+                [severity]="getPaymentSeverity(booking.payment_status)"></p-badge>
+            </td>
+            <td>
+              <div class="actions">
+                <button pButton type="button" icon="pi pi-pencil" 
+                  (click)="editBooking(booking)" class="p-button-rounded p-button-warning p-button-text" 
+                  pTooltip="Edit" tooltipPosition="top"></button>
+                <button pButton type="button" icon="pi pi-times" 
+                  (click)="cancelBooking(booking)" class="p-button-rounded p-button-danger p-button-text"
+                  [disabled]="booking.booking_status === 'canceled'"
+                  pTooltip="Cancel Booking" tooltipPosition="top"></button>
+                <button pButton type="button" icon="pi pi-trash" 
+                  (click)="deleteBooking(booking)" class="p-button-rounded p-button-danger p-button-text" 
+                  pTooltip="Delete" tooltipPosition="top"></button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </ng-container>
+
+    <ng-template #emptyTemplate>
+      <div class="empty-state">
+        <i class="pi pi-inbox"></i>
+        <p>No bookings found</p>
+        <button pButton type="button" label="Create First Booking" icon="pi pi-plus"
+          (click)="openDialog()" class="p-button-primary"></button>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Loading Template -->
+  <ng-template #loadingTemplate>
+    <div class="loading-skeleton">
+      <p-skeleton height="300px"></p-skeleton>
+    </div>
+  </ng-template>
+
+  <!-- Create/Edit Dialog -->
+  <p-dialog [(visible)]="showDialog" [header]="isEditMode ? 'Edit Booking' : 'Create New Booking'"
+    [modal]="true" [style]="{ width: '50vw' }" [breakpoints]="{ '960px': '75vw', '640px': '90vw' }">
+    
+    <div class="form-content">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Apartment ID *</label>
+          <input pInputText type="text" [(ngModel)]="formData.apartment_id" placeholder="e.g., apt_001">
+        </div>
+        <div class="form-group">
+          <label>Guest ID *</label>
+          <input pInputText type="text" [(ngModel)]="formData.account_id" placeholder="e.g., acc_001">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Check-In Date *</label>
+          <p-calendar [(ngModel)]="formData.check_in" [showTime]="true" dateFormat="yy-mm-dd"></p-calendar>
+        </div>
+        <div class="form-group">
+          <label>Check-Out Date *</label>
+          <p-calendar [(ngModel)]="formData.check_out" [showTime]="true" dateFormat="yy-mm-dd"></p-calendar>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Daily Price</label>
+          <input pInputText type="number" [(ngModel)]="formData.day_price" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label>Monthly Price</label>
+          <input pInputText type="number" [(ngModel)]="formData.month_price" placeholder="0.00">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Total Price</label>
+          <input pInputText type="number" [(ngModel)]="formData.total_price" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label>Number of Guests</label>
+          <input pInputText type="number" [(ngModel)]="formData.guest_count" [min]="1" placeholder="1">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Booking Status</label>
+          <p-dropdown [options]="bookingStatusOptions" [(ngModel)]="formData.booking_status" 
+            optionLabel="label" optionValue="value"></p-dropdown>
+        </div>
+        <div class="form-group">
+          <label>Payment Status</label>
+          <p-dropdown [options]="paymentStatusOptions" [(ngModel)]="formData.payment_status" 
+            optionLabel="label" optionValue="value"></p-dropdown>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Special Requests</label>
+        <textarea pInputText [(ngModel)]="formData.special_requests" rows="3" 
+          placeholder="Any special requests..." style="width: 100%;"></textarea>
+      </div>
+
+      <div class="form-group checkbox">
+        <input type="checkbox" [(ngModel)]="formData.is_active" id="isActive">
+        <label for="isActive">Active</label>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Cancel" (click)="closeDialog()" 
+        class="p-button-text"></button>
+      <button pButton type="button" [label]="isEditMode ? 'Update' : 'Create'" 
+        (click)="saveBooking()" class="p-button-primary" [loading]="loading"></button>
+    </ng-template>
+  </p-dialog>
+</div>

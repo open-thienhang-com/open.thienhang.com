@@ -115,7 +115,21 @@ export const routes: Routes = [
       },
       {
         path: 'hotel',
-        loadComponent: () => import('./features/hotel/hotel-overview.component').then(m => m.HotelOverviewComponent),
+        children: [
+          {
+            path: '',
+            redirectTo: 'apartments',
+            pathMatch: 'full'
+          },
+          {
+            path: 'apartments',
+            loadComponent: () => import('./features/hotel/pages/apartments/apartments.component').then(m => m.ApartmentsComponent),
+          },
+          {
+            path: 'bookings',
+            loadComponent: () => import('./features/hotel/pages/bookings/bookings.component').then(m => m.BookingsComponent),
+          }
+        ]
       },
       {
         path: 'profile',
@@ -221,6 +235,10 @@ export const routes: Routes = [
           {
             path: 'payment',
             loadComponent: () => import('./features/retail/retail-services/payment/payment.component').then(m => m.PaymentComponent),
+          },
+          {
+            path: 'products',
+            loadComponent: () => import('./features/retail/pages/product-catalog/product-catalog.component').then(m => m.ProductCatalogComponent),
           },
           {
             path: 'inventory',

@@ -1,0 +1,171 @@
+<div class="product-catalog-page">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1>Product Catalog</h1>
+        <p class="subtitle">Browse and manage your product inventory</p>
+      </div>
+      <button pButton type="button" label="Add New Product" icon="pi pi-plus"
+        (click)="openDialog()" class="p-button-primary p-button-lg"></button>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="search-container">
+      <i class="pi pi-search"></i>
+      <input type="text" placeholder="Search by product name or SKU..." 
+        [(ngModel)]="searchQuery" class="search-input">
+    </div>
+
+    <div class="category-filters">
+      <button pButton type="button" label="All Products" icon="pi pi-list"
+        (click)="filterByCategory('')" [class.active]="selectedCategory === ''" 
+        class="p-button-secondary"></button>
+      <button pButton type="button" *ngFor="let cat of categories" [label]="cat.label" 
+        (click)="filterByCategory(cat.value)" [class.active]="selectedCategory === cat.value" 
+        class="p-button-secondary"></button>
+    </div>
+  </div>
+
+  <!-- Products Grid -->
+  <div class="products-grid" *ngIf="!loading; else loadingTemplate">
+    <ng-container *ngIf="filteredProducts.length > 0; else emptyTemplate">
+      <div class="product-card" *ngFor="let product of filteredProducts">
+        <div class="product-header">
+          <div class="product-image">
+            <img *ngIf="product.images && product.images.length > 0" 
+              [src]="product.images[0]" [alt]="product.name">
+            <div *ngIf="!product.images || product.images.length === 0" class="no-image">
+              <i class="pi pi-image"></i>
+            </div>
+          </div>
+          <div class="status-badges">
+            <p-badge 
+              *ngIf="product.is_active" 
+              [value]="'Active'" 
+              severity="success">
+            </p-badge>
+            <p-badge 
+              *ngIf="!product.is_active" 
+              [value]="'Inactive'" 
+              severity="danger">
+            </p-badge>
+          </div>
+        </div>
+
+        <div class="product-body">
+          <h3 class="product-name">{{ product.name }}</h3>
+          <p class="product-sku">SKU: {{ product.sku }}</p>
+          <p class="product-description">{{ product.description }}</p>
+
+          <div class="pricing-section">
+            <div class="price-item">
+              <span class="label">Selling Price</span>
+              <span class="price">{{ product.price | currency }}</span>
+            </div>
+            <div class="price-item">
+              <span class="label">Cost Price</span>
+              <span class="price secondary">{{ product.cost_price | currency }}</span>
+            </div>
+            <div class="price-item">
+              <span class="label">Margin</span>
+              <span class="margin" [class.positive]="getMarginPercentage(product) > 0">
+                {{ getMarginPercentage(product) | number: '1.1-2' }}%
+              </span>
+            </div>
+          </div>
+
+          <div class="category-badge">
+            <span class="category-tag">{{ product.category | titlecase }}</span>
+          </div>
+        </div>
+
+        <div class="product-footer">
+          <button pButton type="button" label="Edit" icon="pi pi-pencil"
+            (click)="editProduct(product)" class="p-button-warning p-button-text"></button>
+          <button pButton type="button" label="Delete" icon="pi pi-trash"
+            (click)="deleteProduct(product)" class="p-button-danger p-button-text"></button>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #emptyTemplate>
+      <div class="empty-state">
+        <i class="pi pi-inbox"></i>
+        <p>No products found</p>
+        <button pButton type="button" label="Add First Product" icon="pi pi-plus"
+          (click)="openDialog()" class="p-button-primary"></button>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Loading Template -->
+  <ng-template #loadingTemplate>
+    <div class="products-grid">
+      <div class="product-card" *ngFor="let i of [1,2,3,4,5,6]">
+        <p-skeleton height="250px"></p-skeleton>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- Create/Edit Dialog -->
+  <p-dialog [(visible)]="showDialog" [header]="isEditMode ? 'Edit Product' : 'Add New Product'"
+    [modal]="true" [style]="{ width: '50vw' }" [breakpoints]="{ '960px': '75vw', '640px': '90vw' }">
+    
+    <div class="form-content">
+      <div class="form-group">
+        <label>Product Name *</label>
+        <input pInputText type="text" [(ngModel)]="formData.name" placeholder="Product name">
+      </div>
+
+      <div class="form-group">
+        <label>SKU *</label>
+        <input pInputText type="text" [(ngModel)]="formData.sku" placeholder="e.g., PROD-001">
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea pInputText [(ngModel)]="formData.description" rows="3" 
+          placeholder="Product description" style="width: 100%;"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Category *</label>
+          <p-dropdown [options]="categories" [(ngModel)]="formData.category" 
+            optionLabel="label" optionValue="value"></p-dropdown>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Selling Price *</label>
+          <p-inputNumber [(ngModel)]="formData.price" [useGrouping]="false" 
+            placeholder="0.00" mode="currency" currency="USD"></p-inputNumber>
+        </div>
+        <div class="form-group">
+          <label>Cost Price *</label>
+          <p-inputNumber [(ngModel)]="formData.cost_price" [useGrouping]="false" 
+            placeholder="0.00" mode="currency" currency="USD"></p-inputNumber>
+        </div>
+      </div>
+
+      <div class="form-group checkbox">
+        <input type="checkbox" [(ngModel)]="formData.is_active" id="isActive">
+        <label for="isActive">Active</label>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Cancel" (click)="closeDialog()" 
+        class="p-button-text"></button>
+      <button pButton type="button" [label]="isEditMode ? 'Update' : 'Create'" 
+        (click)="saveProduct()" class="p-button-primary" [loading]="loading"></button>
+    </ng-template>
+  </p-dialog>
+</div>

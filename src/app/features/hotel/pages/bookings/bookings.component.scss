@@ -1,0 +1,213 @@
+.bookings-page {
+  padding: 2rem;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, var(--p-surface-0) 0%, rgba(var(--p-primary-500), 0.05) 100%);
+    padding: 2rem;
+    border-radius: 12px;
+    border-bottom: 2px solid rgba(var(--p-primary-500), 0.2);
+
+    .header-content {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--p-surface-900);
+      }
+
+      .subtitle {
+        margin: 0;
+        font-size: 0.95rem;
+        color: var(--p-surface-600);
+      }
+    }
+  }
+
+  .search-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1rem;
+
+    .search-container {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+
+      i {
+        position: absolute;
+        left: 12px;
+        color: var(--p-surface-500);
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 2px solid var(--p-surface-200);
+        border-radius: 8px;
+        font-size: 0.95rem;
+
+        &:focus {
+          outline: none;
+          border-color: var(--p-primary-500);
+          box-shadow: 0 0 0 3px rgba(var(--p-primary-500), 0.1);
+        }
+      }
+    }
+
+    .result-count {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--p-surface-600);
+      white-space: nowrap;
+    }
+  }
+
+  .bookings-table-wrapper {
+    background: var(--p-surface-0);
+    border-radius: 12px;
+    border: 1px solid var(--p-surface-200);
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    ::ng-deep {
+      .p-datatable {
+        border: none;
+      }
+
+      .p-datatable-thead > tr > th {
+        background: var(--p-surface-50);
+        border-bottom: 2px solid var(--p-surface-200);
+        color: var(--p-surface-700);
+        font-weight: 600;
+        padding: 1rem;
+      }
+
+      .p-datatable-tbody > tr {
+        border-bottom: 1px solid var(--p-surface-100);
+
+        &:hover {
+          background: rgba(var(--p-primary-500), 0.02);
+        }
+
+        td {
+          padding: 1rem;
+          color: var(--p-surface-700);
+
+          .booking-id {
+            font-family: 'Courier New', monospace;
+            background: var(--p-surface-100);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+          }
+
+          .price {
+            font-weight: 600;
+            color: var(--p-primary-600);
+          }
+
+          .actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+          }
+        }
+      }
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+      text-align: center;
+      color: var(--p-surface-600);
+
+      i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+      }
+
+      p {
+        margin: 0 0 1.5rem;
+        font-size: 1.1rem;
+      }
+    }
+  }
+
+  .loading-skeleton {
+    padding: 2rem;
+  }
+
+  .form-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      label {
+        font-weight: 500;
+        color: var(--p-surface-700);
+        font-size: 0.9rem;
+      }
+
+      input[type="text"],
+      input[type="email"],
+      input[type="number"],
+      textarea {
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--p-surface-300);
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-family: inherit;
+
+        &:focus {
+          outline: none;
+          border-color: var(--p-primary-500);
+          box-shadow: 0 0 0 2px rgba(var(--p-primary-500), 0.1);
+        }
+      }
+
+      &.checkbox {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5rem;
+
+        input[type="checkbox"] {
+          cursor: pointer;
+          width: 18px;
+          height: 18px;
+        }
+
+        label {
+          margin: 0;
+          cursor: pointer;
+        }
+      }
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+  }
+}

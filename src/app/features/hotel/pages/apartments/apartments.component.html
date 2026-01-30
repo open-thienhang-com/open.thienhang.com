@@ -1,0 +1,215 @@
+<div class="apartment-page">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1>Apartments Management</h1>
+        <p class="subtitle">Manage your apartments, rooms, and bookings</p>
+      </div>
+      <button pButton type="button" label="Add New Apartment" icon="pi pi-plus"
+        (click)="openDialog()" class="p-button-primary p-button-lg"></button>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-section">
+    <div class="search-container">
+      <i class="pi pi-search"></i>
+      <input type="text" placeholder="Search apartments..." [(ngModel)]="searchQuery" class="search-input">
+    </div>
+    <p class="result-count">{{ filteredApartments.length }} apartments found</p>
+  </div>
+
+  <!-- Apartments Grid -->
+  <div class="apartments-grid" *ngIf="!loading; else loadingTemplate">
+    <ng-container *ngIf="filteredApartments.length > 0; else emptyTemplate">
+      <div class="apartment-card" *ngFor="let apartment of filteredApartments">
+        <div class="card-header">
+          <div class="title-section">
+            <h3>{{ apartment.title }}</h3>
+            <span class="apt-id">ID: {{ apartment.id }}</span>
+          </div>
+          <div class="status-badges">
+            <p-badge 
+              *ngIf="apartment.is_active" 
+              [value]="'Active'" 
+              severity="success">
+            </p-badge>
+            <p-badge 
+              *ngIf="!apartment.is_active" 
+              [value]="'Inactive'" 
+              severity="danger">
+            </p-badge>
+            <p-badge 
+              *ngIf="apartment.is_available_for_booking" 
+              [value]="'Available'" 
+              severity="info">
+            </p-badge>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <p class="description">{{ apartment.description }}</p>
+          
+          <div class="details-grid">
+            <div class="detail-item">
+              <span class="label">Bedrooms</span>
+              <span class="value">{{ apartment.bedrooms }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Bathrooms</span>
+              <span class="value">{{ apartment.bathrooms }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Max Guests</span>
+              <span class="value">{{ apartment.max_guests }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Area</span>
+              <span class="value">{{ apartment.total_area }} m²</span>
+            </div>
+          </div>
+
+          <div class="pricing-section">
+            <div class="price-item">
+              <span class="label">Daily</span>
+              <span class="price">{{ apartment.price_per_day | number: '1.2-2' }} {{ apartment.currency }}</span>
+            </div>
+            <div class="price-item">
+              <span class="label">Monthly</span>
+              <span class="price">{{ apartment.price_per_month | number: '1.2-2' }} {{ apartment.currency }}</span>
+            </div>
+          </div>
+
+          <div class="amenities">
+            <span class="amenity" *ngIf="apartment.is_furnished">🛋️ Furnished</span>
+            <span class="amenity" *ngIf="apartment.is_garage">🅿️ Garage</span>
+            <span class="amenity" *ngIf="apartment.pets_allowed">🐾 Pets</span>
+            <span class="amenity" *ngIf="!apartment.smoking_allowed">🚭 No Smoking</span>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <button pButton type="button" label="View Details" icon="pi pi-eye"
+            (click)="viewDetails(apartment)" class="p-button-info p-button-text"></button>
+          <button pButton type="button" label="Edit" icon="pi pi-pencil"
+            (click)="editApartment(apartment)" class="p-button-warning p-button-text"></button>
+          <button pButton type="button" label="Delete" icon="pi pi-trash"
+            (click)="deleteApartment(apartment)" class="p-button-danger p-button-text"></button>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #emptyTemplate>
+      <div class="empty-state">
+        <i class="pi pi-inbox"></i>
+        <p>No apartments found</p>
+        <button pButton type="button" label="Create First Apartment" icon="pi pi-plus"
+          (click)="openDialog()" class="p-button-primary"></button>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Loading Template -->
+  <ng-template #loadingTemplate>
+    <div class="apartments-grid">
+      <div class="apartment-card" *ngFor="let i of [1,2,3]">
+        <p-skeleton height="200px"></p-skeleton>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- Create/Edit Dialog -->
+  <p-dialog [(visible)]="showDialog" [header]="isEditMode ? 'Edit Apartment' : 'Create New Apartment'"
+    [modal]="true" [style]="{ width: '50vw' }" [breakpoints]="{ '960px': '75vw', '640px': '90vw' }">
+    
+    <div class="form-content">
+      <div class="form-group">
+        <label>Title *</label>
+        <input pInputText type="text" [(ngModel)]="formData.title" placeholder="Apartment title">
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea pInputText [(ngModel)]="formData.description" rows="3" 
+          placeholder="Apartment description" style="width: 100%;"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Price Per Day *</label>
+          <p-inputNumber [(ngModel)]="formData.price_per_day" [useGrouping]="false"></p-inputNumber>
+        </div>
+        <div class="form-group">
+          <label>Price Per Month</label>
+          <p-inputNumber [(ngModel)]="formData.price_per_month" [useGrouping]="false"></p-inputNumber>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Bedrooms</label>
+          <p-inputNumber [(ngModel)]="formData.bedrooms" [min]="1"></p-inputNumber>
+        </div>
+        <div class="form-group">
+          <label>Bathrooms</label>
+          <p-inputNumber [(ngModel)]="formData.bathrooms" [min]="1"></p-inputNumber>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Max Guests</label>
+          <p-inputNumber [(ngModel)]="formData.max_guests" [min]="1"></p-inputNumber>
+        </div>
+        <div class="form-group">
+          <label>Total Area (m²)</label>
+          <p-inputNumber [(ngModel)]="formData.total_area" [useGrouping]="false"></p-inputNumber>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group checkbox">
+          <input type="checkbox" [(ngModel)]="formData.is_active" id="isActive">
+          <label for="isActive">Active</label>
+        </div>
+        <div class="form-group checkbox">
+          <input type="checkbox" [(ngModel)]="formData.is_available_for_booking" id="isAvailable">
+          <label for="isAvailable">Available for Booking</label>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group checkbox">
+          <input type="checkbox" [(ngModel)]="formData.is_furnished" id="isFurnished">
+          <label for="isFurnished">Furnished</label>
+        </div>
+        <div class="form-group checkbox">
+          <input type="checkbox" [(ngModel)]="formData.is_garage" id="isGarage">
+          <label for="isGarage">Has Garage</label>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group checkbox">
+          <input type="checkbox" [(ngModel)]="formData.pets_allowed" id="petsAllowed">
+          <label for="petsAllowed">Pets Allowed</label>
+        </div>
+        <div class="form-group checkbox">
+          <input type="checkbox" [(ngModel)]="formData.smoking_allowed" id="smokingAllowed">
+          <label for="smokingAllowed">Smoking Allowed</label>
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Cancel" (click)="closeDialog()" 
+        class="p-button-text"></button>
+      <button pButton type="button" [label]="isEditMode ? 'Update' : 'Create'" 
+        (click)="saveApartment()" class="p-button-primary" [loading]="loading"></button>
+    </ng-template>
+  </p-dialog>
+</div>
