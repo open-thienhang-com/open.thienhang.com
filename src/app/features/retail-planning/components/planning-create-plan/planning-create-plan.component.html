@@ -833,13 +833,13 @@
   margin: 0 0 4px;
   font-size: 24px;
   font-weight: 700;
-  color: #111827;
+  color: var(--p-surface-900);
 }
 
 .planning-page-title p {
   margin: 0;
   font-size: 14px;
-  color: #6b7280;
+  color: var(--p-surface-600);
 }
 
 .planning-status-badge {
@@ -850,15 +850,15 @@
 }
 
 .planning-status-badge.draft {
-  background: #f3f4f6;
-  color: #6b7280;
+  background: var(--p-surface-100);
+  color: var(--p-surface-600);
 }
 
 /* Stepper Container */
 .planning-stepper-container {
   display: flex;
   gap: 24px;
-  background: white;
+  background: var(--p-surface-0);
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   /* allow the container to size to content */
@@ -867,16 +867,16 @@
 
 .planning-stepper-nav {
   width: 240px;
-  background: #f8fafc;
+  background: var(--p-surface-50);
   border-radius: 12px 0 0 12px;
   padding: 20px;
-  border-right: 1px solid #e5e7eb;
+  border-right: 1px solid var(--p-surface-200);
 }
 
 .planning-stepper-title {
   font-size: 12px;
   font-weight: 600;
-  color: #9ca3af;
+  color: var(--p-surface-500);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 20px;
@@ -894,20 +894,20 @@
 }
 
 .planning-step-item:hover {
-  background: rgba(249, 115, 22, 0.05);
+  background: rgba(var(--p-primary-500), 0.05);
 }
 
 .planning-step-item.active {
-  background: rgba(249, 115, 22, 0.1);
+  background: rgba(var(--p-primary-500), 0.1);
 }
 
 .planning-step-item.active .planning-step-indicator {
-  background: #f97316;
+  background: var(--p-primary-500);
   color: white;
 }
 
 .planning-step-item.completed .planning-step-indicator {
-  background: #f97316;
+  background: var(--p-primary-500);
   color: white;
 }
 
@@ -915,8 +915,8 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #e5e7eb;
-  color: #6b7280;
+  background: var(--p-surface-200);
+  color: var(--p-surface-600);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -933,12 +933,12 @@
 .planning-step-title {
   font-size: 14px;
   font-weight: 600;
-  color: #374151;
+  color: var(--p-surface-700);
 }
 
 .planning-step-desc {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--p-surface-500);
 }
 
 /* Step Content */
@@ -967,13 +967,13 @@
   margin: 0 0 8px;
   font-size: 20px;
   font-weight: 700;
-  color: #111827;
+  color: var(--p-surface-900);
 }
 
 .planning-step-header p {
   margin: 0;
   font-size: 14px;
-  color: #6b7280;
+  color: var(--p-surface-600);
 }
 
 .planning-step-body {
@@ -987,8 +987,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px 24px;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
+  border-top: 1px solid var(--p-surface-200);
+  background: var(--p-surface-50);
   border-radius: 0 0 12px 0;
 }
 
@@ -1000,7 +1000,7 @@
 .planning-form-title {
   font-size: 14px;
   font-weight: 600;
-  color: #374151;
+  color: var(--p-surface-700);
   margin-bottom: 12px;
 }
 
@@ -1012,7 +1012,7 @@
   display: block;
   font-size: 13px;
   font-weight: 500;
-  color: #4b5563;
+  color: var(--p-surface-600);
   margin-bottom: 6px;
 }
 
@@ -1022,25 +1022,25 @@
 
 .planning-form-hint {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--p-surface-500);
   margin-top: 4px;
 }
 
 .planning-select, .planning-input {
   width: 100%;
   padding: 10px 14px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--p-surface-300);
   border-radius: 8px;
   font-size: 14px;
-  color: #374151;
-  background: white;
+  color: var(--p-surface-700);
+  background: var(--p-surface-0);
   transition: border-color 0.2s;
 }
 
 .planning-select:focus, .planning-input:focus {
   outline: none;
-  border-color: #f97316;
-  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+  border-color: var(--p-primary-500);
+  box-shadow: 0 0 0 3px rgba(var(--p-primary-500), 0.1);
 }
 
 /* Depot Grid */
@@ -1051,8 +1051,8 @@
 }
 
 .planning-depot-card {
-  background: #f8fafc;
-  border: 1px solid #e5e7eb;
+  background: var(--p-surface-50);
+  border: 1px solid var(--p-surface-200);
   border-radius: 8px;
   padding: 12px;
   margin-top: 12px;
@@ -1066,11 +1066,11 @@
 }
 
 .depot-label {
-  color: #6b7280;
+  color: var(--p-surface-600);
 }
 
 .depot-value {
-  color: #374151;
+  color: var(--p-surface-700);
   font-weight: 500;
 }
 
@@ -1086,20 +1086,20 @@
   flex-direction: column;
   align-items: center;
   padding: 16px;
-  border: 2px solid #e5e7eb;
+  border: 2px solid var(--p-surface-200);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .planning-mode-option:hover {
-  border-color: #f97316;
+  border-color: var(--p-primary-500);
 }
 
 .planning-mode-option.active,
 .planning-mode-option:has(input:checked) {
-  border-color: #f97316;
-  background: rgba(249, 115, 22, 0.05);
+  border-color: var(--p-primary-500);
+  background: rgba(var(--p-primary-500), 0.05);
 }
 
 .planning-mode-option input {
@@ -1114,7 +1114,7 @@
 .mode-name {
   font-size: 13px;
   font-weight: 600;
-  color: #374151;
+  color: var(--p-surface-700);
 }
 
 /* Buttons */
@@ -1132,40 +1132,40 @@
 }
 
 .planning-btn-primary {
-  background: linear-gradient(135deg, #f97316, #ea580c);
+  background: linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600));
   color: white;
 }
 
 .planning-btn-primary:hover {
-  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+  box-shadow: 0 4px 12px rgba(var(--p-primary-500), 0.3);
 }
 
 .planning-btn-secondary {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--p-surface-100);
+  color: var(--p-surface-700);
 }
 
 .planning-btn-secondary:hover {
-  background: #e5e7eb;
+  background: var(--p-surface-200);
 }
 
 .planning-btn-outline {
   background: transparent;
-  border: 1px solid #d1d5db;
-  color: #374151;
+  border: 1px solid var(--p-surface-300);
+  color: var(--p-surface-700);
 }
 
 .planning-btn-outline:hover {
-  background: #f9fafb;
+  background: var(--p-surface-50);
 }
 
 .planning-btn-ghost {
   background: transparent;
-  color: #6b7280;
+  color: var(--p-surface-600);
 }
 
 .planning-btn-ghost:hover {
-  background: #f3f4f6;
+  background: var(--p-surface-100);
 }
 
 .planning-btn-lg {
@@ -1176,9 +1176,9 @@
 .planning-btn-icon {
   width: 36px;
   height: 36px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--p-surface-200);
   border-radius: 8px;
-  background: white;
+  background: var(--p-surface-0);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1199,7 +1199,7 @@
   align-items: center;
   justify-content: center;
   padding: 48px;
-  color: #9ca3af;
+  color: var(--p-surface-500);
   text-align: center;
 }
 
@@ -1213,7 +1213,7 @@
 .planning-empty-state p {
   font-size: 15px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--p-surface-600);
   margin: 0 0 4px;
 }
 
@@ -1240,7 +1240,7 @@
 
 .planning-hint-text {
   font-size: 13px;
-  color: #6b7280;
+  color: var(--p-surface-600);
 }
 
 .planning-action-buttons {
@@ -1250,8 +1250,8 @@
 
 /* Table Container */
 .planning-demands-table-container, .planning-fleet-table {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--p-surface-0);
+  border: 1px solid var(--p-surface-200);
   border-radius: 10px;
   overflow: hidden;
   min-height: 200px;
@@ -1271,31 +1271,31 @@
 }
 
 .planning-stat-card.orange {
-  background: #fff7ed;
-  border: 1px solid #fed7aa;
+  background: rgba(var(--p-primary-500), 0.1);
+  border: 1px solid rgba(var(--p-primary-500), 0.2);
 }
 
 .planning-stat-card.orange-light {
-  background: #ffedd5;
-  border: 1px solid #fdba74;
+  background: rgba(var(--p-primary-500), 0.15);
+  border: 1px solid rgba(var(--p-primary-500), 0.3);
 }
 
 .planning-stat-card.orange-dark {
-  background: #ffedd5;
-  border: 1px solid #fb923c;
+  background: rgba(var(--p-primary-500), 0.15);
+  border: 1px solid rgba(var(--p-primary-500), 0.3);
 }
 
 .planning-stat-card .stat-title {
   font-size: 12px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--p-surface-600);
   margin-bottom: 4px;
 }
 
 .planning-stat-card .stat-value {
   font-size: 24px;
   font-weight: 700;
-  color: #111827;
+  color: var(--p-surface-900);
 }
 
 /* Settings Grid */
@@ -1314,7 +1314,7 @@
 .planning-setting-group label {
   font-size: 13px;
   font-weight: 500;
-  color: #4b5563;
+  color: var(--p-surface-600);
 }
 
 /* Summary Grid */
@@ -1325,7 +1325,7 @@
 }
 
 .planning-summary-section {
-  background: #f9fafb;
+  background: var(--p-surface-50);
   border-radius: 10px;
   padding: 16px;
 }
@@ -1336,10 +1336,10 @@
   align-items: center;
   font-size: 14px;
   font-weight: 600;
-  color: #374151;
+  color: var(--p-surface-700);
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--p-surface-200);
 }
 
 .summary-row {
@@ -1350,16 +1350,16 @@
 }
 
 .summary-row span:first-child {
-  color: #6b7280;
+  color: var(--p-surface-600);
 }
 
 .summary-row span:last-child {
   font-weight: 600;
-  color: #111827;
+  color: var(--p-surface-900);
 }
 
 .planning-summary-estimate {
-  background: linear-gradient(135deg, #f97316, #ea580c);
+  background: linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600));
   border-radius: 10px;
   padding: 24px;
   text-align: center;
@@ -1392,7 +1392,7 @@
 
 /* Status Bar */
 .planning-status-bar {
-  background: white;
+  background: var(--p-surface-0);
   border-radius: 10px;
   padding: 16px 20px;
   margin-top: 20px;
@@ -1408,23 +1408,23 @@
 
 #cp_status_text {
   font-weight: 600;
-  color: #374151;
+  color: var(--p-surface-700);
 }
 
 #cp_status_progress {
-  color: #6b7280;
+  color: var(--p-surface-600);
 }
 
 .status-bar {
   height: 8px;
-  background: #f3f4f6;
+  background: var(--p-surface-200);
   border-radius: 4px;
   overflow: hidden;
 }
 
 .status-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #f97316, #ea580c);
+  background: linear-gradient(90deg, var(--p-primary-500), var(--p-primary-600));
   transition: width 0.3s;
 }
 
@@ -1439,7 +1439,7 @@
 
 .planning-map-section {
   position: relative;
-  background: #e5e7eb;
+  background: var(--p-surface-200);
   border-radius: 10px;
   overflow: hidden;
   min-height: 400px;
@@ -1460,7 +1460,7 @@
 }
 
 .planning-map-stat {
-  background: white;
+  background: var(--p-surface-0);
   padding: 8px 14px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -1469,23 +1469,23 @@
 
 .planning-map-stat .stat-label {
   font-size: 10px;
-  color: #6b7280;
+  color: var(--p-surface-600);
   display: block;
 }
 
 .planning-map-stat .stat-value {
   font-size: 16px;
   font-weight: 700;
-  color: #111827;
+  color: var(--p-surface-900);
 }
 
 /* Points List */
 .planning-points-list {
   display: flex;
   flex-direction: column;
-  background: white;
+  background: var(--p-surface-0);
   border-radius: 10px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--p-surface-200);
   overflow: hidden;
 }
 
@@ -1493,14 +1493,14 @@
   display: flex;
   gap: 8px;
   padding: 12px;
-  border-bottom: 1px solid #e5e7eb;
-  background: #f9fafb;
+  border-bottom: 1px solid var(--p-surface-200);
+  background: var(--p-surface-50);
 }
 
 .planning-search-input {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--p-surface-200);
   border-radius: 6px;
   font-size: 13px;
 }
@@ -1526,7 +1526,7 @@
     width: 100%;
     border-radius: 12px 12px 0 0;
     border-right: none;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--p-surface-200);
     padding: 16px;
   }
 

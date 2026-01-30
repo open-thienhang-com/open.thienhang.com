@@ -35,7 +35,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        loadComponent: () => import('./pages/landing-apps/landing-apps.component').then(m => m.LandingAppsComponent)
+        loadComponent: () => import('./features/marketplace/marketplace.component').then(m => m.MarketplaceComponent),
       },
       {
         path: 'planning',
@@ -99,10 +99,11 @@ export const routes: Routes = [
         path: 'governance/permissions',
         loadComponent: () => import('./features/governance/permissions/permissions.component').then(m => m.PermissionsComponent),
       },
-      // Dashboard removed — root now redirects to Marketplace
+      // Dashboard removed — root now loads Marketplace
       {
         path: 'marketplace',
-        loadComponent: () => import('./features/marketplace/marketplace.component').then(m => m.MarketplaceComponent),
+        redirectTo: '',
+        pathMatch: 'full'
       },
       {
         path: 'blogger',
@@ -143,29 +144,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/data-mesh/quality-metrics.component').then(m => m.QualityMetricsComponent),
       },
       {
-        path: 'data-mesh/domains',
+        path: 'data-mesh/extensions',
         loadComponent: () => import('./features/data-mesh/domain-catalog/domain-catalog.component').then(m => m.DomainCatalogComponent),
       },
       {
-        path: 'data-mesh/domain/:domainKey',
-        loadComponent: () => import('./features/data-mesh/domain-detail/domain-detail.component').then(m => m.DomainDetailComponent),
-      },
-      {
-        path: 'data-mesh/data-products',
-        // Use Marketplace UI for listing, but backend/API remains data-mesh/data-products
-        loadComponent: () => import('./features/marketplace/marketplace.component').then(m => m.MarketplaceComponent),
-      },
-      {
-        path: 'data-mesh/data-products/:domain/:id',
-        loadComponent: () => import('./features/data-mesh/data-product-detail/data-product-detail.component').then(m => m.DataProductDetailComponent),
-      },
-      {
-        path: 'data-mesh/data-products/:name',
-        loadComponent: () => import('./features/data-mesh/data-product-detail/data-product-detail.component').then(m => m.DataProductDetailComponent),
-      },
-      {
-        path: 'data-mesh/api-explorer',
-        loadComponent: () => import('./features/data-mesh/api-explorer/api-explorer.component').then(m => m.ApiExplorerComponent),
+        path: 'data-mesh/catalog',
+        loadComponent: () => import('./features/data-mesh/data-catalog/data-catalog.component').then(m => m.DataCatalogComponent),
       },
       {
         path: 'discovery/catalog',
@@ -319,11 +303,6 @@ export const routes: Routes = [
         loadComponent: () => import('./features/observability/audit-log/audit-log.component').then(m => m.AuditLogComponent),
       },
       // Asset detail route removed per request
-      {
-        path: '',
-        redirectTo: 'marketplace',
-        pathMatch: 'full',
-      },
     ],
     canActivate: [authGuard],
   },

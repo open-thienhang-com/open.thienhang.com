@@ -234,45 +234,58 @@
   [modal]="true" 
   appendTo="body"
   [baseZIndex]="10000"
-  [style]="{ width: '90vw', maxWidth: '1200px', minWidth: '600px' }" 
+  [style]="{ width: '90vw', maxWidth: '1400px', minWidth: '600px' }" 
   [closable]="true" 
   (onHide)="closeAppMatrix()"
   styleClass="app-matrix-dialog">
-  <div class="apps-matrix-grid">
-    <button *ngFor="let app of appMatrix(); let i = index" type="button"
-            class="app-tile"
-            [class.active]="selectedApp === app.key"
-            [attr.data-app-key]="app.key"
-            (click)="selectAppKey(app.key)"
-            [attr.aria-label]="app.label">
+  
+  <!-- Dialog Content Wrapper -->
+  <div class="apps-container">
+    <!-- Header Subtitle -->
+    <div class="apps-header">
+      <p class="apps-subtitle">Choose an application to get started</p>
+    </div>
+    
+    <!-- Apps Grid -->
+    <div class="apps-matrix-grid">
+      <button *ngFor="let app of appMatrix(); let i = index" type="button"
+              class="app-tile"
+              [class.active]="selectedApp === app.key"
+              [attr.data-app-key]="app.key"
+              (click)="selectAppKey(app.key)"
+              [attr.aria-label]="app.label">
 
-      <!-- App Gradient Background with dynamic color -->
-      <div class="app-background" [style.background]="app.gradient"></div>
-      
-      <!-- App Accent Bar -->
-      <div class="app-accent"></div>
-      
-      <!-- Animated gradient overlay -->
-      <div class="gradient-overlay"></div>
-      
-      <!-- App Icon with glow effect -->
-      <div class="app-icon-wrapper">
-        <div class="icon-glow"></div>
-        <i [class]="app.icon"></i>
-      </div>
-      
-      <!-- App Content -->
-      <div class="app-content">
-        <h3 class="app-label">{{ app.label }}</h3>
-        <p class="app-description" *ngIf="app.description">{{ app.description }}</p>
-      </div>
-      
-      <!-- Active indicator badge -->
-      <div class="active-badge" *ngIf="selectedApp === app.key">
-        <i class="pi pi-check"></i>
-      </div>
+        <!-- App Gradient Background with dynamic color -->
+        <div class="app-background" [style.background]="app.gradient"></div>
+        
+        <!-- App Accent Bar -->
+        <div class="app-accent"></div>
+        
+        <!-- Animated gradient overlay -->
+        <div class="gradient-overlay"></div>
+        
+        <!-- App Icon with glow effect -->
+        <div class="app-icon-wrapper">
+          <div class="icon-glow"></div>
+          <i [class]="app.icon"></i>
+        </div>
+        
+        <!-- App Content -->
+        <div class="app-content">
+          <h3 class="app-label">{{ app.label }}</h3>
+          <p class="app-description" *ngIf="app.description">{{ app.description }}</p>
+        </div>
+        
+        <!-- Active indicator badge -->
+        <div class="active-badge" *ngIf="selectedApp === app.key">
+          <i class="pi pi-check"></i>
+        </div>
+        
+        <!-- Hover shimmer effect -->
+        <div class="shimmer-effect"></div>
 
-    </button>
+      </button>
+    </div>
   </div>
 </p-dialog>
 

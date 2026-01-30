@@ -4,13 +4,13 @@
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  background: radial-gradient(circle at top left, #ecfeff, #f9fafb);
+  background: radial-gradient(circle at top left, rgba(var(--p-primary-500), 0.05), var(--p-surface-50));
 }
 
 .planning-card {
   max-width: 520px;
   width: 100%;
-  background: #ffffff;
+  background: var(--p-surface-0);
   border-radius: 1.25rem;
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
   padding: 2.5rem 2.75rem;
@@ -28,7 +28,7 @@
   width: 44px;
   height: 44px;
   border-radius: 999px;
-  background: #e2e8f0;
+  background: var(--p-surface-200);
 }
 
 .title-block {
@@ -45,13 +45,13 @@
   margin: 0 0 0.75rem;
   font-size: 2rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--p-surface-900);
 }
 
 .planning-card p {
   margin: 0 0 1.75rem;
   font-size: 0.95rem;
-  color: #64748b;
+  color: var(--p-surface-600);
 }
 
 .planning-skeleton {
@@ -61,7 +61,7 @@
 .skeleton-row {
   height: 10px;
   border-radius: 999px;
-  background: #e2e8f0;
+  background: var(--p-surface-200);
   margin-bottom: 0.5rem;
 }
 
@@ -90,7 +90,7 @@
 }
 
 .btn.primary {
-  background: linear-gradient(135deg, #0f766e, #14b8a6);
+  background: linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600));
   color: #ffffff;
 }
 
@@ -99,13 +99,13 @@
 }
 
 .btn.secondary {
-  background: #f1f5f9;
-  color: #0f172a;
-  border-color: #e2e8f0;
+  background: var(--p-surface-100);
+  color: var(--p-surface-900);
+  border-color: var(--p-surface-200);
 }
 
 .btn.secondary:hover {
-  background: #e2e8f0;
+  background: var(--p-surface-200);
 }
 
 .shimmer {
@@ -133,14 +133,14 @@
   gap: 4px;
   padding: 2px 8px;
   border-radius: 999px;
-  background: #e0f2fe;
+  background: rgba(var(--p-primary-500), 0.1);
 }
 
 .pill-loading .dot {
   width: 5px;
   height: 5px;
   border-radius: 999px;
-  background: #0ea5e9;
+  background: var(--p-primary-500);
   animation: dots 1s infinite ease-in-out;
 }
 

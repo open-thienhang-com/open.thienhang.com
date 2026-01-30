@@ -285,31 +285,17 @@ export class DataMeshServices {
 
   // Domain Catalog - Updated for new API structure
   getDomainCatalog(params?: any): Observable<ApiResponse<Domain[]>> {
-    // Since there's no catalog endpoint, we'll get the list of domains and fetch details for each
-    return this.getDomainsList().pipe(
-      map(domainsResponse => {
-        if (domainsResponse.success && domainsResponse.data) {
-          // For now, return basic domain info - in a real implementation, you'd fetch details for each domain
-          const basicDomains: Domain[] = domainsResponse.data.map(domainKey => ({
-            domain_key: domainKey,
-            name: domainKey.charAt(0).toUpperCase() + domainKey.slice(1).replace('_', ' '),
-            display_name: domainKey.charAt(0).toUpperCase() + domainKey.slice(1).replace('_', ' '),
-            status: 'Active',
-            team: 'Unknown Team',
-            owner: 'Unknown Owner',
-            description: `${domainKey} domain services`,
-            metrics: { subscribers: 0, quality_score: '0%' },
-            tags: [],
-            sla: { availability: '0%', freshness: 'Unknown', version: '1.0.0' },
-            data_products: [],
-            contact: { email: '', slack: '', support: '' }
-          }));
-
+    // Call the /data-mesh/catalog endpoint
+    const url = `${this.baseUrl}/data-mesh/catalog`;
+    const httpParams = this.buildHttpParams(params);
+    return this.http.get<DomainCatalogResponse>(url, { params: httpParams })
+      .pipe(map(response => {
+        if (response && response.data) {
           return {
-            data: basicDomains,
-            total: basicDomains.length,
+            data: response.data,
+            total: response.total,
             success: true,
-            message: `Retrieved ${basicDomains.length} domains`
+            message: response.message
           };
         }
         return {
@@ -317,8 +303,7 @@ export class DataMeshServices {
           success: false,
           message: 'Failed to retrieve domain catalog'
         };
-      })
-    );
+      }));
   }
 
   // Get list of domain names only

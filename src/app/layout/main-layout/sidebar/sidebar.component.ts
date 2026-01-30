@@ -223,13 +223,6 @@ export class SidebarComponent implements OnInit, OnChanges {
       description: ''
     },
     {
-      key: 'planning',
-      label: 'Planning',
-      icon: 'pi pi-truck',
-      gradient: 'linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)',
-      description: ''
-    },
-    {
       key: 'marketplace',
       label: 'Marketplace',
       icon: 'pi pi-shopping-cart',
@@ -302,8 +295,8 @@ export class SidebarComponent implements OnInit, OnChanges {
           icon: 'pi pi-sitemap',
           children: [
             { label: 'Data Products', url: '/data-mesh/data-products', icon: 'pi pi-shopping-cart' },
-            { label: 'Domains', url: '/data-mesh/domains', icon: 'pi pi-book' },
-            { label: 'API Explorer', url: '/data-mesh/api-explorer', icon: 'pi pi-code' },
+            { label: 'Extensions', url: '/data-mesh/extensions', icon: 'pi pi-book' },
+            { label: 'Data Catalog', url: '/data-mesh/catalog', icon: 'pi pi-database' },
             { label: 'Lineage', url: '/data-mesh/lineage', icon: 'pi pi-share-alt' },
             { label: 'Quality Metrics', url: '/data-mesh/quality', icon: 'pi pi-chart-bar' }
           ]
@@ -387,17 +380,17 @@ export class SidebarComponent implements OnInit, OnChanges {
             { label: 'Rewards', url: '/retail/rewards', icon: 'pi pi-gift' },
             { label: 'Campaigns', url: '/retail/campaigns', icon: 'pi pi-megaphone' }
           ]
+        },
+        {
+          label: 'Planning & Forecasting',
+          icon: 'pi pi-truck',
+          children: [
+            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-cog' },
+            { label: 'Stochastic', url: '/planning/stochastic', icon: 'pi pi-chart-pie' },
+            { label: 'Fleet', url: '/planning/fleet', icon: 'pi pi-truck' },
+            { label: 'Experiment', url: '/planning/experiment', icon: 'pi pi-flask' }
+          ]
         }
-      ]
-    },
-    {
-      label: 'Planning',
-      icon: 'pi pi-truck',
-      expanded: false,
-      items: [
-        { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-cog' },
-        { label: 'Stochastic', url: '/planning/stochastic', icon: 'pi pi-chart-pie' },
-        { label: 'Fleet', url: '/planning/fleet', icon: 'pi pi-truck' }
       ]
     },
     {
@@ -501,12 +494,12 @@ export class SidebarComponent implements OnInit, OnChanges {
             icon: 'pi pi-book',
             expanded: false,
             children: [
-              { label: 'Catalog', url: '/data-mesh/domains/catalog', icon: 'pi pi-list' },
-              { label: 'Discovery', url: '/data-mesh/domains/discovery', icon: 'pi pi-search' },
-              { label: 'Assets', url: '/data-mesh/domains/assets', icon: 'pi pi-database' },
-              { label: 'Lineage', url: '/data-mesh/domains/lineage', icon: 'pi pi-share-alt' },
-              { label: 'Policies', url: '/data-mesh/domains/policies', icon: 'pi pi-lock' },
-              { label: 'Monitoring', url: '/data-mesh/domains/monitoring', icon: 'pi pi-chart-line' }
+              { label: 'Catalog', url: '/data-mesh/extensions/catalog', icon: 'pi pi-list' },
+              { label: 'Discovery', url: '/data-mesh/extensions/discovery', icon: 'pi pi-search' },
+              { label: 'Assets', url: '/data-mesh/extensions/assets', icon: 'pi pi-database' },
+              { label: 'Lineage', url: '/data-mesh/extensions/lineage', icon: 'pi pi-share-alt' },
+              { label: 'Policies', url: '/data-mesh/extensions/policies', icon: 'pi pi-lock' },
+              { label: 'Monitoring', url: '/data-mesh/extensions/monitoring', icon: 'pi pi-chart-line' }
             ]
           },
           {
@@ -637,7 +630,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     // Treat a missing or 'all' appKey as the unified sidebar view
     if (!this.sidebarGroups || !this.appKey || this.appKey === 'all') {
       this.visibleGroups = this.orderGroupsForApp(this.sidebarGroups || [], 'all');
-      // Đóng tất cả groups mặc định để sidebar không quá dài
+      // Close all groups by default to keep sidebar compact
       this.visibleGroups.forEach(g => {
         g.expanded = false;
         // precompute flattened items to avoid heavy template calls
@@ -648,32 +641,21 @@ export class SidebarComponent implements OnInit, OnChanges {
 
     const key = this.appKey;
 
-    // Special-case: for Planning app - hiển thị Planning + Experiment
+    // Special-case: for Planning app - redirect to Retail (Planning is now merged into Retail)
     if (key === 'planning') {
-      const planningGroup = this.sidebarGroups.find(
-        g => (g.label || '').toLowerCase().includes('planning')
-      );
-      const experimentGroup = this.sidebarGroups.find(
-        g => (g.label || '').toLowerCase().includes('experiment')
-      );
-      const groups: any[] = [];
-      if (planningGroup) groups.push(planningGroup);
-      if (experimentGroup) groups.push(experimentGroup);
-      this.visibleGroups = this.orderGroupsForApp(groups, key);
-      this.visibleGroups.forEach(g => {
-        g.expanded = false;
-        (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
-      });
+      // Redirect to Retail instead
+      this.appKey = 'retail';
+      this.computeVisibleGroups();
       return;
     }
 
-    // Special-case: for Retail app, show only Retail Overview + Inventory Management + Point of Sale + E-commerce + Analytics + Loyalty Program
+    // Special-case: for Retail app, show Inventory, POS, E-commerce, Analytics, Loyalty, and Planning
     if (key === 'retail') {
       const retailGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('retail'));
       const groups: any[] = [];
 
       if (retailGroup) {
-        // Keep Inventory Management subgroup (already has children)
+        // Keep Inventory Management subgroup
         const inv = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('inventory'));
         if (inv) groups.push({ label: inv.label, icon: inv.icon || 'pi pi-box', expanded: false, items: ((inv as any).children ?? (inv as any).items ?? []) });
 
@@ -692,13 +674,17 @@ export class SidebarComponent implements OnInit, OnChanges {
         // Loyalty Program
         const loy = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('loyalty'));
         if (loy) groups.push({ label: loy.label, icon: loy.icon || 'pi pi-star', expanded: false, items: ((loy as any).children ?? (loy as any).items ?? []) });
+
+        // Planning & Forecasting
+        const planning = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('planning'));
+        if (planning) groups.push({ label: planning.label, icon: planning.icon || 'pi pi-truck', expanded: false, items: ((planning as any).children ?? (planning as any).items ?? []) });
       }
 
       // Prepend a Retail Overview quick link as its own group
       groups.unshift({ label: 'Retail Overview', icon: 'pi pi-shopping-bag', expanded: false, items: [{ label: 'Overview', url: '/retail', icon: 'pi pi-chart-bar' }] });
 
       this.visibleGroups = this.orderGroupsForApp(groups, key);
-      // Đóng tất cả groups mặc định
+      // Close all groups by default
       this.visibleGroups.forEach(g => {
         g.expanded = false;
         (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
@@ -707,37 +693,95 @@ export class SidebarComponent implements OnInit, OnChanges {
     }
 
     // Special-case: when Marketplace app selected, render child menu items of
-    // Data Exploration + Explore directly (no parent headers)
+    // Data Exploration + Explore directly with proper grouping
     if (key === 'marketplace') {
-      const byLabel = (lbl: string) => this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes(lbl));
-      const dataExploration = byLabel('data exploration');
-      const exploreGroup = byLabel('explore');
+      const groups: any[] = [];
 
-      // Collect flattened items from both groups (promote children)
-      const items: any[] = [];
-      if (dataExploration) items.push(...this.getFlattenedItems(dataExploration.items || []));
-      if (exploreGroup) items.push(...this.getFlattenedItems(exploreGroup.items || []));
+      // Group 1: Data Exploration
+      const dataExploration = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('data exploration'));
+      if (dataExploration && dataExploration.items) {
+        groups.push({
+          label: 'Data Exploration',
+          icon: 'pi pi-compass',
+          expanded: false,
+          items: dataExploration.items
+        });
+      }
 
-      // Fallback: if for any reason the groups are missing or flattening produced no items
-      // (e.g. labels changed or group removed), ensure core Explore items are still present
-      // for the Marketplace view so users can access Database/Pipelines/Topics/Containers/Search.
-      if (!items || items.length === 0) {
-        items.push(
-          { label: 'Database Explorer', url: '/explore/database', icon: 'pi pi-database' },
-          { label: 'Pipelines', url: '/explore/pipelines', icon: 'pi pi-sliders-h' },
-          { label: 'Topics & Events', url: '/explore/topics', icon: 'pi pi-tags' },
-          { label: 'Containers', url: '/explore/container', icon: 'pi pi-box' },
-          { label: 'Advanced Search', url: '/explore/search', icon: 'pi pi-search' }
+      // Group 2: Data Mesh (from Explore group)
+      const exploreGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('explore'));
+      if (exploreGroup && exploreGroup.items) {
+        const dataMeshItem: any = (exploreGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('data mesh'));
+        if (dataMeshItem && dataMeshItem.children) {
+          groups.push({
+            label: 'Data Mesh',
+            icon: 'pi pi-sitemap',
+            expanded: false,
+            items: dataMeshItem.children
+          });
+        }
+      }
+
+      // Group 3: Observability (from Explore group)
+      if (exploreGroup && exploreGroup.items) {
+        const observabilityItem: any = (exploreGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('observability'));
+        if (observabilityItem && observabilityItem.children) {
+          groups.push({
+            label: 'Observability',
+            icon: 'pi pi-eye',
+            expanded: false,
+            items: observabilityItem.children
+          });
+        }
+      }
+
+      // Fallback: if no groups found, create default structure
+      if (groups.length === 0) {
+        groups.push(
+          {
+            label: 'Data Exploration',
+            icon: 'pi pi-compass',
+            expanded: false,
+            items: [
+              { label: 'Database Explorer', url: '/explore/database', icon: 'pi pi-database' },
+              { label: 'Pipelines', url: '/explore/pipelines', icon: 'pi pi-sliders-h' },
+              { label: 'Topics & Events', url: '/explore/topics', icon: 'pi pi-tags' },
+              { label: 'ML Models', url: '/explore/ml-models', icon: 'pi pi-brain' },
+              { label: 'Containers', url: '/explore/container', icon: 'pi pi-box' },
+              { label: 'Advanced Search', url: '/explore/search', icon: 'pi pi-search' }
+            ]
+          },
+          {
+            label: 'Data Mesh',
+            icon: 'pi pi-sitemap',
+            expanded: false,
+            items: [
+              { label: 'Data Products', url: '/data-mesh/data-products', icon: 'pi pi-shopping-cart' },
+              { label: 'Extensions', url: '/data-mesh/extensions', icon: 'pi pi-book' },
+              { label: 'Data Catalog', url: '/data-mesh/catalog', icon: 'pi pi-database' },
+              { label: 'Lineage', url: '/data-mesh/lineage', icon: 'pi pi-share-alt' },
+              { label: 'Quality Metrics', url: '/data-mesh/quality', icon: 'pi pi-chart-bar' }
+            ]
+          },
+          {
+            label: 'Observability',
+            icon: 'pi pi-eye',
+            expanded: false,
+            items: [
+              { label: 'Monitoring', url: '/observability/monitoring', icon: 'pi pi-chart-line' },
+              { label: 'Alerts', url: '/observability/alert', icon: 'pi pi-bell' },
+              { label: 'Metrics', url: '/observability/metrics', icon: 'pi pi-chart-bar' },
+              { label: 'Audit Log', url: '/observability/audit-log', icon: 'pi pi-file' }
+            ]
+          }
         );
       }
 
-      // Create a pseudo-group with no header - template will render items directly
-      const pseudo = { label: '', icon: '', expanded: false, _noHeader: true, items } as any;
-      pseudo._flattened = items;
-
-      this.visibleGroups = [pseudo];
-      // ensure flattened items exist
-      this.visibleGroups.forEach(g => (g as any)._flattened = (g as any)._flattened || this.getFlattenedItems((g as any).items || []));
+      this.visibleGroups = this.orderGroupsForApp(groups, key);
+      this.visibleGroups.forEach(g => {
+        g.expanded = false;
+        (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
+      });
       return;
     }
 
@@ -782,7 +826,7 @@ export class SidebarComponent implements OnInit, OnChanges {
 
       // If nothing matched, keep sidebar empty for these apps per request
       this.visibleGroups = this.orderGroupsForApp(groups, key);
-      // Đóng tất cả groups mặc định
+      // Close all groups by default
       this.visibleGroups.forEach(g => g.expanded = false);
       return;
     }
@@ -809,7 +853,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     });
 
     this.visibleGroups = this.orderGroupsForApp(filtered, key);
-    // Đóng tất cả groups mặc định
+    // Close all groups by default
     this.visibleGroups.forEach(g => {
       g.expanded = false;
       (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
@@ -869,7 +913,7 @@ export class SidebarComponent implements OnInit, OnChanges {
 
 
   ngOnChanges(changes: any) {
-    // Khi sidebar bị thu gọn, tự động collapse tất cả menu groups
+    // When sidebar is collapsed, automatically collapse all menu groups
     if (changes.collapsed && changes.collapsed.currentValue === true) {
       this.sidebarGroups.forEach(group => {
         group.expanded = false;

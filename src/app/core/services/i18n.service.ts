@@ -57,7 +57,7 @@ export class I18nService {
         dataProducts: 'Sản phẩm dữ liệu',
         dataMesh: 'Lưới dữ liệu',
         domainCatalog: 'Danh mục miền',
-        marketplace: 'Chợ dữ liệu',
+        marketplace: 'Marketplace',
         explore: 'Khám phá',
         governance: 'Quản trị',
         observability: 'Quan sát',
@@ -68,15 +68,15 @@ export class I18nService {
 
       // Marketplace translations
       marketplace: {
-        title: 'Chợ sản phẩm dữ liệu',
-        subtitle: 'Khám phá và quản lý các sản phẩm dữ liệu trên tất cả các miền',
-        search: 'Tìm kiếm sản phẩm...',
-        loading: 'Đang tải sản phẩm...',
-        features: 'Tính năng có sẵn',
-        viewDetails: 'Xem chi tiết',
-        getStarted: 'Bắt đầu',
-        noResults: 'Không tìm thấy sản phẩm nào',
-        noResultsDesc: 'Hãy thử điều chỉnh từ khóa tìm kiếm hoặc kiểm tra lại sau để có sản phẩm mới.'
+        title: 'Data Product Marketplace',
+        subtitle: 'Discover and manage data products across all domains',
+        search: 'Search products...',
+        loading: 'Loading products...',
+        features: 'Available Features',
+        viewDetails: 'View Details',
+        getStarted: 'Get Started',
+        noResults: 'No products found',
+        noResultsDesc: 'Try adjusting your search terms or check back later for new products.'
       },
 
       // Domain Catalog

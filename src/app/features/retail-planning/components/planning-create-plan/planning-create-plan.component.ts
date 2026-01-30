@@ -510,10 +510,10 @@ export class PlanningCreatePlanComponent implements OnInit, OnDestroy, AfterView
       const iconHtml = `
         <div style="position: relative; display: inline-block; width: 40px; height: 40px;">
           <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="20" cy="20" r="18" fill="#f97316" stroke="white" stroke-width="2"/>
+            <circle cx="20" cy="20" r="18" fill="var(--p-primary-500)" stroke="white" stroke-width="2"/>
           </svg>
           <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-                      width: 24px; height: 24px; background-color: rgba(251, 146, 60, 0.95); 
+                      width: 24px; height: 24px; background-color: rgba(var(--p-primary-500), 0.95); 
                       border-radius: 50%; border: 2px solid white;
                       display: flex; align-items: center; justify-content: center;
                       color: white; font-weight: bold; font-size: 12px; 

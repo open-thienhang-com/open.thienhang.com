@@ -27,18 +27,18 @@
     0%,
     100% {
         transform: scale(1);
-        filter: drop-shadow(0 4px 12px rgba(249, 115, 22, 0.5));
+        filter: drop-shadow(0 4px 12px rgba(var(--p-primary-500), 0.5));
     }
 
     50% {
         transform: scale(1.1);
-        filter: drop-shadow(0 6px 16px rgba(249, 115, 22, 0.8));
+        filter: drop-shadow(0 6px 16px rgba(var(--p-primary-500), 0.8));
     }
 }
 
 /* Glow effect for timeline markers */
 .custom-svg-marker.marker-timeline svg {
-    filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.6)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+    filter: drop-shadow(0 0 8px var(--p-primary-500)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
 }
 
 /* Custom marker styles for Leaflet map */
@@ -61,7 +61,7 @@
     height: 0;
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
-    border-top: 8px solid #f97316;
+    border-top: 8px solid var(--p-primary-500);
     filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
 }
 
@@ -87,15 +87,15 @@
     align-items: center;
     justify-content: center;
     height: 100%;
-    background: #f8f9fa;
+    background: var(--p-surface-50);
     border-radius: 8px;
 }
 
 .map-loading div {
     width: 40px;
     height: 40px;
-    border: 4px solid #e3e3e3;
-    border-top: 4px solid #f97316;
+    border: 4px solid var(--p-surface-200);
+    border-top: 4px solid var(--p-primary-500);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -124,25 +124,25 @@
 }
 
 :host ::ng-deep .custom-popup-header {
-    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    background: linear-gradient(135deg, var(--p-primary-500) 0%, var(--p-primary-600) 100%);
     padding: 12px 16px;
     color: white;
 }
 
 :host ::ng-deep .custom-popup-header.hub-type {
-    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    background: linear-gradient(135deg, var(--p-primary-500) 0%, var(--p-primary-600) 100%);
 }
 
 :host ::ng-deep .custom-popup-header.sorting-type {
-    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    background: linear-gradient(135deg, var(--p-primary-500) 0%, var(--p-primary-600) 100%);
 }
 
 :host ::ng-deep .custom-popup-header.delivery-type {
-    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    background: linear-gradient(135deg, var(--p-primary-500) 0%, var(--p-primary-600) 100%);
 }
 
 :host ::ng-deep .custom-popup-header.transit-type {
-    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    background: linear-gradient(135deg, var(--p-primary-500) 0%, var(--p-primary-600) 100%);
 }
 
 :host ::ng-deep .custom-popup-badge {
@@ -174,7 +174,7 @@
     gap: 8px;
     margin-bottom: 8px;
     font-size: 12px;
-    color: #4b5563;
+    color: var(--p-surface-600);
 }
 
 :host ::ng-deep .custom-popup-info-row:last-child {
@@ -192,7 +192,7 @@
     width: 100%;
     padding: 8px 16px;
     margin-top: 8px;
-    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    background: linear-gradient(135deg, var(--p-primary-500) 0%, var(--p-primary-600) 100%);
     color: white;
     border: none;
     border-radius: 6px;
@@ -204,7 +204,7 @@
 
 :host ::ng-deep .custom-popup-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+    box-shadow: 0 4px 12px rgba(var(--p-primary-500), 0.4);
 }
 
 :host ::ng-deep .leaflet-popup-tip {
@@ -229,7 +229,7 @@
 /* Custom scrollbar styling */
 :host ::ng-deep * {
     scrollbar-width: thin;
-    scrollbar-color: rgba(249, 115, 22, 0.3) transparent;
+    scrollbar-color: rgba(var(--p-primary-500), 0.3) transparent;
 }
 
 :host ::ng-deep *::-webkit-scrollbar {
@@ -243,13 +243,13 @@
 }
 
 :host ::ng-deep *::-webkit-scrollbar-thumb {
-    background-color: rgba(249, 115, 22, 0.3);
+    background-color: rgba(var(--p-primary-500), 0.3);
     border-radius: 4px;
     border: 2px solid transparent;
 }
 
 :host ::ng-deep *::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(249, 115, 22, 0.5);
+    background-color: rgba(var(--p-primary-500), 0.5);
 }
 
 /* Smooth transitions for all interactive elements */
@@ -268,13 +268,13 @@
 
 /* Custom styling for warehouse search AutoComplete input */
 :host ::ng-deep .p-autocomplete .p-autocomplete-input {
-    border: 2px solid rgb(249 115 22) !important;
+    border: 2px solid var(--p-primary-500) !important;
     border-radius: 0.5rem !important;
     padding: 0.5rem 0.75rem !important;
 }
 
 :host ::ng-deep .p-autocomplete .p-autocomplete-input:focus {
-    border-color: rgb(249 115 22) !important;
-    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1) !important;
+    border-color: var(--p-primary-500) !important;
+    box-shadow: 0 0 0 3px rgba(var(--p-primary-500), 0.1) !important;
     outline: none !important;
 }
