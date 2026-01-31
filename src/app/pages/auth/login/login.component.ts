@@ -25,6 +25,7 @@ import { LoadingService } from '../../../core/services/loading.service';
     Toast
   ],
   templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss']
 })
 export class LoginComponent extends AppBaseComponent {
   email = 'admin@thienhang.com';
