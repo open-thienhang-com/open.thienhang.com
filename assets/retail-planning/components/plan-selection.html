@@ -1,0 +1,255 @@
+<!-- Plan Selection with Card Grid Layout -->
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6" id="plan-card">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h3 class="text-xl font-bold text-gray-900">Danh Sách Lịch</h3>
+      <p class="text-sm text-gray-500 mt-1">Chọn lịch có sẵn hoặc tạo mới để bắt đầu</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <span id="plans-count" class="text-sm text-gray-600 font-medium">0 lịch</span>
+    </div>
+  </div>
+
+  <!-- Filters and Search Bar -->
+  <div class="mb-6 space-y-4 plan-filters sticky top-4 z-20 bg-white p-3 rounded-md">
+    <!-- Search -->
+    <div class="relative">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+      </div>
+      <input 
+        id="plan-search-input" 
+        type="text" 
+        placeholder="Tìm kiếm lịch theo tên hoặc ID..." 
+        class="w-full pl-10 pr-4 py-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" 
+      />
+    </div>
+
+    <!-- Filters -->
+    <div class="flex flex-wrap items-center gap-3">
+      <div class="flex items-center gap-2">
+        <label class="text-sm text-gray-700 font-medium">Sắp xếp:</label>
+        <select 
+          id="plan-sort-select" 
+          class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+          <option value="newest">Mới nhất</option>
+          <option value="oldest">Cũ nhất</option>
+          <option value="name-asc">Tên A-Z</option>
+          <option value="name-desc">Tên Z-A</option>
+        </select>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <label class="text-sm text-gray-700 font-medium">Hiển thị:</label>
+        <select 
+          id="plan-per-page-select" 
+          class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+          <option value="6">6 lịch</option>
+          <option value="12" selected>12 lịch</option>
+          <option value="24">24 lịch</option>
+          <option value="48">48 lịch</option>
+        </select>
+      </div>
+
+      <div class="ml-auto">
+        <button 
+          type="button" 
+          id="btn-refresh-plans"
+          onclick="if(typeof window.loadRecentPlans==='function') window.loadRecentPlans();"
+          class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Làm mới
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plan Cards Grid -->
+   
+  <div id="plan-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 min-h-[400px]">
+    <!-- Loading placeholder -->
+    <div id="plans-loading-placeholder" class="col-span-full flex items-center justify-center py-12">
+      <div class="text-center">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-primary mb-2"></div>
+        <p class="text-xs text-gray-500">Đang tải danh sách...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination Controls -->
+  <div class="flex flex-col sm:flex-row items-center justify-between mt-6 pt-6 border-t border-gray-200 gap-4">
+    <div class="flex items-center gap-2">
+      <button 
+        type="button" 
+        id="btn-first-page" 
+        onclick="if(typeof window.goToFirstPage==='function') window.goToFirstPage();"
+        class="inline-flex items-center justify-center w-8 h-8 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        disabled>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+        </svg>
+      </button>
+      <button 
+        type="button" 
+        id="btn-prev-page" 
+        onclick="if(typeof window.goToPrevPage==='function') window.goToPrevPage();"
+        class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        disabled>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Trước
+      </button>
+    </div>
+    
+    <div class="text-sm text-gray-600 font-medium">
+      Trang <span id="current-page" class="font-bold text-primary">1</span> / <span id="total-pages" class="font-bold">1</span>
+    </div>
+    
+    <div class="flex items-center gap-2">
+      <button 
+        type="button" 
+        id="btn-next-page" 
+        onclick="if(typeof window.goToNextPage==='function') window.goToNextPage();"
+        class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        disabled>
+        Sau
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+      <button 
+        type="button" 
+        id="btn-last-page" 
+        onclick="if(typeof window.goToLastPage==='function') window.goToLastPage();"
+        class="inline-flex items-center justify-center w-8 h-8 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        disabled>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden file input for upload -->
+<input 
+  id="plan-file-input" 
+  type="file" 
+  accept=".json,.xlsx,.xls,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" 
+  class="hidden" 
+/>
+
+<style>
+  /* Plan Card - Product Style */
+  .plan-card {
+    @apply bg-white rounded-xl overflow-hidden border border-gray-200 hover:border-orange-300 transition-all duration-200 cursor-pointer flex flex-col;
+  }
+
+  .plan-card:hover {
+    @apply shadow-lg transform -translate-y-1;
+  }
+
+  .plan-card.selected {
+    @apply border-orange-500 ring-2 ring-orange-100;
+  }
+
+  .plan-card-image {
+    @apply relative w-full h-48 bg-gradient-to-br from-orange-100 to-orange-50 overflow-hidden;
+  }
+
+  .plan-card-image img {
+    @apply w-full h-full object-cover;
+  }
+
+  .plan-card-image::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none;
+  }
+
+  .plan-card-badge {
+    @apply absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold text-white shadow-md;
+  }
+
+  .plan-card-badge.active {
+    @apply bg-green-500;
+  }
+
+  .plan-card-badge.inactive {
+    @apply bg-gray-400;
+  }
+
+  .plan-card-content {
+    @apply flex-1 flex flex-col p-5;
+  }
+
+  .plan-card-title {
+    @apply text-lg font-bold text-gray-800 mb-2 line-clamp-2 min-h-[3.5rem];
+  }
+
+  .plan-card-meta {
+    @apply flex flex-col gap-2 text-sm text-gray-600 mb-4 flex-1;
+  }
+
+  .plan-card-meta-item {
+    @apply flex items-center gap-2;
+  }
+
+  .plan-card-meta-item svg {
+    @apply w-4 h-4 text-orange-500 flex-shrink-0;
+  }
+
+  .plan-card-stats {
+    @apply grid grid-cols-3 gap-2 py-3 border-t border-gray-100 mb-3;
+  }
+
+  .plan-card-stat {
+    @apply text-center;
+  }
+
+  .plan-card-stat-value {
+    @apply text-lg font-bold text-orange-600;
+  }
+
+  .plan-card-stat-label {
+    @apply text-xs text-gray-500 mt-1;
+  }
+
+  .plan-card-actions {
+    @apply flex gap-2;
+  }
+
+  .plan-card-btn {
+    @apply flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-150 flex items-center justify-center gap-1;
+  }
+
+  .plan-card-btn svg {
+    @apply w-4 h-4;
+  }
+
+  .plan-card-btn-primary {
+    @apply bg-orange-500 text-white hover:bg-orange-600;
+  }
+
+  .plan-card-btn-secondary {
+    @apply bg-gray-100 text-gray-700 hover:bg-gray-200;
+  }
+
+  /* Upload Card */
+  .upload-card {
+    @apply bg-white rounded-xl;
+  }
+
+  .plan-badge {
+    @apply backdrop-blur-sm bg-white/90;
+  }
+
+  .plan-icon-container {
+    @apply backdrop-blur-sm bg-white/20;
+  }
+</style>
