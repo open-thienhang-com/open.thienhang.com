@@ -1,0 +1,283 @@
+<div class="rooms-page">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1>Rooms Management</h1>
+        <p class="subtitle">Manage rooms for your apartments</p>
+      </div>
+      <button pButton type="button" label="Add New Room" icon="pi pi-plus"
+        (click)="openDialog()" class="p-button-primary p-button-lg"></button>
+    </div>
+  </div>
+
+  <!-- Search and Filter Section -->
+  <div class="search-section">
+    <div class="search-container">
+      <i class="pi pi-search"></i>
+      <input type="text" placeholder="Search rooms..." [(ngModel)]="searchQuery" class="search-input">
+    </div>
+    <p-dropdown 
+      [options]="apartmentsForDropdown" 
+      optionLabel="title" 
+      optionValue="id"
+      placeholder="Filter by Apartment"
+      [(ngModel)]="selectedApartmentFilter"
+      [showClear]="true"
+      class="apartment-filter">
+    </p-dropdown>
+    <p class="result-count">{{ filteredRooms.length }} rooms found</p>
+  </div>
+
+  <!-- Rooms Table -->
+  <div class="table-container" *ngIf="!loading; else loadingTemplate">
+    <p-table 
+      [value]="filteredRooms" 
+      [paginator]="true" 
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} rooms"
+      styleClass="p-datatable-striped">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Room Name</th>
+          <th>Apartment</th>
+          <th>Type</th>
+          <th>Area (m²)</th>
+          <th>Beds</th>
+          <th>Max Occupancy</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-room>
+        <tr>
+          <td>
+            <strong>{{ room.name }}</strong>
+            <br>
+            <small class="text-muted">ID: {{ room.id }}</small>
+          </td>
+          <td>{{ getApartmentName(room.apartment_id) }}</td>
+          <td>
+            <span class="room-type-badge">{{ room.room_type }}</span>
+          </td>
+          <td>{{ room.area }}</td>
+          <td>
+            <span *ngIf="room.bed_count > 0">{{ room.bed_count }}x {{ room.bed_type || 'N/A' }}</span>
+            <span *ngIf="room.bed_count === 0" class="text-muted">-</span>
+          </td>
+          <td>{{ room.max_occupancy }}</td>
+          <td>
+            <p-badge 
+              [value]="room.is_available ? 'Available' : 'Unavailable'" 
+              [severity]="room.is_available ? 'success' : 'danger'">
+            </p-badge>
+            <p-badge 
+              *ngIf="room.maintenance_required" 
+              value="Maintenance" 
+              severity="warning"
+              styleClass="ml-2">
+            </p-badge>
+          </td>
+          <td>
+            <button pButton type="button" icon="pi pi-pencil" 
+              (click)="editRoom(room)" 
+              class="p-button-rounded p-button-text p-button-warning"
+              pTooltip="Edit Room">
+            </button>
+            <button pButton type="button" icon="pi pi-trash" 
+              (click)="deleteRoom(room)" 
+              class="p-button-rounded p-button-text p-button-danger"
+              pTooltip="Delete Room">
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8" class="text-center">
+            <div class="empty-state">
+              <i class="pi pi-door-open" style="font-size: 3rem; color: #ccc;"></i>
+              <p>No rooms found</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- Loading Template -->
+  <ng-template #loadingTemplate>
+    <div class="loading-container">
+      <p-skeleton width="100%" height="50px" styleClass="mb-3"></p-skeleton>
+      <p-skeleton width="100%" height="50px" styleClass="mb-3"></p-skeleton>
+      <p-skeleton width="100%" height="50px"></p-skeleton>
+    </div>
+  </ng-template>
+
+  <!-- Create/Edit Dialog -->
+  <p-dialog 
+    [(visible)]="showDialog" 
+    [header]="isEditMode ? 'Edit Room' : 'Create New Room'"
+    [modal]="true" 
+    [style]="{width: '700px', maxWidth: '90vw'}"
+    [styleClass]="'room-dialog'"
+    [closable]="true"
+    (onHide)="closeDialog()">
+    
+    <form class="room-form">
+      <div class="form-group">
+        <label for="apartment_id">Apartment ID *</label>
+        <p-dropdown 
+          id="apartment_id"
+          [options]="apartmentsForDropdown" 
+          optionLabel="title" 
+          optionValue="id"
+          placeholder="Select Apartment"
+          [(ngModel)]="formData.apartment_id"
+          name="apartment_id"
+          [required]="true">
+        </p-dropdown>
+      </div>
+
+      <div class="form-group">
+        <label for="name">Room Name *</label>
+        <input 
+          id="name"
+          type="text" 
+          pInputText 
+          [(ngModel)]="formData.name" 
+          name="name"
+          placeholder="e.g., Master Bedroom"
+          required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="room_type">Room Type *</label>
+          <p-dropdown 
+            id="room_type"
+            [options]="roomTypeOptions" 
+            [(ngModel)]="formData.room_type" 
+            name="room_type"
+            placeholder="Select Type">
+          </p-dropdown>
+        </div>
+
+        <div class="form-group">
+          <label for="area">Area (m²) *</label>
+          <p-inputNumber 
+            id="area"
+            [(ngModel)]="formData.area" 
+            name="area"
+            [min]="0"
+            [max]="1000"
+            [required]="true">
+          </p-inputNumber>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="bed_count">Bed Count</label>
+          <p-inputNumber 
+            id="bed_count"
+            [(ngModel)]="formData.bed_count" 
+            name="bed_count"
+            [min]="0"
+            [max]="10">
+          </p-inputNumber>
+        </div>
+
+        <div class="form-group">
+          <label for="bed_type">Bed Type</label>
+          <p-dropdown 
+            id="bed_type"
+            [options]="bedTypeOptions" 
+            [(ngModel)]="formData.bed_type" 
+            name="bed_type"
+            [showClear]="true"
+            placeholder="Select Bed Type">
+          </p-dropdown>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="max_occupancy">Max Occupancy</label>
+          <p-inputNumber 
+            id="max_occupancy"
+            [(ngModel)]="formData.max_occupancy" 
+            name="max_occupancy"
+            [min]="1"
+            [max]="20">
+          </p-inputNumber>
+        </div>
+
+        <div class="form-group">
+          <label for="room_order">Room Order</label>
+          <p-inputNumber 
+            id="room_order"
+            [(ngModel)]="formData.room_order" 
+            name="room_order"
+            [min]="1">
+          </p-inputNumber>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Room Features</label>
+        <div class="checkbox-group">
+          <p-checkbox [(ngModel)]="formData.has_window" name="has_window" label="Window"></p-checkbox>
+          <p-checkbox [(ngModel)]="formData.has_balcony" name="has_balcony" label="Balcony"></p-checkbox>
+          <p-checkbox [(ngModel)]="formData.has_private_bathroom" name="has_private_bathroom" label="Private Bathroom"></p-checkbox>
+          <p-checkbox [(ngModel)]="formData.has_air_conditioning" name="has_air_conditioning" label="Air Conditioning"></p-checkbox>
+          <p-checkbox [(ngModel)]="formData.has_heating" name="has_heating" label="Heating"></p-checkbox>
+          <p-checkbox [(ngModel)]="formData.has_tv" name="has_tv" label="TV"></p-checkbox>
+          <p-checkbox [(ngModel)]="formData.has_wifi" name="has_wifi" label="WiFi"></p-checkbox>
+          <p-checkbox [(ngModel)]="formData.has_desk" name="has_desk" label="Desk"></p-checkbox>
+          <p-checkbox [(ngModel)]="formData.has_closet" name="has_closet" label="Closet"></p-checkbox>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Status</label>
+        <div class="checkbox-group status-group">
+          <p-checkbox [(ngModel)]="formData.is_available" name="is_available" label="Available"></p-checkbox>
+          <p-checkbox [(ngModel)]="formData.maintenance_required" name="maintenance_required" label="Maintenance Required"></p-checkbox>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea 
+          id="description"
+          pInputTextarea 
+          [(ngModel)]="formData.description" 
+          name="description"
+          rows="3"
+          placeholder="Room description...">
+        </textarea>
+      </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Cancel" icon="pi pi-times" 
+        (click)="closeDialog()" class="p-button-text"></button>
+      <button pButton type="button" 
+        [label]="isEditMode ? 'Update' : 'Create'" 
+        [icon]="isEditMode ? 'pi pi-check' : 'pi pi-plus'"
+        (click)="saveRoom()" 
+        [disabled]="loading"
+        class="p-button-primary">
+      </button>
+    </ng-template>
+  </p-dialog>
+</div>

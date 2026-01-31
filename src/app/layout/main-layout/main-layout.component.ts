@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from "@angular/router";
+import { RouterOutlet, Router, NavigationEnd } from "@angular/router";
 import { SidebarComponent } from "./sidebar/sidebar.component";
 import { FooterComponent } from "./footer/footer.component";
 import { Toast } from 'primeng/toast';
@@ -8,7 +8,7 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
 import { ThemeService } from '../../core/services/theme.service';
 import { LoadingService, LoadingState } from '../../core/services/loading.service';
 import { LoadingComponent } from '../../shared/component/loading/loading.component';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, filter } from 'rxjs';
 import { AppSwitcherService, AppKey } from '../../core/services/app-switcher.service';
 
 @Component({
@@ -31,6 +31,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   // (The template CSS will hide it on mobile via responsive classes)
   sidebarOpen = true;
   currentApp: AppKey = 'all';
+  showFooter = true;
   loadingState: LoadingState = {
     isLoading: false,
     message: 'Loading...',
@@ -52,7 +53,8 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   constructor(
     private themeService: ThemeService,
     private loadingService: LoadingService,
-    private appSwitcher: AppSwitcherService
+    private appSwitcher: AppSwitcherService,
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -62,6 +64,20 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
       .subscribe(appKey => {
         this.currentApp = appKey;
       });
+
+    // Subscribe to router events to hide footer on hotel routes
+    this.router.events
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((event: NavigationEnd) => {
+        // Hide footer when on hotel routes
+        this.showFooter = !event.url.startsWith('/hotel');
+      });
+
+    // Check initial route
+    this.showFooter = !this.router.url.startsWith('/hotel');
 
     // Show beautiful loading animation on page refresh/initial load
     this.showInitialLoading();

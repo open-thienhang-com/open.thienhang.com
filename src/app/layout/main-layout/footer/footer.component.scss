@@ -3,7 +3,7 @@
     background: var(--p-surface-900);
     color: var(--p-surface-50);
     border-top: 1px solid var(--p-surface-700);
-    margin-top: auto;
+    /* Removed margin-top: auto to prevent footer from being pinned to bottom */
 }
 
 .footer-container {

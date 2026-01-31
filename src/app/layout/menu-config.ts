@@ -13,32 +13,14 @@ export const sidebarGroups: MenuItem[] = [
                     { label: 'Data Products', url: '/data-mesh/data-products', icon: 'pi pi-shopping-cart' },
                     { label: 'Domains', url: '/data-mesh/domains', icon: 'pi pi-book' },
                     { label: 'API Explorer', url: '/data-mesh/api-explorer', icon: 'pi pi-code' },
-                    { label: 'Lineage', url: '/data-mesh/lineage', icon: 'pi pi-share-alt' },
-                    { label: 'Quality Metrics', url: '/data-mesh/quality', icon: 'pi pi-chart-bar' }
                 ]
             },
-            {
-                label: 'Data Exploration',
-                icon: 'pi pi-search',
-                children: [
-                    { label: 'Database', url: '/explore/database', icon: 'pi pi-database' },
-                    { label: 'Pipelines', url: '/explore/pipelines', icon: 'pi pi-sliders-h' },
-                    { label: 'Topics', url: '/explore/topics', icon: 'pi pi-tags' },
-                    { label: 'ML Models', url: '/explore/ml-models', icon: 'pi pi-brain' },
-                    { label: 'Container', url: '/explore/container', icon: 'pi pi-box' },
-                    { label: 'Search', url: '/explore/search', icon: 'pi pi-search' }
-                ]
-            },
-            {
-                label: 'Observability',
-                icon: 'pi pi-eye',
-                children: [
-                    { label: 'Monitoring', url: '/observability/monitoring', icon: 'pi pi-chart-line' },
-                    { label: 'Alerts', url: '/observability/alert', icon: 'pi pi-bell' },
-                    { label: 'Metrics', url: '/observability/metrics', icon: 'pi pi-chart-bar' },
-                    { label: 'Audit Log', url: '/observability/audit-log', icon: 'pi pi-file' }
-                ]
-            }
+            { label: 'Database', url: '/explore/database', icon: 'pi pi-database' },
+            { label: 'Pipelines', url: '/explore/pipelines', icon: 'pi pi-sliders-h' },
+            { label: 'Topics', url: '/explore/topics', icon: 'pi pi-tags' },
+            { label: 'ML Models', url: '/explore/ml-models', icon: 'pi pi-brain' },
+            { label: 'Container', url: '/explore/container', icon: 'pi pi-box' },
+            { label: 'Search', url: '/explore/search', icon: 'pi pi-search' }
         ]
     }
 ];
@@ -76,17 +58,6 @@ export const menu: MenuItem[] = [
                     { label: 'Monitoring', url: '/data-mesh/domains/monitoring', icon: 'pi pi-chart-line' }
                 ]
             },
-            {
-                label: 'Observability',
-                icon: 'pi pi-eye',
-                expanded: false,
-                children: [
-                    { label: 'Monitoring', url: '/observability/monitoring', icon: 'pi pi-chart-line' },
-                    { label: 'Audit Log', url: '/observability/audit-log', icon: 'pi pi-file' },
-                    { label: 'Metrics', url: '/observability/metrics', icon: 'pi pi-chart-bar' },
-                    { label: 'Alerts', url: '/observability/alert', icon: 'pi pi-bell' }
-                ]
-            }
         ]
     },
     {

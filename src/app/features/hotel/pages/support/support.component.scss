@@ -1,0 +1,159 @@
+.support-page {
+  padding: 2rem;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, var(--p-surface-0) 0%, rgba(var(--p-primary-500), 0.05) 100%);
+    padding: 2rem;
+    border-radius: 12px;
+    border-bottom: 2px solid rgba(var(--p-primary-500), 0.2);
+
+    .header-content {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--p-surface-900);
+      }
+
+      .subtitle {
+        margin: 0;
+        font-size: 0.95rem;
+        color: var(--p-surface-600);
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 1rem;
+      }
+    }
+  }
+
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+
+    p-card {
+      .summary-stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem;
+
+        .stat-value {
+          font-size: 2rem;
+          font-weight: 700;
+          color: var(--p-primary-600);
+        }
+
+        .stat-label {
+          font-size: 0.85rem;
+          color: var(--p-surface-600);
+          margin-top: 0.5rem;
+        }
+      }
+    }
+  }
+
+  .filters-card {
+    margin-bottom: 2rem;
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        label {
+          font-weight: 500;
+          color: var(--p-surface-700);
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+
+  .loading-container {
+    padding: 2rem;
+  }
+
+  .empty-state {
+    padding: 3rem;
+    text-align: center;
+    color: var(--p-surface-600);
+
+    i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: var(--p-surface-400);
+    }
+  }
+
+  .ticket-id {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+  }
+
+  .ticket-subject {
+    font-weight: 500;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ticket-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    .guest-id {
+      font-size: 0.85rem;
+      color: var(--p-surface-600);
+    }
+
+    .apartment-name {
+      font-weight: 500;
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .ticket-form {
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+
+      label {
+        font-weight: 500;
+        color: var(--p-surface-700);
+      }
+    }
+  }
+}

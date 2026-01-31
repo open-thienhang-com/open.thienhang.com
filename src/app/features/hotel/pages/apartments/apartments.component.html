@@ -30,7 +30,7 @@
         <div class="card-header">
           <div class="title-section">
             <h3>{{ apartment.title }}</h3>
-            <span class="apt-id">ID: {{ apartment.id }}</span>
+            <span class="apt-id">ID: {{ apartment.id || apartment._id }}</span>
           </div>
           <div class="status-badges">
             <p-badge 
@@ -138,6 +138,35 @@
           placeholder="Apartment description" style="width: 100%;"></textarea>
       </div>
 
+      <!-- Address Section -->
+      <div class="form-section-header" style="margin-top: 1rem; margin-bottom: 0.5rem;">
+        <h4 style="margin: 0; font-size: 1rem; font-weight: 600;">Address *</h4>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Country *</label>
+          <input pInputText type="text" [(ngModel)]="formData.address.country" 
+            placeholder="e.g., USA" required>
+        </div>
+        <div class="form-group">
+          <label>City *</label>
+          <input pInputText type="text" [(ngModel)]="formData.address.city" 
+            placeholder="e.g., New York" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Street *</label>
+          <input pInputText type="text" [(ngModel)]="formData.address.street" 
+            placeholder="e.g., Main Street" required>
+        </div>
+        <div class="form-group">
+          <label>House Number</label>
+          <input pInputText type="text" [(ngModel)]="formData.address.house_number" 
+            placeholder="e.g., 123">
+        </div>
+      </div>
+
       <div class="form-row">
         <div class="form-group">
           <label>Price Per Day *</label>
@@ -210,6 +239,258 @@
         class="p-button-text"></button>
       <button pButton type="button" [label]="isEditMode ? 'Update' : 'Create'" 
         (click)="saveApartment()" class="p-button-primary" [loading]="loading"></button>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Apartment Detail Dialog -->
+  <p-dialog 
+    [(visible)]="showDetailDialog" 
+    [header]="detailApartment?.title || 'Apartment Details'"
+    [modal]="true" 
+    [style]="{ width: '90vw', maxWidth: '1200px' }" 
+    [breakpoints]="{ '960px': '95vw', '640px': '98vw' }"
+    [closable]="true"
+    (onHide)="closeDetailDialog()">
+    
+    <div *ngIf="detailLoading" class="detail-loading">
+      <p-skeleton width="100%" height="200px" styleClass="mb-3"></p-skeleton>
+      <p-skeleton width="100%" height="400px"></p-skeleton>
+    </div>
+
+    <div *ngIf="!detailLoading && detailApartment" class="detail-content">
+      <!-- Header Info -->
+      <div class="detail-header">
+        <div class="header-info">
+          <div class="title-row">
+            <h2>{{ detailApartment.title }}</h2>
+            <span class="apartment-id">ID: {{ detailApartment.id }}</span>
+          </div>
+          <div class="status-row">
+            <p-badge 
+              [value]="detailApartment.is_active ? 'Active' : 'Inactive'" 
+              [severity]="detailApartment.is_active ? 'success' : 'danger'">
+            </p-badge>
+            <p-badge 
+              [value]="detailApartment.is_available_for_booking ? 'Available' : 'Unavailable'" 
+              [severity]="detailApartment.is_available_for_booking ? 'info' : 'warning'">
+            </p-badge>
+            <p-badge 
+              *ngIf="detailApartment.is_booked" 
+              value="Booked" 
+              severity="warning">
+            </p-badge>
+            <p-badge 
+              *ngIf="detailApartment.maintenance_mode" 
+              value="Maintenance" 
+              severity="danger">
+            </p-badge>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <p-tabView>
+        <!-- Overview Tab -->
+        <p-tabPanel header="Overview" leftIcon="pi pi-info-circle">
+          <div class="detail-grid">
+            <p-card header="Basic Information">
+              <div class="info-section">
+                <div class="info-row">
+                  <span class="label">Description:</span>
+                  <span class="value">{{ detailApartment.description || 'N/A' }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Bedrooms:</span>
+                  <span class="value">{{ detailApartment.bedrooms }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Bathrooms:</span>
+                  <span class="value">{{ detailApartment.bathrooms }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Max Guests:</span>
+                  <span class="value">{{ detailApartment.max_guests }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Total Area:</span>
+                  <span class="value">{{ detailApartment.total_area }} m²</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Currency:</span>
+                  <span class="value">{{ detailApartment.currency }}</span>
+                </div>
+              </div>
+            </p-card>
+
+            <p-card header="Pricing">
+              <div class="pricing-info">
+                <div class="price-row">
+                  <span class="label">Daily Rate:</span>
+                  <span class="price-value">{{ detailApartment.price_per_day | number: '1.2-2' }} {{ detailApartment.currency }}</span>
+                </div>
+                <div class="price-row">
+                  <span class="label">Monthly Rate:</span>
+                  <span class="price-value">{{ detailApartment.price_per_month | number: '1.2-2' }} {{ detailApartment.currency }}</span>
+                </div>
+                <div class="price-row">
+                  <span class="label">Minimum Stay:</span>
+                  <span class="value">{{ detailApartment.minimum_stay_days }} days</span>
+                </div>
+                <div class="price-row" *ngIf="detailApartment.maximum_stay_days">
+                  <span class="label">Maximum Stay:</span>
+                  <span class="value">{{ detailApartment.maximum_stay_days }} days</span>
+                </div>
+              </div>
+            </p-card>
+
+            <p-card header="Location" *ngIf="detailApartment.address">
+              <div class="address-info">
+                <div class="address-row">
+                  <i class="pi pi-map-marker"></i>
+                  <span>{{ detailApartment.address.street }} {{ detailApartment.address.house_number || '' }}</span>
+                </div>
+                <div class="address-row">
+                  <i class="pi pi-building"></i>
+                  <span>{{ detailApartment.address.city }}, {{ detailApartment.address.country }}</span>
+                </div>
+                <div class="address-row" *ngIf="detailApartment.address.latitude && detailApartment.address.longitude">
+                  <i class="pi pi-globe"></i>
+                  <span>{{ detailApartment.address.latitude }}, {{ detailApartment.address.longitude }}</span>
+                </div>
+              </div>
+            </p-card>
+
+            <p-card header="Amenities & Features">
+              <div class="amenities-info">
+                <div class="amenity-tags">
+                  <p-tag *ngIf="detailApartment.is_furnished" value="Furnished" severity="success"></p-tag>
+                  <p-tag *ngIf="detailApartment.is_garage" value="Garage" severity="info"></p-tag>
+                  <p-tag *ngIf="detailApartment.pets_allowed" value="Pets Allowed" severity="warning"></p-tag>
+                  <p-tag *ngIf="!detailApartment.smoking_allowed" value="No Smoking" severity="success"></p-tag>
+                  <p-tag *ngIf="detailApartment.parties_allowed" value="Parties Allowed" severity="info"></p-tag>
+                </div>
+                <div class="amenity-list" *ngIf="detailApartment.amenities && detailApartment.amenities.length > 0">
+                  <p-divider></p-divider>
+                  <div *ngFor="let amenity of detailApartment.amenities" class="amenity-item">
+                    <i class="pi pi-check-circle text-green-500"></i>
+                    <span>{{ amenity.name }}</span>
+                    <span *ngIf="amenity.description" class="amenity-desc"> - {{ amenity.description }}</span>
+                  </div>
+                </div>
+              </div>
+            </p-card>
+
+            <p-card header="Policies">
+              <div class="policies-info">
+                <div class="policy-row">
+                  <span class="label">Check-in Time:</span>
+                  <span class="value">{{ detailApartment.check_in_time }}</span>
+                </div>
+                <div class="policy-row">
+                  <span class="label">Check-out Time:</span>
+                  <span class="value">{{ detailApartment.check_out_time }}</span>
+                </div>
+                <div class="policy-row">
+                  <span class="label">Cancellation Policy:</span>
+                  <span class="value">{{ detailApartment.cancellation_policy }}</span>
+                </div>
+                <div class="policy-row">
+                  <span class="label">Free Cancellation:</span>
+                  <span class="value">{{ detailApartment.free_cancellation_hours }} hours before check-in</span>
+                </div>
+              </div>
+            </p-card>
+
+            <p-card header="Contact Information" *ngIf="detailApartment.hotline || detailApartment.email">
+              <div class="contact-info">
+                <div class="contact-row" *ngIf="detailApartment.hotline">
+                  <i class="pi pi-phone"></i>
+                  <span>{{ detailApartment.hotline }}</span>
+                </div>
+                <div class="contact-row" *ngIf="detailApartment.email">
+                  <i class="pi pi-envelope"></i>
+                  <span>{{ detailApartment.email }}</span>
+                </div>
+              </div>
+            </p-card>
+
+            <p-card header="Availability" *ngIf="detailApartment.available_from || detailApartment.available_until">
+              <div class="availability-info">
+                <div class="availability-row" *ngIf="detailApartment.available_from">
+                  <span class="label">Available From:</span>
+                  <span class="value">{{ detailApartment.available_from | date: 'short' }}</span>
+                </div>
+                <div class="availability-row" *ngIf="detailApartment.available_until">
+                  <span class="label">Available Until:</span>
+                  <span class="value">{{ detailApartment.available_until | date: 'short' }}</span>
+                </div>
+              </div>
+            </p-card>
+          </div>
+        </p-tabPanel>
+
+        <!-- Property Tab -->
+        <p-tabPanel header="Property" leftIcon="pi pi-building" *ngIf="detailApartment.property">
+          <p-card header="Property Information">
+            <div class="property-info">
+              <div class="info-row">
+                <span class="label">Property Name:</span>
+                <span class="value">{{ detailApartment.property.name }}</span>
+              </div>
+              <div class="info-row" *ngIf="detailApartment.property.description">
+                <span class="label">Description:</span>
+                <span class="value">{{ detailApartment.property.description }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Has Pool:</span>
+                <span class="value">
+                  <p-badge [value]="detailApartment.property.has_pool ? 'Yes' : 'No'" 
+                    [severity]="detailApartment.property.has_pool ? 'success' : 'secondary'">
+                  </p-badge>
+                </span>
+              </div>
+              <div class="info-row">
+                <span class="label">Has Elevator:</span>
+                <span class="value">
+                  <p-badge [value]="detailApartment.property.has_elevator ? 'Yes' : 'No'" 
+                    [severity]="detailApartment.property.has_elevator ? 'success' : 'secondary'">
+                  </p-badge>
+                </span>
+              </div>
+              <div class="info-row">
+                <span class="label">Total Apartments:</span>
+                <span class="value">{{ detailApartment.property.total_apartments }}</span>
+              </div>
+              <div class="info-row" *ngIf="detailApartment.property.address">
+                <span class="label">Property Address:</span>
+                <span class="value">
+                  {{ detailApartment.property.address.street }} {{ detailApartment.property.address.house_number || '' }}, 
+                  {{ detailApartment.property.address.city }}, {{ detailApartment.property.address.country }}
+                </span>
+              </div>
+            </div>
+          </p-card>
+        </p-tabPanel>
+
+        <!-- Images Tab -->
+        <p-tabPanel header="Images" leftIcon="pi pi-image" *ngIf="detailApartment.images && detailApartment.images.length > 0">
+          <div class="images-grid">
+            <div *ngFor="let image of detailApartment.images" class="image-item">
+              <img [src]="image" [alt]="detailApartment.title" (error)="$event.target.src='assets/images/room-placeholder.svg'" />
+            </div>
+          </div>
+        </p-tabPanel>
+      </p-tabView>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Close" icon="pi pi-times" 
+        (click)="closeDetailDialog()" class="p-button-text"></button>
+      <button pButton type="button" label="Edit" icon="pi pi-pencil"
+        (click)="editApartment(detailApartment!); closeDetailDialog()" 
+        class="p-button-warning" 
+        [disabled]="!detailApartment">
+      </button>
     </ng-template>
   </p-dialog>
 </div>

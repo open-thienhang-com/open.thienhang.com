@@ -1,0 +1,225 @@
+<div class="support-page">
+  <p-toast></p-toast>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1>Support Management</h1>
+        <p class="subtitle">Manage customer support tickets and inquiries</p>
+      </div>
+      <div class="header-actions">
+        <button pButton type="button" label="New Ticket" icon="pi pi-plus"
+          (click)="openTicketDialog()" class="p-button-primary">
+        </button>
+        <button pButton type="button" label="Refresh" icon="pi pi-refresh"
+          (click)="loadData()" class="p-button-secondary">
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards">
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ tickets.length }}</span>
+        <span class="stat-label">Total Tickets</span>
+      </div>
+    </p-card>
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ getOpenTickets() }}</span>
+        <span class="stat-label">Open</span>
+      </div>
+    </p-card>
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ getInProgressTickets() }}</span>
+        <span class="stat-label">In Progress</span>
+      </div>
+    </p-card>
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ getResolvedTickets() }}</span>
+        <span class="stat-label">Resolved</span>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Filters -->
+  <p-card class="filters-card">
+    <div class="filters">
+      <div class="filter-group">
+        <label>Search</label>
+        <input pInputText type="text" placeholder="Search tickets..."
+          [(ngModel)]="searchTerm" (input)="onSearch()">
+      </div>
+      <div class="filter-group">
+        <label>Status</label>
+        <p-dropdown [options]="statusOptions" optionLabel="label" optionValue="value"
+          [(ngModel)]="selectedStatus" (onChange)="onStatusChange()"
+          placeholder="All Statuses">
+        </p-dropdown>
+      </div>
+      <div class="filter-group">
+        <label>Priority</label>
+        <p-dropdown [options]="priorityOptions" optionLabel="label" optionValue="value"
+          [(ngModel)]="selectedPriority" (onChange)="onPriorityChange()"
+          placeholder="All Priorities">
+        </p-dropdown>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Tickets Table -->
+  <p-card *ngIf="!loading; else loadingTemplate">
+    <p-table [value]="filteredTickets" [paginator]="true" [rows]="10" 
+      [rowsPerPageOptions]="[10, 25, 50]" [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} tickets"
+      styleClass="p-datatable-sm">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Ticket ID</th>
+          <th>Type</th>
+          <th>Subject</th>
+          <th>Guest/Apartment</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-ticket>
+        <tr>
+          <td>
+            <span class="ticket-id">{{ ticket.id }}</span>
+          </td>
+          <td>
+            <p-tag [value]="ticket.type | titlecase" severity="info"></p-tag>
+          </td>
+          <td>
+            <span class="ticket-subject">{{ ticket.subject }}</span>
+          </td>
+          <td>
+            <div class="ticket-info">
+              <span *ngIf="ticket.account_id" class="guest-id">{{ ticket.account_id }}</span>
+              <span *ngIf="ticket.apartment_id" class="apartment-name">
+                {{ getApartmentName(ticket.apartment_id) }}
+              </span>
+            </div>
+          </td>
+          <td>
+            <p-badge [value]="ticket.priority | titlecase" 
+              [severity]="getPrioritySeverity(ticket.priority)">
+            </p-badge>
+          </td>
+          <td>
+            <p-badge [value]="ticket.status | titlecase" 
+              [severity]="getStatusSeverity(ticket.status)">
+            </p-badge>
+          </td>
+          <td>
+            {{ ticket.created_at | date: 'short' }}
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button pButton type="button" icon="pi pi-pencil" 
+                class="p-button-sm p-button-text p-button-info"
+                (click)="editTicket(ticket)" pTooltip="Edit">
+              </button>
+              <button pButton type="button" icon="pi pi-check" 
+                class="p-button-sm p-button-text p-button-success"
+                (click)="updateTicketStatus(ticket, 'resolved')" 
+                *ngIf="ticket.status !== 'resolved' && ticket.status !== 'closed'"
+                pTooltip="Mark Resolved">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8" class="text-center">
+            <div class="empty-state">
+              <i class="pi pi-inbox"></i>
+              <p>No tickets found</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <!-- Loading Template -->
+  <ng-template #loadingTemplate>
+    <div class="loading-container">
+      <p-skeleton height="300px"></p-skeleton>
+    </div>
+  </ng-template>
+
+  <!-- Ticket Dialog -->
+  <p-dialog 
+    [(visible)]="showTicketDialog" 
+    [header]="isEditMode ? 'Edit Ticket' : 'Create New Ticket'"
+    [modal]="true" 
+    [style]="{width: '60vw'}"
+    [closable]="true"
+    (onHide)="closeTicketDialog()">
+    
+    <div class="ticket-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Type *</label>
+          <p-dropdown [options]="typeOptions" optionLabel="label" optionValue="value"
+            [(ngModel)]="formData.type" placeholder="Select Type">
+          </p-dropdown>
+        </div>
+        <div class="form-group">
+          <label>Priority *</label>
+          <p-dropdown [options]="priorityOptions.slice(1)" optionLabel="label" optionValue="value"
+            [(ngModel)]="formData.priority" placeholder="Select Priority">
+          </p-dropdown>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Subject *</label>
+        <input pInputText type="text" [(ngModel)]="formData.subject" 
+          placeholder="Enter ticket subject">
+      </div>
+
+      <div class="form-group">
+        <label>Description *</label>
+        <textarea pInputTextarea [(ngModel)]="formData.description" 
+          rows="5" placeholder="Enter ticket description...">
+        </textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Guest ID (Optional)</label>
+          <input pInputText type="text" [(ngModel)]="formData.account_id" 
+            placeholder="Guest ID">
+        </div>
+        <div class="form-group">
+          <label>Booking ID (Optional)</label>
+          <input pInputText type="text" [(ngModel)]="formData.booking_id" 
+            placeholder="Booking ID">
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Cancel" icon="pi pi-times"
+        (click)="closeTicketDialog()" class="p-button-secondary">
+      </button>
+      <button pButton type="button" label="Save" icon="pi pi-check"
+        (click)="saveTicket()" class="p-button-primary">
+      </button>
+    </ng-template>
+  </p-dialog>
+</div>

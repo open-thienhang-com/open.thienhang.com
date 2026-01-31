@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { DataProductServices, DataProduct } from '../../../core/services/data.product.services';
+import { DataMeshServices } from '../../../core/services/data-mesh.services';
 import { LoadingService } from '../../../core/services/loading.service';
 import { MessageService } from 'primeng/api';
 
@@ -11,7 +12,7 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
 import { InputTextModule } from 'primeng/inputtext';
-import { SelectModule } from 'primeng/select';
+import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 import { BadgeModule } from 'primeng/badge';
 import { ChipModule } from 'primeng/chip';
@@ -34,7 +35,7 @@ import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
     CardModule,
     TagModule,
     InputTextModule,
-    SelectModule,
+    DropdownModule,
     ToastModule,
     BadgeModule,
     ChipModule,
@@ -114,16 +115,34 @@ export class DataProductsComponent implements OnInit {
     'default': '�'
   };
 
+  selectedDomain: string | null = null;
+
   constructor(
     private dataProductServices: DataProductServices,
+    private dataMeshServices: DataMeshServices,
     private router: Router,
+    private route: ActivatedRoute,
     private messageService: MessageService,
     private loadingService: LoadingService
   ) { }
 
   ngOnInit(): void {
-    this.loadDataProducts();
+    // Load domain options first
     this.loadDomainOptions();
+    
+    // Check if domain parameter exists in route
+    this.route.params.subscribe(params => {
+      if (params['domain']) {
+        this.selectedDomain = params['domain'];
+        this.filters.domain = params['domain'];
+        this.loadDataProductsByDomain(params['domain']);
+      } else {
+        // Clear domain filter if no domain in route
+        this.selectedDomain = null;
+        this.filters.domain = '';
+        this.loadDataProducts();
+      }
+    });
   }
 
   loadDataProducts(): void {
@@ -163,21 +182,64 @@ export class DataProductsComponent implements OnInit {
     });
   }
 
-  loadDomainOptions(): void {
-    // Extract unique domains from data products
-    if (!Array.isArray(this.dataProducts)) {
-      this.domainOptions = [{ label: 'All Domains', value: '' }];
-      return;
-    }
+  loadDataProductsByDomain(domain: string): void {
+    this.loading = true;
+    this.loadingService.showPageLoading(`Loading data products for ${domain}...`, 'data-flow');
 
-    const uniqueDomains = [...new Set(this.dataProducts.map(product => product.domain))];
-    this.domainOptions = [
-      { label: 'All Domains', value: '' },
-      ...uniqueDomains.map(domain => ({
-        label: this.formatDomainName(domain || ''),
-        value: domain
-      }))
-    ];
+    this.dataProductServices.getDataProductsByDomain(domain).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.dataProducts = Array.isArray(response.data) ? response.data : [];
+          this.totalRecords = response.total || this.dataProducts.length;
+          this.filteredProducts = [...this.dataProducts];
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: `Loaded ${this.dataProducts.length} data products for ${domain}`,
+            life: 3000
+          });
+        } else {
+          this.handleError(response.message || `Failed to load data products for ${domain}`);
+        }
+        this.loading = false;
+        this.loadingService.hide();
+      },
+      error: (error) => {
+        console.error(`Error loading data products for ${domain}:`, error);
+        this.handleError(`Failed to load data products for ${domain}`);
+      }
+    });
+  }
+
+  loadDomainOptions(): void {
+    // Load domains from API
+    this.dataMeshServices.getDomainsList().subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.domainOptions = [
+            { label: 'All Domains', value: '' },
+            ...response.data.map(domain => ({
+              label: this.formatDomainName(domain),
+              value: domain
+            }))
+          ];
+          
+          // If domain is selected from route, set it in filter
+          if (this.selectedDomain) {
+            const domainOption = this.domainOptions.find(opt => opt.value === this.selectedDomain);
+            if (domainOption) {
+              this.filters.domain = this.selectedDomain;
+            }
+          }
+        } else {
+          this.domainOptions = [{ label: 'All Domains', value: '' }];
+        }
+      },
+      error: (error) => {
+        console.error('Error loading domains:', error);
+        this.domainOptions = [{ label: 'All Domains', value: '' }];
+      }
+    });
   }
 
   formatDomainName(domainKey: string): string {
@@ -197,9 +259,14 @@ export class DataProductsComponent implements OnInit {
   }
 
   onFilterChange(): void {
-    this.currentPage = 0;
-    this.first = 0;
-    this.loadDataProducts();
+    // When domain filter changes, navigate to the domain-specific route
+    if (this.filters.domain && this.filters.domain.trim() !== '') {
+      // Navigate to domain-specific route
+      this.router.navigate(['/data-mesh/data-products', this.filters.domain]);
+    } else {
+      // Navigate back to all data products
+      this.router.navigate(['/data-mesh/data-products']);
+    }
   }
 
   applyFilters(): void {
@@ -309,6 +376,19 @@ export class DataProductsComponent implements OnInit {
 
   getDomainImage(domain: string): string {
     return this.domainImageMap[domain] || this.domainImageMap['default'];
+  }
+
+  getProductGradient(domain: string | undefined): string {
+    const gradients: { [key: string]: string } = {
+      'hotel': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'application': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      'finance': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      'retail': 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      'healthcare': 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+      'logistics': 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+      'default': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    };
+    return gradients[domain || 'default'] || gradients['default'];
   }
 
   getStatusSeverity(status: string): 'success' | 'info' | 'warning' | 'danger' {

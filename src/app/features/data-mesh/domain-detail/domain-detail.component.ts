@@ -47,9 +47,12 @@ export class DomainDetailComponent implements OnInit {
   domain: Domain | null = null;
   dataProducts: DataProduct[] = [];
   domainApis: ApiInfo[] = [];
+  domainApiProducts: DataProduct[] = []; // APIs grouped by data product
   loading = false;
   domainKey = '';
   activeTab = 0;
+  private apisLoaded = false;
+  private productsLoaded = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -70,6 +73,8 @@ export class DomainDetailComponent implements OnInit {
 
   loadDomainDetails(): void {
     this.loading = true;
+    this.apisLoaded = false;
+    this.productsLoaded = false;
     this.loadingService.showPageLoading(`Loading ${this.domainKey} domain details...`, 'data-flow');
 
     // Load domain details
@@ -77,7 +82,17 @@ export class DomainDetailComponent implements OnInit {
       next: (response) => {
         if (response.success && response.data) {
           this.domain = response.data;
-          this.loadDomainDataProducts();
+          
+          // Use data_products from response if available
+          if (this.domain.data_products && this.domain.data_products.length > 0) {
+            this.dataProducts = this.domain.data_products;
+            this.productsLoaded = true;
+          } else {
+            // Load additional data products if not in response
+            this.loadDomainDataProducts();
+          }
+          
+          // Always load APIs for full endpoint details
           this.loadDomainApis();
         } else {
           this.handleError('Failed to load domain details');
@@ -85,8 +100,7 @@ export class DomainDetailComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading domain details:', error);
-        // If detailed endpoint fails, create basic domain info
-        this.createBasicDomainInfo();
+        this.handleError('Failed to load domain details');
       }
     });
   }
@@ -121,34 +135,66 @@ export class DomainDetailComponent implements OnInit {
         if (response.success && response.data) {
           this.dataProducts = response.data;
           if (this.domain) {
+            // Use loaded data products
             this.domain.data_products = response.data;
           }
         }
+        this.productsLoaded = true;
         this.checkLoadingComplete();
       },
       error: (error) => {
         console.error('Error loading domain data products:', error);
+        this.productsLoaded = true;
         this.checkLoadingComplete();
       }
     });
   }
 
   loadDomainApis(): void {
-    this.dataMeshServices.getApisByDomain(this.domainKey).subscribe({
+    // Use new API endpoint: /data-mesh/domains/{domain}/apis
+    this.dataMeshServices.getDomainApis(this.domainKey).subscribe({
       next: (response) => {
         if (response.success && response.data) {
-          this.domainApis = response.data;
+          // Response contains data products with endpoints
+          this.domainApiProducts = response.data;
+          
+          // Flatten endpoints from all data products for table view
+          this.domainApis = [];
+          response.data.forEach(product => {
+            if (product.endpoints && Array.isArray(product.endpoints)) {
+              product.endpoints.forEach((endpoint: any) => {
+                this.domainApis.push({
+                  domain: this.domainKey,
+                  data_product: product.name,
+                  path: endpoint.path,
+                  method: endpoint.method,
+                  description: endpoint.description,
+                  full_path: endpoint.full_path,
+                  source: 'domain'
+                } as ApiInfo);
+              });
+            }
+          });
         }
+        this.apisLoaded = true;
         this.checkLoadingComplete();
       },
       error: (error) => {
         console.error('Error loading domain APIs:', error);
+        this.domainApis = [];
+        this.domainApiProducts = [];
+        this.apisLoaded = true;
         this.checkLoadingComplete();
       }
     });
   }
 
   checkLoadingComplete(): void {
+    // Only hide loading when both APIs and products are loaded (or products already available from response)
+    if (!this.apisLoaded || (!this.productsLoaded && (!this.domain || !this.domain.data_products || this.domain.data_products.length === 0))) {
+      return;
+    }
+    
     this.loading = false;
     this.loadingService.hide();
     
@@ -156,7 +202,7 @@ export class DomainDetailComponent implements OnInit {
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
-        detail: `Loaded details for ${this.domain.display_name}`
+        detail: `Loaded details for ${this.domain.display_name || this.domain.name}`
       });
     }
   }
@@ -178,7 +224,7 @@ export class DomainDetailComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/data-mesh/domains']);
+    this.router.navigate(['/data-mesh/catalogs']);
   }
 
   getQualityScoreSeverity(qualityScore: string): string {
@@ -187,6 +233,10 @@ export class DomainDetailComponent implements OnInit {
     if (score >= 85) return 'info';
     if (score >= 75) return 'warning';
     return 'danger';
+  }
+
+  getQualityColor(qualityScore: string): string {
+    return this.getQualityScoreSeverity(qualityScore);
   }
 
   getStatusSeverity(status: string): string {

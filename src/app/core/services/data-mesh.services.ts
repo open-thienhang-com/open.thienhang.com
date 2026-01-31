@@ -592,7 +592,7 @@ export class DataMeshServices {
     return this.getApis(searchParams);
   }
 
-  // Filter APIs by domain
+  // Filter APIs by domain (legacy - uses /data-mesh/apis)
   getApisByDomain(domain: string, params?: { include_dynamic?: boolean; size?: number; offset?: number }): Observable<ApiResponse<ApiInfo[]>> {
     return this.getApis({ ...params, domain }).pipe(
       map(response => {
@@ -611,6 +611,27 @@ export class DataMeshServices {
         };
       })
     );
+  }
+
+  // Get domain APIs from /data-mesh/domains/{domain}/apis endpoint
+  getDomainApis(domain: string): Observable<ApiResponse<DataProduct[]>> {
+    const url = `${this.baseUrl}/data-mesh/domains/${domain}/apis`;
+    return this.http.get<{ data: DataProduct[], message: string, total: number }>(url)
+      .pipe(map(response => {
+        if (response && response.data) {
+          return {
+            data: response.data,
+            total: response.total,
+            success: true,
+            message: response.message || `Domain APIs retrieved successfully`
+          };
+        }
+        return {
+          data: [],
+          success: false,
+          message: `Failed to get APIs for domain ${domain}`
+        };
+      }));
   }
 
   // Data Lineage

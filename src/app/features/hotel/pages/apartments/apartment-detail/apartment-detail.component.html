@@ -1,0 +1,324 @@
+<div class="apartment-detail-page">
+  <p-toast></p-toast>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <p-skeleton width="100%" height="200px" styleClass="mb-3"></p-skeleton>
+    <p-skeleton width="100%" height="400px"></p-skeleton>
+  </div>
+
+  <!-- Apartment Details -->
+  <div *ngIf="!loading && apartment" class="detail-container">
+    <!-- Header Section -->
+    <div class="header-section">
+      <div class="header-content">
+        <div class="title-section">
+          <button pButton type="button" icon="pi pi-arrow-left" 
+            (click)="goBack()" 
+            class="p-button-text p-button-rounded back-button"
+            pTooltip="Back to Apartments">
+          </button>
+          <div>
+            <h1>{{ apartment.title }}</h1>
+            <p class="apartment-id">ID: {{ apartment.id }}</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <p-badge 
+            [value]="apartment.is_active ? 'Active' : 'Inactive'" 
+            [severity]="apartment.is_active ? 'success' : 'danger'"
+            styleClass="mr-2">
+          </p-badge>
+          <p-badge 
+            [value]="apartment.is_available_for_booking ? 'Available' : 'Unavailable'" 
+            [severity]="apartment.is_available_for_booking ? 'info' : 'warning'"
+            styleClass="mr-2">
+          </p-badge>
+          <button pButton type="button" label="Edit" icon="pi pi-pencil"
+            (click)="editApartment()" class="p-button-warning">
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content with Tabs -->
+    <p-tabView>
+      <!-- Overview Tab -->
+      <p-tabPanel header="Overview" leftIcon="pi pi-info-circle">
+        <div class="overview-content">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Basic Information -->
+            <p-card header="Basic Information">
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="label">Description</span>
+                  <span class="value">{{ apartment.description || 'N/A' }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="label">Bedrooms</span>
+                  <span class="value">{{ apartment.bedrooms }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="label">Bathrooms</span>
+                  <span class="value">{{ apartment.bathrooms }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="label">Max Guests</span>
+                  <span class="value">{{ apartment.max_guests }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="label">Total Area</span>
+                  <span class="value">{{ apartment.total_area }} m²</span>
+                </div>
+                <div class="info-item">
+                  <span class="label">Currency</span>
+                  <span class="value">{{ apartment.currency }}</span>
+                </div>
+              </div>
+            </p-card>
+
+            <!-- Pricing -->
+            <p-card header="Pricing">
+              <div class="pricing-section">
+                <div class="price-item">
+                  <span class="label">Daily Rate</span>
+                  <span class="price">{{ apartment.price_per_day | number: '1.2-2' }} {{ apartment.currency }}</span>
+                </div>
+                <div class="price-item">
+                  <span class="label">Monthly Rate</span>
+                  <span class="price">{{ apartment.price_per_month | number: '1.2-2' }} {{ apartment.currency }}</span>
+                </div>
+                <div class="price-item">
+                  <span class="label">Minimum Stay</span>
+                  <span class="value">{{ apartment.minimum_stay_days }} days</span>
+                </div>
+                <div class="price-item" *ngIf="apartment.maximum_stay_days">
+                  <span class="label">Maximum Stay</span>
+                  <span class="value">{{ apartment.maximum_stay_days }} days</span>
+                </div>
+              </div>
+            </p-card>
+
+            <!-- Address -->
+            <p-card header="Location" *ngIf="apartment.address">
+              <div class="address-section">
+                <div class="address-item">
+                  <i class="pi pi-map-marker"></i>
+                  <span>{{ apartment.address.street }} {{ apartment.address.house_number || '' }}</span>
+                </div>
+                <div class="address-item">
+                  <i class="pi pi-building"></i>
+                  <span>{{ apartment.address.city }}, {{ apartment.address.country }}</span>
+                </div>
+                <div class="address-item" *ngIf="apartment.address.latitude && apartment.address.longitude">
+                  <i class="pi pi-globe"></i>
+                  <span>{{ apartment.address.latitude }}, {{ apartment.address.longitude }}</span>
+                </div>
+              </div>
+            </p-card>
+
+            <!-- Amenities -->
+            <p-card header="Amenities & Features">
+              <div class="amenities-section">
+                <div class="amenity-tags">
+                  <p-tag *ngIf="apartment.is_furnished" value="Furnished" severity="success"></p-tag>
+                  <p-tag *ngIf="apartment.is_garage" value="Garage" severity="info"></p-tag>
+                  <p-tag *ngIf="apartment.pets_allowed" value="Pets Allowed" severity="warning"></p-tag>
+                  <p-tag *ngIf="!apartment.smoking_allowed" value="No Smoking" severity="success"></p-tag>
+                  <p-tag *ngIf="apartment.parties_allowed" value="Parties Allowed" severity="info"></p-tag>
+                </div>
+                <div class="amenity-list" *ngIf="apartment.amenities && apartment.amenities.length > 0">
+                  <div *ngFor="let amenity of apartment.amenities" class="amenity-item">
+                    <i class="pi pi-check-circle"></i>
+                    <span>{{ amenity.name }}</span>
+                  </div>
+                </div>
+              </div>
+            </p-card>
+          </div>
+
+          <!-- Policies -->
+          <p-card header="Policies" class="mt-4">
+            <div class="policies-grid">
+              <div class="policy-item">
+                <span class="label">Check-in Time</span>
+                <span class="value">{{ apartment.check_in_time }}</span>
+              </div>
+              <div class="policy-item">
+                <span class="label">Check-out Time</span>
+                <span class="value">{{ apartment.check_out_time }}</span>
+              </div>
+              <div class="policy-item">
+                <span class="label">Cancellation Policy</span>
+                <span class="value">{{ apartment.cancellation_policy }}</span>
+              </div>
+              <div class="policy-item">
+                <span class="label">Free Cancellation</span>
+                <span class="value">{{ apartment.free_cancellation_hours }} hours before check-in</span>
+              </div>
+            </div>
+          </p-card>
+        </div>
+      </p-tabPanel>
+
+      <!-- Rooms Tab -->
+      <p-tabPanel header="Rooms" leftIcon="pi pi-door-open">
+        <div class="rooms-content">
+          <p *ngIf="rooms.length === 0" class="empty-message">No rooms found for this apartment.</p>
+          <div *ngIf="rooms.length > 0" class="rooms-grid">
+            <p-card *ngFor="let room of rooms" [header]="room.name" class="room-card">
+              <div class="room-info">
+                <div class="room-detail">
+                  <span class="label">Type:</span>
+                  <span class="value">{{ room.room_type }}</span>
+                </div>
+                <div class="room-detail">
+                  <span class="label">Area:</span>
+                  <span class="value">{{ room.area }} m²</span>
+                </div>
+                <div class="room-detail" *ngIf="room.bed_count > 0">
+                  <span class="label">Beds:</span>
+                  <span class="value">{{ room.bed_count }}x {{ room.bed_type || 'N/A' }}</span>
+                </div>
+                <div class="room-detail">
+                  <span class="label">Max Occupancy:</span>
+                  <span class="value">{{ room.max_occupancy }}</span>
+                </div>
+                <div class="room-features">
+                  <p-tag *ngIf="room.has_window" value="Window" severity="info"></p-tag>
+                  <p-tag *ngIf="room.has_balcony" value="Balcony" severity="success"></p-tag>
+                  <p-tag *ngIf="room.has_private_bathroom" value="Private Bathroom" severity="warning"></p-tag>
+                  <p-tag *ngIf="room.has_air_conditioning" value="AC" severity="info"></p-tag>
+                  <p-tag *ngIf="room.has_tv" value="TV" severity="info"></p-tag>
+                  <p-tag *ngIf="room.has_wifi" value="WiFi" severity="success"></p-tag>
+                </div>
+                <p-badge 
+                  [value]="room.is_available ? 'Available' : 'Unavailable'" 
+                  [severity]="room.is_available ? 'success' : 'danger'">
+                </p-badge>
+              </div>
+            </p-card>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Bookings Tab -->
+      <p-tabPanel header="Bookings" leftIcon="pi pi-calendar-check">
+        <div class="bookings-content">
+          <p *ngIf="bookings.length === 0" class="empty-message">No bookings found for this apartment.</p>
+          <p-table *ngIf="bookings.length > 0" [value]="bookings" [paginator]="true" [rows]="10">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Booking ID</th>
+                <th>Guest ID</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
+                <th>Total Price</th>
+                <th>Status</th>
+                <th>Payment</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-booking>
+              <tr>
+                <td>{{ booking.id }}</td>
+                <td>{{ booking.account_id }}</td>
+                <td>{{ booking.check_in | date: 'short' }}</td>
+                <td>{{ booking.check_out | date: 'short' }}</td>
+                <td>{{ booking.total_price | currency: apartment.currency }}</td>
+                <td>
+                  <p-badge [value]="booking.booking_status" 
+                    [severity]="getStatusSeverity(booking.booking_status)">
+                  </p-badge>
+                </td>
+                <td>
+                  <p-badge [value]="booking.payment_status" 
+                    [severity]="getPaymentSeverity(booking.payment_status)">
+                  </p-badge>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      </p-tabPanel>
+
+      <!-- Reviews Tab -->
+      <p-tabPanel header="Reviews" leftIcon="pi pi-star">
+        <div class="reviews-content">
+          <p *ngIf="reviews.length === 0" class="empty-message">No reviews found for this apartment.</p>
+          <div *ngIf="reviews.length > 0" class="reviews-list">
+            <p-card *ngFor="let review of reviews" class="review-card">
+              <div class="review-header">
+                <h4>{{ review.title }}</h4>
+                <span class="review-date">{{ review.date_posted | date: 'short' }}</span>
+              </div>
+              <p class="review-content">{{ review.review }}</p>
+              <div class="review-footer">
+                <span class="review-author">Guest: {{ review.account_id }}</span>
+              </div>
+            </p-card>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Ratings Tab -->
+      <p-tabPanel header="Ratings" leftIcon="pi pi-star-fill">
+        <div class="ratings-content">
+          <div *ngIf="ratings.length > 0" class="ratings-summary">
+            <p-card header="Average Rating">
+              <div class="avg-rating-display">
+                <span class="rating-value">{{ getAverageRating().toFixed(1) }}</span>
+                <span class="rating-max">/ 5.0</span>
+              </div>
+              <p class="rating-count">Based on {{ ratings.length }} rating(s)</p>
+            </p-card>
+          </div>
+          <p *ngIf="ratings.length === 0" class="empty-message">No ratings found for this apartment.</p>
+          <div *ngIf="ratings.length > 0" class="ratings-list">
+            <p-card *ngFor="let rating of ratings" class="rating-card">
+              <div class="rating-details">
+                <div class="rating-row">
+                  <span class="label">Cleanliness:</span>
+                  <span class="value">{{ rating.cleanliness }}/5</span>
+                </div>
+                <div class="rating-row">
+                  <span class="label">Location:</span>
+                  <span class="value">{{ rating.location }}/5</span>
+                </div>
+                <div class="rating-row">
+                  <span class="label">Value:</span>
+                  <span class="value">{{ rating.value }}/5</span>
+                </div>
+                <div class="rating-row">
+                  <span class="label">Facilities:</span>
+                  <span class="value">{{ rating.facilities }}/5</span>
+                </div>
+                <div class="rating-row">
+                  <span class="label">Average:</span>
+                  <span class="value">{{ rating.avg_rating.toFixed(1) }}/5</span>
+                </div>
+                <div class="rating-comment" *ngIf="rating.comment">
+                  <p>{{ rating.comment }}</p>
+                </div>
+                <div class="rating-footer">
+                  <span>Guest: {{ rating.account_id }}</span>
+                  <span>{{ rating.created_at | date: 'short' }}</span>
+                </div>
+              </div>
+            </p-card>
+          </div>
+        </div>
+      </p-tabPanel>
+    </p-tabView>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!loading && !apartment" class="error-container">
+    <p-card>
+      <h2>Apartment Not Found</h2>
+      <p>The apartment you're looking for doesn't exist or has been removed.</p>
+      <button pButton type="button" label="Back to Apartments" 
+        (click)="goBack()" class="p-button-primary">
+      </button>
+    </p-card>
+  </div>
+</div>

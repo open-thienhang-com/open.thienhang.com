@@ -5,30 +5,31 @@ import {
   Apartment, Room, Booking, Review, Rating,
   ApiResponse, ApiListResponse
 } from '../models/hotel.models';
+import { getApiBase } from '../../../core/config/api-config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class HotelService {
-  private baseUrl = '/adapters/hotel';
+  private baseUrl = `${getApiBase()}/data-mesh/domains/hotel`;
 
   constructor(private http: HttpClient) { }
 
   // ============ APARTMENTS ============
-  
-  createApartment(apartment: Apartment): Observable<ApiResponse<Apartment>> {
-    return this.http.post<ApiResponse<Apartment>>(`${this.baseUrl}/apartments/`, apartment);
+
+  createApartment(apartment: Apartment | any): Observable<ApiResponse<Apartment>> {
+    return this.http.post<ApiResponse<Apartment>>(`${this.baseUrl}/apartments`, apartment);
   }
 
   getApartments(): Observable<ApiListResponse<Apartment>> {
-    return this.http.get<ApiListResponse<Apartment>>(`${this.baseUrl}/apartments/`);
+    return this.http.get<ApiListResponse<Apartment>>(`${this.baseUrl}/apartments`);
   }
 
   getApartmentById(apartmentId: string): Observable<ApiResponse<Apartment>> {
     return this.http.get<ApiResponse<Apartment>>(`${this.baseUrl}/apartments/${apartmentId}`);
   }
 
-  updateApartment(apartmentId: string, apartment: Apartment): Observable<ApiResponse<Apartment>> {
+  updateApartment(apartmentId: string, apartment: Apartment | any): Observable<ApiResponse<Apartment>> {
     return this.http.put<ApiResponse<Apartment>>(`${this.baseUrl}/apartments/${apartmentId}`, apartment);
   }
 
@@ -98,6 +99,10 @@ export class HotelService {
     return this.http.get<ApiListResponse<Review>>(`${this.baseUrl}/reviews/reviews`);
   }
 
+  getReviewsByApartment(apartmentId: string): Observable<ApiListResponse<Review>> {
+    return this.http.get<ApiListResponse<Review>>(`${this.baseUrl}/reviews/reviews?apartment_id=${apartmentId}`);
+  }
+
   updateReview(reviewId: string, review: Review): Observable<any> {
     return this.http.put<any>(`${this.baseUrl}/reviews/review/${reviewId}`, review);
   }
@@ -118,6 +123,14 @@ export class HotelService {
 
   getRatings(): Observable<ApiListResponse<Rating>> {
     return this.http.get<ApiListResponse<Rating>>(`${this.baseUrl}/ratings/ratings`);
+  }
+
+  getRatingsByApartment(apartmentId: string): Observable<ApiListResponse<Rating>> {
+    return this.http.get<ApiListResponse<Rating>>(`${this.baseUrl}/ratings/ratings?apartment_id=${apartmentId}`);
+  }
+
+  getRoomsByApartment(apartmentId: string): Observable<ApiListResponse<Room>> {
+    return this.http.get<ApiListResponse<Room>>(`${this.baseUrl}/rooms/rooms?apartment_id=${apartmentId}`);
   }
 
   updateRating(ratingId: string, rating: Rating): Observable<any> {

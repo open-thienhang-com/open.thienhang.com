@@ -1,0 +1,159 @@
+<div class="calendar-page">
+  <p-toast></p-toast>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1>Booking Calendar</h1>
+        <p class="subtitle">View and manage apartment bookings on calendar</p>
+      </div>
+      <div class="header-actions">
+        <p-dropdown 
+          [options]="apartmentsForFilter" 
+          optionLabel="title" 
+          optionValue="id"
+          placeholder="All Apartments"
+          [(ngModel)]="selectedApartment"
+          [showClear]="true"
+          (onChange)="onApartmentFilterChange()"
+          class="apartment-filter">
+        </p-dropdown>
+        <button pButton type="button" label="Refresh" icon="pi pi-refresh"
+          (click)="loadBookings()" class="p-button-secondary">
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calendar View -->
+  <div class="calendar-container" *ngIf="!loading; else loadingTemplate">
+    <p-card class="calendar-card">
+      <p-calendar 
+        [(ngModel)]="selectedDate" 
+        [inline]="true"
+        [showOtherMonths]="false"
+        [selectOtherMonths]="false"
+        (onSelect)="onDateSelect($event)"
+        (onMonthChange)="onMonthChange($event)"
+        styleClass="booking-calendar">
+      </p-calendar>
+    </p-card>
+
+    <!-- Bookings Summary -->
+    <p-card header="Bookings Summary" class="summary-card">
+      <div class="summary-content">
+        <div class="summary-stat">
+          <span class="stat-value">{{ bookings.length }}</span>
+          <span class="stat-label">Total Bookings</span>
+        </div>
+        <div class="summary-stat">
+          <span class="stat-value">{{ getConfirmedBookings() }}</span>
+          <span class="stat-label">Confirmed</span>
+        </div>
+        <div class="summary-stat">
+          <span class="stat-value">{{ getPendingBookings() }}</span>
+          <span class="stat-label">Pending</span>
+        </div>
+        <div class="summary-stat">
+          <span class="stat-value">{{ getCanceledBookings() }}</span>
+          <span class="stat-label">Canceled</span>
+        </div>
+      </div>
+      
+      <!-- Upcoming Bookings -->
+      <p-divider></p-divider>
+      <h4>Upcoming Bookings (Next 7 Days)</h4>
+      <div class="upcoming-bookings">
+        <div *ngFor="let booking of getUpcomingBookings()" class="upcoming-item">
+          <div class="upcoming-date">
+            <i class="pi pi-calendar"></i>
+            <span>{{ booking.check_in | date: 'MMM d' }}</span>
+          </div>
+          <div class="upcoming-info">
+            <span class="apartment-name">{{ getApartmentName(booking.apartment_id) }}</span>
+            <p-badge 
+              [value]="booking.booking_status" 
+              [severity]="getStatusSeverity(booking.booking_status)"
+              styleClass="ml-2">
+            </p-badge>
+          </div>
+        </div>
+        <p *ngIf="getUpcomingBookings().length === 0" class="no-upcoming">
+          No upcoming bookings in the next 7 days
+        </p>
+      </div>
+    </p-card>
+
+  </div>
+
+  <!-- Loading Template -->
+  <ng-template #loadingTemplate>
+    <div class="loading-container">
+      <p-skeleton width="100%" height="400px"></p-skeleton>
+    </div>
+  </ng-template>
+
+  <!-- Bookings Dialog -->
+  <p-dialog 
+    [(visible)]="showBookingDialog" 
+    header="Bookings for Selected Date"
+    [modal]="true" 
+    [style]="{width: '80vw', maxWidth: '900px'}"
+    [closable]="true"
+    (onHide)="closeBookingDialog()">
+    
+    <div class="bookings-list" *ngIf="selectedBookings.length > 0">
+      <p-card *ngFor="let booking of selectedBookings" class="booking-card">
+        <div class="booking-header">
+          <div>
+            <h3>{{ getApartmentName(booking.apartment_id) }}</h3>
+            <span class="booking-id">Booking ID: {{ booking.id }}</span>
+          </div>
+          <div class="booking-badges">
+            <p-badge 
+              [value]="booking.booking_status | titlecase" 
+              [severity]="getStatusSeverity(booking.booking_status)">
+            </p-badge>
+            <p-badge 
+              [value]="booking.payment_status | titlecase" 
+              [severity]="getPaymentSeverity(booking.payment_status)"
+              styleClass="ml-2">
+            </p-badge>
+          </div>
+        </div>
+        
+        <div class="booking-details">
+          <div class="detail-row">
+            <span class="label">Guest ID:</span>
+            <span class="value">{{ booking.account_id }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Check-in:</span>
+            <span class="value">{{ booking.check_in | date: 'short' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Check-out:</span>
+            <span class="value">{{ booking.check_out | date: 'short' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Duration:</span>
+            <span class="value">{{ booking.count_of_days }} day(s)</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Guests:</span>
+            <span class="value">{{ booking.guest_count }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Total Price:</span>
+            <span class="value price">{{ booking.total_price | currency }}</span>
+          </div>
+          <div class="detail-row" *ngIf="booking.special_requests">
+            <span class="label">Special Requests:</span>
+            <span class="value">{{ booking.special_requests }}</span>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </p-dialog>
+</div>

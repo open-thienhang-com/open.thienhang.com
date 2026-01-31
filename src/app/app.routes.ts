@@ -8,6 +8,7 @@ import { MaintenanceComponent } from './pages/error/maintenance/maintenance.comp
 import { ForbiddenComponent } from './pages/error/forbidden/forbidden.component';
 import { NotFoundComponent } from './pages/error/not-found/not-found.component';
 import { retailPlanningRoutes } from './features/retail-planning/retail-planning.routes';
+import { hotelRoutes } from './features/hotel/hotel.routes';
 
 
 export const routes: Routes = [
@@ -35,7 +36,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        loadComponent: () => import('./features/marketplace/marketplace.component').then(m => m.MarketplaceComponent),
+        loadComponent: () => import('./features/data-mesh/data-products/data-products.component').then(m => m.DataProductsComponent),
       },
       {
         path: 'planning',
@@ -99,12 +100,6 @@ export const routes: Routes = [
         path: 'governance/permissions',
         loadComponent: () => import('./features/governance/permissions/permissions.component').then(m => m.PermissionsComponent),
       },
-      // Dashboard removed — root now loads Marketplace
-      {
-        path: 'marketplace',
-        redirectTo: '',
-        pathMatch: 'full'
-      },
       {
         path: 'blogger',
         loadComponent: () => import('./features/blogger/blogger-overview.component').then(m => m.BloggerOverviewComponent),
@@ -118,17 +113,9 @@ export const routes: Routes = [
         children: [
           {
             path: '',
-            redirectTo: 'apartments',
-            pathMatch: 'full'
+            loadComponent: () => import('./features/hotel/pages/overview/hotel-overview.component').then(m => m.HotelOverviewComponent),
           },
-          {
-            path: 'apartments',
-            loadComponent: () => import('./features/hotel/pages/apartments/apartments.component').then(m => m.ApartmentsComponent),
-          },
-          {
-            path: 'bookings',
-            loadComponent: () => import('./features/hotel/pages/bookings/bookings.component').then(m => m.BookingsComponent),
-          }
+          ...hotelRoutes
         ]
       },
       {
@@ -141,37 +128,37 @@ export const routes: Routes = [
         loadComponent: () => import('./features/settings/setting.component').then(m => m.SettingsComponent),
       },
       {
-        path: 'data-product',
-        loadComponent: () => import('./features/data-product/data-product.component').then(m => m.DataProductComponent),
-      },
-      {
-        path: 'data-product-detail',
-        loadComponent: () => import('./features/data-product/data-prod-detail/data-prod-detail.component').then(m => m.DataProdDetailComponent),
+        path: 'applications',
+        loadComponent: () => import('./features/applications/applications.component').then(m => m.ApplicationsComponent),
       },
 
       {
-        path: 'data-mesh/lineage',
-        loadComponent: () => import('./features/data-mesh/data-lineage.component').then(m => m.DataLineageComponent),
-      },
-      {
-        path: 'data-mesh/quality',
-        loadComponent: () => import('./features/data-mesh/quality-metrics.component').then(m => m.QualityMetricsComponent),
-      },
-      {
-        path: 'data-mesh/extensions',
+        path: 'data-mesh/catalogs',
         loadComponent: () => import('./features/data-mesh/domain-catalog/domain-catalog.component').then(m => m.DomainCatalogComponent),
       },
       {
-        path: 'data-mesh/catalog',
-        loadComponent: () => import('./features/data-mesh/data-catalog/data-catalog.component').then(m => m.DataCatalogComponent),
+        path: 'data-mesh/catalogs/:domainKey',
+        loadComponent: () => import('./features/data-mesh/domain-detail/domain-detail.component').then(m => m.DomainDetailComponent),
+      },
+      {
+        path: 'data-mesh/data-products',
+        loadComponent: () => import('./features/data-mesh/data-products/data-products.component').then(m => m.DataProductsComponent),
+      },
+      {
+        path: 'data-mesh/data-products/:domain',
+        loadComponent: () => import('./features/data-mesh/data-products/data-products.component').then(m => m.DataProductsComponent),
+      },
+      {
+        path: 'data-mesh/data-products/:domain/:id',
+        loadComponent: () => import('./features/data-mesh/data-product-detail/data-product-detail.component').then(m => m.DataProductDetailComponent),
+      },
+      {
+        path: 'data-mesh/data-products/:id',
+        loadComponent: () => import('./features/data-mesh/data-product-detail/data-product-detail.component').then(m => m.DataProductDetailComponent),
       },
       {
         path: 'discovery/catalog',
         loadComponent: () => import('./features/discovery/data-catalog.component').then(m => m.DataCatalogComponent),
-      },
-      {
-        path: 'observability/monitoring',
-        loadComponent: () => import('./features/observability/monitoring.component').then(m => m.MonitoringComponent),
       },
       {
         path: 'explore',
@@ -303,22 +290,6 @@ export const routes: Routes = [
             loadComponent: () => import('./features/retail/retail-services/ecommerce/ecommerce.component').then(m => m.EcommerceComponent),
           },
         ]
-      },
-      {
-        path: 'discovery/data-catalog',
-        loadComponent: () => import('./features/discovery/data-catalog.component').then(m => m.DataCatalogComponent),
-      },
-      {
-        path: 'observability/alert',
-        loadComponent: () => import('./features/observability/alert/alert.component').then(m => m.AlertComponent),
-      },
-      {
-        path: 'observability/metrics',
-        loadComponent: () => import('./features/observability/metrics/metrics.component').then(m => m.MetricsComponent),
-      },
-      {
-        path: 'observability/audit-log',
-        loadComponent: () => import('./features/observability/audit-log/audit-log.component').then(m => m.AuditLogComponent),
       },
       // Asset detail route removed per request
     ],

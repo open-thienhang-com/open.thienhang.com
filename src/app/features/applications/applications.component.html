@@ -1,0 +1,70 @@
+<div class="applications-page">
+  <!-- Animated Background -->
+  <div class="animated-background">
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+    <div class="gradient-orb orb-3"></div>
+    <div class="gradient-orb orb-4"></div>
+    <div class="mesh-gradient"></div>
+  </div>
+
+  <!-- Content Container -->
+  <div class="content-container">
+    <!-- Header Section -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="header-icon">
+          <i class="pi pi-th-large"></i>
+        </div>
+        <div class="header-text">
+          <h1 class="page-title">All Applications</h1>
+          <p class="page-subtitle">Choose an application to get started</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Applications Grid -->
+    <div class="applications-grid">
+    <button 
+      *ngFor="let app of apps" 
+      type="button"
+      class="app-card"
+      [class.active]="selectedApp === app.key"
+      [attr.data-app-key]="app.key"
+      (click)="selectApp(app.key)"
+      [attr.aria-label]="app.label">
+
+      <!-- Card Pattern -->
+      <div class="card-pattern"></div>
+      
+      <!-- App Accent Bar -->
+      <div class="app-accent-bar"></div>
+      
+      <!-- Card Body -->
+      <div class="card-body">
+        <!-- App Icon -->
+        <div class="app-icon-container">
+          <div class="icon-backdrop"></div>
+          <i [class]="app.icon"></i>
+        </div>
+        
+        <!-- App Info -->
+        <div class="app-info">
+          <h3 class="app-name">{{ app.label }}</h3>
+          <p class="app-desc" *ngIf="app.description">{{ app.description }}</p>
+        </div>
+      </div>
+      
+      <!-- Active Badge -->
+      <div class="active-indicator" *ngIf="selectedApp === app.key">
+        <i class="pi pi-check-circle"></i>
+        <span>Active</span>
+      </div>
+      
+      <!-- Hover Effect -->
+      <div class="card-hover-effect"></div>
+
+    </button>
+    </div>
+  </div>
+</div>

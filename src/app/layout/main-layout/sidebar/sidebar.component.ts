@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnChanges, OnInit, computed, effect, inject, PLATFORM_ID, signal, HostListener, ElementRef } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, OnInit, computed, effect, inject, PLATFORM_ID, signal, ElementRef } from '@angular/core';
 import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
@@ -13,7 +13,6 @@ import {
 import { AppSwitcherService, AppKey } from '../../../core/services/app-switcher.service';
 import { AuthServices } from '../../../core/services/auth.services';
 import { I18nService } from '../../../core/services/i18n.service';
-import { SearchService, SearchResult } from '../../../core/services/search.service';
 import { $t, updatePreset, updateSurfacePalette } from '@primeng/themes';
 import Aura from '@primeng/themes/aura';
 import Lara from '@primeng/themes/lara';
@@ -60,7 +59,6 @@ export interface ThemeState {
     SelectButtonModule,
     StyleClassModule,
     ToggleSwitchModule,
-    SearchResultsComponent,
   ],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
@@ -86,14 +84,6 @@ export class SidebarComponent implements OnInit, OnChanges {
   platformId = inject(PLATFORM_ID);
   config: PrimeNG = inject(PrimeNG);
   i18nService = inject(I18nService);
-
-  // Search functionality
-  searchService = inject(SearchService);
-  searchResults$ = this.searchService.searchResults$;
-  isSearching$ = this.searchService.isSearching$;
-  popularSearches = this.searchService.getPopularSearches();
-  showSearchResults = false;
-  searchKeyword = '';
 
   // User info from API
   currentUser = signal<any>(null);
@@ -223,13 +213,6 @@ export class SidebarComponent implements OnInit, OnChanges {
       description: ''
     },
     {
-      key: 'marketplace',
-      label: 'Marketplace',
-      icon: 'pi pi-shopping-cart',
-      gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      description: ''
-    },
-    {
       key: 'blogger',
       label: 'Blogger',
       icon: 'pi pi-pencil',
@@ -267,24 +250,8 @@ export class SidebarComponent implements OnInit, OnChanges {
     return this.apps;
   }
 
-  // marketplaceExpanded removed — Marketplace is now a standalone app with its own overview page
-
   sidebarGroups = [
     // Overview group removed per request (Dashboard & Search moved/removed)
-    {
-      label: 'Data Exploration',
-      icon: 'pi pi-compass',
-      expanded: false,
-      items: [
-        { label: 'Database Explorer', url: '/explore/database', icon: 'pi pi-database' },
-        { label: 'Pipelines', url: '/explore/pipelines', icon: 'pi pi-sliders-h' },
-        { label: 'Topics & Events', url: '/explore/topics', icon: 'pi pi-tags' },
-        { label: 'ML Models', url: '/explore/ml-models', icon: 'pi pi-brain' },
-        { label: 'Containers', url: '/explore/container', icon: 'pi pi-box' },
-        { label: 'Advanced Search', url: '/explore/search', icon: 'pi pi-search' },
-        // Asset Details removed per request
-      ]
-    },
     {
       label: 'Explore',
       icon: 'pi pi-compass',
@@ -295,22 +262,15 @@ export class SidebarComponent implements OnInit, OnChanges {
           icon: 'pi pi-sitemap',
           children: [
             { label: 'Data Products', url: '/data-mesh/data-products', icon: 'pi pi-shopping-cart' },
-            { label: 'Extensions', url: '/data-mesh/extensions', icon: 'pi pi-book' },
-            { label: 'Data Catalog', url: '/data-mesh/catalog', icon: 'pi pi-database' },
-            { label: 'Lineage', url: '/data-mesh/lineage', icon: 'pi pi-share-alt' },
-            { label: 'Quality Metrics', url: '/data-mesh/quality', icon: 'pi pi-chart-bar' }
+            { label: 'Catalogs', url: '/data-mesh/catalogs', icon: 'pi pi-book' }
           ]
         },
-        {
-          label: 'Observability',
-          icon: 'pi pi-eye',
-          children: [
-            { label: 'Monitoring', url: '/observability/monitoring', icon: 'pi pi-chart-line' },
-            { label: 'Alerts', url: '/observability/alert', icon: 'pi pi-bell' },
-            { label: 'Metrics', url: '/observability/metrics', icon: 'pi pi-chart-bar' },
-            { label: 'Audit Log', url: '/observability/audit-log', icon: 'pi pi-file' }
-          ]
-        }
+        { label: 'Database Explorer', url: '/explore/database', icon: 'pi pi-database' },
+        { label: 'Pipelines', url: '/explore/pipelines', icon: 'pi pi-sliders-h' },
+        { label: 'Topics & Events', url: '/explore/topics', icon: 'pi pi-tags' },
+        { label: 'ML Models', url: '/explore/ml-models', icon: 'pi pi-brain' },
+        { label: 'Containers', url: '/explore/container', icon: 'pi pi-box' },
+        { label: 'Advanced Search', url: '/explore/search', icon: 'pi pi-search' }
       ]
     },
 
@@ -399,6 +359,74 @@ export class SidebarComponent implements OnInit, OnChanges {
       expanded: false,
       items: [
         { label: 'Notebook', url: '/planning/experiment', icon: 'pi pi-book' }
+      ]
+    },
+    {
+      label: 'Hotel Management',
+      icon: 'pi pi-building',
+      expanded: false,
+      items: [
+        // 1. Dashboard - Overview
+        { label: 'Dashboard', url: '/hotel', icon: 'pi pi-home' },
+        
+        // 2. Property Management - Quản lý tài sản
+        {
+          label: 'Property Management',
+          icon: 'pi pi-building',
+          children: [
+            { label: 'Apartments', url: '/hotel/apartments', icon: 'pi pi-home' },
+            { label: 'Rooms', url: '/hotel/rooms', icon: 'pi pi-door-open' }
+          ]
+        },
+        
+        // 3. Reservations & Bookings - Đặt phòng và lịch
+        {
+          label: 'Reservations & Bookings',
+          icon: 'pi pi-calendar',
+          children: [
+            { label: 'Bookings', url: '/hotel/bookings', icon: 'pi pi-calendar-check' },
+            { label: 'Calendar', url: '/hotel/calendar', icon: 'pi pi-calendar' },
+            { label: 'Check-in', url: '/hotel/checkin', icon: 'pi pi-sign-in' }
+          ]
+        },
+        
+        // 4. Guest Services - Dịch vụ khách hàng
+        {
+          label: 'Guest Services',
+          icon: 'pi pi-users',
+          children: [
+            { label: 'Guests', url: '/hotel/guests', icon: 'pi pi-user' },
+            { label: 'Reviews', url: '/hotel/reviews', icon: 'pi pi-star' },
+            { label: 'Ratings', url: '/hotel/ratings', icon: 'pi pi-star-fill' },
+            { label: 'Support', url: '/hotel/support', icon: 'pi pi-comments' }
+          ]
+        },
+        
+        // 5. Operations - Vận hành
+        {
+          label: 'Operations',
+          icon: 'pi pi-cog',
+          children: [
+            { label: 'Maintenance', url: '/hotel/maintenance', icon: 'pi pi-wrench' },
+            { label: 'Inventory', url: '/hotel/inventory', icon: 'pi pi-box' },
+            { label: 'Staff', url: '/hotel/staff', icon: 'pi pi-id-card' }
+          ]
+        },
+        
+        // 6. Analytics & Reports - Phân tích và báo cáo
+        {
+          label: 'Analytics & Reports',
+          icon: 'pi pi-chart-bar',
+          children: [
+            { label: 'Dashboard', url: '/hotel/analytics/dashboard', icon: 'pi pi-chart-pie' },
+            { label: 'Revenue', url: '/hotel/analytics/revenue', icon: 'pi pi-dollar' },
+            { label: 'Occupancy', url: '/hotel/analytics/occupancy', icon: 'pi pi-chart-line' },
+            { label: 'Customers', url: '/hotel/analytics/customers', icon: 'pi pi-users' }
+          ]
+        },
+        
+        // 7. Settings - Cài đặt (cuối cùng)
+        { label: 'Settings', url: '/hotel/settings', icon: 'pi pi-cog' }
       ]
     }
   ];
@@ -494,23 +522,12 @@ export class SidebarComponent implements OnInit, OnChanges {
             icon: 'pi pi-book',
             expanded: false,
             children: [
-              { label: 'Catalog', url: '/data-mesh/extensions/catalog', icon: 'pi pi-list' },
-              { label: 'Discovery', url: '/data-mesh/extensions/discovery', icon: 'pi pi-search' },
-              { label: 'Assets', url: '/data-mesh/extensions/assets', icon: 'pi pi-database' },
-              { label: 'Lineage', url: '/data-mesh/extensions/lineage', icon: 'pi pi-share-alt' },
-              { label: 'Policies', url: '/data-mesh/extensions/policies', icon: 'pi pi-lock' },
-              { label: 'Monitoring', url: '/data-mesh/extensions/monitoring', icon: 'pi pi-chart-line' }
-            ]
-          },
-          {
-            label: 'Observability',
-            icon: 'pi pi-eye',
-            expanded: false,
-            children: [
-              { label: 'Monitoring', url: '/observability/monitoring', icon: 'pi pi-chart-line' },
-              { label: 'Audit Log', url: '/observability/audit-log', icon: 'pi pi-file' },
-              { label: 'Metrics', url: '/observability/metrics', icon: 'pi pi-chart-bar' },
-              { label: 'Alerts', url: '/observability/alert', icon: 'pi pi-bell' }
+              { label: 'Catalog', url: '/data-mesh/catalogs/catalog', icon: 'pi pi-list' },
+              { label: 'Discovery', url: '/data-mesh/catalogs/discovery', icon: 'pi pi-search' },
+              { label: 'Assets', url: '/data-mesh/catalogs/assets', icon: 'pi pi-database' },
+              { label: 'Lineage', url: '/data-mesh/catalogs/lineage', icon: 'pi pi-share-alt' },
+              { label: 'Policies', url: '/data-mesh/catalogs/policies', icon: 'pi pi-lock' },
+              { label: 'Monitoring', url: '/data-mesh/catalogs/monitoring', icon: 'pi pi-chart-line' }
             ]
           }
         ]
@@ -583,6 +600,8 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   // Helper: Check if group has items
   hasItems(group: any): boolean {
+    // Check both items and _flattened to handle groups with nested children
+    if (group?._flattened && group._flattened.length > 0) return true;
     return group?.items && group.items.length > 0;
   }
 
@@ -594,6 +613,92 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (!(group as any)._flattened) {
       (group as any)._flattened = this.getFlattenedItems(group.items || []);
     }
+  }
+
+  // Helper: Get icon for menu item based on label or URL
+  private getIconForMenuItem(item: any): string {
+    if (item.icon) return item.icon;
+    
+    const label = (item.label || '').toLowerCase();
+    const url = (item.url || '').toLowerCase();
+    
+    // Icon mapping based on label keywords
+    const iconMap: { [key: string]: string } = {
+      'dashboard': 'pi pi-home',
+      'overview': 'pi pi-chart-bar',
+      'catalog': 'pi pi-list',
+      'discovery': 'pi pi-search',
+      'assets': 'pi pi-database',
+      'lineage': 'pi pi-share-alt',
+      'policies': 'pi pi-lock',
+      'monitoring': 'pi pi-chart-line',
+      'permissions': 'pi pi-key',
+      'teams': 'pi pi-users',
+      'roles': 'pi pi-id-card',
+      'accounts': 'pi pi-building',
+      'users': 'pi pi-user',
+      'products': 'pi pi-shopping-cart',
+      'apartments': 'pi pi-home',
+      'rooms': 'pi pi-door-open',
+      'bookings': 'pi pi-calendar-check',
+      'calendar': 'pi pi-calendar',
+      'check-in': 'pi pi-sign-in',
+      'guests': 'pi pi-user',
+      'reviews': 'pi pi-star',
+      'ratings': 'pi pi-star-fill',
+      'support': 'pi pi-comments',
+      'maintenance': 'pi pi-wrench',
+      'inventory': 'pi pi-box',
+      'staff': 'pi pi-id-card',
+      'revenue': 'pi pi-dollar',
+      'occupancy': 'pi pi-chart-line',
+      'customers': 'pi pi-users',
+      'settings': 'pi pi-cog',
+      'database': 'pi pi-database',
+      'pipelines': 'pi pi-sliders-h',
+      'topics': 'pi pi-tags',
+      'models': 'pi pi-brain',
+      'container': 'pi pi-box',
+      'search': 'pi pi-search',
+      'domains': 'pi pi-book',
+      'api': 'pi pi-code',
+      'explorer': 'pi pi-compass',
+      'suppliers': 'pi pi-truck',
+      'locations': 'pi pi-map-marker',
+      'reports': 'pi pi-chart-line',
+      'movements': 'pi pi-exchange',
+      'transactions': 'pi pi-receipt',
+      'cash': 'pi pi-money-bill',
+      'orders': 'pi pi-shopping-cart',
+      'analytics': 'pi pi-chart-bar',
+      'insights': 'pi pi-users',
+      'performance': 'pi pi-trophy',
+      'members': 'pi pi-users',
+      'rewards': 'pi pi-gift',
+      'campaigns': 'pi pi-megaphone',
+      'planning': 'pi pi-truck',
+      'stochastic': 'pi pi-chart-pie',
+      'fleet': 'pi pi-truck',
+      'experiment': 'pi pi-flask',
+      'notebook': 'pi pi-book'
+    };
+    
+    // Check label first
+    for (const [key, icon] of Object.entries(iconMap)) {
+      if (label.includes(key)) {
+        return icon;
+      }
+    }
+    
+    // Check URL as fallback
+    for (const [key, icon] of Object.entries(iconMap)) {
+      if (url.includes(key)) {
+        return icon;
+      }
+    }
+    
+    // Default fallback
+    return 'pi pi-circle-fill';
   }
 
   // Helper: Flatten nested menu items to single level
@@ -609,7 +714,7 @@ export class SidebarComponent implements OnInit, OnChanges {
           flattened.push({
             ...child,
             label: child.label,
-            icon: child.icon || 'pi pi-circle-fill',
+            icon: this.getIconForMenuItem(child),
             url: child.url
           });
         });
@@ -617,7 +722,7 @@ export class SidebarComponent implements OnInit, OnChanges {
         // Direct item with URL
         flattened.push({
           ...item,
-          icon: item.icon || 'pi pi-circle-fill'
+          icon: this.getIconForMenuItem(item)
         });
       }
     });
@@ -629,11 +734,14 @@ export class SidebarComponent implements OnInit, OnChanges {
 
     // Treat a missing or 'all' appKey as the unified sidebar view
     if (!this.sidebarGroups || !this.appKey || this.appKey === 'all') {
-      this.visibleGroups = this.orderGroupsForApp(this.sidebarGroups || [], 'all');
+      // Ensure all groups are included - no filtering
+      const allGroups = (this.sidebarGroups || []).filter(g => g && g.label);
+      this.visibleGroups = this.orderGroupsForApp(allGroups, 'all');
       // Close all groups by default to keep sidebar compact
       this.visibleGroups.forEach(g => {
         g.expanded = false;
         // precompute flattened items to avoid heavy template calls
+        // This ensures groups with nested children are properly flattened
         (g as any)._flattened = this.getFlattenedItems(g.items || []);
       });
       return;
@@ -657,27 +765,27 @@ export class SidebarComponent implements OnInit, OnChanges {
       if (retailGroup) {
         // Keep Inventory Management subgroup
         const inv = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('inventory'));
-        if (inv) groups.push({ label: inv.label, icon: inv.icon || 'pi pi-box', expanded: false, items: ((inv as any).children ?? (inv as any).items ?? []) });
+        if (inv) groups.push({ label: inv.label, icon: inv.icon || this.getIconForMenuItem(inv), expanded: false, items: ((inv as any).children ?? (inv as any).items ?? []) });
 
         // Point of Sale
         const pos = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('point of sale') || (it.label || '').toLowerCase().includes('pos'));
-        if (pos) groups.push({ label: pos.label, icon: pos.icon || 'pi pi-credit-card', expanded: false, items: ((pos as any).children ?? (pos as any).items ?? []) });
+        if (pos) groups.push({ label: pos.label, icon: pos.icon || this.getIconForMenuItem(pos), expanded: false, items: ((pos as any).children ?? (pos as any).items ?? []) });
 
         // E-commerce
         const eco = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('e-commerce') || (it.label || '').toLowerCase().includes('ecommerce'));
-        if (eco) groups.push({ label: eco.label, icon: eco.icon || 'pi pi-globe', expanded: false, items: ((eco as any).children ?? (eco as any).items ?? []) });
+        if (eco) groups.push({ label: eco.label, icon: eco.icon || this.getIconForMenuItem(eco), expanded: false, items: ((eco as any).children ?? (eco as any).items ?? []) });
 
         // Analytics
         const an = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('analytics'));
-        if (an) groups.push({ label: an.label, icon: an.icon || 'pi pi-chart-bar', expanded: false, items: ((an as any).children ?? (an as any).items ?? []) });
+        if (an) groups.push({ label: an.label, icon: an.icon || this.getIconForMenuItem(an), expanded: false, items: ((an as any).children ?? (an as any).items ?? []) });
 
         // Loyalty Program
         const loy = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('loyalty'));
-        if (loy) groups.push({ label: loy.label, icon: loy.icon || 'pi pi-star', expanded: false, items: ((loy as any).children ?? (loy as any).items ?? []) });
+        if (loy) groups.push({ label: loy.label, icon: loy.icon || this.getIconForMenuItem(loy), expanded: false, items: ((loy as any).children ?? (loy as any).items ?? []) });
 
         // Planning & Forecasting
         const planning = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('planning'));
-        if (planning) groups.push({ label: planning.label, icon: planning.icon || 'pi pi-truck', expanded: false, items: ((planning as any).children ?? (planning as any).items ?? []) });
+        if (planning) groups.push({ label: planning.label, icon: planning.icon || this.getIconForMenuItem(planning), expanded: false, items: ((planning as any).children ?? (planning as any).items ?? []) });
       }
 
       // Prepend a Retail Overview quick link as its own group
@@ -692,102 +800,128 @@ export class SidebarComponent implements OnInit, OnChanges {
       return;
     }
 
-    // Special-case: when Marketplace app selected, render child menu items of
-    // Data Exploration + Explore directly with proper grouping
-    if (key === 'marketplace') {
+    // Special-case: for Hotel app - show Hotel Management groups similar to Retail
+    if (key === 'hotel') {
+      const hotelGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('hotel'));
       const groups: any[] = [];
 
-      // Group 1: Data Exploration
-      const dataExploration = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('data exploration'));
-      if (dataExploration && dataExploration.items) {
-        groups.push({
-          label: 'Data Exploration',
-          icon: 'pi pi-compass',
-          expanded: false,
-          items: dataExploration.items
-        });
-      }
-
-      // Group 2: Data Mesh (from Explore group)
-      const exploreGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('explore'));
-      if (exploreGroup && exploreGroup.items) {
-        const dataMeshItem: any = (exploreGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('data mesh'));
-        if (dataMeshItem && dataMeshItem.children) {
-          groups.push({
-            label: 'Data Mesh',
-            icon: 'pi pi-sitemap',
-            expanded: false,
-            items: dataMeshItem.children
+      if (hotelGroup) {
+        // 1. Dashboard (first - standalone item)
+        const dashboardItem = hotelGroup.items?.find((it: any) => it.url === '/hotel' && !it.children);
+        if (dashboardItem) {
+          groups.push({ 
+            label: '', 
+            icon: '', 
+            expanded: true, 
+            _noHeader: true,
+            _isStandalone: true,
+            items: [dashboardItem],
+            _flattened: [dashboardItem]
           });
         }
-      }
 
-      // Group 3: Observability (from Explore group)
-      if (exploreGroup && exploreGroup.items) {
-        const observabilityItem: any = (exploreGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('observability'));
-        if (observabilityItem && observabilityItem.children) {
-          groups.push({
-            label: 'Observability',
-            icon: 'pi pi-eye',
-            expanded: false,
-            items: observabilityItem.children
+        // 2. Property Management subgroup
+        const property = (hotelGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('property'));
+        if (property) {
+          groups.push({ 
+            label: property.label, 
+            icon: property.icon || this.getIconForMenuItem(property), 
+            expanded: false, 
+            items: ((property as any).children ?? (property as any).items ?? []) 
           });
         }
-      }
 
-      // Fallback: if no groups found, create default structure
-      if (groups.length === 0) {
-        groups.push(
-          {
-            label: 'Data Exploration',
-            icon: 'pi pi-compass',
-            expanded: false,
-            items: [
-              { label: 'Database Explorer', url: '/explore/database', icon: 'pi pi-database' },
-              { label: 'Pipelines', url: '/explore/pipelines', icon: 'pi pi-sliders-h' },
-              { label: 'Topics & Events', url: '/explore/topics', icon: 'pi pi-tags' },
-              { label: 'ML Models', url: '/explore/ml-models', icon: 'pi pi-brain' },
-              { label: 'Containers', url: '/explore/container', icon: 'pi pi-box' },
-              { label: 'Advanced Search', url: '/explore/search', icon: 'pi pi-search' }
-            ]
-          },
-          {
-            label: 'Data Mesh',
-            icon: 'pi pi-sitemap',
-            expanded: false,
-            items: [
-              { label: 'Data Products', url: '/data-mesh/data-products', icon: 'pi pi-shopping-cart' },
-              { label: 'Extensions', url: '/data-mesh/extensions', icon: 'pi pi-book' },
-              { label: 'Data Catalog', url: '/data-mesh/catalog', icon: 'pi pi-database' },
-              { label: 'Lineage', url: '/data-mesh/lineage', icon: 'pi pi-share-alt' },
-              { label: 'Quality Metrics', url: '/data-mesh/quality', icon: 'pi pi-chart-bar' }
-            ]
-          },
-          {
-            label: 'Observability',
-            icon: 'pi pi-eye',
-            expanded: false,
-            items: [
-              { label: 'Monitoring', url: '/observability/monitoring', icon: 'pi pi-chart-line' },
-              { label: 'Alerts', url: '/observability/alert', icon: 'pi pi-bell' },
-              { label: 'Metrics', url: '/observability/metrics', icon: 'pi pi-chart-bar' },
-              { label: 'Audit Log', url: '/observability/audit-log', icon: 'pi pi-file' }
-            ]
-          }
+        // 3. Reservations & Bookings subgroup
+        const reservations = (hotelGroup.items || []).find((it: any) => 
+          (it.label || '').toLowerCase().includes('reservation') || 
+          (it.label || '').toLowerCase().includes('booking')
         );
+        if (reservations) {
+          groups.push({ 
+            label: reservations.label, 
+            icon: reservations.icon || this.getIconForMenuItem(reservations), 
+            expanded: false, 
+            items: ((reservations as any).children ?? (reservations as any).items ?? []) 
+          });
+        }
+
+        // 4. Guest Services subgroup
+        const guestServices = (hotelGroup.items || []).find((it: any) => 
+          (it.label || '').toLowerCase().includes('guest') || 
+          (it.label || '').toLowerCase().includes('service')
+        );
+        if (guestServices) {
+          groups.push({ 
+            label: guestServices.label, 
+            icon: guestServices.icon || this.getIconForMenuItem(guestServices), 
+            expanded: false, 
+            items: ((guestServices as any).children ?? (guestServices as any).items ?? []) 
+          });
+        }
+
+        // 5. Operations subgroup
+        const operations = (hotelGroup.items || []).find((it: any) => 
+          (it.label || '').toLowerCase().includes('operation') || 
+          (it.label || '').toLowerCase().includes('maintenance')
+        );
+        if (operations) {
+          groups.push({ 
+            label: operations.label, 
+            icon: operations.icon || this.getIconForMenuItem(operations), 
+            expanded: false, 
+            items: ((operations as any).children ?? (operations as any).items ?? []) 
+          });
+        }
+
+        // 6. Analytics & Reports subgroup
+        const analytics = (hotelGroup.items || []).find((it: any) => 
+          (it.label || '').toLowerCase().includes('analytics') || 
+          (it.label || '').toLowerCase().includes('report')
+        );
+        if (analytics) {
+          groups.push({ 
+            label: analytics.label, 
+            icon: analytics.icon || this.getIconForMenuItem(analytics), 
+            expanded: false, 
+            items: ((analytics as any).children ?? (analytics as any).items ?? []) 
+          });
+        }
+
+        // 7. Settings (last - standalone item)
+        const settingsItem = hotelGroup.items?.find((it: any) => 
+          it.url === '/hotel/settings' && !it.children
+        );
+        if (settingsItem) {
+          groups.push({ 
+            label: '', 
+            icon: '', 
+            expanded: false, 
+            _noHeader: true,
+            _isStandalone: true,
+            items: [settingsItem],
+            _flattened: [settingsItem]
+          });
+        }
       }
 
-      this.visibleGroups = this.orderGroupsForApp(groups, key);
+      // Don't reorder - keep the exact order we set (Dashboard first, Settings last)
+      this.visibleGroups = groups;
+      // Close all groups by default (except Dashboard which should be expanded)
       this.visibleGroups.forEach(g => {
-        g.expanded = false;
+        // Keep Dashboard expanded if it's standalone
+        if ((g as any)._isStandalone && (g as any).items?.[0]?.url === '/hotel') {
+          g.expanded = true;
+        } else {
+          g.expanded = false;
+        }
         (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
       });
       return;
     }
 
-    // Special-case: for Hotel or Blogger apps - show groups/items that mention hotel/blogger
-    if (key === 'hotel' || key === 'blogger') {
-      const needle = key === 'hotel' ? 'hotel' : 'blog';
+    // Special-case: for Blogger app - show groups/items that mention blogger
+    if (key === 'blogger') {
+      const needle = 'blog';
       const groups: any[] = [];
 
       this.sidebarGroups.forEach(g => {
@@ -870,11 +1004,11 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (p.startsWith('/retail')) return 'retail';
     if (p.startsWith('/planning')) return 'planning';
     if (p.startsWith('/discovery') || p.startsWith('/explore') || p.startsWith('/data-catalog')) return 'all';
-    if (p.startsWith('/marketplace')) return 'marketplace';
     if (p.startsWith('/blogger') || p.startsWith('/posts') || p.startsWith('/blog')) return 'blogger';
     if (p.startsWith('/hotel')) return 'hotel';
     if (p.startsWith('/ad-manager') || p.startsWith('/admanager') || p.startsWith('/ads')) return 'admanager';
     if (p.startsWith('/settings')) return 'settings';
+    // Marketplace removed - routes to root now
     // default: nothing to force
     return null;
   }
@@ -882,14 +1016,13 @@ export class SidebarComponent implements OnInit, OnChanges {
   orderGroupsForApp(groups: any[], key: AppKey) {
     // Simple prioritization map: which group labels should appear first per app
     const priorityMap: Record<AppKey, string[]> = {
-      retail: ['retail', 'marketplace'],
+      retail: ['retail'],
       catalog: [],
       planning: ['planning'],
       blogger: ['blog', 'blogger', 'posts'],
       hotel: ['hotel', 'rooms', 'bookings', 'management'],
       admanager: ['ad', 'ads', 'advert', 'campaign', 'admanager'],
       governance: ['governance'],
-      marketplace: [],
       settings: [],
       all: []
     };
@@ -991,7 +1124,7 @@ export class SidebarComponent implements OnInit, OnChanges {
   }
 
   openAppMatrix(): void {
-    this.showAppMatrix = true;
+    this.router.navigate(['/applications']);
   }
 
   closeAppMatrix(): void {
@@ -1042,11 +1175,10 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.selectedApp = key;
     // navigate to the corresponding dashboard / root for the selected app
     const routeForApp: Record<AppKey, string> = {
-      all: '/marketplace',
+      all: '/',
       retail: '/retail',
-      catalog: '/marketplace',
+      catalog: '/',
       governance: '/governance/policies',
-      marketplace: '/marketplace',
       planning: '/planning',
       blogger: '/blogger',
       hotel: '/hotel',
@@ -1054,7 +1186,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       settings: '/settings'
     };
 
-    const target = routeForApp[key] || '/marketplace';
+    const target = routeForApp[key] || '/';
     try {
       this.router.navigate([target]);
     } catch (e) {
@@ -1327,41 +1459,6 @@ export class SidebarComponent implements OnInit, OnChanges {
     }
   }
 
-  // Search Methods
-  performSearch(): void {
-    if (this.searchKeyword.trim()) {
-      this.showSearchResults = true;
-      this.searchService.performGlobalSearch(this.searchKeyword);
-    } else {
-      this.clearSearch();
-    }
-  }
-
-  onSearchInput(): void {
-    if (this.searchKeyword.trim().length >= 2) {
-      this.showSearchResults = true;
-      this.searchService.performGlobalSearch(this.searchKeyword);
-    } else if (this.searchKeyword.trim().length === 0) {
-      this.clearSearch();
-    }
-  }
-
-  clearSearch(): void {
-    this.showSearchResults = false;
-    this.searchService.clearSearch();
-  }
-
-  onSearchResultClick(result: SearchResult): void {
-    this.clearSearch();
-    this.searchKeyword = '';
-  }
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: Event): void {
-    if (!this.elementRef.nativeElement.contains(event.target)) {
-      this.clearSearch();
-    }
-  }
 }
 
 interface MenuItem {

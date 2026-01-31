@@ -46,7 +46,7 @@
       <div class="header-actions">
         <p-button 
           icon="pi pi-arrow-left" 
-          label="Back to Marketplace"
+          label="Back to Data Products"
           severity="secondary"
           (click)="navigateBack()">
         </p-button>
@@ -57,7 +57,19 @@
           <div class="title-with-icon">
             <i [class]="'pi ' + getDomainConfig().icon + ' domain-icon'" 
                [style.color]="getDomainConfig().color"></i>
-            <h1>{{ dataProduct.name }}</h1>
+            <div class="title-content">
+              <h1>{{ dataProduct.name }}</h1>
+              <div class="title-meta">
+                <span class="product-id" *ngIf="dataProduct.id">
+                  <i class="pi pi-hashtag"></i>
+                  {{ dataProduct.id }}
+                </span>
+                <span class="product-kid" *ngIf="dataProduct.kid">
+                  <i class="pi pi-key"></i>
+                  {{ dataProduct.kid }}
+                </span>
+              </div>
+            </div>
           </div>
           <div class="title-tags">
             <p-tag 
@@ -65,78 +77,70 @@
               severity="info"
               icon="pi pi-tag">
             </p-tag>
-            <p-tag 
-              [value]="dataProduct.status || 'Active'" 
-              [severity]="getStatusColor(dataProduct.status)"
-              icon="pi pi-circle-fill">
-            </p-tag>
           </div>
         </div>
-        <p class="product-description">
+        <p class="product-description" *ngIf="dataProduct.description">
           <i class="pi pi-info-circle mr-2 text-gray-500"></i>
-          {{ getDefaultValue(dataProduct.description, 'No description available') }}
+          {{ dataProduct.description }}
         </p>
         
         <div class="product-meta">
           <div class="meta-grid">
-            <div class="meta-item">
+            <!-- Owner -->
+            <div class="meta-item" *ngIf="dataProduct.owner">
               <i class="pi pi-user meta-icon"></i>
               <div class="meta-content">
                 <span class="meta-label">Owner:</span>
                 <span class="meta-value">{{ getOwnerDisplayName() }}</span>
+                <span class="meta-subvalue" *ngIf="dataProduct.owner.email">{{ dataProduct.owner.email }}</span>
               </div>
             </div>
-            <div class="meta-item">
-              <i class="pi pi-envelope meta-icon"></i>
-              <div class="meta-content">
-                <span class="meta-label">Email:</span>
-                <span class="meta-value">{{ getOwnerEmail() }}</span>
-              </div>
-            </div>
-            <div class="meta-item">
+            
+            <!-- Company -->
+            <div class="meta-item" *ngIf="dataProduct.owner?.company">
               <i class="pi pi-building meta-icon"></i>
               <div class="meta-content">
                 <span class="meta-label">Company:</span>
                 <span class="meta-value">{{ getCompanyName() }}</span>
               </div>
             </div>
-            <div class="meta-item">
-              <i class="pi pi-calendar-plus meta-icon"></i>
-              <div class="meta-content">
-                <span class="meta-label">Created:</span>
-                <span class="meta-value">{{ formatDate(dataProduct.created_at || '') }}</span>
-              </div>
-            </div>
-            <div class="meta-item">
-              <i class="pi pi-calendar meta-icon"></i>
-              <div class="meta-content">
-                <span class="meta-label">Updated:</span>
-                <span class="meta-value">{{ formatDate(dataProduct.updated_at || '') }}</span>
-              </div>
-            </div>
-            <div class="meta-item">
+            
+            <!-- Purpose -->
+            <div class="meta-item" *ngIf="dataProduct.purpose">
               <i class="pi pi-flag meta-icon"></i>
               <div class="meta-content">
                 <span class="meta-label">Purpose:</span>
-                <span class="meta-value">{{ getDefaultValue(dataProduct.purpose, 'Not specified') }}</span>
+                <span class="meta-value">{{ dataProduct.purpose }}</span>
+              </div>
+            </div>
+            
+            <!-- Created Date -->
+            <div class="meta-item" *ngIf="dataProduct.created_at">
+              <i class="pi pi-calendar-plus meta-icon"></i>
+              <div class="meta-content">
+                <span class="meta-label">Created:</span>
+                <span class="meta-value">{{ formatDate(dataProduct.created_at) }}</span>
+              </div>
+            </div>
+            
+            <!-- Updated Date -->
+            <div class="meta-item" *ngIf="dataProduct.updated_at">
+              <i class="pi pi-calendar meta-icon"></i>
+              <div class="meta-content">
+                <span class="meta-label">Updated:</span>
+                <span class="meta-value">{{ formatDate(dataProduct.updated_at) }}</span>
+              </div>
+            </div>
+            
+            <!-- Discoverability -->
+            <div class="meta-item" *ngIf="dataProduct.discoverability">
+              <i class="pi pi-search meta-icon"></i>
+              <div class="meta-content">
+                <span class="meta-label">Discoverability:</span>
+                <span class="meta-value">{{ dataProduct.discoverability }}</span>
               </div>
             </div>
           </div>
-        </div>
-
-        <div class="header-actions-right">
-          <p-button 
-            label="Subscribe" 
-            icon="pi pi-plus"
-            severity="success"
-            (click)="subscribeToProduct()">
-          </p-button>
-          <p-button 
-            label="Unsubscribe" 
-            icon="pi pi-minus"
-            severity="danger"
-            (click)="unsubscribeFromProduct()">
-          </p-button>
         </div>
       </div>
     </div>
@@ -151,81 +155,134 @@
             <div class="overview-grid">
               
               <!-- Purpose Card -->
-              <p-card header="Purpose" styleClass="overview-card">
+              <p-card header="Purpose" styleClass="overview-card" *ngIf="dataProduct.purpose">
                 <div class="card-icon">
                   <i class="pi pi-flag"></i>
                 </div>
                 <div class="card-content">
-                  <p>{{ getDefaultValue(dataProduct.purpose, 'No purpose specified') }}</p>
+                  <p>{{ dataProduct.purpose }}</p>
                 </div>
               </p-card>
 
-              <!-- Assets Card -->
-              <p-card header="Assets" styleClass="overview-card">
+              <!-- Consumers Card -->
+              <p-card header="Consumers" styleClass="overview-card" *ngIf="hasValue(dataProduct.consumers)">
                 <div class="card-icon">
-                  <i class="pi pi-database"></i>
+                  <i class="pi pi-users"></i>
                 </div>
                 <div class="card-content">
-                  <div *ngIf="hasValue(dataProduct.assets); else noAssets">
-                    <div class="asset-list">
-                      <div *ngFor="let asset of dataProduct.assets" class="asset-item">
-                        <i class="pi pi-file-o"></i>
-                        <span>{{ asset.name || asset }}</span>
-                      </div>
-                    </div>
+                  <div class="consumer-list">
+                    <p-chip *ngFor="let consumer of dataProduct.consumers" [label]="consumer"></p-chip>
                   </div>
-                  <ng-template #noAssets>
-                    <p class="no-data">
-                      <i class="pi pi-info-circle mr-2"></i>
-                      No assets configured
-                    </p>
-                  </ng-template>
                 </div>
               </p-card>
 
-              <!-- APIs Card -->
-              <p-card header="APIs" styleClass="overview-card">
+              <!-- Teams Card -->
+              <p-card header="Teams" styleClass="overview-card" *ngIf="hasValue(dataProduct.teams)">
                 <div class="card-icon">
-                  <i class="pi pi-globe"></i>
+                  <i class="pi pi-users"></i>
                 </div>
                 <div class="card-content">
-                  <div *ngIf="hasValue(dataProduct.apis); else noApis">
-                    <div class="api-list">
-                      <div *ngFor="let api of dataProduct.apis" class="api-item">
-                        <p-badge [value]="api.method" [severity]="getSeverity(api.method)"></p-badge>
-                        <span class="api-path">{{ api.path }}</span>
-                      </div>
-                    </div>
+                  <div class="team-list">
+                    <p-chip *ngFor="let team of dataProduct.teams" [label]="team.name || team"></p-chip>
                   </div>
-                  <ng-template #noApis>
-                    <p class="no-data">
-                      <i class="pi pi-info-circle mr-2"></i>
-                      No APIs configured
-                    </p>
-                  </ng-template>
                 </div>
               </p-card>
 
               <!-- Tags Card -->
-              <p-card header="Tags" styleClass="overview-card">
+              <p-card header="Tags" styleClass="overview-card" *ngIf="hasValue(dataProduct.tags)">
                 <div class="card-icon">
                   <i class="pi pi-tags"></i>
                 </div>
                 <div class="card-content">
-                  <div *ngIf="hasValue(dataProduct.tags); else noTags">
-                    <div class="tag-list">
-                      <p-chip *ngFor="let tag of dataProduct.tags" [label]="tag"></p-chip>
+                  <div class="tag-list">
+                    <p-chip *ngFor="let tag of dataProduct.tags" [label]="tag"></p-chip>
+                  </div>
+                </div>
+              </p-card>
+
+              <!-- Assets Card -->
+              <p-card header="Assets" styleClass="overview-card" *ngIf="hasValue(dataProduct.assets)">
+                <div class="card-icon">
+                  <i class="pi pi-database"></i>
+                </div>
+                <div class="card-content">
+                  <div class="asset-list">
+                    <div *ngFor="let asset of dataProduct.assets" class="asset-item">
+                      <i class="pi pi-file-o"></i>
+                      <span>{{ asset.name || asset }}</span>
                     </div>
                   </div>
-                  <ng-template #noTags>
-                    <p class="no-data">
-                      <i class="pi pi-info-circle mr-2"></i>
-                      No tags assigned
-                    </p>
-                  </ng-template>
+                </div>
+              </p-card>
+
+              <!-- Quality Metrics Card -->
+              <p-card header="Quality Metrics" styleClass="overview-card" *ngIf="hasValue(dataProduct.quality_metrics)">
+                <div class="card-icon">
+                  <i class="pi pi-chart-line"></i>
+                </div>
+                <div class="card-content">
+                  <div class="quality-metrics-list">
+                    <div class="quality-item" *ngIf="dataProduct.quality_metrics.accuracy">
+                      <span class="quality-label">Accuracy:</span>
+                      <span class="quality-value" [style.color]="getQualityColor(dataProduct.quality_metrics.accuracy)">
+                        {{ dataProduct.quality_metrics.accuracy }}
+                      </span>
+                    </div>
+                    <div class="quality-item" *ngIf="dataProduct.quality_metrics.freshness">
+                      <span class="quality-label">Freshness:</span>
+                      <span class="quality-value">{{ dataProduct.quality_metrics.freshness }}</span>
+                    </div>
+                    <div class="quality-item" *ngIf="dataProduct.quality_metrics.completeness">
+                      <span class="quality-label">Completeness:</span>
+                      <span class="quality-value" [style.color]="getQualityColor(dataProduct.quality_metrics.completeness)">
+                        {{ dataProduct.quality_metrics.completeness }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </p-card>
             </div>
+          </div>
+        </p-tabPanel>
+
+        <!-- APIs Tab -->
+        <p-tabPanel header="APIs" leftIcon="pi pi-globe">
+          <div class="tab-content">
+            <div *ngIf="hasValue(dataProduct.apis); else noApis">
+              <p-table [value]="dataProduct.apis" [paginator]="false" styleClass="p-datatable-sm">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th>Method</th>
+                    <th>Path</th>
+                    <th>Description</th>
+                    <th>Auth Required</th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-api>
+                  <tr>
+                    <td>
+                      <p-badge [value]="api.method" [severity]="getSeverity(api.method)"></p-badge>
+                    </td>
+                    <td>
+                      <code class="api-path">{{ api.path }}</code>
+                    </td>
+                    <td>{{ api.description || 'N/A' }}</td>
+                    <td>
+                      <p-tag 
+                        [value]="api.auth_required ? 'Yes' : 'No'" 
+                        [severity]="api.auth_required ? 'warning' : 'success'">
+                      </p-tag>
+                    </td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+            <ng-template #noApis>
+              <div class="empty-state">
+                <i class="pi pi-globe text-gray-400 text-6xl mb-4"></i>
+                <p class="no-data">No APIs configured</p>
+              </div>
+            </ng-template>
           </div>
         </p-tabPanel>
 
@@ -239,7 +296,9 @@
               </h3>
               <div class="schema-card">
                 <div *ngIf="hasValue(dataProduct.input_ports); else noInputPorts">
-                  <pre class="json-display">{{ dataProduct.input_ports | json }}</pre>
+                  <div class="port-list">
+                    <p-chip *ngFor="let port of dataProduct.input_ports" [label]="port"></p-chip>
+                  </div>
                 </div>
                 <ng-template #noInputPorts>
                   <p class="no-data">
@@ -259,7 +318,9 @@
               </h3>
               <div class="schema-card">
                 <div *ngIf="hasValue(dataProduct.output_ports); else noOutputPorts">
-                  <pre class="json-display">{{ dataProduct.output_ports | json }}</pre>
+                  <div class="port-list">
+                    <p-chip *ngFor="let port of dataProduct.output_ports" [label]="port"></p-chip>
+                  </div>
                 </div>
                 <ng-template #noOutputPorts>
                   <p class="no-data">
@@ -333,12 +394,40 @@
           <div class="tab-content">
             <div class="quality-metrics">
               <div *ngIf="hasValue(dataProduct.quality_metrics); else noQualityMetrics">
-                <div class="quality-header">
-                  <i class="pi pi-chart-line mr-2"></i>
-                  <h3>Quality Metrics</h3>
-                </div>
-                <div class="quality-card">
-                  <pre class="json-display">{{ dataProduct.quality_metrics | json }}</pre>
+                <div class="quality-grid">
+                  <div class="quality-card" *ngIf="dataProduct.quality_metrics.accuracy">
+                    <div class="quality-icon" style="background: #10B981;">
+                      <i class="pi pi-check-circle"></i>
+                    </div>
+                    <div class="quality-content">
+                      <h4>Accuracy</h4>
+                      <p class="quality-value" [style.color]="getQualityColor(dataProduct.quality_metrics.accuracy)">
+                        {{ dataProduct.quality_metrics.accuracy }}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div class="quality-card" *ngIf="dataProduct.quality_metrics.freshness">
+                    <div class="quality-icon" style="background: #3B82F6;">
+                      <i class="pi pi-clock"></i>
+                    </div>
+                    <div class="quality-content">
+                      <h4>Freshness</h4>
+                      <p class="quality-value">{{ dataProduct.quality_metrics.freshness }}</p>
+                    </div>
+                  </div>
+                  
+                  <div class="quality-card" *ngIf="dataProduct.quality_metrics.completeness">
+                    <div class="quality-icon" style="background: #8B5CF6;">
+                      <i class="pi pi-percentage"></i>
+                    </div>
+                    <div class="quality-content">
+                      <h4>Completeness</h4>
+                      <p class="quality-value" [style.color]="getQualityColor(dataProduct.quality_metrics.completeness)">
+                        {{ dataProduct.quality_metrics.completeness }}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
               <ng-template #noQualityMetrics>
@@ -357,10 +446,10 @@
             <div class="documentation-section">
               
               <!-- Swagger UI -->
-              <div class="swagger-section">
+              <div class="swagger-section" *ngIf="dataProduct.swagger">
                 <h3>
                   <i class="pi pi-file-code mr-2"></i>
-                  API Documentation
+                  Swagger Documentation
                 </h3>
                 <div class="swagger-container">
                   <div *ngIf="swaggerLoading" class="swagger-loading">
@@ -378,15 +467,17 @@
                       frameborder="0">
                     </iframe>
                   </div>
-                  <div *ngIf="!swaggerUrl && !swaggerLoading" class="no-swagger">
-                    <i class="pi pi-info-circle mr-2"></i>
-                    No Swagger documentation URL provided
-                  </div>
+                </div>
+                <div class="doc-link" *ngIf="dataProduct.swagger">
+                  <a [href]="dataProduct.swagger" target="_blank" rel="noopener noreferrer">
+                    <i class="pi pi-external-link mr-2"></i>
+                    Open Swagger Documentation
+                  </a>
                 </div>
               </div>
 
               <!-- OpenAPI -->
-              <div *ngIf="openapiUrl" class="openapi-section">
+              <div class="openapi-section" *ngIf="dataProduct.openapi">
                 <h3>
                   <i class="pi pi-file-o mr-2"></i>
                   OpenAPI Documentation
@@ -398,16 +489,22 @@
                     frameborder="0">
                   </iframe>
                 </div>
+                <div class="doc-link" *ngIf="dataProduct.openapi">
+                  <a [href]="dataProduct.openapi" target="_blank" rel="noopener noreferrer">
+                    <i class="pi pi-external-link mr-2"></i>
+                    Open OpenAPI Documentation
+                  </a>
+                </div>
               </div>
 
               <!-- Additional Documentation -->
-              <div *ngIf="hasValue(dataProduct.documentation)" class="additional-docs">
+              <div class="additional-docs" *ngIf="dataProduct.documentation">
                 <h3>
                   <i class="pi pi-book mr-2"></i>
                   Additional Documentation
                 </h3>
                 <div class="documentation-card">
-                  <div>{{ dataProduct.documentation }}</div>
+                  <p>{{ dataProduct.documentation }}</p>
                 </div>
               </div>
             </div>
@@ -418,13 +515,12 @@
         <p-tabPanel header="Lifecycle" leftIcon="pi pi-history">
           <div class="tab-content">
             <div class="lifecycle-info">
-              <div *ngIf="hasValue(dataProduct.lifecycle); else noLifecycle">
-                <div class="lifecycle-header">
-                  <i class="pi pi-history mr-2"></i>
-                  <h3>Lifecycle Information</h3>
-                </div>
+              <div *ngIf="dataProduct.lifecycle; else noLifecycle">
                 <div class="lifecycle-card">
-                  <pre class="json-display">{{ dataProduct.lifecycle | json }}</pre>
+                  <div class="lifecycle-content">
+                    <i class="pi pi-history lifecycle-icon"></i>
+                    <p>{{ dataProduct.lifecycle }}</p>
+                  </div>
                 </div>
               </div>
               <ng-template #noLifecycle>
@@ -441,13 +537,12 @@
         <p-tabPanel header="Cost" leftIcon="pi pi-dollar">
           <div class="tab-content">
             <div class="cost-info">
-              <div *ngIf="hasValue(dataProduct.cost); else noCost">
-                <div class="cost-header">
-                  <i class="pi pi-dollar mr-2"></i>
-                  <h3>Cost Information</h3>
-                </div>
+              <div *ngIf="dataProduct.cost; else noCost">
                 <div class="cost-card">
-                  <pre class="json-display">{{ dataProduct.cost | json }}</pre>
+                  <div class="cost-content">
+                    <i class="pi pi-dollar cost-icon"></i>
+                    <p>{{ dataProduct.cost }}</p>
+                  </div>
                 </div>
               </div>
               <ng-template #noCost>
@@ -456,28 +551,6 @@
                   <p class="no-data">No cost information available</p>
                 </div>
               </ng-template>
-            </div>
-          </div>
-        </p-tabPanel>
-
-        <!-- Domain-Specific Tabs -->
-        <p-tabPanel *ngFor="let tab of domainTabs" 
-                   [header]="tab.label" 
-                   [leftIcon]="tab.icon">
-          <div class="tab-content">
-            <div class="domain-specific-content">
-              <div class="domain-header">
-                <i [class]="'pi ' + tab.icon + ' mr-2'"></i>
-                <h3>{{ tab.label }}</h3>
-              </div>
-              <div class="domain-card">
-                <p class="text-gray-600">
-                  Domain-specific functionality for {{ tab.label.toLowerCase() }} is coming soon!
-                </p>
-                <p class="text-sm text-gray-500 mt-2">
-                  This tab will contain tools and insights specific to {{ dataProduct.domain }} domain operations.
-                </p>
-              </div>
             </div>
           </div>
         </p-tabPanel>

@@ -1,0 +1,196 @@
+<div class="checkin-page">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1>Check-in Management</h1>
+        <p class="subtitle">Process guest check-ins and manage arrivals</p>
+      </div>
+      <div class="header-actions">
+        <button pButton type="button" label="Refresh" icon="pi pi-refresh"
+          (click)="loadBookings()" class="p-button-secondary">
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <p-card class="filters-card">
+    <div class="filters">
+      <div class="filter-group">
+        <label>Search</label>
+        <input pInputText type="text" placeholder="Search by Booking ID, Apartment, or Guest ID"
+          [(ngModel)]="searchTerm" (input)="onSearch()">
+      </div>
+      <div class="filter-group">
+        <label>Status</label>
+        <p-dropdown [options]="statusOptions" optionLabel="label" optionValue="value"
+          [(ngModel)]="selectedStatus" (onChange)="onStatusChange()"
+          placeholder="All Statuses">
+        </p-dropdown>
+      </div>
+      <div class="filter-group">
+        <label>Check-in Date</label>
+        <p-calendar [(ngModel)]="selectedDate" (onSelect)="onDateChange()"
+          [showIcon]="true" [showClear]="true" placeholder="Select Date">
+        </p-calendar>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Bookings Table -->
+  <p-card *ngIf="!loading; else loadingTemplate">
+    <ng-container *ngTemplateOutlet="bookingsTable"></ng-container>
+  </p-card>
+
+  <ng-template #bookingsTable>
+    <p-table [value]="filteredBookings" [paginator]="true" [rows]="10" 
+      [rowsPerPageOptions]="[10, 25, 50]" [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+      [globalFilterFields]="['id', 'apartment_id', 'account_id']"
+      styleClass="p-datatable-sm">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Booking ID</th>
+          <th>Apartment</th>
+          <th>Guest ID</th>
+          <th>Check-in Date</th>
+          <th>Check-out Date</th>
+          <th>Guests</th>
+          <th>Status</th>
+          <th>Check-in Status</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-booking>
+        <tr>
+          <td>
+            <span class="booking-id">{{ booking.id }}</span>
+          </td>
+          <td>
+            <span class="apartment-name">{{ getApartmentName(booking.apartment_id) }}</span>
+          </td>
+          <td>{{ booking.account_id }}</td>
+          <td>
+            <i class="pi pi-calendar mr-1"></i>
+            {{ booking.check_in | date: 'short' }}
+          </td>
+          <td>
+            <i class="pi pi-calendar mr-1"></i>
+            {{ booking.check_out | date: 'short' }}
+          </td>
+          <td>
+            <i class="pi pi-users mr-1"></i>
+            {{ booking.guest_count }}
+          </td>
+          <td>
+            <p-badge [value]="booking.booking_status | titlecase" 
+              [severity]="getStatusSeverity(booking.booking_status)">
+            </p-badge>
+          </td>
+          <td>
+            <p-tag [value]="getCheckinStatus(booking)" 
+              [severity]="getCheckinStatusSeverity(booking)">
+            </p-tag>
+          </td>
+          <td>
+            <button pButton type="button" icon="pi pi-sign-in" 
+              label="Check-in" class="p-button-sm p-button-success"
+              (click)="openCheckinDialog(booking)"
+              [disabled]="booking.booking_status === BookingStatus.COMPLETED">
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="9" class="text-center">
+            <div class="empty-state">
+              <i class="pi pi-inbox"></i>
+              <p>No bookings found for check-in</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </ng-template>
+
+  <!-- Loading Template -->
+  <ng-template #loadingTemplate>
+    <div class="loading-container">
+      <p-skeleton height="300px"></p-skeleton>
+    </div>
+  </ng-template>
+
+  <!-- Check-in Dialog -->
+  <p-dialog 
+    [(visible)]="showCheckinDialog" 
+    header="Process Check-in"
+    [modal]="true" 
+    [style]="{width: '50vw'}"
+    [closable]="true"
+    (onHide)="closeCheckinDialog()">
+    
+    <div class="checkin-dialog-content" *ngIf="selectedBooking">
+      <div class="booking-info">
+        <h3>Booking Details</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Booking ID:</span>
+            <span class="value">{{ selectedBooking.id }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Apartment:</span>
+            <span class="value">{{ getApartmentName(selectedBooking.apartment_id) }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Guest ID:</span>
+            <span class="value">{{ selectedBooking.account_id }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Check-in:</span>
+            <span class="value">{{ selectedBooking.check_in | date: 'short' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Check-out:</span>
+            <span class="value">{{ selectedBooking.check_out | date: 'short' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Guests:</span>
+            <span class="value">{{ selectedBooking.guest_count }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Duration:</span>
+            <span class="value">{{ selectedBooking.count_of_days }} day(s)</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Total Price:</span>
+            <span class="value price">{{ selectedBooking.total_price | currency }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="checkin-notes">
+        <label>Check-in Notes (Optional)</label>
+        <textarea pInputTextarea [(ngModel)]="checkinNotes" 
+          rows="4" placeholder="Add any notes about this check-in...">
+        </textarea>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Cancel" icon="pi pi-times"
+        (click)="closeCheckinDialog()" class="p-button-secondary">
+      </button>
+      <button pButton type="button" label="Process Check-in" icon="pi pi-check"
+        (click)="processCheckin()" class="p-button-success">
+      </button>
+    </ng-template>
+  </p-dialog>
+</div>

@@ -1,0 +1,185 @@
+<div class="hotel-overview-page">
+  <!-- Hero Section -->
+  <div class="hero-section">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="pi pi-building"></i>
+        <span>Hotel Adapter</span>
+      </div>
+      <h1 class="hero-title">Hệ thống Quản lý Hospitality & Booking</h1>
+      <p class="hero-description">
+        Hotel Adapter là một hệ thống quản lý hospitality & booking hoàn chỉnh, cung cấp giải pháp toàn diện 
+        cho việc quản lý căn hộ/du lịch nghỉ dưỡng. Tối ưu hóa hoạt động kinh doanh thông qua dữ liệu thời gian thực và analytics.
+      </p>
+      <div class="hero-actions">
+        <button pButton type="button" label="Bắt đầu quản lý" icon="pi pi-arrow-right"
+          routerLink="/hotel/apartments" class="p-button-primary p-button-lg"></button>
+        <button pButton type="button" label="Xem Bookings" icon="pi pi-calendar"
+          routerLink="/hotel/bookings" class="p-button-outlined p-button-lg"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions-section">
+    <h2 class="section-title">Truy cập nhanh</h2>
+    <div class="quick-actions-grid">
+      <a *ngFor="let action of quickActions" [routerLink]="action.route" class="quick-action-card">
+        <div class="action-icon" [style.background]="action.color">
+          <i [class]="action.icon"></i>
+        </div>
+        <span class="action-label">{{ action.label }}</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Business Values -->
+  <div class="section">
+    <div class="section-header">
+      <h2 class="section-title">💼 Giá trị kinh doanh chính</h2>
+      <p class="section-subtitle">Những lợi ích cốt lõi mà Hotel Adapter mang lại</p>
+    </div>
+    <div class="business-values-grid">
+      <div *ngFor="let value of businessValues" class="value-card">
+        <div class="value-icon" [style.background]="value.color + '20'">
+          <i [class]="value.icon" [style.color]="value.color"></i>
+        </div>
+        <h3 class="value-title">{{ value.title }}</h3>
+        <p class="value-description">{{ value.description }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Business Flows -->
+  <div class="section">
+    <div class="section-header">
+      <h2 class="section-title">🔄 Luồng nghiệp vụ chính</h2>
+      <p class="section-subtitle">Quy trình hoạt động của hệ thống</p>
+    </div>
+    <div class="flows-container">
+      <div *ngFor="let flow of businessFlows" class="flow-card">
+        <div class="flow-header">
+          <div class="flow-step" [style.background]="flow.color">{{ flow.step }}</div>
+          <div class="flow-title-section">
+            <i [class]="flow.icon" class="flow-icon" [style.color]="flow.color"></i>
+            <h3 class="flow-title">{{ flow.title }}</h3>
+          </div>
+        </div>
+        <p class="flow-description">{{ flow.description }}</p>
+        <ul class="flow-features">
+          <li *ngFor="let feature of flow.features">
+            <i class="pi pi-check-circle"></i>
+            <span>{{ feature }}</span>
+          </li>
+        </ul>
+        <div class="flow-footer">
+          <button pButton type="button" [label]="'Xem chi tiết ' + flow.title" 
+            [routerLink]="flow.route" class="p-button-outlined" 
+            [style.border-color]="flow.color" [style.color]="flow.color"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytics & Reporting -->
+  <div class="section">
+    <div class="section-header">
+      <h2 class="section-title">📊 Analytics & Reporting</h2>
+      <p class="section-subtitle">Thông tin chi tiết về hiệu suất kinh doanh</p>
+    </div>
+    <div class="analytics-grid">
+      <div *ngFor="let category of analyticsCategories" class="analytics-card">
+        <div class="analytics-header">
+          <i [class]="category.icon" class="analytics-icon" [style.color]="category.color"></i>
+          <h3 class="analytics-title">{{ category.title }}</h3>
+        </div>
+        <ul class="analytics-items">
+          <li *ngFor="let item of category.items">
+            <i class="pi pi-circle-fill"></i>
+            <span>{{ item }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Journeys -->
+  <div class="section">
+    <div class="section-header">
+      <h2 class="section-title">🎯 User Journey</h2>
+      <p class="section-subtitle">Hành trình của từng loại người dùng</p>
+    </div>
+    <div class="journeys-grid">
+      <div *ngFor="let journey of userJourneys" class="journey-card">
+        <div class="journey-header">
+          <div class="journey-icon" [style.background]="journey.color + '20'">
+            <i [class]="journey.icon" [style.color]="journey.color"></i>
+          </div>
+          <h3 class="journey-role">{{ journey.role }}</h3>
+        </div>
+        <ul class="journey-steps">
+          <li *ngFor="let step of journey.steps; let i = index">
+            <span class="step-number">{{ i + 1 }}</span>
+            <span class="step-text">{{ step }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Business Benefits -->
+  <div class="section">
+    <div class="section-header">
+      <h2 class="section-title">💰 Business Benefits</h2>
+      <p class="section-subtitle">Lợi ích kinh doanh cụ thể</p>
+    </div>
+    <div class="benefits-grid">
+      <div *ngFor="let benefit of businessBenefits" class="benefit-card">
+        <div class="benefit-header">
+          <i [class]="benefit.icon" class="benefit-icon" [style.color]="benefit.color"></i>
+          <h3 class="benefit-title">{{ benefit.category }}</h3>
+        </div>
+        <ul class="benefit-items">
+          <li *ngFor="let item of benefit.items">
+            <i class="pi pi-check"></i>
+            <span>{{ item }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Integration Points -->
+  <div class="section">
+    <div class="section-header">
+      <h2 class="section-title">🔗 Integration Points</h2>
+      <p class="section-subtitle">Kết nối với các hệ thống bên ngoài</p>
+    </div>
+    <div class="integrations-grid">
+      <div *ngFor="let integration of integrations" class="integration-card">
+        <i [class]="integration.icon" class="integration-icon"></i>
+        <h4 class="integration-name">{{ integration.name }}</h4>
+        <div class="integration-tags">
+          <p-tag *ngFor="let item of integration.items" [value]="item" severity="info"></p-tag>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA Section -->
+  <div class="cta-section">
+    <div class="cta-content">
+      <h2 class="cta-title">Sẵn sàng bắt đầu?</h2>
+      <p class="cta-description">
+        Hotel Adapter không chỉ là một hệ thống booking mà là một nền tảng kinh doanh hospitality hoàn chỉnh, 
+        giúp tối ưu hóa toàn bộ quy trình từ marketing đến operations.
+      </p>
+      <div class="cta-actions">
+        <button pButton type="button" label="Quản lý Căn hộ" icon="pi pi-building"
+          routerLink="/hotel/apartments" class="p-button-primary p-button-lg"></button>
+        <button pButton type="button" label="Xem Bookings" icon="pi pi-calendar"
+          routerLink="/hotel/bookings" class="p-button-outlined p-button-lg"></button>
+      </div>
+    </div>
+  </div>
+</div>

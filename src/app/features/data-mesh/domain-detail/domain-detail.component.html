@@ -31,8 +31,8 @@
               <i class="pi pi-sitemap text-white text-xl"></i>
             </div>
             <div>
-              <h1 class="text-3xl font-bold text-gray-900">{{ domain.display_name }}</h1>
-              <p class="text-gray-600">{{ domain.domain_key }}</p>
+              <h1 class="text-3xl font-bold text-gray-900">{{ domain.display_name || domain.name }}</h1>
+              <p class="text-gray-600">{{ domain.name !== domain.display_name ? domain.name + ' • ' : '' }}{{ domain.domain_key }}</p>
             </div>
           </div>
           <div class="flex items-center gap-3">
@@ -69,7 +69,7 @@
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm font-medium text-gray-600">Data Products</p>
-              <p class="text-3xl font-bold text-blue-600">{{ dataProducts.length }}</p>
+              <p class="text-3xl font-bold text-blue-600">{{ domain.data_products?.length || dataProducts.length || 0 }}</p>
             </div>
             <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <i class="pi pi-database text-blue-600 text-xl"></i>
@@ -195,22 +195,48 @@
                 </div>
 
                 <div>
-                  <h3 class="text-lg font-semibold text-gray-900 mb-3">Contact</h3>
+                  <h3 class="text-lg font-semibold text-gray-900 mb-3">Contact Information</h3>
                   <div class="bg-gray-50 rounded-lg p-4 space-y-3">
-                    <div *ngIf="domain.contact?.email">
-                      <p class="text-sm text-gray-600">Email</p>
-                      <p class="font-medium text-gray-900">{{ domain.contact.email }}</p>
+                    <div *ngIf="domain.contact?.email" class="flex items-start gap-2">
+                      <i class="pi pi-envelope text-blue-500 mt-1"></i>
+                      <div class="flex-1">
+                        <p class="text-sm text-gray-600 mb-1">Email</p>
+                        <a [href]="'mailto:' + domain.contact.email" 
+                           class="font-medium text-blue-600 hover:underline break-all">
+                          {{ domain.contact.email }}
+                        </a>
+                      </div>
                     </div>
-                    <div *ngIf="domain.contact?.slack">
-                      <p class="text-sm text-gray-600">Slack</p>
-                      <p class="font-medium text-gray-900">{{ domain.contact.slack }}</p>
+                    <div *ngIf="domain.contact?.slack" class="flex items-start gap-2">
+                      <i class="pi pi-slack text-purple-500 mt-1"></i>
+                      <div class="flex-1">
+                        <p class="text-sm text-gray-600 mb-1">Slack</p>
+                        <p class="font-medium text-gray-900 break-all">{{ domain.contact.slack }}</p>
+                      </div>
                     </div>
-                    <div *ngIf="domain.contact?.support">
-                      <p class="text-sm text-gray-600">Support</p>
-                      <p class="font-medium text-gray-900">{{ domain.contact.support }}</p>
+                    <div *ngIf="domain.contact?.support" class="flex items-start gap-2">
+                      <i class="pi pi-life-ring text-green-500 mt-1"></i>
+                      <div class="flex-1">
+                        <p class="text-sm text-gray-600 mb-1">Support</p>
+                        <a *ngIf="domain.contact.support.startsWith('http')" 
+                           [href]="domain.contact.support" 
+                           target="_blank"
+                           class="font-medium text-blue-600 hover:underline break-all">
+                          {{ domain.contact.support }}
+                        </a>
+                        <a *ngIf="domain.contact.support.includes('@') && !domain.contact.support.startsWith('http')" 
+                           [href]="'mailto:' + domain.contact.support" 
+                           class="font-medium text-blue-600 hover:underline break-all">
+                          {{ domain.contact.support }}
+                        </a>
+                        <p *ngIf="!domain.contact.support.startsWith('http') && !domain.contact.support.includes('@')" 
+                           class="font-medium text-gray-900 break-all">
+                          {{ domain.contact.support }}
+                        </p>
+                      </div>
                     </div>
-                    <div *ngIf="!domain.contact?.email && !domain.contact?.slack && !domain.contact?.support">
-                      <p class="text-sm text-gray-500">No contact information available</p>
+                    <div *ngIf="!domain.contact?.email && !domain.contact?.slack && !domain.contact?.support" class="text-center py-2">
+                      <p class="text-sm text-gray-500 italic">No contact information available</p>
                     </div>
                   </div>
                 </div>
@@ -221,21 +247,24 @@
           <!-- Data Products Tab -->
           <p-tabPanel header="Data Products" leftIcon="pi pi-database">
             <div class="p-6">
-              <div *ngIf="dataProducts.length > 0; else noDataProducts">
+              <div *ngIf="(domain.data_products && domain.data_products.length > 0) || dataProducts.length > 0; else noDataProducts">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div *ngFor="let product of dataProducts" 
-                       class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200">
+                  <div *ngFor="let product of (domain.data_products || dataProducts)" 
+                       class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200 bg-white">
                     <div class="flex items-start justify-between mb-4">
-                      <h4 class="text-lg font-semibold text-gray-900">{{ product.name }}</h4>
+                      <h4 class="text-lg font-semibold text-gray-900 flex-1">{{ product.name }}</h4>
                       <p-badge 
-                        [value]="product.endpoints?.length || 0" 
-                        severity="info">
+                        [value]="product.endpoints_count || product.endpoints?.length || 0" 
+                        severity="info"
+                        styleClass="ml-2">
                       </p-badge>
                     </div>
-                    <p class="text-sm text-gray-600 mb-4">{{ product.description }}</p>
-                    <div class="flex items-center text-sm text-gray-500">
-                      <i class="pi pi-link mr-2"></i>
-                      <span>{{ product.endpoints?.length || 0 }} endpoints</span>
+                    <p class="text-sm text-gray-600 mb-4 line-clamp-3">{{ product.description || 'No description available' }}</p>
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                      <div class="flex items-center text-sm text-gray-500">
+                        <i class="pi pi-link mr-2"></i>
+                        <span>{{ product.endpoints_count || product.endpoints?.length || 0 }} endpoint{{ (product.endpoints_count || product.endpoints?.length || 0) !== 1 ? 's' : '' }}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -255,7 +284,7 @@
           <p-tabPanel header="API Endpoints" leftIcon="pi pi-link">
             <div class="p-6">
               <div *ngIf="domainApis.length > 0; else noApis">
-                <p-table [value]="domainApis" [scrollable]="true" scrollHeight="400px">
+                <p-table [value]="domainApis">
                   <ng-template pTemplate="header">
                     <tr>
                       <th>Method</th>

@@ -1,0 +1,131 @@
+.checkin-page {
+  padding: 2rem;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, var(--p-surface-0) 0%, rgba(var(--p-primary-500), 0.05) 100%);
+    padding: 2rem;
+    border-radius: 12px;
+    border-bottom: 2px solid rgba(var(--p-primary-500), 0.2);
+
+    .header-content {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--p-surface-900);
+      }
+
+      .subtitle {
+        margin: 0;
+        font-size: 0.95rem;
+        color: var(--p-surface-600);
+      }
+    }
+  }
+
+  .filters-card {
+    margin-bottom: 2rem;
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        label {
+          font-weight: 500;
+          color: var(--p-surface-700);
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+
+  .loading-container {
+    padding: 2rem;
+  }
+
+  .empty-state {
+    padding: 3rem;
+    text-align: center;
+    color: var(--p-surface-600);
+
+    i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: var(--p-surface-400);
+    }
+  }
+
+  .booking-id {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+  }
+
+  .apartment-name {
+    font-weight: 500;
+  }
+
+  .checkin-dialog-content {
+    .booking-info {
+      margin-bottom: 2rem;
+
+      h3 {
+        margin: 0 0 1rem;
+        color: var(--p-surface-900);
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+
+        .info-item {
+          display: flex;
+          justify-content: space-between;
+          padding: 0.75rem;
+          background: var(--p-surface-50);
+          border-radius: 6px;
+
+          .label {
+            font-weight: 500;
+            color: var(--p-surface-600);
+          }
+
+          .value {
+            color: var(--p-surface-900);
+            font-weight: 600;
+
+            &.price {
+              color: var(--p-primary-600);
+            }
+          }
+        }
+      }
+    }
+
+    .checkin-notes {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      label {
+        font-weight: 500;
+        color: var(--p-surface-700);
+      }
+    }
+  }
+}

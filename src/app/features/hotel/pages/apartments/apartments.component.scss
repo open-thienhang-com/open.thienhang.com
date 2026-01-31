@@ -313,4 +313,158 @@
       gap: 1.5rem;
     }
   }
+
+  // Detail Dialog Styles
+  .detail-loading {
+    padding: 2rem;
+  }
+
+  .detail-content {
+    .detail-header {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--p-surface-200);
+
+      .header-info {
+        .title-row {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          margin-bottom: 0.75rem;
+
+          h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--p-surface-900);
+          }
+
+          .apartment-id {
+            font-size: 0.85rem;
+            color: var(--p-surface-600);
+            font-family: 'Courier New', monospace;
+          }
+        }
+
+        .status-row {
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+        }
+      }
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+
+      p-card {
+        .info-section,
+        .pricing-info,
+        .address-info,
+        .amenities-info,
+        .policies-info,
+        .contact-info,
+        .availability-info,
+        .property-info {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+
+          .info-row,
+          .price-row,
+          .address-row,
+          .policy-row,
+          .contact-row,
+          .availability-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--p-surface-100);
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            .label {
+              font-weight: 500;
+              color: var(--p-surface-600);
+              font-size: 0.9rem;
+            }
+
+            .value {
+              color: var(--p-surface-900);
+              font-weight: 600;
+              text-align: right;
+            }
+
+            .price-value {
+              color: var(--p-primary-600);
+              font-weight: 700;
+              font-size: 1.1rem;
+            }
+          }
+
+          .address-row,
+          .contact-row {
+            i {
+              color: var(--p-primary-500);
+              margin-right: 0.5rem;
+            }
+          }
+
+          .amenity-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+          }
+
+          .amenity-list {
+            .amenity-item {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              padding: 0.5rem 0;
+              color: var(--p-surface-700);
+
+              i {
+                font-size: 0.9rem;
+              }
+
+              .amenity-desc {
+                color: var(--p-surface-600);
+                font-size: 0.85rem;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .images-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+
+      .image-item {
+        position: relative;
+        padding-top: 75%; // 4:3 aspect ratio
+        overflow: hidden;
+        border-radius: 8px;
+        border: 1px solid var(--p-surface-200);
+
+        img {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+    }
+  }
 }

@@ -76,45 +76,88 @@
         <div *ngIf="filteredDomains.length > 0" class="divide-y divide-slate-200">
           <div *ngFor="let domain of filteredDomains; trackBy: trackByDomainKey"
                (click)="showDomainDetails(domain)"
-               class="px-6 py-4 hover:bg-blue-50 transition-colors cursor-pointer group">
-            <div class="flex items-center justify-between gap-4">
+               class="px-6 py-5 hover:bg-blue-50 transition-colors cursor-pointer group">
+            <div class="flex items-start justify-between gap-4">
               <!-- Domain Info -->
               <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-3 mb-1">
+                <div class="flex items-center gap-3 mb-2">
                   <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
                     <i [class]="'pi ' + getDomainIcon(domain.domain_key) + ' text-white text-sm'"></i>
                   </div>
-                  <div class="min-w-0">
-                    <h3 class="text-sm font-semibold text-slate-900 truncate">
-                      {{ domain.display_name || domain.name }}
-                    </h3>
-                    <p class="text-xs text-slate-500">{{ domain.domain_key }}</p>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <h3 class="text-base font-semibold text-slate-900 truncate">
+                        {{ domain.display_name || domain.name }}
+                      </h3>
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                            [class]="getStatusClass(domain.status)">
+                        {{ domain.status }}
+                      </span>
+                    </div>
+                    <p class="text-xs text-slate-500 mb-1">{{ domain.domain_key }}</p>
+                    <p class="text-sm text-slate-600 line-clamp-2">
+                      {{ domain.description || 'No description' }}
+                    </p>
                   </div>
                 </div>
-                <p class="text-sm text-slate-600 line-clamp-1 ml-13">
-                  {{ domain.description || 'No description' }}
-                </p>
+
+                <!-- Tags -->
+                <div *ngIf="domain.tags && domain.tags.length > 0" class="flex flex-wrap gap-1.5 mt-2 ml-13">
+                  <p-tag *ngFor="let tag of domain.tags.slice(0, 5)" [value]="tag" severity="info" styleClass="text-xs"></p-tag>
+                  <span *ngIf="domain.tags.length > 5" class="text-xs text-slate-500 px-2 py-0.5">
+                    +{{ domain.tags.length - 5 }} more
+                  </span>
+                </div>
+
+                <!-- Metrics & Info -->
+                <div class="flex items-center gap-4 mt-3 ml-13 text-xs text-slate-600">
+                  <div class="flex items-center gap-1">
+                    <i class="pi pi-users text-slate-400"></i>
+                    <span class="font-medium">{{ domain.metrics?.subscribers || 0 }}</span>
+                    <span class="text-slate-400">subscribers</span>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <i class="pi pi-star text-slate-400"></i>
+                    <span class="font-medium">{{ domain.metrics?.quality_score || 'N/A' }}</span>
+                    <span class="text-slate-400">quality</span>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <i class="pi pi-box text-slate-400"></i>
+                    <span class="font-medium">{{ domain.data_products?.length || 0 }}</span>
+                    <span class="text-slate-400">data products</span>
+                  </div>
+                  <div *ngIf="domain.sla?.availability" class="flex items-center gap-1">
+                    <i class="pi pi-check-circle text-emerald-500"></i>
+                    <span class="font-medium text-emerald-600">{{ domain.sla.availability }}</span>
+                    <span class="text-slate-400">uptime</span>
+                  </div>
+                </div>
               </div>
 
-              <!-- Status Badge -->
-              <div class="flex-shrink-0">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
-                      [class]="getStatusClass(domain.status)">
-                  {{ domain.status }}
-                </span>
-              </div>
+              <!-- Actions -->
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <!-- View Button -->
+                <button
+                  (click)="$event.stopPropagation(); viewDomainDetails(domain)"
+                  class="px-3 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex items-center gap-2"
+                  pTooltip="View Details">
+                  <i class="pi pi-eye text-sm"></i>
+                  <span class="hidden sm:inline">View</span>
+                </button>
 
-              <!-- APIs Button -->
-              <button
-                (click)="$event.stopPropagation(); showDomainApis(domain)"
-                class="px-3 py-2 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center gap-2 flex-shrink-0">
-                <i class="pi pi-code text-sm"></i>
-                <span class="hidden sm:inline">APIs</span>
-              </button>
+                <!-- Data Products Button -->
+                <button
+                  (click)="$event.stopPropagation(); viewDomainDataProducts(domain)"
+                  class="px-3 py-2 text-xs font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors flex items-center gap-2"
+                  pTooltip="View Data Products">
+                  <i class="pi pi-database text-sm"></i>
+                  <span class="hidden sm:inline">Data Products</span>
+                </button>
 
-              <!-- Arrow Icon -->
-              <div class="flex-shrink-0 text-slate-400 group-hover:text-blue-500 transition-colors">
-                <i class="pi pi-chevron-right text-sm"></i>
+                <!-- Arrow Icon -->
+                <div class="text-slate-400 group-hover:text-blue-500 transition-colors">
+                  <i class="pi pi-chevron-right text-lg"></i>
+                </div>
               </div>
             </div>
           </div>
@@ -185,22 +228,26 @@
     <p-divider></p-divider>
 
     <!-- Metrics & SLA -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="p-3 bg-blue-50 rounded-lg">
-        <p class="text-xs text-slate-600">Quality Score</p>
-        <p class="text-lg font-bold text-blue-600">{{ selectedDomain.metrics?.quality_score || 'N/A' }}</p>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div class="p-3 bg-blue-50 rounded-lg border border-blue-100">
+        <p class="text-xs text-slate-600 mb-1">Quality Score</p>
+        <p class="text-xl font-bold text-blue-600">{{ selectedDomain.metrics?.quality_score || 'N/A' }}</p>
       </div>
-      <div class="p-3 bg-purple-50 rounded-lg">
-        <p class="text-xs text-slate-600">Subscribers</p>
-        <p class="text-lg font-bold text-purple-600">{{ selectedDomain.metrics?.subscribers || 0 }}</p>
+      <div class="p-3 bg-purple-50 rounded-lg border border-purple-100">
+        <p class="text-xs text-slate-600 mb-1">Subscribers</p>
+        <p class="text-xl font-bold text-purple-600">{{ selectedDomain.metrics?.subscribers || 0 }}</p>
       </div>
-      <div class="p-3 bg-emerald-50 rounded-lg">
-        <p class="text-xs text-slate-600">Availability</p>
-        <p class="text-lg font-bold text-emerald-600">{{ selectedDomain.sla?.availability || 'N/A' }}</p>
+      <div class="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+        <p class="text-xs text-slate-600 mb-1">Availability</p>
+        <p class="text-xl font-bold text-emerald-600">{{ selectedDomain.sla?.availability || 'N/A' }}</p>
       </div>
-      <div class="p-3 bg-orange-50 rounded-lg">
-        <p class="text-xs text-slate-600">Version</p>
-        <p class="text-lg font-bold text-orange-600">{{ selectedDomain.sla?.version || 'N/A' }}</p>
+      <div class="p-3 bg-orange-50 rounded-lg border border-orange-100">
+        <p class="text-xs text-slate-600 mb-1">Freshness</p>
+        <p class="text-xl font-bold text-orange-600">{{ selectedDomain.sla?.freshness || 'N/A' }}</p>
+      </div>
+      <div class="p-3 bg-indigo-50 rounded-lg border border-indigo-100">
+        <p class="text-xs text-slate-600 mb-1">Version</p>
+        <p class="text-xl font-bold text-indigo-600">{{ selectedDomain.sla?.version || 'N/A' }}</p>
       </div>
     </div>
 
@@ -243,23 +290,51 @@
 
     <!-- Contact Info -->
     <div>
-      <label class="text-xs font-semibold text-slate-500 uppercase mb-2 block">Contact</label>
-      <div class="space-y-1 text-sm">
-        <p *ngIf="selectedDomain.contact?.email" class="text-slate-600">
-          <span class="font-medium">Email:</span>
-          <a [href]="'mailto:' + selectedDomain.contact.email" class="text-blue-600 hover:underline ml-2">
+      <label class="text-xs font-semibold text-slate-500 uppercase mb-3 block">Contact Information</label>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div *ngIf="selectedDomain.contact?.email" class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+          <div class="flex items-center gap-2 mb-1">
+            <i class="pi pi-envelope text-blue-500"></i>
+            <span class="text-xs font-semibold text-slate-500 uppercase">Email</span>
+          </div>
+          <a [href]="'mailto:' + selectedDomain.contact.email" 
+             class="text-sm text-blue-600 hover:underline break-all">
             {{ selectedDomain.contact.email }}
           </a>
-        </p>
-        <p *ngIf="selectedDomain.contact?.slack" class="text-slate-600">
-          <span class="font-medium">Slack:</span>
-          <span class="ml-2">{{ selectedDomain.contact.slack }}</span>
-        </p>
-        <p *ngIf="selectedDomain.contact?.support" class="text-slate-600">
-          <span class="font-medium">Support:</span>
-          <span class="ml-2">{{ selectedDomain.contact.support }}</span>
-        </p>
+        </div>
+        <div *ngIf="selectedDomain.contact?.slack" class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+          <div class="flex items-center gap-2 mb-1">
+            <i class="pi pi-slack text-purple-500"></i>
+            <span class="text-xs font-semibold text-slate-500 uppercase">Slack</span>
+          </div>
+          <p class="text-sm text-slate-700 break-all">{{ selectedDomain.contact.slack }}</p>
+        </div>
+        <div *ngIf="selectedDomain.contact?.support" class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+          <div class="flex items-center gap-2 mb-1">
+            <i class="pi pi-life-ring text-green-500"></i>
+            <span class="text-xs font-semibold text-slate-500 uppercase">Support</span>
+          </div>
+          <a *ngIf="selectedDomain.contact.support.startsWith('http')" 
+             [href]="selectedDomain.contact.support" 
+             target="_blank"
+             class="text-sm text-blue-600 hover:underline break-all">
+            {{ selectedDomain.contact.support }}
+          </a>
+          <a *ngIf="selectedDomain.contact.support.includes('@')" 
+             [href]="'mailto:' + selectedDomain.contact.support" 
+             class="text-sm text-blue-600 hover:underline break-all">
+            {{ selectedDomain.contact.support }}
+          </a>
+          <p *ngIf="!selectedDomain.contact.support.startsWith('http') && !selectedDomain.contact.support.includes('@')" 
+             class="text-sm text-slate-700 break-all">
+            {{ selectedDomain.contact.support }}
+          </p>
+        </div>
       </div>
+      <p *ngIf="!selectedDomain.contact?.email && !selectedDomain.contact?.slack && !selectedDomain.contact?.support" 
+         class="text-sm text-slate-500 italic">
+        No contact information available
+      </p>
     </div>
   </div>
 

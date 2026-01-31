@@ -108,11 +108,18 @@
       <div class="form-row">
         <div class="form-group">
           <label>Apartment ID *</label>
-          <input pInputText type="text" [(ngModel)]="formData.apartment_id" placeholder="e.g., apt_001">
+          <p-dropdown 
+            [options]="apartmentsForDropdown" 
+            optionLabel="title" 
+            optionValue="id"
+            placeholder="Select Apartment"
+            [(ngModel)]="formData.apartment_id"
+            [required]="true">
+          </p-dropdown>
         </div>
         <div class="form-group">
           <label>Guest ID *</label>
-          <input pInputText type="text" [(ngModel)]="formData.account_id" placeholder="e.g., acc_001">
+          <input pInputText type="text" [(ngModel)]="formData.account_id" placeholder="e.g., guest_001">
         </div>
       </div>
 

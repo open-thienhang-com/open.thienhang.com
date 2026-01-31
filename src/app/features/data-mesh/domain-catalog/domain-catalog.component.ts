@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { DataMeshServices, Domain } from '../../../core/services/data-mesh.services';
 import { LoadingService } from '../../../core/services/loading.service';
 import { I18nService } from '../../../core/services/i18n.service';
@@ -77,7 +78,8 @@ export class DomainCatalogComponent implements OnInit {
     private dataMeshServices: DataMeshServices,
     private messageService: MessageService,
     private loadingService: LoadingService,
-    private i18nService: I18nService
+    private i18nService: I18nService,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -91,32 +93,24 @@ export class DomainCatalogComponent implements OnInit {
       { label: 'Active', value: 'Active' },
       { label: 'Inactive', value: 'Inactive' }
     ];
+    
+    // Extract unique teams from domains for filter
+    if (this.domains.length > 0) {
+      const uniqueTeams = [...new Set(this.domains.map(d => d.team).filter(t => t && t.trim() !== ''))];
+      // You can add team filter dropdown if needed
+    }
   }
 
   loadDomainsList(): void {
     this.loading = true;
     this.loadingService.showPageLoading('Loading domains...', 'data-flow');
 
-    this.dataMeshServices.getDomainsList().subscribe({
+    this.dataMeshServices.getDomainCatalog().subscribe({
       next: (response) => {
         console.log('Domains loaded:', response.data);
         if (response.success && response.data) {
-          // Create placeholder Domain objects
-          this.domains = response.data.map(key => ({
-            domain_key: key,
-            name: this.formatDomainName(key),
-            display_name: this.formatDomainName(key),
-            status: 'Active',
-            team: '',
-            owner: '',
-            description: '',
-            metrics: { subscribers: 0, quality_score: '0%' },
-            tags: [],
-            sla: { availability: '', freshness: '', version: '' },
-            data_products: [],
-            contact: { email: '', slack: '', support: '' }
-          } as Domain));
-
+          // Use full domain data from API response
+          this.domains = response.data;
           this.filteredDomains = [...this.domains];
           this.loading = false;
           this.loadingService.hide();
@@ -127,12 +121,12 @@ export class DomainCatalogComponent implements OnInit {
             detail: `Loaded ${this.domains.length} domains`
           });
         } else {
-          this.handleError('Failed to load domains list');
+          this.handleError('Failed to load domains catalog');
         }
       },
       error: (error) => {
-        console.error('Error loading domains list:', error);
-        this.handleError('Failed to load domains list');
+        console.error('Error loading domains catalog:', error);
+        this.handleError('Failed to load domains catalog');
       }
     });
   }
@@ -172,6 +166,10 @@ export class DomainCatalogComponent implements OnInit {
     this.loadDomainDetails(domain.domain_key);
   }
 
+  viewDomainDetails(domain: Domain): void {
+    this.router.navigate(['/data-mesh/catalogs', domain.domain_key]);
+  }
+
   closeDomainDetails(): void {
     this.showDetailDialog = false;
     this.selectedDomain = null;
@@ -205,14 +203,20 @@ export class DomainCatalogComponent implements OnInit {
 
   applyFilters(): void {
     this.filteredDomains = this.domains.filter(domain => {
+      const searchLower = this.searchTerm.toLowerCase();
       const matchesSearch = !this.searchTerm ||
-        domain.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        domain.display_name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        domain.description.toLowerCase().includes(this.searchTerm.toLowerCase());
+        domain.name.toLowerCase().includes(searchLower) ||
+        domain.display_name.toLowerCase().includes(searchLower) ||
+        domain.description.toLowerCase().includes(searchLower) ||
+        domain.domain_key.toLowerCase().includes(searchLower) ||
+        (domain.tags && domain.tags.some(tag => tag.toLowerCase().includes(searchLower))) ||
+        (domain.team && domain.team.toLowerCase().includes(searchLower)) ||
+        (domain.owner && domain.owner.toLowerCase().includes(searchLower));
 
       const matchesStatus = !this.filters.status || domain.status === this.filters.status;
+      const matchesTeam = !this.filters.team || domain.team === this.filters.team;
 
-      return matchesSearch && matchesStatus;
+      return matchesSearch && matchesStatus && matchesTeam;
     });
   }
 
@@ -254,6 +258,10 @@ export class DomainCatalogComponent implements OnInit {
   showDomainApis(domain: Domain): void {
     this.selectedDomainForApis = domain;
     this.loadApis(domain.domain_key);
+  }
+
+  viewDomainDataProducts(domain: Domain): void {
+    this.router.navigate(['/data-mesh/data-products', domain.domain_key]);
   }
 
   loadApis(domainKey: string): void {

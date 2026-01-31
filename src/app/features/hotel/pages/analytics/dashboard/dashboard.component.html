@@ -1,0 +1,140 @@
+<div class="dashboard-page">
+  <p-toast></p-toast>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1>Analytics Dashboard</h1>
+        <p class="subtitle">Overview of hotel performance and key metrics</p>
+      </div>
+      <div class="header-actions">
+        <button pButton type="button" label="Refresh" icon="pi pi-refresh"
+          (click)="loadData()" class="p-button-secondary">
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Metrics -->
+  <div class="metrics-grid" *ngIf="!loading; else loadingTemplate">
+    <p-card class="metric-card revenue">
+      <div class="metric-content">
+        <div class="metric-icon revenue">
+          <i class="pi pi-dollar"></i>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label">Total Revenue</span>
+          <span class="metric-value">{{ totalRevenue | currency }}</span>
+          <span class="metric-period">Last 30 days</span>
+        </div>
+      </div>
+    </p-card>
+
+    <p-card class="metric-card bookings">
+      <div class="metric-content">
+        <div class="metric-icon bookings">
+          <i class="pi pi-calendar-check"></i>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label">Total Bookings</span>
+          <span class="metric-value">{{ totalBookings }}</span>
+          <span class="metric-period">Last 30 days</span>
+        </div>
+      </div>
+    </p-card>
+
+    <p-card class="metric-card occupancy">
+      <div class="metric-content">
+        <div class="metric-icon occupancy">
+          <i class="pi pi-chart-bar"></i>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label">Occupancy Rate</span>
+          <span class="metric-value">{{ occupancyRate | number: '1.1-1' }}%</span>
+          <span class="metric-period">Last 30 days</span>
+        </div>
+      </div>
+    </p-card>
+
+    <p-card class="metric-card rating">
+      <div class="metric-content">
+        <div class="metric-icon rating">
+          <i class="pi pi-star"></i>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label">Average Rating</span>
+          <span class="metric-value">{{ averageRating | number: '1.1-1' }}</span>
+          <span class="metric-period">Overall</span>
+        </div>
+      </div>
+    </p-card>
+
+    <p-card class="metric-card guests">
+      <div class="metric-content">
+        <div class="metric-icon guests">
+          <i class="pi pi-users"></i>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label">Total Guests</span>
+          <span class="metric-value">{{ totalGuests }}</span>
+          <span class="metric-period">All time</span>
+        </div>
+      </div>
+    </p-card>
+
+    <p-card class="metric-card apartments">
+      <div class="metric-content">
+        <div class="metric-icon apartments">
+          <i class="pi pi-home"></i>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label">Active Apartments</span>
+          <span class="metric-value">{{ activeApartments }}</span>
+          <span class="metric-period">Available</span>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-grid" *ngIf="!loading">
+    <p-card header="Revenue Trend">
+      <div class="chart-container">
+        <p-chart type="line" [data]="revenueChartData" [options]="revenueChartOptions"></p-chart>
+      </div>
+    </p-card>
+
+    <p-card header="Occupancy Trend">
+      <div class="chart-container">
+        <p-chart type="line" [data]="occupancyChartData" [options]="occupancyChartOptions"></p-chart>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Quick Actions -->
+  <p-card header="Quick Actions" *ngIf="!loading">
+    <div class="quick-actions">
+      <button pButton type="button" label="View Bookings" icon="pi pi-calendar"
+        routerLink="/hotel/bookings" class="p-button-outlined">
+      </button>
+      <button pButton type="button" label="View Revenue" icon="pi pi-chart-line"
+        routerLink="/hotel/analytics/revenue" class="p-button-outlined">
+      </button>
+      <button pButton type="button" label="View Occupancy" icon="pi pi-chart-bar"
+        routerLink="/hotel/analytics/occupancy" class="p-button-outlined">
+      </button>
+      <button pButton type="button" label="View Customers" icon="pi pi-users"
+        routerLink="/hotel/analytics/customers" class="p-button-outlined">
+      </button>
+    </div>
+  </p-card>
+
+  <!-- Loading Template -->
+  <ng-template #loadingTemplate>
+    <div class="loading-container">
+      <p-skeleton height="200px" styleClass="mb-3"></p-skeleton>
+      <p-skeleton height="400px"></p-skeleton>
+    </div>
+  </ng-template>
+</div>

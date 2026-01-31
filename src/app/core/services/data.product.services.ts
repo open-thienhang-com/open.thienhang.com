@@ -100,6 +100,32 @@ export class DataProductServices {
       );
   }
 
+  // Get data products for a specific domain
+  getDataProductsByDomain(domain: string): Observable<ApiResponse<DataProduct[]>> {
+    const url = `${this.baseUrl}/data-mesh/data-products/${domain}`;
+    return this.http.get<any>(url)
+      .pipe(
+        map(response => {
+          // Handle the actual API response structure
+          if (response && response.data && Array.isArray(response.data)) {
+            return {
+              data: response.data,
+              total: response.total || response.data.length,
+              success: true,
+              message: response.message || 'Domain data products retrieved'
+            };
+          } else {
+            return {
+              data: [],
+              total: 0,
+              success: false,
+              message: response?.message || 'No data products found for this domain'
+            };
+          }
+        })
+      );
+  }
+
   getDataProductDetail(id: string, domain?: string): Observable<ApiResponse<DataProduct>> {
     const url = domain
       ? `${this.baseUrl}/data-mesh/data-products/${domain}/${id}`

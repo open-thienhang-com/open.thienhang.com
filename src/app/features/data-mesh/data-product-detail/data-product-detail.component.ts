@@ -58,69 +58,31 @@ export class DataProductDetailComponent implements OnInit {
   swaggerLoading = false;
   swaggerError = false;
 
-  // Chart data
-  usageChart: any;
-  qualityChart: any;
-
-  // Domain-specific tabs
-  domainTabs: any[] = [];
-
   // Domain type configurations
   domainConfigs = {
     hotel: {
       icon: 'pi-building',
-      color: '#FF6B6B',
-      tabs: [
-        { label: 'Room Management', icon: 'pi-home', key: 'rooms' },
-        { label: 'Booking Management', icon: 'pi-calendar', key: 'bookings' },
-        { label: 'Guest Services', icon: 'pi-user', key: 'guests' },
-        { label: 'Revenue Analytics', icon: 'pi-chart-line', key: 'revenue' }
-      ]
+      color: '#FF6B6B'
     },
     finance: {
       icon: 'pi-dollar',
-      color: '#4ECDC4',
-      tabs: [
-        { label: 'Transaction Management', icon: 'pi-credit-card', key: 'transactions' },
-        { label: 'Account Management', icon: 'pi-wallet', key: 'accounts' },
-        { label: 'Financial Reports', icon: 'pi-chart-bar', key: 'reports' },
-        { label: 'Compliance', icon: 'pi-shield', key: 'compliance' }
-      ]
+      color: '#4ECDC4'
     },
     retail: {
       icon: 'pi-shopping-cart',
-      color: '#45B7D1',
-      tabs: [
-        { label: 'Product Catalog', icon: 'pi-box', key: 'catalog' },
-        { label: 'Inventory Management', icon: 'pi-list', key: 'inventory' },
-        { label: 'Sales Analytics', icon: 'pi-chart-line', key: 'sales' },
-        { label: 'Customer Insights', icon: 'pi-users', key: 'customers' }
-      ]
+      color: '#45B7D1'
     },
     healthcare: {
       icon: 'pi-heart',
-      color: '#96CEB4',
-      tabs: [
-        { label: 'Patient Records', icon: 'pi-file-o', key: 'patients' },
-        { label: 'Treatment Plans', icon: 'pi-clipboard', key: 'treatments' },
-        { label: 'Medical Analytics', icon: 'pi-chart-line', key: 'analytics' },
-        { label: 'Compliance', icon: 'pi-shield', key: 'compliance' }
-      ]
+      color: '#96CEB4'
     },
     logistics: {
       icon: 'pi-truck',
-      color: '#FFEAA7',
-      tabs: [
-        { label: 'Shipment Tracking', icon: 'pi-map-marker', key: 'tracking' },
-        { label: 'Route Optimization', icon: 'pi-directions', key: 'routes' },
-        { label: 'Inventory Control', icon: 'pi-box', key: 'inventory' },
-        { label: 'Performance Metrics', icon: 'pi-chart-bar', key: 'metrics' }
-      ]
+      color: '#FFEAA7'
     },
     default: {
       icon: 'pi-database',
-      color: '#A8A8A8',
-      tabs: []
+      color: '#A8A8A8'
     }
   };
 
@@ -153,7 +115,6 @@ export class DataProductDetailComponent implements OnInit {
       }
     });
 
-    this.setupCharts();
   }
 
   private loadDataProductByName(name: string): void {
@@ -168,7 +129,6 @@ export class DataProductDetailComponent implements OnInit {
         if (response.success && response.data) {
           this.dataProduct = response.data;
           this.setupSwaggerUrls();
-          this.setupDomainTabs();
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
@@ -206,7 +166,6 @@ export class DataProductDetailComponent implements OnInit {
         if (response.success && response.data) {
           this.dataProduct = response.data;
           this.setupSwaggerUrls();
-          this.setupDomainTabs();
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
@@ -263,13 +222,6 @@ export class DataProductDetailComponent implements OnInit {
       });
   }
 
-  private setupDomainTabs(): void {
-    if (this.dataProduct?.domain) {
-      const domainConfig = this.domainConfigs[this.dataProduct.domain as keyof typeof this.domainConfigs] || this.domainConfigs.default;
-      this.domainTabs = domainConfig.tabs;
-    }
-  }
-
   getDomainConfig() {
     if (this.dataProduct?.domain) {
       return this.domainConfigs[this.dataProduct.domain as keyof typeof this.domainConfigs] || this.domainConfigs.default;
@@ -301,40 +253,6 @@ export class DataProductDetailComponent implements OnInit {
       return Object.keys(value).length > 0;
     }
     return true;
-  }
-
-  private setupCharts(): void {
-    // Usage Chart
-    this.usageChart = {
-      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-      datasets: [
-        {
-          label: 'Monthly Queries',
-          data: [8500, 9200, 10100, 11500, 12800, 12500],
-          borderColor: '#3B82F6',
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
-          tension: 0.4
-        }
-      ]
-    };
-
-    // Quality Chart
-    this.qualityChart = {
-      labels: ['Data Completeness', 'Data Accuracy', 'Data Consistency', 'Data Timeliness', 'Data Validity'],
-      datasets: [
-        {
-          data: [98, 96, 99, 97, 95],
-          backgroundColor: [
-            '#10B981',
-            '#3B82F6',
-            '#8B5CF6',
-            '#F59E0B',
-            '#EF4444'
-          ],
-          borderWidth: 0
-        }
-      ]
-    };
   }
 
   onTabChange(event: any): void {
@@ -430,11 +348,18 @@ export class DataProductDetailComponent implements OnInit {
     }
   }
 
-  getQualityColor(score: number): string {
-    if (score >= 95) return '#10B981';
-    if (score >= 90) return '#3B82F6';
-    if (score >= 85) return '#F59E0B';
+  getQualityColor(score: string): string {
+    if (!score) return '#6B7280';
+    const numScore = parseFloat(score.replace('%', ''));
+    if (numScore >= 95) return '#10B981';
+    if (numScore >= 90) return '#3B82F6';
+    if (numScore >= 85) return '#F59E0B';
     return '#EF4444';
+  }
+
+  getQualityScore(metrics: any): string {
+    if (!metrics) return 'N/A';
+    return metrics.accuracy || metrics.quality_score || 'N/A';
   }
 
   getOwnerDisplayName(): string {
