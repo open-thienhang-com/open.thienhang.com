@@ -6,6 +6,11 @@
   flex-direction: column;
 }
 
+/* Flexible container */
+.min-h-screen {
+  width: 100%;
+}
+
 /* Scrollable Content Wrapper */
 .settings-content-wrapper {
   flex: 1;
@@ -13,12 +18,14 @@
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
   padding-bottom: 2rem;
+  width: 100%;
 }
 
 .settings-content-inner {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  width: 100%;
 }
 
 /* Hero Section Styling */

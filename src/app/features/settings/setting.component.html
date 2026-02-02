@@ -1,10 +1,10 @@
 <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
   <!-- Hero Section -->
-  <div class="relative overflow-hidden bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 dark:from-primary-900 dark:via-primary-950 dark:to-gray-950">
+  <div class="relative overflow-hidden bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 dark:from-primary-900 dark:via-primary-950 dark:to-gray-950 w-full">
     <div class="absolute inset-0 opacity-10">
       <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIiBmaWxsPSJjdXJyZW50Q29sb3IiLz48L3N2Zz4=')]"></div>
     </div>
-    <div class="relative max-w-7xl mx-auto px-4 py-12 md:py-16">
+    <div class="relative w-full px-4 md:px-6 lg:px-8 py-12 md:py-16">
       <div class="flex items-center gap-4 mb-4">
         <div class="w-14 h-14 bg-opacity-10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white border-opacity-20" [style.background-color]="'rgba(255,255,255,0.1)'">
           <i class="pi pi-cog text-white text-2xl"></i>
@@ -18,10 +18,10 @@
   </div>
 
   <!-- Fixed Header with Navigation -->
-  <div class="sticky top-0 z-30 bg-gradient-to-b from-gray-100 to-gray-50 dark:from-gray-900 dark:to-gray-950 backdrop-blur-md bg-opacity-90 dark:bg-opacity-90 border-b border-gray-200 dark:border-gray-700">
-    <div class="max-w-7xl mx-auto px-4 py-6">
+  <div class="sticky top-0 z-30 bg-gradient-to-b from-gray-100 to-gray-50 dark:from-gray-900 dark:to-gray-950 backdrop-blur-md bg-opacity-90 dark:bg-opacity-90 border-b border-gray-200 dark:border-gray-700 w-full">
+    <div class="w-full px-4 md:px-6 lg:px-8 py-6">
       <!-- Navigation Tabs -->
-      <div class="flex flex-wrap gap-2 md:gap-3 overflow-x-auto pb-3 -mx-4 px-4 md:mx-0 md:px-0">
+      <div class="flex flex-wrap gap-2 md:gap-3 overflow-x-auto pb-3">
         <button 
           *ngFor="let section of settingSections"
           (click)="switchSection(section.key)"
@@ -45,7 +45,7 @@
   </div>
 
   <!-- Scrollable Content Area -->
-  <div class="max-w-7xl mx-auto px-4 py-8 settings-content-wrapper">
+  <div class="w-full px-4 md:px-6 lg:px-8 py-8 settings-content-wrapper">
     <!-- Content Area -->
     <div class="space-y-6 settings-content-inner">
 
