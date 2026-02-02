@@ -1,7 +1,6 @@
 :host {
   display: block;
   width: 100%;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -300,7 +299,6 @@ button[type="button"] {
 
 /* Appearance preview and swatch styles */
 .appearance-preview {
-  min-height: 250px;
   border-dashed: true;
 }
 
