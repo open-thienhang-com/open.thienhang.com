@@ -31,6 +31,7 @@ import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { BadgeModule } from 'primeng/badge';
 import { AccordionModule } from 'primeng/accordion';
+import { RippleModule } from 'primeng/ripple';
 import { UserService } from '../../core/services/user.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { forkJoin } from 'rxjs';
@@ -106,8 +107,11 @@ interface AppearanceSettings {
     TagModule,
     TooltipModule,
     BadgeModule,
-    AccordionModule
-    , ConfirmDialogModule
+    AccordionModule,
+    ConfirmDialogModule,
+    ProgressSpinnerModule,
+    RippleModule,
+    SkeletonModule
   ],
   templateUrl: './setting.component.html',
   styleUrls: ['./setting.component.scss'],
