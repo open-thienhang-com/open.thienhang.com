@@ -1,7 +1,18 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .page-layout {
   padding: 2rem;
   background: var(--background);
-  min-height: 100vh;
+  min-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
 }
 h1 {
   font-size: 2rem;

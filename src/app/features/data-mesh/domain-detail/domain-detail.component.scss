@@ -1,7 +1,18 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 // Domain Detail Component Styles
 .domain-detail {
-  min-height: 100vh;
+  min-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  flex: 1;
   
   .domain-card {
     backdrop-filter: blur(10px);

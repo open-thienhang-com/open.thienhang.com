@@ -1,8 +1,19 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 // Data Products Component - Modern Design
 .data-products-container {
-  min-height: 100vh;
+  min-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   padding: 2rem;
+  flex: 1;
   
   .dark & {
     background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
