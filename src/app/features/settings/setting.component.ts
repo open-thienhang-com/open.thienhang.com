@@ -531,14 +531,19 @@ export class SettingsComponent implements OnInit {
     } else {
       this.appearanceSettings.accentColor = color;
     }
-    // Force change detection
-    this.appearanceSettings = { ...this.appearanceSettings };
+    // Trigger change detection by reassigning
+    this.triggerPreviewUpdate();
   }
 
   selectFontPreset(font: string): void {
     this.appearanceSettings.fontFamily = font;
-    // Force change detection
-    this.appearanceSettings = { ...this.appearanceSettings };
+    this.triggerPreviewUpdate();
+  }
+
+  triggerPreviewUpdate(): void {
+    // Force change detection by creating new reference
+    const updated = { ...this.appearanceSettings };
+    this.appearanceSettings = updated;
   }
 
   onThemeChange(): void {
