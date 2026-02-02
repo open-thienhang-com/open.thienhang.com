@@ -5,6 +5,11 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background: #ffffff;
+  
+  @media (prefers-color-scheme: dark) {
+    background: #1a1a1a;
+  }
 }
 
 .settings-main {
@@ -13,7 +18,7 @@
   height: 100%;
   width: 100%;
   overflow: hidden;
-  background: #ffffff;
+  background: #fafbfc;
   
   @media (prefers-color-scheme: dark) {
     background: #1a1a1a;
@@ -154,7 +159,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding: 2rem 1.5rem;
-  background: #ffffff;
+  background: #fafbfc;
   
   @media (prefers-color-scheme: dark) {
     background: #1a1a1a;
@@ -181,9 +186,9 @@
 
 /* Flat Cards */
 .flat-card {
-  background: white;
+  background: #ffffff;
   border-radius: 8px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid #e8ecf1;
   overflow: hidden;
   transition: box-shadow 0.2s ease;
   
@@ -201,8 +206,8 @@
   }
   
   &.danger {
-    background: #fff5f5;
-    border-color: #ffd6d6;
+    background: #fff8f8;
+    border-color: #ffe0e0;
     
     @media (prefers-color-scheme: dark) {
       background: #3a2020;
