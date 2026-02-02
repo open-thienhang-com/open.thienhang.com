@@ -562,6 +562,20 @@ export class SettingsComponent implements OnInit {
     });
   }
 
+  openPhotoUpload(): void {
+    // Create a hidden file input and trigger click
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.addEventListener('change', (event: any) => {
+      const file = event.target?.files?.[0];
+      if (file) {
+        this.uploadAvatar(file);
+      }
+    });
+    fileInput.click();
+  }
+
   onAvatarUpload(event: any): void {
     const file: File | undefined = (event && event.files && event.files.length) ? event.files[0] : (event instanceof File ? event : undefined);
     if (!file) {
