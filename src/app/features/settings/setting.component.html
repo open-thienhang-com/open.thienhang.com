@@ -619,9 +619,11 @@
                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Primary Color</label>
                     <div class="flex items-center gap-3 mb-3">
                       <p-colorPicker [(ngModel)]="appearanceSettings.primaryColor" format="hex" 
-                                    [inline]="false" [showTransparency]="false"></p-colorPicker>
+                                    [inline]="false" [showTransparency]="false"
+                                    (ngModelChange)="appearanceSettings = {...appearanceSettings}"></p-colorPicker>
                       <input type="text" pInputText [(ngModel)]="appearanceSettings.primaryColor" 
-                            class="flex-1 rounded-lg text-sm font-mono" placeholder="#000000">
+                            class="flex-1 rounded-lg text-sm font-mono" placeholder="#000000"
+                            (ngModelChange)="appearanceSettings = {...appearanceSettings}">
                     </div>
                     <div class="flex gap-2 flex-wrap">
                       <button *ngFor="let preset of colorPresets" type="button" class="swatch" 
@@ -637,9 +639,11 @@
                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Accent Color</label>
                     <div class="flex items-center gap-3 mb-3">
                       <p-colorPicker [(ngModel)]="appearanceSettings.accentColor" format="hex" 
-                                    [inline]="false" [showTransparency]="false"></p-colorPicker>
+                                    [inline]="false" [showTransparency]="false"
+                                    (ngModelChange)="appearanceSettings = {...appearanceSettings}"></p-colorPicker>
                       <input type="text" pInputText [(ngModel)]="appearanceSettings.accentColor" 
-                            class="flex-1 rounded-lg text-sm font-mono" placeholder="#000000">
+                            class="flex-1 rounded-lg text-sm font-mono" placeholder="#000000"
+                            (ngModelChange)="appearanceSettings = {...appearanceSettings}">
                     </div>
                     <div class="flex gap-2 flex-wrap">
                       <button *ngFor="let preset of colorPresets" type="button" class="swatch" 
@@ -686,6 +690,7 @@
                   <div>
                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Border Radius</label>
                     <p-selectButton [options]="borderRadiusOptions" [(ngModel)]="appearanceSettings.borderRadius" 
+                                   (ngModelChange)="appearanceSettings = {...appearanceSettings}"
                                    optionLabel="label" optionValue="value" class="w-full"></p-selectButton>
                   </div>
 

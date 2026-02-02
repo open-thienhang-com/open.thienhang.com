@@ -531,19 +531,27 @@ export class SettingsComponent implements OnInit {
     } else {
       this.appearanceSettings.accentColor = color;
     }
+    // Force change detection
+    this.appearanceSettings = { ...this.appearanceSettings };
   }
 
   selectFontPreset(font: string): void {
     this.appearanceSettings.fontFamily = font;
+    // Force change detection
+    this.appearanceSettings = { ...this.appearanceSettings };
   }
 
   onThemeChange(): void {
+    // Force preview update
+    this.appearanceSettings = { ...this.appearanceSettings };
     this.themeService.updateSettings({
       theme: this.appearanceSettings.theme as any
     });
   }
 
   onUiStyleChange(): void {
+    // Force preview update
+    this.appearanceSettings = { ...this.appearanceSettings };
     this.themeService.updateSettings({
       uiStyle: this.appearanceSettings.uiStyle as any
     });
