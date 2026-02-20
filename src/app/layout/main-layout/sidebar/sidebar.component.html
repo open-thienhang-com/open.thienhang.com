@@ -373,3 +373,41 @@
     </div>
   </ng-template>
 </p-dialog>
+
+<!-- Blogger Sidebar Card (Redesigned) -->
+<div class="blogger-sidebar-card" *ngIf="!collapsed">
+  <div class="blogger-accent-bar"></div>
+  <div class="blogger-header flex items-center gap-3 mb-2">
+    <i class="pi pi-pencil blogger-icon"></i>
+    <div>
+      <div class="blogger-title">Blogger Management</div>
+      <div class="blogger-desc">Quản lý bài viết, tác giả và phân quyền cho ứng dụng Blogger.</div>
+    </div>
+  </div>
+  <ul class="blogger-menu-list">
+    <li>
+      <a [routerLink]="'/blogger/login'" class="blogger-menu-link" routerLinkActive="active">
+        <i class="pi pi-sign-in"></i>
+        <span>Authorize <span class="blogger-badge">OAuth</span></span>
+      </a>
+    </li>
+    <li>
+      <a [routerLink]="'/blogger'" class="blogger-menu-link" routerLinkActive="active">
+        <i class="pi pi-home"></i>
+        <span>Dashboard</span>
+      </a>
+    </li>
+    <li>
+      <a [routerLink]="'/blogger/posts'" class="blogger-menu-link" routerLinkActive="active">
+        <i class="pi pi-file-edit"></i>
+        <span>Posts</span>
+      </a>
+    </li>
+    <li>
+      <a [routerLink]="'/blogger/authors'" class="blogger-menu-link" routerLinkActive="active">
+        <i class="pi pi-users"></i>
+        <span>Authors</span>
+      </a>
+    </li>
+  </ul>
+</div>

@@ -322,14 +322,36 @@
 }
 
 .sidebar-content {
-  /* Do not create an internal scroll; allow the sidebar to size with its content.
-     Footer is pinned using margin-top: auto on the footer element. */
-  flex: 0 0 auto;
-  overflow: visible;
+  /* Enable scrolling for navigation menu when content exceeds viewport */
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on mobile */
+
+  /* Scrollbar styling */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.2);
+    border-radius: 3px;
+
+    &:hover {
+      background: rgba(59, 130, 246, 0.4);
+    }
+  }
 }
 
 .sidebar-nav {
   padding: 1rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 
   &.collapsed {
     padding: 0.75rem 0.375rem;
@@ -337,10 +359,11 @@
 }
 
 .nav-section {
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.25rem;
+  flex-shrink: 0;
 
   &:last-child {
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
   }
 }
 
@@ -1740,5 +1763,103 @@
       box-shadow: 0 2px 16px rgba(59, 130, 246, 0.25),
         inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
+  }
+}
+
+.blogger-sidebar-card {
+  background: linear-gradient(135deg, #fff0f6 0%, #fdf6fd 100%);
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 24px rgba(236, 72, 153, 0.08);
+  margin: 1.5rem 1rem 1rem 1rem;
+  padding: 1.5rem 1.25rem 1.25rem 1.25rem;
+  position: relative;
+  border: 1.5px solid #f9a8d4;
+  overflow: hidden;
+
+  .blogger-accent-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #ec4899 0%, #db2777 100%);
+    border-radius: 1.25rem 1.25rem 0 0;
+    box-shadow: 0 2px 8px rgba(236, 72, 153, 0.15);
+  }
+  .blogger-header {
+    margin-bottom: 0.5rem;
+    align-items: flex-start;
+  }
+  .blogger-icon {
+    font-size: 2.2rem;
+    color: #ec4899;
+    background: linear-gradient(135deg, #f9a8d4 0%, #f472b6 100%);
+    border-radius: 0.75rem;
+    padding: 0.5rem;
+    box-shadow: 0 2px 8px rgba(236, 72, 153, 0.08);
+  }
+  .blogger-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #db2777;
+    margin-bottom: 0.1rem;
+    letter-spacing: 0.01em;
+  }
+  .blogger-desc {
+    font-size: 0.92rem;
+    color: #a21caf;
+    opacity: 0.85;
+    margin-bottom: 0.2rem;
+  }
+  .blogger-menu-list {
+    list-style: none;
+    margin: 0; padding: 0.5rem 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .blogger-menu-link {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #be185d;
+    padding: 0.65rem 1rem;
+    border-radius: 0.75rem;
+    text-decoration: none;
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+    position: relative;
+    &:hover, &.active {
+      background: linear-gradient(90deg, #f9a8d4 0%, #f472b6 100%);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(236, 72, 153, 0.10);
+    }
+    i {
+      font-size: 1.15rem;
+      color: #db2777;
+      transition: color 0.18s;
+    }
+    &.active i, &:hover i {
+      color: #fff;
+    }
+    .blogger-badge {
+      background: #db2777;
+      color: #fff;
+      font-size: 0.75em;
+      font-weight: 600;
+      border-radius: 0.5em;
+      padding: 0.1em 0.6em;
+      margin-left: 0.5em;
+      letter-spacing: 0.03em;
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .blogger-sidebar-card {
+    margin: 1rem 0.5rem;
+    padding: 1rem 0.5rem;
+    .blogger-title { font-size: 1rem; }
+    .blogger-desc { font-size: 0.85rem; }
+    .blogger-menu-link { font-size: 0.95rem; padding: 0.5rem 0.7rem; }
   }
 }

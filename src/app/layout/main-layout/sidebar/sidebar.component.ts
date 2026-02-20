@@ -368,7 +368,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       items: [
         // 1. Dashboard - Overview
         { label: 'Dashboard', url: '/hotel', icon: 'pi pi-home' },
-        
+
         // 2. Property Management - Quản lý tài sản
         {
           label: 'Property Management',
@@ -378,7 +378,7 @@ export class SidebarComponent implements OnInit, OnChanges {
             { label: 'Rooms', url: '/hotel/rooms', icon: 'pi pi-door-open' }
           ]
         },
-        
+
         // 3. Reservations & Bookings - Đặt phòng và lịch
         {
           label: 'Reservations & Bookings',
@@ -389,7 +389,7 @@ export class SidebarComponent implements OnInit, OnChanges {
             { label: 'Check-in', url: '/hotel/checkin', icon: 'pi pi-sign-in' }
           ]
         },
-        
+
         // 4. Guest Services - Dịch vụ khách hàng
         {
           label: 'Guest Services',
@@ -401,7 +401,7 @@ export class SidebarComponent implements OnInit, OnChanges {
             { label: 'Support', url: '/hotel/support', icon: 'pi pi-comments' }
           ]
         },
-        
+
         // 5. Operations - Vận hành
         {
           label: 'Operations',
@@ -412,7 +412,7 @@ export class SidebarComponent implements OnInit, OnChanges {
             { label: 'Staff', url: '/hotel/staff', icon: 'pi pi-id-card' }
           ]
         },
-        
+
         // 6. Analytics & Reports - Phân tích và báo cáo
         {
           label: 'Analytics & Reports',
@@ -424,9 +424,31 @@ export class SidebarComponent implements OnInit, OnChanges {
             { label: 'Customers', url: '/hotel/analytics/customers', icon: 'pi pi-users' }
           ]
         },
-        
+
         // 7. Settings - Cài đặt (cuối cùng)
         { label: 'Settings', url: '/hotel/settings', icon: 'pi pi-cog' }
+      ]
+    },
+    {
+      label: 'Blogger Management',
+      icon: 'pi pi-pencil',
+      expanded: false,
+      items: [
+        // Authorization
+        { label: 'Authorize', url: '/blogger/login', icon: 'pi pi-sign-in', badge: 'NEW' },
+
+        // Dashboard & Overview
+        { label: 'Dashboard', url: '/blogger', icon: 'pi pi-home' },
+
+        // Content Management
+        {
+          label: 'Content Management',
+          icon: 'pi pi-book',
+          children: [
+            { label: 'Posts', url: '/blogger/posts', icon: 'pi pi-file-edit' },
+            { label: 'Authors', url: '/blogger/authors', icon: 'pi pi-users' }
+          ]
+        }
       ]
     }
   ];
@@ -618,10 +640,10 @@ export class SidebarComponent implements OnInit, OnChanges {
   // Helper: Get icon for menu item based on label or URL
   private getIconForMenuItem(item: any): string {
     if (item.icon) return item.icon;
-    
+
     const label = (item.label || '').toLowerCase();
     const url = (item.url || '').toLowerCase();
-    
+
     // Icon mapping based on label keywords
     const iconMap: { [key: string]: string } = {
       'dashboard': 'pi pi-home',
@@ -682,21 +704,21 @@ export class SidebarComponent implements OnInit, OnChanges {
       'experiment': 'pi pi-flask',
       'notebook': 'pi pi-book'
     };
-    
+
     // Check label first
     for (const [key, icon] of Object.entries(iconMap)) {
       if (label.includes(key)) {
         return icon;
       }
     }
-    
+
     // Check URL as fallback
     for (const [key, icon] of Object.entries(iconMap)) {
       if (url.includes(key)) {
         return icon;
       }
     }
-    
+
     // Default fallback
     return 'pi pi-circle-fill';
   }
@@ -809,10 +831,10 @@ export class SidebarComponent implements OnInit, OnChanges {
         // 1. Dashboard (first - standalone item)
         const dashboardItem = hotelGroup.items?.find((it: any) => it.url === '/hotel' && !it.children);
         if (dashboardItem) {
-          groups.push({ 
-            label: '', 
-            icon: '', 
-            expanded: true, 
+          groups.push({
+            label: '',
+            icon: '',
+            expanded: true,
             _noHeader: true,
             _isStandalone: true,
             items: [dashboardItem],
@@ -823,79 +845,79 @@ export class SidebarComponent implements OnInit, OnChanges {
         // 2. Property Management subgroup
         const property = (hotelGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('property'));
         if (property) {
-          groups.push({ 
-            label: property.label, 
-            icon: property.icon || this.getIconForMenuItem(property), 
-            expanded: false, 
-            items: ((property as any).children ?? (property as any).items ?? []) 
+          groups.push({
+            label: property.label,
+            icon: property.icon || this.getIconForMenuItem(property),
+            expanded: false,
+            items: ((property as any).children ?? (property as any).items ?? [])
           });
         }
 
         // 3. Reservations & Bookings subgroup
-        const reservations = (hotelGroup.items || []).find((it: any) => 
-          (it.label || '').toLowerCase().includes('reservation') || 
+        const reservations = (hotelGroup.items || []).find((it: any) =>
+          (it.label || '').toLowerCase().includes('reservation') ||
           (it.label || '').toLowerCase().includes('booking')
         );
         if (reservations) {
-          groups.push({ 
-            label: reservations.label, 
-            icon: reservations.icon || this.getIconForMenuItem(reservations), 
-            expanded: false, 
-            items: ((reservations as any).children ?? (reservations as any).items ?? []) 
+          groups.push({
+            label: reservations.label,
+            icon: reservations.icon || this.getIconForMenuItem(reservations),
+            expanded: false,
+            items: ((reservations as any).children ?? (reservations as any).items ?? [])
           });
         }
 
         // 4. Guest Services subgroup
-        const guestServices = (hotelGroup.items || []).find((it: any) => 
-          (it.label || '').toLowerCase().includes('guest') || 
+        const guestServices = (hotelGroup.items || []).find((it: any) =>
+          (it.label || '').toLowerCase().includes('guest') ||
           (it.label || '').toLowerCase().includes('service')
         );
         if (guestServices) {
-          groups.push({ 
-            label: guestServices.label, 
-            icon: guestServices.icon || this.getIconForMenuItem(guestServices), 
-            expanded: false, 
-            items: ((guestServices as any).children ?? (guestServices as any).items ?? []) 
+          groups.push({
+            label: guestServices.label,
+            icon: guestServices.icon || this.getIconForMenuItem(guestServices),
+            expanded: false,
+            items: ((guestServices as any).children ?? (guestServices as any).items ?? [])
           });
         }
 
         // 5. Operations subgroup
-        const operations = (hotelGroup.items || []).find((it: any) => 
-          (it.label || '').toLowerCase().includes('operation') || 
+        const operations = (hotelGroup.items || []).find((it: any) =>
+          (it.label || '').toLowerCase().includes('operation') ||
           (it.label || '').toLowerCase().includes('maintenance')
         );
         if (operations) {
-          groups.push({ 
-            label: operations.label, 
-            icon: operations.icon || this.getIconForMenuItem(operations), 
-            expanded: false, 
-            items: ((operations as any).children ?? (operations as any).items ?? []) 
+          groups.push({
+            label: operations.label,
+            icon: operations.icon || this.getIconForMenuItem(operations),
+            expanded: false,
+            items: ((operations as any).children ?? (operations as any).items ?? [])
           });
         }
 
         // 6. Analytics & Reports subgroup
-        const analytics = (hotelGroup.items || []).find((it: any) => 
-          (it.label || '').toLowerCase().includes('analytics') || 
+        const analytics = (hotelGroup.items || []).find((it: any) =>
+          (it.label || '').toLowerCase().includes('analytics') ||
           (it.label || '').toLowerCase().includes('report')
         );
         if (analytics) {
-          groups.push({ 
-            label: analytics.label, 
-            icon: analytics.icon || this.getIconForMenuItem(analytics), 
-            expanded: false, 
-            items: ((analytics as any).children ?? (analytics as any).items ?? []) 
+          groups.push({
+            label: analytics.label,
+            icon: analytics.icon || this.getIconForMenuItem(analytics),
+            expanded: false,
+            items: ((analytics as any).children ?? (analytics as any).items ?? [])
           });
         }
 
         // 7. Settings (last - standalone item)
-        const settingsItem = hotelGroup.items?.find((it: any) => 
+        const settingsItem = hotelGroup.items?.find((it: any) =>
           it.url === '/hotel/settings' && !it.children
         );
         if (settingsItem) {
-          groups.push({ 
-            label: '', 
-            icon: '', 
-            expanded: false, 
+          groups.push({
+            label: '',
+            icon: '',
+            expanded: false,
             _noHeader: true,
             _isStandalone: true,
             items: [settingsItem],

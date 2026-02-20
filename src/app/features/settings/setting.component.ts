@@ -31,7 +31,6 @@ import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { BadgeModule } from 'primeng/badge';
 import { AccordionModule } from 'primeng/accordion';
-import { RippleModule } from 'primeng/ripple';
 import { UserService } from '../../core/services/user.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { forkJoin } from 'rxjs';
@@ -107,11 +106,8 @@ interface AppearanceSettings {
     TagModule,
     TooltipModule,
     BadgeModule,
-    AccordionModule,
-    ConfirmDialogModule,
-    ProgressSpinnerModule,
-    RippleModule,
-    SkeletonModule
+    AccordionModule
+    , ConfirmDialogModule
   ],
   templateUrl: './setting.component.html',
   styleUrls: ['./setting.component.scss'],
@@ -531,49 +527,22 @@ export class SettingsComponent implements OnInit {
     } else {
       this.appearanceSettings.accentColor = color;
     }
-    // Trigger change detection by reassigning
-    this.triggerPreviewUpdate();
   }
 
   selectFontPreset(font: string): void {
     this.appearanceSettings.fontFamily = font;
-    this.triggerPreviewUpdate();
-  }
-
-  triggerPreviewUpdate(): void {
-    // Force change detection by creating new reference
-    const updated = { ...this.appearanceSettings };
-    this.appearanceSettings = updated;
   }
 
   onThemeChange(): void {
-    // Force preview update
-    this.appearanceSettings = { ...this.appearanceSettings };
     this.themeService.updateSettings({
       theme: this.appearanceSettings.theme as any
     });
   }
 
   onUiStyleChange(): void {
-    // Force preview update
-    this.appearanceSettings = { ...this.appearanceSettings };
     this.themeService.updateSettings({
       uiStyle: this.appearanceSettings.uiStyle as any
     });
-  }
-
-  openPhotoUpload(): void {
-    // Create a hidden file input and trigger click
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*';
-    fileInput.addEventListener('change', (event: any) => {
-      const file = event.target?.files?.[0];
-      if (file) {
-        this.uploadAvatar(file);
-      }
-    });
-    fileInput.click();
   }
 
   onAvatarUpload(event: any): void {

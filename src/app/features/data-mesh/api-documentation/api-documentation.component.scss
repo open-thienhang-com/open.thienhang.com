@@ -1,3 +1,5 @@
+@use '../../../../styles/theme-system.scss';
+
 :host {
   display: block;
   width: 100%;
@@ -7,7 +9,6 @@
 }
 
 // API Documentation Component Styles
-@use '../../../../styles/theme-system.scss';
 
 .api-documentation {
   min-height: 100%;

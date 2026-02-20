@@ -102,7 +102,27 @@ export const routes: Routes = [
       },
       {
         path: 'blogger',
-        loadComponent: () => import('./features/blogger/blogger-overview.component').then(m => m.BloggerOverviewComponent),
+        children: [
+          {
+            path: 'login',
+            loadComponent: () => import('./features/blogger/pages/login/login.component').then(m => m.BloggerLoginComponent),
+          },
+          {
+            path: '',
+            loadComponent: () => import('./features/blogger/blogger-overview.component').then(m => m.BloggerOverviewComponent),
+            canActivate: [() => import('./features/blogger/guards/blogger-auth.guard').then(m => m.bloggerAuthGuard)],
+          },
+          {
+            path: 'authors',
+            loadComponent: () => import('./features/blogger/pages/authors/authors.component').then(m => m.BloggerAuthorsComponent),
+            canActivate: [() => import('./features/blogger/guards/blogger-auth.guard').then(m => m.bloggerAuthGuard)],
+          },
+          {
+            path: 'posts',
+            loadComponent: () => import('./features/blogger/pages/posts/posts.component').then(m => m.BloggerPostsComponent),
+            canActivate: [() => import('./features/blogger/guards/blogger-auth.guard').then(m => m.bloggerAuthGuard)],
+          }
+        ]
       },
       {
         path: 'ad-manager',
