@@ -10,15 +10,15 @@
       </li>
       <li>
         <div class="search-container">
-          <input type="text" 
-                 pInputText 
-                 [(ngModel)]="searchKeyword" 
+          <input type="text"
+                 pInputText
+                 [(ngModel)]="searchKeyword"
                  placeholder="Search..."
                  (keyup.enter)="performSearch()"
                  (input)="onSearchInput()"
                  class="search-input">
           <i class="pi pi-search search-icon" (click)="performSearch()"></i>
-          
+
           <!-- Search Results Overlay -->
           <div class="search-overlay" *ngIf="showSearchResults" (clickOutside)="clearSearch()">
             <app-search-results
@@ -35,43 +35,7 @@
   </div>
   <div class="">
     <ul class="flex list-none m-0 p-0 gap-2 items-center">
-      <!-- Language Selector -->
-      <li class="relative">
-        <button
-          pStyleClass="@next"
-          enterFromClass="hidden"
-          enterActiveClass="animate-scalein"
-          leaveToClass="hidden"
-          leaveActiveClass="animate-fadeout"
-          [hideOnOutsideClick]="true"
-          type="button"
-          class="inline-flex w-8 h-8 p-0 items-center justify-center surface-0 dark:surface-800 border border-surface-200 dark:border-surface-600 rounded">
-          <i class="pi pi-globe dark:text-white"></i>
-        </button>
-        <div class="absolute top-[2.5rem] right-0 hidden w-[12rem] bg-white dark:bg-surface-800 rounded-md shadow-lg border border-surface-200 dark:border-surface-700 z-50 origin-top">
-          <div class="p-2">
-            <button 
-              (click)="changeLanguage('vi')"
-              class="flex items-center gap-3 p-2 rounded-md hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors w-full text-left"
-              [class.bg-surface-100]="currentLanguage() === 'vi'"
-              [class.dark:bg-surface-700]="currentLanguage() === 'vi'">
-              <span class="text-lg">🇻🇳</span>
-              <span class="text-sm text-surface-700 dark:text-surface-300">Tiếng Việt</span>
-              <i *ngIf="currentLanguage() === 'vi'" class="pi pi-check text-green-500 ml-auto"></i>
-            </button>
-            <button 
-              (click)="changeLanguage('en')"
-              class="flex items-center gap-3 p-2 rounded-md hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors w-full text-left"
-              [class.bg-surface-100]="currentLanguage() === 'en'"
-              [class.dark:bg-surface-700]="currentLanguage() === 'en'">
-              <span class="text-lg">🇺🇸</span>
-              <span class="text-sm text-surface-700 dark:text-surface-300">English</span>
-              <i *ngIf="currentLanguage() === 'en'" class="pi pi-check text-green-500 ml-auto"></i>
-            </button>
-          </div>
-        </div>
-      </li>
-      
+
       <li>
         <button type="button"
                 class="inline-flex w-8 h-8 p-0 items-center justify-center surface-0 dark:surface-800 border border-surface-200 dark:border-surface-600 rounded"

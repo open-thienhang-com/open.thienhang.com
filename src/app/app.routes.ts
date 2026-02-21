@@ -9,6 +9,9 @@ import { ForbiddenComponent } from './pages/error/forbidden/forbidden.component'
 import { NotFoundComponent } from './pages/error/not-found/not-found.component';
 import { retailPlanningRoutes } from './features/retail-planning/retail-planning.routes';
 import { hotelRoutes } from './features/hotel/hotel.routes';
+import { travelRoutes } from './features/travel/travel.routes';
+import { chatRoutes } from './features/chat/chat.routes';
+import { filesRoutes } from './features/files/files.routes';
 
 
 export const routes: Routes = [
@@ -137,6 +140,18 @@ export const routes: Routes = [
           },
           ...hotelRoutes
         ]
+      },
+      {
+        path: 'travel',
+        children: travelRoutes
+      },
+      {
+        path: 'chat',
+        children: chatRoutes
+      },
+      {
+        path: 'files',
+        children: filesRoutes
       },
       {
         path: 'profile',

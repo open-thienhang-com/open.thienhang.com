@@ -1,457 +1,141 @@
-<!-- Domain Catalog - Clean & Simple UI -->
-<p-toast></p-toast>
+<div class="governance-page-container">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
 
-<div class="min-h-screen bg-slate-50">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    
-    <!-- Loading State -->
-    <div *ngIf="loading" class="w-full">
-      <app-loading 
-        type="data-flow" 
-        [message]="'common.loading' | translate" 
-        size="large">
-      </app-loading>
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Domain Catalog</h1>
+      <p class="page-subtitle">Explore and manage all data domains across your organization.</p>
     </div>
-
-    <!-- Main Content -->
-    <div *ngIf="!loading" class="space-y-6">
-      
-      <!-- Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 class="text-3xl font-bold text-slate-900">Domains</h1>
-          <p class="text-slate-600 mt-1">Manage and explore your data domains</p>
-        </div>
-      </div>
-
-      <!-- Search & Filters -->
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
-        <div class="flex flex-col sm:flex-row gap-3">
-          <!-- Search -->
-          <div class="flex-1">
-            <div class="relative">
-              <i class="pi pi-search absolute left-3 top-3 text-slate-400"></i>
-              <input
-                type="text"
-                [(ngModel)]="searchTerm"
-                (input)="onSearch()"
-                placeholder="Search domains..."
-                class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            </div>
-          </div>
-
-          <!-- Status Filter -->
-          <div class="w-full sm:w-48">
-            <p-dropdown 
-              [(ngModel)]="filters.status"
-              [options]="statusOptions"
-              optionLabel="label"
-              optionValue="value"
-              (onChange)="onFilterChange()"
-              placeholder="All Status"
-              styleClass="w-full">
-            </p-dropdown>
-          </div>
-
-          <!-- Clear Button -->
-          <button
-            (click)="clearFilters()"
-            class="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 transition-colors">
-            Clear
-          </button>
-        </div>
-      </div>
-
-      <!-- Domains Table -->
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
-        
-        <!-- Table Header with Count -->
-        <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
-          <p class="text-sm font-medium text-slate-700">
-            {{ filteredDomains.length }} {{ filteredDomains.length === 1 ? 'domain' : 'domains' }} found
-          </p>
-        </div>
-
-        <!-- Domains List -->
-        <div *ngIf="filteredDomains.length > 0" class="divide-y divide-slate-200">
-          <div *ngFor="let domain of filteredDomains; trackBy: trackByDomainKey"
-               (click)="showDomainDetails(domain)"
-               class="px-6 py-5 hover:bg-blue-50 transition-colors cursor-pointer group">
-            <div class="flex items-start justify-between gap-4">
-              <!-- Domain Info -->
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-3 mb-2">
-                  <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
-                    <i [class]="'pi ' + getDomainIcon(domain.domain_key) + ' text-white text-sm'"></i>
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-2 mb-1">
-                      <h3 class="text-base font-semibold text-slate-900 truncate">
-                        {{ domain.display_name || domain.name }}
-                      </h3>
-                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                            [class]="getStatusClass(domain.status)">
-                        {{ domain.status }}
-                      </span>
-                    </div>
-                    <p class="text-xs text-slate-500 mb-1">{{ domain.domain_key }}</p>
-                    <p class="text-sm text-slate-600 line-clamp-2">
-                      {{ domain.description || 'No description' }}
-                    </p>
-                  </div>
-                </div>
-
-                <!-- Tags -->
-                <div *ngIf="domain.tags && domain.tags.length > 0" class="flex flex-wrap gap-1.5 mt-2 ml-13">
-                  <p-tag *ngFor="let tag of domain.tags.slice(0, 5)" [value]="tag" severity="info" styleClass="text-xs"></p-tag>
-                  <span *ngIf="domain.tags.length > 5" class="text-xs text-slate-500 px-2 py-0.5">
-                    +{{ domain.tags.length - 5 }} more
-                  </span>
-                </div>
-
-                <!-- Metrics & Info -->
-                <div class="flex items-center gap-4 mt-3 ml-13 text-xs text-slate-600">
-                  <div class="flex items-center gap-1">
-                    <i class="pi pi-users text-slate-400"></i>
-                    <span class="font-medium">{{ domain.metrics?.subscribers || 0 }}</span>
-                    <span class="text-slate-400">subscribers</span>
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <i class="pi pi-star text-slate-400"></i>
-                    <span class="font-medium">{{ domain.metrics?.quality_score || 'N/A' }}</span>
-                    <span class="text-slate-400">quality</span>
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <i class="pi pi-box text-slate-400"></i>
-                    <span class="font-medium">{{ domain.data_products?.length || 0 }}</span>
-                    <span class="text-slate-400">data products</span>
-                  </div>
-                  <div *ngIf="domain.sla?.availability" class="flex items-center gap-1">
-                    <i class="pi pi-check-circle text-emerald-500"></i>
-                    <span class="font-medium text-emerald-600">{{ domain.sla.availability }}</span>
-                    <span class="text-slate-400">uptime</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Actions -->
-              <div class="flex items-center gap-2 flex-shrink-0">
-                <!-- View Button -->
-                <button
-                  (click)="$event.stopPropagation(); viewDomainDetails(domain)"
-                  class="px-3 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex items-center gap-2"
-                  pTooltip="View Details">
-                  <i class="pi pi-eye text-sm"></i>
-                  <span class="hidden sm:inline">View</span>
-                </button>
-
-                <!-- Data Products Button -->
-                <button
-                  (click)="$event.stopPropagation(); viewDomainDataProducts(domain)"
-                  class="px-3 py-2 text-xs font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors flex items-center gap-2"
-                  pTooltip="View Data Products">
-                  <i class="pi pi-database text-sm"></i>
-                  <span class="hidden sm:inline">Data Products</span>
-                </button>
-
-                <!-- Arrow Icon -->
-                <div class="text-slate-400 group-hover:text-blue-500 transition-colors">
-                  <i class="pi pi-chevron-right text-lg"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Empty State -->
-        <div *ngIf="filteredDomains.length === 0" class="px-6 py-12 text-center">
-          <div class="flex justify-center mb-4">
-            <div class="h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center">
-              <i class="pi pi-inbox text-slate-400 text-2xl"></i>
-            </div>
-          </div>
-          <h3 class="text-lg font-medium text-slate-900 mb-2">No domains found</h3>
-          <p class="text-slate-600 mb-4">Try adjusting your search or filters</p>
-          <button
-            (click)="clearFilters()"
-            class="inline-flex items-center px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 transition-colors">
-            <i class="pi pi-times mr-2"></i>
-            Clear Filters
-          </button>
-        </div>
-      </div>
+    <div class="header-actions">
+      <button pButton type="button" label="Export" icon="pi pi-download" class="p-button-secondary"></button>
+      <button pButton type="button" label="Create Domain" icon="pi pi-plus"></button>
     </div>
   </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <p-card styleClass="stat-card">
+      <div class="stat-icon"><i class="pi pi-sitemap"></i></div>
+      <div class="stat-info">
+        <p class="stat-label">Total Domains</p>
+        <p class="stat-value">{{ stats.totalDomains }}</p>
+      </div>
+    </p-card>
+    <p-card styleClass="stat-card">
+      <div class="stat-icon"><i class="pi pi-check-circle"></i></div>
+      <div class="stat-info">
+        <p class="stat-label">Active Domains</p>
+        <p class="stat-value">{{ stats.activeDomains }}</p>
+      </div>
+    </p-card>
+    <p-card styleClass="stat-card">
+      <div class="stat-icon"><i class="pi pi-box"></i></div>
+      <div class="stat-info">
+        <p class="stat-label">Total Data Products</p>
+        <p class="stat-value">{{ stats.totalDataProducts }}</p>
+      </div>
+    </p-card>
+    <p-card styleClass="stat-card">
+      <div class="stat-icon"><i class="pi pi-code"></i></div>
+      <div class="stat-info">
+        <p class="stat-label">Total APIs</p>
+        <p class="stat-value">{{ stats.totalApis }}</p>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Main Content Card -->
+  <p-card>
+    <!-- Toolbar -->
+    <p-toolbar>
+      <div class="p-toolbar-group-start">
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon"><i class="pi pi-search"></i></span>
+          <input type="text" pInputText placeholder="Search domains..." [(ngModel)]="searchTerm" (input)="onSearch()">
+        </div>
+      </div>
+      <div class="p-toolbar-group-end">
+        <p-dropdown [options]="statusOptions" [(ngModel)]="filters.status" placeholder="Status" (onChange)="onFilterChange()"></p-dropdown>
+        <p-dropdown [options]="teamOptions" [(ngModel)]="filters.team" placeholder="Team" (onChange)="onFilterChange()"></p-dropdown>
+        <button pButton type="button" icon="pi pi-filter-slash" (click)="clearFilters()" pTooltip="Clear Filters"></button>
+        <p-divider layout="vertical"></p-divider>
+        <div class="p-buttonset">
+          <button pButton type="button" icon="pi pi-list" [ngClass]="{'p-button-primary': viewMode === 'list', 'p-button-secondary': viewMode !== 'list'}" (click)="viewMode = 'list'"></button>
+          <button pButton type="button" icon="pi pi-th-large" [ngClass]="{'p-button-primary': viewMode === 'card', 'p-button-secondary': viewMode !== 'card'}" (click)="viewMode = 'card'"></button>
+        </div>
+      </div>
+    </p-toolbar>
+
+    <!-- List View -->
+    <p-table *ngIf="viewMode === 'list'" [value]="filteredDomains" [loading]="loading" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="display_name">Name <p-sortIcon field="display_name"></p-sortIcon></th>
+          <th>Status</th>
+          <th>Owner</th>
+          <th>Team</th>
+          <th class="text-center">Data Products</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-domain>
+        <tr>
+          <td>
+            <div class="flex items-center gap-3">
+              <i [class]="'pi ' + getDomainIcon(domain.domain_key) + ' text-xl text-primary'"></i>
+              <div>
+                <a class="font-semibold text-primary hover:underline cursor-pointer" (click)="viewDomainDetails(domain)">{{ domain.display_name }}</a>
+                <p class="text-sm text-color-secondary">{{ domain.description | slice:0:80 }}...</p>
+              </div>
+            </div>
+          </td>
+          <td><p-tag [value]="domain.status" [severity]="getStatusSeverity(domain.status)"></p-tag></td>
+          <td>{{ domain.owner }}</td>
+          <td>{{ domain.team }}</td>
+          <td class="text-center"><p-badge [value]="domain.data_products?.length || 0" severity="info"></p-badge></td>
+          <td>
+            <button pButton pRipple icon="pi pi-eye" class="p-button-rounded p-button-text" (click)="viewDomainDetails(domain)"></button>
+            <button pButton pRipple icon="pi pi-sitemap" class="p-button-rounded p-button-text" (click)="viewDomainDataProducts(domain)"></button>
+            <button pButton pRipple icon="pi pi-code" class="p-button-rounded p-button-text" (click)="showDomainApis(domain)"></button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="6" class="text-center p-5">No domains found.</td></tr>
+      </ng-template>
+    </p-table>
+
+    <!-- Card View -->
+    <div *ngIf="viewMode === 'card'" class="grid mt-4">
+      <div *ngFor="let domain of filteredDomains" class="col-12 md:col-6 lg:col-4">
+        <p-card (click)="viewDomainDetails(domain)" styleClass="cursor-pointer h-full">
+          <ng-template pTemplate="header">
+            <div class="flex justify-between items-center p-4 border-bottom-1 surface-border">
+              <div class="flex items-center gap-3">
+                <i [class]="'pi ' + getDomainIcon(domain.domain_key) + ' text-2xl text-primary'"></i>
+                <h3 class="font-bold text-lg m-0">{{ domain.display_name }}</h3>
+              </div>
+              <p-tag [value]="domain.status" [severity]="getStatusSeverity(domain.status)"></p-tag>
+            </div>
+          </ng-template>
+          <p class="text-color-secondary m-0 px-4 pb-4 h-5rem">{{ domain.description }}</p>
+          <ng-template pTemplate="footer">
+            <div class="flex justify-between items-center px-4 pt-4 border-top-1 surface-border">
+              <div class="flex flex-col">
+                <span class="text-xs text-color-secondary">Owner</span>
+                <span class="font-medium">{{ domain.owner }}</span>
+              </div>
+              <div class="flex flex-col text-right">
+                <span class="text-xs text-color-secondary">Data Products</span>
+                <p-badge [value]="domain.data_products?.length || 0" severity="info"></p-badge>
+              </div>
+            </div>
+          </ng-template>
+        </p-card>
+      </div>
+    </div>
+
+  </p-card>
 </div>
-
-<!-- Domain Detail Dialog -->
-<p-dialog 
-  [(visible)]="showDetailDialog" 
-  [header]="selectedDomain?.display_name || selectedDomain?.name" 
-  [modal]="true" 
-  [style]="{ width: '90vw', maxWidth: '800px' }"
-  [closable]="true"
-  (onHide)="closeDomainDetails()"
-  styleClass="domain-detail-dialog">
-  
-  <!-- Loading State -->
-  <div *ngIf="loadingDetail" class="space-y-4">
-    <p-skeleton height="2rem" styleClass="mb-2"></p-skeleton>
-    <p-skeleton height="1rem" styleClass="mb-2"></p-skeleton>
-    <p-divider></p-divider>
-    <div class="grid grid-cols-2 gap-4">
-      <p-skeleton height="3rem"></p-skeleton>
-      <p-skeleton height="3rem"></p-skeleton>
-    </div>
-  </div>
-
-  <!-- Content State -->
-  <div *ngIf="!loadingDetail && selectedDomain" class="space-y-4">
-    
-    <!-- Description -->
-    <p class="text-slate-600">{{ selectedDomain.description }}</p>
-
-    <p-divider></p-divider>
-
-    <!-- Owner & Team -->
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="text-xs font-semibold text-slate-500 uppercase">Owner</label>
-        <p class="text-slate-900 font-medium">{{ selectedDomain.owner || 'N/A' }}</p>
-      </div>
-      <div>
-        <label class="text-xs font-semibold text-slate-500 uppercase">Team</label>
-        <p class="text-slate-900 font-medium">{{ selectedDomain.team || 'N/A' }}</p>
-      </div>
-    </div>
-
-    <p-divider></p-divider>
-
-    <!-- Metrics & SLA -->
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-      <div class="p-3 bg-blue-50 rounded-lg border border-blue-100">
-        <p class="text-xs text-slate-600 mb-1">Quality Score</p>
-        <p class="text-xl font-bold text-blue-600">{{ selectedDomain.metrics?.quality_score || 'N/A' }}</p>
-      </div>
-      <div class="p-3 bg-purple-50 rounded-lg border border-purple-100">
-        <p class="text-xs text-slate-600 mb-1">Subscribers</p>
-        <p class="text-xl font-bold text-purple-600">{{ selectedDomain.metrics?.subscribers || 0 }}</p>
-      </div>
-      <div class="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-        <p class="text-xs text-slate-600 mb-1">Availability</p>
-        <p class="text-xl font-bold text-emerald-600">{{ selectedDomain.sla?.availability || 'N/A' }}</p>
-      </div>
-      <div class="p-3 bg-orange-50 rounded-lg border border-orange-100">
-        <p class="text-xs text-slate-600 mb-1">Freshness</p>
-        <p class="text-xl font-bold text-orange-600">{{ selectedDomain.sla?.freshness || 'N/A' }}</p>
-      </div>
-      <div class="p-3 bg-indigo-50 rounded-lg border border-indigo-100">
-        <p class="text-xs text-slate-600 mb-1">Version</p>
-        <p class="text-xl font-bold text-indigo-600">{{ selectedDomain.sla?.version || 'N/A' }}</p>
-      </div>
-    </div>
-
-    <p-divider></p-divider>
-
-    <!-- Tags -->
-    <div *ngIf="selectedDomain.tags && selectedDomain.tags.length > 0">
-      <label class="text-xs font-semibold text-slate-500 uppercase mb-2 block">Tags</label>
-      <div class="flex flex-wrap gap-2">
-        <p-tag *ngFor="let tag of selectedDomain.tags" [value]="tag"></p-tag>
-      </div>
-    </div>
-
-    <div *ngIf="!selectedDomain.tags || selectedDomain.tags.length === 0" class="text-sm text-slate-500">
-      No tags
-    </div>
-
-    <p-divider></p-divider>
-
-    <!-- Data Products -->
-    <div>
-      <label class="text-xs font-semibold text-slate-500 uppercase mb-2 block">
-        Data Products ({{ selectedDomain.data_products?.length || 0 }})
-      </label>
-      <div *ngIf="selectedDomain.data_products && selectedDomain.data_products.length > 0" class="space-y-2">
-        <div *ngFor="let product of selectedDomain.data_products" class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-          <p class="font-medium text-slate-900">{{ product.name }}</p>
-          <p class="text-sm text-slate-600 mt-1">{{ product.description }}</p>
-          <p class="text-xs text-slate-500 mt-1">
-            <i class="pi pi-code mr-1"></i>{{ product.endpoints_count || 0 }} endpoints
-          </p>
-        </div>
-      </div>
-      <p *ngIf="!selectedDomain.data_products || selectedDomain.data_products.length === 0" class="text-sm text-slate-500">
-        No data products available
-      </p>
-    </div>
-
-    <p-divider></p-divider>
-
-    <!-- Contact Info -->
-    <div>
-      <label class="text-xs font-semibold text-slate-500 uppercase mb-3 block">Contact Information</label>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div *ngIf="selectedDomain.contact?.email" class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-          <div class="flex items-center gap-2 mb-1">
-            <i class="pi pi-envelope text-blue-500"></i>
-            <span class="text-xs font-semibold text-slate-500 uppercase">Email</span>
-          </div>
-          <a [href]="'mailto:' + selectedDomain.contact.email" 
-             class="text-sm text-blue-600 hover:underline break-all">
-            {{ selectedDomain.contact.email }}
-          </a>
-        </div>
-        <div *ngIf="selectedDomain.contact?.slack" class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-          <div class="flex items-center gap-2 mb-1">
-            <i class="pi pi-slack text-purple-500"></i>
-            <span class="text-xs font-semibold text-slate-500 uppercase">Slack</span>
-          </div>
-          <p class="text-sm text-slate-700 break-all">{{ selectedDomain.contact.slack }}</p>
-        </div>
-        <div *ngIf="selectedDomain.contact?.support" class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-          <div class="flex items-center gap-2 mb-1">
-            <i class="pi pi-life-ring text-green-500"></i>
-            <span class="text-xs font-semibold text-slate-500 uppercase">Support</span>
-          </div>
-          <a *ngIf="selectedDomain.contact.support.startsWith('http')" 
-             [href]="selectedDomain.contact.support" 
-             target="_blank"
-             class="text-sm text-blue-600 hover:underline break-all">
-            {{ selectedDomain.contact.support }}
-          </a>
-          <a *ngIf="selectedDomain.contact.support.includes('@')" 
-             [href]="'mailto:' + selectedDomain.contact.support" 
-             class="text-sm text-blue-600 hover:underline break-all">
-            {{ selectedDomain.contact.support }}
-          </a>
-          <p *ngIf="!selectedDomain.contact.support.startsWith('http') && !selectedDomain.contact.support.includes('@')" 
-             class="text-sm text-slate-700 break-all">
-            {{ selectedDomain.contact.support }}
-          </p>
-        </div>
-      </div>
-      <p *ngIf="!selectedDomain.contact?.email && !selectedDomain.contact?.slack && !selectedDomain.contact?.support" 
-         class="text-sm text-slate-500 italic">
-        No contact information available
-      </p>
-    </div>
-  </div>
-
-  <!-- Dialog Footer -->
-  <ng-template pTemplate="footer">
-    <button pButton type="button" label="Close" (click)="closeDomainDetails()" [disabled]="loadingDetail" class="p-button-secondary"></button>
-  </ng-template>
-</p-dialog>
-
-<!-- APIs Dialog -->
-<p-dialog 
-  [(visible)]="showApisDialog" 
-  [header]="'APIs - ' + (selectedDomainForApis?.display_name || selectedDomainForApis?.name)" 
-  [modal]="true" 
-  [style]="{ width: '95vw', maxWidth: '1200px' }"
-  [closable]="true"
-  (onHide)="closeApisDialog()"
-  styleClass="apis-dialog">
-  
-  <!-- Loading State -->
-  <div *ngIf="loadingApis" class="flex items-center justify-center py-12">
-    <div class="text-center">
-      <i class="pi pi-spinner pi-spin text-4xl text-blue-500 mb-4 block"></i>
-      <p class="text-slate-600">Loading APIs...</p>
-    </div>
-  </div>
-
-  <!-- APIs Content -->
-  <div *ngIf="!loadingApis && domainApis" class="space-y-4">
-    
-    <!-- Search & Filter -->
-    <div class="flex gap-3">
-      <div class="flex-1">
-        <div class="relative">
-          <i class="pi pi-search absolute left-3 top-3 text-slate-400"></i>
-          <input
-            type="text"
-            [(ngModel)]="apiSearchTerm"
-            (input)="filterApis()"
-            placeholder="Search APIs..."
-            class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
-        </div>
-      </div>
-    </div>
-
-    <!-- APIs Count & Info -->
-    <div class="flex items-center justify-between text-sm">
-      <p class="text-slate-700 font-medium">
-        {{ filteredApis.length }} {{ filteredApis.length === 1 ? 'API' : 'APIs' }} found
-        <span class="text-slate-500 ml-2">(Total: {{ domainApis.length }})</span>
-      </p>
-    </div>
-
-    <!-- APIs List -->
-    <div class="space-y-2 max-h-96 overflow-y-auto">
-      <div *ngFor="let api of filteredApis" class="p-4 bg-slate-50 border border-slate-200 rounded-lg hover:border-blue-300 transition-colors">
-        <!-- API Header -->
-        <div class="flex items-start justify-between gap-3 mb-2">
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-1">
-              <span class="inline-flex items-center px-2 py-1 rounded text-xs font-semibold"
-                    [class]="{
-                      'bg-blue-100 text-blue-800': api.method === 'GET',
-                      'bg-green-100 text-green-800': api.method === 'POST',
-                      'bg-yellow-100 text-yellow-800': api.method === 'PUT',
-                      'bg-red-100 text-red-800': api.method === 'DELETE',
-                      'bg-purple-100 text-purple-800': api.method === 'PATCH'
-                    }">
-                {{ api.method }}
-              </span>
-              <code class="text-sm font-mono text-slate-700">{{ api.path }}</code>
-            </div>
-            <p class="text-sm text-slate-600">{{ api.description }}</p>
-          </div>
-        </div>
-
-        <!-- API Meta -->
-        <div class="flex flex-wrap gap-4 text-xs text-slate-500 mt-3 pt-3 border-t border-slate-200">
-          <div>
-            <span class="font-medium">Data Product:</span>
-            <span class="ml-1">{{ api.data_product }}</span>
-          </div>
-          <div>
-            <span class="font-medium">Source:</span>
-            <span class="ml-1 px-2 py-1 rounded bg-slate-200">{{ api.source }}</span>
-          </div>
-          <div>
-            <span class="font-medium">Full Path:</span>
-            <code class="ml-1 font-mono bg-slate-200 px-2 py-1 rounded">{{ api.full_path }}</code>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- No Results -->
-    <div *ngIf="filteredApis.length === 0" class="text-center py-8">
-      <i class="pi pi-inbox text-slate-300 text-3xl mb-3 block"></i>
-      <p class="text-slate-500">No APIs found</p>
-    </div>
-
-    <!-- Pagination Info -->
-    <div class="text-xs text-slate-500 text-center pt-4 border-t border-slate-200">
-      {{ domainApis.length }} of {{ totalApiCount }} APIs displayed
-      <span *ngIf="totalApiCount > domainApis.length" class="text-slate-400">
-        (Showing first 10, total: {{ totalApiCount }})
-      </span>
-    </div>
-  </div>
-
-  <!-- Empty State -->
-  <div *ngIf="!loadingApis && (!domainApis || domainApis.length === 0)" class="text-center py-12">
-    <i class="pi pi-inbox text-slate-300 text-4xl mb-4 block"></i>
-    <p class="text-slate-500">No APIs available for this domain</p>
-  </div>
-
-  <!-- Dialog Footer -->
-  <ng-template pTemplate="footer">
-    <button pButton type="button" label="Close" (click)="closeApisDialog()" class="p-button-secondary"></button>
-  </ng-template>
-</p-dialog>

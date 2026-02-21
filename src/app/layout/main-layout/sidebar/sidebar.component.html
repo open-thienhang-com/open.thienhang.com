@@ -13,40 +13,6 @@
         <i class="pi pi-th-large"></i>
       </button>
 
-      <!-- Language Selector -->
-      <button
-        pStyleClass="@next"
-        enterFromClass="hidden"
-        enterActiveClass="animate-scalein"
-        leaveToClass="hidden"
-        leaveActiveClass="animate-fadeout"
-        [hideOnOutsideClick]="true"
-        type="button"
-        class="header-btn"
-        [pTooltip]="collapsed ? 'Language' : ''"
-        tooltipPosition="right"
-        *ngIf="!collapsed">
-        <i class="pi pi-globe"></i>
-      </button>
-      <div class="dropdown-menu language-menu hidden" *ngIf="!collapsed">
-        <button 
-          (click)="changeLanguage('vi')"
-          class="dropdown-item"
-          [class.active]="currentLanguage() === 'vi'">
-          <span class="text-lg">🇻🇳</span>
-          <span class="text-sm">Tiếng Việt</span>
-          <i *ngIf="currentLanguage() === 'vi'" class="pi pi-check text-green-500 ml-auto"></i>
-        </button>
-        <button 
-          (click)="changeLanguage('en')"
-          class="dropdown-item"
-          [class.active]="currentLanguage() === 'en'">
-          <span class="text-lg">🇺🇸</span>
-          <span class="text-sm">English</span>
-          <i *ngIf="currentLanguage() === 'en'" class="pi pi-check text-green-500 ml-auto"></i>
-        </button>
-      </div>
-
       <!-- Theme Toggle -->
       <button type="button"
               class="header-btn"
@@ -139,7 +105,7 @@
   <!-- Navigation - Scrollable Middle Section -->
   <div class="sidebar-content">
     <nav class="sidebar-nav" [class.collapsed]="collapsed">
-      
+
       <!-- Quick Access Section -->
       <!-- Quick Access removed per request -->
 
@@ -162,7 +128,7 @@
 
         <!-- Regular Group Header - Clickable to expand/collapse. Omit when _noHeader flag is set -->
         <ng-container *ngIf="!group._noHeader && !group._isStandalone">
-          <button 
+          <button
             class="group-header"
             [class.expanded]="group.expanded"
             [class.collapsed-sidebar]="collapsed"
@@ -172,8 +138,8 @@
               <i [class]="group.icon"></i>
               <span *ngIf="!collapsed">{{ group.label }}</span>
             </div>
-            <i 
-              *ngIf="!collapsed && hasItems(group)" 
+            <i
+              *ngIf="!collapsed && hasItems(group)"
               class="pi pi-chevron-down expand-icon"
               [class.expanded]="group.expanded"></i>
           </button>
@@ -182,8 +148,8 @@
         <!-- Group Items - Flat list (NO nested subgroups) -->
         <!-- Render if group has items or if a flattened item list was provided (pseudo-group) -->
         <!-- Skip rendering if it's a standalone item -->
-        <ul class="nav-list" 
-            *ngIf="!group._isStandalone && !collapsed && (hasItems(group) || (group._flattened && group._flattened.length > 0))" 
+        <ul class="nav-list"
+            *ngIf="!group._isStandalone && !collapsed && (hasItems(group) || (group._flattened && group._flattened.length > 0))"
             [ngClass]="{ open: group.expanded || group._noHeader }">
           <li *ngFor="let item of group._flattened; trackBy: trackByItem">
             <a
@@ -204,7 +170,7 @@
 
   <!-- Footer - Fixed at bottom -->
   <div class="sidebar-footer" [class.collapsed]="collapsed">
-    
+
     <!-- User Info removed per request -->
 
     <!-- Footer now only contains Profile (logout and app-switcher were moved to header) -->
@@ -223,19 +189,19 @@
 </div>
 
 <!-- App Matrix Dialog -->
-<p-dialog 
-  [header]="null" 
-  [(visible)]="showAppMatrix" 
-  [modal]="true" 
+<p-dialog
+  [header]="null"
+  [(visible)]="showAppMatrix"
+  [modal]="true"
   appendTo="body"
   [baseZIndex]="10000"
-  [style]="{ width: '92vw', maxWidth: '1500px', minWidth: '600px' }" 
-  [closable]="false" 
+  [style]="{ width: '92vw', maxWidth: '1500px', minWidth: '600px' }"
+  [closable]="false"
   [draggable]="false"
   [resizable]="false"
   (onHide)="closeAppMatrix()"
   styleClass="app-matrix-dialog">
-  
+
   <!-- Custom Header -->
   <ng-template pTemplate="header">
     <div class="dialog-custom-header">
@@ -253,7 +219,7 @@
       </button>
     </div>
   </ng-template>
-  
+
   <!-- Dialog Content Wrapper -->
   <div class="apps-container">
     <!-- Apps Grid -->
@@ -267,10 +233,10 @@
 
         <!-- Card Background Pattern -->
         <div class="card-pattern"></div>
-        
+
         <!-- App Accent Bar -->
         <div class="app-accent-bar"></div>
-        
+
         <!-- Card Content -->
         <div class="card-body">
           <!-- App Icon -->
@@ -278,20 +244,20 @@
             <div class="icon-backdrop"></div>
             <i [class]="app.icon"></i>
           </div>
-          
+
           <!-- App Info -->
           <div class="app-info">
             <h3 class="app-name">{{ app.label }}</h3>
             <p class="app-desc" *ngIf="app.description">{{ app.description }}</p>
           </div>
         </div>
-        
+
         <!-- Active Badge -->
         <div class="active-indicator" *ngIf="selectedApp === app.key">
           <i class="pi pi-check-circle"></i>
           <span>Active</span>
         </div>
-        
+
         <!-- Hover Effect -->
         <div class="card-hover-effect"></div>
 
@@ -301,15 +267,15 @@
 </p-dialog>
 
 <!-- Info Dialog -->
-<p-dialog 
-  header="{{ selectedInfo?.title }}" 
-  [(visible)]="infoDialogVisible" 
-  [modal]="true" 
+<p-dialog
+  header="{{ selectedInfo?.title }}"
+  [(visible)]="infoDialogVisible"
+  [modal]="true"
   [style]="{ width: '600px' }"
-  [draggable]="false" 
+  [draggable]="false"
   [resizable]="false"
   styleClass="info-dialog">
-  
+
   <div *ngIf="selectedInfo" class="info-content">
     <!-- Description -->
     <div class="mb-4">
@@ -362,10 +328,10 @@
 
   <ng-template pTemplate="footer">
     <div class="flex justify-end gap-2">
-      <button 
-        pButton 
-        pRipple 
-        label="Got it!" 
+      <button
+        pButton
+        pRipple
+        label="Got it!"
         icon="pi pi-check"
         class="p-button-primary"
         (click)="hideInfo()">

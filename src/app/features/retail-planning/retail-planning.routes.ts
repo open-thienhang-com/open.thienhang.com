@@ -38,5 +38,4 @@ export const retailPlanningRoutes: Routes = [
   // { path: 'planning-warehouses', loadComponent: () => import('./components/planning-warehouses/planning-warehouses.component').then(m => m.PlanningWarehousesComponent) },
   { path: 'planning-productivity-wrapper', loadComponent: () => import('./components/planning-productivity-wrapper/planning-productivity-wrapper').then(m => m.PlanningProductivityWrapper) },
   { path: 'planning-productivity', loadComponent: () => import('./components/planning-productivity/planning-productivity').then(m => m.PlanningProductivity) },
-  { path: 'experiment', loadComponent: () => import('./components/experiment/experiment.component').then(m => m.ExperimentComponent) },
 ];

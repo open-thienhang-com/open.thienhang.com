@@ -13,6 +13,13 @@ import { AppSwitcherService, AppKey } from '../../core/services/app-switcher.ser
 export class ApplicationsComponent implements OnInit {
   apps: { key: AppKey; label: string; icon: string; gradient: string; description?: string }[] = [
     {
+      key: 'explore',
+      label: 'Explore',
+      icon: 'pi pi-compass',
+      gradient: 'linear-gradient(135deg, #0ea5e9 0%, #14b8a6 100%)',
+      description: 'Discover data products and explore assets'
+    },
+    {
       key: 'retail',
       label: 'Retail Service',
       icon: 'pi pi-shopping-bag',
@@ -48,6 +55,27 @@ export class ApplicationsComponent implements OnInit {
       description: ''
     },
     {
+      key: 'travel',
+      label: 'Travel',
+      icon: 'pi pi-globe',
+      gradient: 'linear-gradient(135deg, #2af598 0%, #009efd 100%)',
+      description: 'Plan and manage your trips'
+    },
+    {
+      key: 'chat',
+      label: 'Chat',
+      icon: 'pi pi-comments',
+      gradient: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+      description: 'Team chat and discussions'
+    },
+    {
+      key: 'files',
+      label: 'Files',
+      icon: 'pi pi-folder',
+      gradient: 'linear-gradient(135deg, #4f46e5 0%, #2563eb 100%)',
+      description: 'File storage and management'
+    },
+    {
       key: 'settings',
       label: 'Settings',
       icon: 'pi pi-cog',
@@ -70,9 +98,10 @@ export class ApplicationsComponent implements OnInit {
   selectApp(key: AppKey): void {
     this.appSwitcher.selectApp(key);
     this.selectedApp = key;
-    
+
     const routeForApp: Record<AppKey, string> = {
       all: '/',
+      explore: '/explore',
       retail: '/retail',
       catalog: '/',
       governance: '/governance/policies',
@@ -80,6 +109,9 @@ export class ApplicationsComponent implements OnInit {
       blogger: '/blogger',
       hotel: '/hotel',
       admanager: '/ad-manager',
+      chat: '/chat',
+      files: '/files',
+      travel: '/travel',
       settings: '/settings'
     };
 

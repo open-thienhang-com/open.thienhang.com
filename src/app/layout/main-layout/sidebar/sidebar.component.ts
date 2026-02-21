@@ -12,7 +12,6 @@ import {
 } from '@angular/animations';
 import { AppSwitcherService, AppKey } from '../../../core/services/app-switcher.service';
 import { AuthServices } from '../../../core/services/auth.services';
-import { I18nService } from '../../../core/services/i18n.service';
 import { $t, updatePreset, updateSurfacePalette } from '@primeng/themes';
 import Aura from '@primeng/themes/aura';
 import Lara from '@primeng/themes/lara';
@@ -83,7 +82,6 @@ export class SidebarComponent implements OnInit, OnChanges {
   private elementRef = inject(ElementRef);
   platformId = inject(PLATFORM_ID);
   config: PrimeNG = inject(PrimeNG);
-  i18nService = inject(I18nService);
 
   // User info from API
   currentUser = signal<any>(null);
@@ -101,7 +99,6 @@ export class SidebarComponent implements OnInit, OnChanges {
   selectedSurfaceColor = computed(() => this.themeState().surface);
   selectedPrimaryColor = computed(() => this.themeState().primary);
   iconClass = computed(() => this.themeState().darkTheme ? 'pi-sun' : 'pi-moon');
-  currentLanguage = computed(() => this.i18nService.getCurrentLanguage());
   transitionComplete = signal<boolean>(false);
 
   presets = Object.keys(presets);
@@ -199,6 +196,13 @@ export class SidebarComponent implements OnInit, OnChanges {
   showAppMatrix = false;
   apps: { key: AppKey; label: string; icon: string; gradient: string; description?: string }[] = [
     {
+      key: 'explore',
+      label: 'Explore',
+      icon: 'pi pi-compass',
+      gradient: 'linear-gradient(135deg, #0ea5e9 0%, #14b8a6 100%)',
+      description: 'Discover data products and explore assets'
+    },
+    {
       key: 'retail',
       label: 'Retail Service',
       icon: 'pi pi-shopping-bag',
@@ -232,6 +236,27 @@ export class SidebarComponent implements OnInit, OnChanges {
       icon: 'pi pi-bullhorn',
       gradient: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
       description: ''
+    },
+    {
+      key: 'chat',
+      label: 'Chat',
+      icon: 'pi pi-comments',
+      gradient: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+      description: 'Team chat and discussions'
+    },
+    {
+      key: 'files',
+      label: 'Files',
+      icon: 'pi pi-folder',
+      gradient: 'linear-gradient(135deg, #4f46e5 0%, #2563eb 100%)',
+      description: 'File storage and management'
+    },
+    {
+      key: 'travel',
+      label: 'Travel',
+      icon: 'pi pi-globe',
+      gradient: 'linear-gradient(135deg, #2af598 0%, #009efd 100%)',
+      description: 'Plan and manage your trips'
     },
     {
       key: 'settings',
@@ -347,18 +372,9 @@ export class SidebarComponent implements OnInit, OnChanges {
           children: [
             { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-cog' },
             { label: 'Stochastic', url: '/planning/stochastic', icon: 'pi pi-chart-pie' },
-            { label: 'Fleet', url: '/planning/fleet', icon: 'pi pi-truck' },
-            { label: 'Experiment', url: '/planning/experiment', icon: 'pi pi-flask' }
+            { label: 'Fleet', url: '/planning/fleet', icon: 'pi pi-truck' }
           ]
         }
-      ]
-    },
-    {
-      label: 'Experiment',
-      icon: 'pi pi-flask',
-      expanded: false,
-      items: [
-        { label: 'Notebook', url: '/planning/experiment', icon: 'pi pi-book' }
       ]
     },
     {
@@ -450,6 +466,42 @@ export class SidebarComponent implements OnInit, OnChanges {
           ]
         }
       ]
+    },
+    {
+      label: 'Chat',
+      icon: 'pi pi-comments',
+      expanded: false,
+      items: [
+        { label: 'Dashboard', url: '/chat', icon: 'pi pi-home' },
+        { label: 'Conversations', url: '/chat/conversations', icon: 'pi pi-comments' },
+        { label: 'Analytics', url: '/chat/analytics', icon: 'pi pi-chart-bar' }
+      ]
+    },
+    {
+      label: 'Ad Manager',
+      icon: 'pi pi-bullhorn',
+      expanded: false,
+      items: [
+        { label: 'Overview', url: '/ad-manager', icon: 'pi pi-home' }
+      ]
+    },
+    {
+      label: 'Files',
+      icon: 'pi pi-folder',
+      expanded: false,
+      items: [
+        { label: 'Dashboard', url: '/files', icon: 'pi pi-home' },
+        { label: 'File Library', url: '/files/list', icon: 'pi pi-file' },
+        { label: 'Storage Analytics', url: '/files/stats', icon: 'pi pi-chart-bar' }
+      ]
+    },
+    {
+        label: 'Travel',
+        icon: 'pi pi-globe',
+        expanded: false,
+        items: [
+            { label: 'My Trips', url: '/travel', icon: 'pi pi-briefcase' }
+        ]
     }
   ];
 
@@ -701,7 +753,6 @@ export class SidebarComponent implements OnInit, OnChanges {
       'planning': 'pi pi-truck',
       'stochastic': 'pi pi-chart-pie',
       'fleet': 'pi pi-truck',
-      'experiment': 'pi pi-flask',
       'notebook': 'pi pi-book'
     };
 
@@ -941,49 +992,79 @@ export class SidebarComponent implements OnInit, OnChanges {
       return;
     }
 
-    // Special-case: for Blogger app - show groups/items that mention blogger
+    // Special-case: for Blogger app - force single-level menu (no nested groups)
     if (key === 'blogger') {
-      const needle = 'blog';
-      const groups: any[] = [];
+      const bloggerGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('blogger'));
+      if (bloggerGroup) {
+        const items: any[] = this.getFlattenedItems(bloggerGroup.items || []);
+        const pseudo = { label: '', icon: '', expanded: false, _noHeader: true, items } as any;
+        pseudo._flattened = items;
 
-      this.sidebarGroups.forEach(g => {
-        const gl = (g.label || '').toLowerCase();
-        if (gl.includes(needle) || gl.includes('blogger')) {
-          groups.push(g);
-          return;
-        }
+        this.visibleGroups = [pseudo];
+        this.visibleGroups.forEach(g => (g as any)._flattened = (g as any)._flattened || this.getFlattenedItems((g as any).items || []));
+      } else {
+        this.visibleGroups = [];
+      }
+      return;
+    }
+    // Special-case: for Explore app - render its child menu items directly (no parent header)
+    if (key === 'explore') {
+      const exploreGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('explore'));
+      if (exploreGroup) {
+        const items: any[] = this.getFlattenedItems(exploreGroup.items || []);
+        const pseudo = { label: '', icon: '', expanded: false, _noHeader: true, items } as any;
+        pseudo._flattened = items;
 
-        // check items and children for matches
-        const matchedItems: any[] = [];
-        (g.items || []).forEach((it: any) => {
-          const label = (it.label || '').toLowerCase();
-          const url = (it.url || '').toLowerCase();
-          if (label.includes(needle) || label.includes('blogger') || url.includes('/' + needle)) {
-            matchedItems.push(it);
-            return;
-          }
-          if (it.children) {
-            const matchedChildren = (it.children as any[]).filter((c: any) => {
-              const cl = (c.label || '').toLowerCase();
-              const cu = (c.url || '').toLowerCase();
-              return cl.includes(needle) || cl.includes('blogger') || cu.includes('/' + needle);
-            });
-            if (matchedChildren.length) {
-              const copy = { label: it.label, icon: it.icon, expanded: false, children: matchedChildren };
-              matchedItems.push(copy as any);
-            }
-          }
-        });
+        this.visibleGroups = [pseudo];
+        this.visibleGroups.forEach(g => (g as any)._flattened = (g as any)._flattened || this.getFlattenedItems((g as any).items || []));
+      } else {
+        this.visibleGroups = [];
+      }
+      return;
+    }
+    // Special-case: for Chat app - force single-level menu (no nested groups)
+    if (key === 'chat') {
+      const chatGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase() === 'chat');
+      if (chatGroup) {
+        const items: any[] = this.getFlattenedItems(chatGroup.items || []);
+        const pseudo = { label: '', icon: '', expanded: false, _noHeader: true, items } as any;
+        pseudo._flattened = items;
 
-        if (matchedItems.length) {
-          groups.push({ label: g.label, icon: g.icon, expanded: false, items: matchedItems });
-        }
-      });
+        this.visibleGroups = [pseudo];
+        this.visibleGroups.forEach(g => (g as any)._flattened = (g as any)._flattened || this.getFlattenedItems((g as any).items || []));
+      } else {
+        this.visibleGroups = [];
+      }
+      return;
+    }
+    // Special-case: for Ad Manager app - force single-level menu (no nested groups)
+    if (key === 'admanager') {
+      const adGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('ad manager'));
+      if (adGroup) {
+        const items: any[] = this.getFlattenedItems(adGroup.items || []);
+        const pseudo = { label: '', icon: '', expanded: false, _noHeader: true, items } as any;
+        pseudo._flattened = items;
 
-      // If nothing matched, keep sidebar empty for these apps per request
-      this.visibleGroups = this.orderGroupsForApp(groups, key);
-      // Close all groups by default
-      this.visibleGroups.forEach(g => g.expanded = false);
+        this.visibleGroups = [pseudo];
+        this.visibleGroups.forEach(g => (g as any)._flattened = (g as any)._flattened || this.getFlattenedItems((g as any).items || []));
+      } else {
+        this.visibleGroups = [];
+      }
+      return;
+    }
+    // Special-case: for Travel app - force single-level menu (no nested groups)
+    if (key === 'travel') {
+      const travelGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase() === 'travel');
+      if (travelGroup) {
+        const items: any[] = this.getFlattenedItems(travelGroup.items || []);
+        const pseudo = { label: '', icon: '', expanded: false, _noHeader: true, items } as any;
+        pseudo._flattened = items;
+
+        this.visibleGroups = [pseudo];
+        this.visibleGroups.forEach(g => (g as any)._flattened = (g as any)._flattened || this.getFlattenedItems((g as any).items || []));
+      } else {
+        this.visibleGroups = [];
+      }
       return;
     }
 
@@ -1001,10 +1082,24 @@ export class SidebarComponent implements OnInit, OnChanges {
         return;
       }
     }
+    // Special-case: for Files app - render its child menu items directly (no parent header)
+    if (key === 'files') {
+      const filesGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('files'));
+      if (filesGroup) {
+        const items: any[] = this.getFlattenedItems(filesGroup.items || []);
+        const pseudo = { label: '', icon: '', expanded: false, _noHeader: true, items } as any;
+        pseudo._flattened = items;
+
+        this.visibleGroups = [pseudo];
+        this.visibleGroups.forEach(g => (g as any)._flattened = (g as any)._flattened || this.getFlattenedItems((g as any).items || []));
+        return;
+      }
+    }
 
     const filtered = this.sidebarGroups.filter(g => {
       const label = (g.label || '').toLowerCase();
       if (key === 'governance') return label.includes('governance');
+      if (key === 'files') return label.includes('files');
       return true;
     });
 
@@ -1025,10 +1120,12 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (p.startsWith('/governance')) return 'governance';
     if (p.startsWith('/retail')) return 'retail';
     if (p.startsWith('/planning')) return 'planning';
-    if (p.startsWith('/discovery') || p.startsWith('/explore') || p.startsWith('/data-catalog')) return 'all';
+    if (p.startsWith('/discovery') || p.startsWith('/explore') || p.startsWith('/data-catalog') || p.startsWith('/data-mesh')) return 'explore';
     if (p.startsWith('/blogger') || p.startsWith('/posts') || p.startsWith('/blog')) return 'blogger';
     if (p.startsWith('/hotel')) return 'hotel';
     if (p.startsWith('/ad-manager') || p.startsWith('/admanager') || p.startsWith('/ads')) return 'admanager';
+    if (p.startsWith('/files')) return 'files';
+    if (p.startsWith('/travel')) return 'travel';
     if (p.startsWith('/settings')) return 'settings';
     // Marketplace removed - routes to root now
     // default: nothing to force
@@ -1040,11 +1137,15 @@ export class SidebarComponent implements OnInit, OnChanges {
     const priorityMap: Record<AppKey, string[]> = {
       retail: ['retail'],
       catalog: [],
+      explore: ['explore', 'data mesh'],
+      chat: [],
       planning: ['planning'],
       blogger: ['blog', 'blogger', 'posts'],
       hotel: ['hotel', 'rooms', 'bookings', 'management'],
       admanager: ['ad', 'ads', 'advert', 'campaign', 'admanager'],
+      files: ['file', 'storage'],
       governance: ['governance'],
+      travel: ['travel'],
       settings: [],
       all: []
     };
@@ -1198,6 +1299,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     // navigate to the corresponding dashboard / root for the selected app
     const routeForApp: Record<AppKey, string> = {
       all: '/',
+      explore: '/explore',
       retail: '/retail',
       catalog: '/',
       governance: '/governance/policies',
@@ -1205,6 +1307,9 @@ export class SidebarComponent implements OnInit, OnChanges {
       blogger: '/blogger',
       hotel: '/hotel',
       admanager: '/ad-manager',
+      chat: '/chat',
+      files: '/files',
+      travel: '/travel',
       settings: '/settings'
     };
 
@@ -1224,10 +1329,6 @@ export class SidebarComponent implements OnInit, OnChanges {
       ...state,
       darkTheme: !state.darkTheme,
     }));
-  }
-
-  changeLanguage(lang: string): void {
-    this.i18nService.setLanguage(lang);
   }
 
   updateColors(event: any, type: string, color: any): void {

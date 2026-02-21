@@ -1,13 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { DataMeshServices, Domain } from '../../../core/services/data-mesh.services';
 import { LoadingService } from '../../../core/services/loading.service';
 import { I18nService } from '../../../core/services/i18n.service';
-import { LoadingComponent } from '../../../shared/component/loading/loading.component';
-import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
 
 // PrimeNG imports
 import { ButtonModule } from 'primeng/button';
@@ -21,6 +19,23 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
 import { DividerModule } from 'primeng/divider';
 import { DialogModule } from 'primeng/dialog';
+import { TableModule } from 'primeng/table';
+import { ToolbarModule } from 'primeng/toolbar';
+import { SplitButtonModule } from 'primeng/splitbutton';
+import { PaginatorModule } from 'primeng/paginator';
+import { MenuModule } from 'primeng/menu';
+import { InputSwitchModule } from 'primeng/inputswitch';
+import { ChipModule } from 'primeng/chip';
+import { AccordionModule } from 'primeng/accordion';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+
+interface DomainStats {
+  totalDomains: number;
+  activeDomains: number;
+  totalDataProducts: number;
+  totalApis: number;
+}
 
 @Component({
   selector: 'app-domain-catalog',
@@ -28,8 +43,7 @@ import { DialogModule } from 'primeng/dialog';
   imports: [
     CommonModule,
     FormsModule,
-    LoadingComponent,
-    TranslatePipe,
+    RouterModule,
     ButtonModule,
     CardModule,
     TagModule,
@@ -40,17 +54,29 @@ import { DialogModule } from 'primeng/dialog';
     SkeletonModule,
     TooltipModule,
     DividerModule,
-    DialogModule
+    DialogModule,
+    TableModule,
+    ToolbarModule,
+    SplitButtonModule,
+    PaginatorModule,
+    MenuModule,
+    InputSwitchModule,
+    ChipModule,
+    AccordionModule,
+    ProgressBarModule,
+    ConfirmDialogModule
   ],
   templateUrl: './domain-catalog.component.html',
   styleUrls: ['./domain-catalog.component.scss'],
-  providers: [MessageService]
+  providers: [MessageService, ConfirmationService]
 })
 export class DomainCatalogComponent implements OnInit {
   domains: Domain[] = [];
   filteredDomains: Domain[] = [];
   loading = false;
   searchTerm = '';
+  viewMode: 'list' | 'card' = 'list';
+  showFilters: boolean = false;
 
   filters = {
     status: '',
@@ -59,6 +85,15 @@ export class DomainCatalogComponent implements OnInit {
 
   // Filter options
   statusOptions: any[] = [];
+  teamOptions: any[] = [];
+
+  // Stats
+  stats: DomainStats = {
+    totalDomains: 0,
+    activeDomains: 0,
+    totalDataProducts: 0,
+    totalApis: 0
+  };
 
   // Dialog
   selectedDomain: Domain | null = null;
@@ -79,7 +114,8 @@ export class DomainCatalogComponent implements OnInit {
     private messageService: MessageService,
     private loadingService: LoadingService,
     private i18nService: I18nService,
-    private router: Router
+    private router: Router,
+    private confirmationService: ConfirmationService
   ) { }
 
   ngOnInit(): void {
@@ -93,12 +129,6 @@ export class DomainCatalogComponent implements OnInit {
       { label: 'Active', value: 'Active' },
       { label: 'Inactive', value: 'Inactive' }
     ];
-    
-    // Extract unique teams from domains for filter
-    if (this.domains.length > 0) {
-      const uniqueTeams = [...new Set(this.domains.map(d => d.team).filter(t => t && t.trim() !== ''))];
-      // You can add team filter dropdown if needed
-    }
   }
 
   loadDomainsList(): void {
@@ -107,19 +137,13 @@ export class DomainCatalogComponent implements OnInit {
 
     this.dataMeshServices.getDomainCatalog().subscribe({
       next: (response) => {
-        console.log('Domains loaded:', response.data);
         if (response.success && response.data) {
-          // Use full domain data from API response
           this.domains = response.data;
           this.filteredDomains = [...this.domains];
+          this.updateStats();
+          this.extractTeams();
           this.loading = false;
           this.loadingService.hide();
-
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: `Loaded ${this.domains.length} domains`
-          });
         } else {
           this.handleError('Failed to load domains catalog');
         }
@@ -131,12 +155,29 @@ export class DomainCatalogComponent implements OnInit {
     });
   }
 
+  updateStats(): void {
+    this.stats.totalDomains = this.domains.length;
+    this.stats.activeDomains = this.domains.filter(d => d.status === 'Active').length;
+    this.stats.totalDataProducts = this.domains.reduce((acc, curr) => acc + (curr.data_products?.length || 0), 0);
+    // Note: Total APIs might need a separate call or be part of domain details, here we just sum up if available or set 0
+    this.stats.totalApis = 0; // Placeholder
+  }
+
+  extractTeams(): void {
+    if (this.domains.length > 0) {
+      const uniqueTeams = [...new Set(this.domains.map(d => d.team).filter(t => t && t.trim() !== ''))];
+      this.teamOptions = [
+        { label: 'All Teams', value: '' },
+        ...uniqueTeams.map(team => ({ label: team, value: team }))
+      ];
+    }
+  }
+
   loadDomainDetails(domainKey: string): void {
     this.loadingDetail = true;
 
     this.dataMeshServices.getDomainDetails(domainKey).subscribe({
       next: (response) => {
-        console.log('Domain details loaded:', response.data);
         if (response.success && response.data) {
           this.selectedDomain = response.data;
           this.loadingDetail = false;
@@ -201,6 +242,14 @@ export class DomainCatalogComponent implements OnInit {
     this.applyFilters();
   }
 
+  toggleFilters(): void {
+    this.showFilters = !this.showFilters;
+  }
+
+  toggleViewMode(): void {
+    this.viewMode = this.viewMode === 'list' ? 'card' : 'list';
+  }
+
   applyFilters(): void {
     this.filteredDomains = this.domains.filter(domain => {
       const searchLower = this.searchTerm.toLowerCase();
@@ -247,11 +296,11 @@ export class DomainCatalogComponent implements OnInit {
     return iconMap[domainKey.toLowerCase()] || 'pi-sitemap';
   }
 
-  getStatusClass(status: string): string {
+  getStatusSeverity(status: string): string {
     switch (status?.toLowerCase()) {
-      case 'active': return 'bg-emerald-100 text-emerald-800';
-      case 'inactive': return 'bg-slate-100 text-slate-800';
-      default: return 'bg-blue-100 text-blue-800';
+      case 'active': return 'success';
+      case 'inactive': return 'secondary';
+      default: return 'info';
     }
   }
 

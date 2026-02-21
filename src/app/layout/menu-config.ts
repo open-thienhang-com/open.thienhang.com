@@ -86,5 +86,11 @@ export const menu: MenuItem[] = [
             { label: 'Fleet', url: '/planning/fleet', icon: 'pi pi-truck' }
         ]
     },
+    {
+        label: 'Travel',
+        icon: 'pi pi-globe',
+        type: 'item',
+        url: '/travel'
+    },
     // Settings intentionally removed from sidebar menu config; Settings is a standalone app
 ];
