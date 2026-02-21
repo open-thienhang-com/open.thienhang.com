@@ -99,12 +99,6 @@ export class RetailServicesComponent implements OnInit {
           description: 'Product catalog and stock levels'
         },
         {
-          key: 'movements',
-          label: 'Movements',
-          icon: 'pi pi-arrow-right-arrow-left',
-          description: 'Stock in/out history and adjustments'
-        },
-        {
           key: 'suppliers',
           label: 'Suppliers',
           icon: 'pi pi-users',
@@ -115,12 +109,6 @@ export class RetailServicesComponent implements OnInit {
           label: 'Locations',
           icon: 'pi pi-map-marker',
           description: 'Warehouse and location management'
-        },
-        {
-          key: 'reports',
-          label: 'Reports',
-          icon: 'pi pi-chart-line',
-          description: 'Inventory reports and analytics'
         },
         {
           key: 'support',
@@ -135,13 +123,6 @@ export class RetailServicesComponent implements OnInit {
           description: 'Inventory system configuration'
         }
       ]
-    },
-    {
-      key: 'analytics',
-      label: 'Customer Analytics',
-      icon: 'pi pi-chart-bar',
-      description: 'Advanced customer behavior and analytics',
-      submenus: []
     },
     {
       key: 'loyalty',
@@ -170,7 +151,6 @@ export class RetailServicesComponent implements OnInit {
     { label: 'All Categories', value: '' },
     { label: 'Payment Processing', value: 'payment' },
     { label: 'Inventory Management', value: 'inventory' },
-    { label: 'Customer Analytics', value: 'analytics' },
     { label: 'Loyalty Programs', value: 'loyalty' },
     { label: 'POS Systems', value: 'pos' },
     { label: 'E-commerce', value: 'ecommerce' }

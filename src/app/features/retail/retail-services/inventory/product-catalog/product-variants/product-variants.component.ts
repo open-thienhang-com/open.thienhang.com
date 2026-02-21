@@ -28,6 +28,7 @@ interface ProductVariant {
 
 @Component({
   selector: 'app-product-variants',
+  standalone: true,
   imports: [
     CommonModule,
     FormsModule,

@@ -1,10 +1,26 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { BehaviorSubject, catchError, switchMap, throwError, of } from 'rxjs';
+import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from 'rxjs';
 import { AuthServices } from '../services/auth.services';
 
 let isRefreshing = false;
-const refreshTokenSubject = new BehaviorSubject<any>(null);
+const refreshTokenSubject = new BehaviorSubject<boolean | null>(null);
+
+const AUTH_BYPASS_PATHS = [
+  '/authentication/login',
+  '/authentication/refresh-token',
+  '/authentication/logout',
+  '/authentication/register',
+  '/authentication/forgot-password',
+  '/authentication/reset-password',
+  '/authentication/set-password',
+  '/authentication/verify-email',
+  '/authentication/resend-verification'
+];
+
+function shouldBypassRefresh(url: string): boolean {
+  return AUTH_BYPASS_PATHS.some(path => url.includes(path));
+}
 
 export const credentialsInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthServices);
@@ -15,7 +31,11 @@ export const credentialsInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(modifiedReq).pipe(
     catchError(error => {
-      if (error.status === 401 && !isRefreshing) {
+      if (error.status !== 401 || shouldBypassRefresh(modifiedReq.url)) {
+        return throwError(() => error);
+      }
+
+      if (!isRefreshing) {
         isRefreshing = true;
         refreshTokenSubject.next(null);
 
@@ -23,23 +43,26 @@ export const credentialsInterceptor: HttpInterceptorFn = (req, next) => {
           switchMap(() => {
             isRefreshing = false;
             refreshTokenSubject.next(true);
-
-            // Retry original request
             return next(modifiedReq);
           }),
           catchError((err) => {
             isRefreshing = false;
-            refreshTokenSubject.next(null);
-            console.error('Refresh token failed:', err);
-            authService.logout();
+            refreshTokenSubject.next(false);
             return throwError(() => err);
           })
         );
-      } else if (error.status === 401) {
-        authService.logout();
       }
 
-      return throwError(() => error);
+      return refreshTokenSubject.pipe(
+        filter(result => result !== null),
+        take(1),
+        switchMap((result) => {
+          if (result) {
+            return next(modifiedReq);
+          }
+          return throwError(() => error);
+        })
+      );
     })
   );
 };

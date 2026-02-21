@@ -44,6 +44,10 @@ export const routes: Routes = [
       {
         path: 'planning',
         children: retailPlanningRoutes
+      },
+      {
+        path: 'travel',
+        children: travelRoutes
       }
     ]
   },
@@ -140,10 +144,6 @@ export const routes: Routes = [
           },
           ...hotelRoutes
         ]
-      },
-      {
-        path: 'travel',
-        children: travelRoutes
       },
       {
         path: 'chat',
@@ -252,7 +252,7 @@ export const routes: Routes = [
         children: [
           {
             path: '',
-            loadComponent: () => import('./features/retail/retail-services/overview/overview.component').then(m => m.OverviewComponent),
+            loadComponent: () => import('./features/retail-planning/components/dataset/dataset.component').then(m => m.DatasetComponent),
           },
           {
             path: 'payment',
@@ -267,12 +267,8 @@ export const routes: Routes = [
             children: [
               {
                 path: '',
-                redirectTo: 'overview',
+                redirectTo: 'products',
                 pathMatch: 'full'
-              },
-              {
-                path: 'overview',
-                loadComponent: () => import('./features/retail/retail-services/inventory/overview/overview.component').then(m => m.OverviewComponent),
               },
               {
                 path: 'product-catalog',
@@ -283,16 +279,12 @@ export const routes: Routes = [
                 loadComponent: () => import('./features/retail/retail-services/inventory/products/products.component').then(m => m.ProductsComponent),
               },
               {
-                path: 'movements',
-                loadComponent: () => import('./features/retail/retail-services/inventory/movements/movements.component').then(m => m.MovementsComponent),
+                path: 'categories',
+                loadComponent: () => import('./features/retail/retail-services/inventory/categories/categories.component').then(m => m.CategoriesComponent),
               },
               {
                 path: 'locations',
                 loadComponent: () => import('./features/retail/retail-services/inventory/locations/locations.component').then(m => m.LocationsComponent),
-              },
-              {
-                path: 'reports',
-                loadComponent: () => import('./features/retail/retail-services/inventory/reports/reports.component').then(m => m.ReportsComponent),
               },
               {
                 path: 'suppliers',
@@ -309,20 +301,220 @@ export const routes: Routes = [
             ]
           },
           {
-            path: 'analytics',
-            loadComponent: () => import('./features/retail/retail-services/analytics/analytics.component').then(m => m.AnalyticsComponent),
-          },
-          {
             path: 'loyalty',
-            loadComponent: () => import('./features/retail/retail-services/loyalty/loyalty.component').then(m => m.LoyaltyComponent),
+            loadComponent: () => import('./features/retail/retail-services/feature-page/retail-feature-page.component').then(m => m.RetailFeaturePageComponent),
+            data: {
+              featureConfig: {
+                title: 'Loyalty Program',
+                subtitle: 'Member lifecycle, tier management, and retention campaigns',
+                icon: 'pi pi-star',
+                accent: '#db2777',
+                stats: [
+                  { label: 'Active Members', value: '82,450', trend: '+5.4%' },
+                  { label: 'Points Issued', value: '9.3M', trend: '+11.2%' },
+                  { label: 'Redemption Rate', value: '27.1%', trend: '+3.0%' },
+                  { label: 'Churn Risk', value: '6.2%', trend: '-0.8%' }
+                ],
+                actions: [
+                  { label: 'Issue Bonus Points', icon: 'pi pi-gift', description: 'Launch limited-time point bonuses' },
+                  { label: 'Adjust Tier Rules', icon: 'pi pi-sliders-h', description: 'Update thresholds and progression logic' },
+                  { label: 'View Member Cohorts', icon: 'pi pi-chart-line', description: 'Compare retention by signup month' }
+                ],
+                checklist: ['Tier rules confirmed', 'Reward catalog published', 'Fraud controls enabled', 'Member notifications live']
+              }
+            }
           },
           {
             path: 'pos',
-            loadComponent: () => import('./features/retail/retail-services/pos/pos.component').then(m => m.PosComponent),
+            loadComponent: () => import('./features/retail/retail-services/feature-page/retail-feature-page.component').then(m => m.RetailFeaturePageComponent),
+            data: {
+              featureConfig: {
+                title: 'Point of Sale',
+                subtitle: 'Checkout operations, cash drawers, and in-store transaction flow',
+                icon: 'pi pi-shopping-cart',
+                accent: '#0891b2',
+                stats: [
+                  { label: 'Stores Online', value: '128/131', trend: '97.7%' },
+                  { label: 'Transactions Today', value: '16,204', trend: '+6.8%' },
+                  { label: 'Avg Checkout Time', value: '2m 14s', trend: '-9.1%' },
+                  { label: 'Void Rate', value: '0.42%', trend: '-0.1%' }
+                ],
+                actions: [
+                  { label: 'Open Register', icon: 'pi pi-play', description: 'Initialize store and register session' },
+                  { label: 'Manage Hold Orders', icon: 'pi pi-inbox', description: 'Review suspended in-store carts' },
+                  { label: 'Reconcile End-of-Day', icon: 'pi pi-check-square', description: 'Run till and payment reconciliation' }
+                ],
+                checklist: ['Terminal health checks passed', 'Payment routing active', 'Receipt templates updated', 'Cash policy acknowledged']
+              }
+            }
           },
           {
             path: 'ecommerce',
-            loadComponent: () => import('./features/retail/retail-services/ecommerce/ecommerce.component').then(m => m.EcommerceComponent),
+            loadComponent: () => import('./features/retail/retail-services/feature-page/retail-feature-page.component').then(m => m.RetailFeaturePageComponent),
+            data: {
+              featureConfig: {
+                title: 'E-commerce',
+                subtitle: 'Web storefront operations, catalog publishing, and order conversion',
+                icon: 'pi pi-globe',
+                accent: '#2563eb',
+                stats: [
+                  { label: 'Sessions', value: '411k', trend: '+14.2%' },
+                  { label: 'Conversion Rate', value: '3.9%', trend: '+0.4%' },
+                  { label: 'AOV', value: '$74.90', trend: '+5.1%' },
+                  { label: 'Cart Recovery', value: '19.7%', trend: '+2.3%' }
+                ],
+                actions: [
+                  { label: 'Publish Promotions', icon: 'pi pi-megaphone', description: 'Deploy homepage and collection campaigns' },
+                  { label: 'Sync Catalog', icon: 'pi pi-refresh', description: 'Push latest products and inventory' },
+                  { label: 'Check Funnel', icon: 'pi pi-chart-bar', description: 'Inspect drop-off by checkout step' }
+                ],
+                checklist: ['Catalog synced', 'Payment gateway verified', 'Shipping rules active', 'SEO metadata complete']
+              }
+            }
+          },
+          {
+            path: 'transactions',
+            loadComponent: () => import('./features/retail/retail-services/feature-page/retail-feature-page.component').then(m => m.RetailFeaturePageComponent),
+            data: {
+              featureConfig: {
+                title: 'POS Transactions',
+                subtitle: 'Live transaction feed with settlement and exception handling',
+                icon: 'pi pi-receipt',
+                accent: '#0ea5e9',
+                stats: [
+                  { label: 'Captured Today', value: '14,882', trend: '+7.2%' },
+                  { label: 'Settled', value: '13,901', trend: '93.4%' },
+                  { label: 'Refunds', value: '214', trend: '1.4%' },
+                  { label: 'Exceptions', value: '37', trend: '-22.9%' }
+                ],
+                actions: [
+                  { label: 'Investigate Exceptions', icon: 'pi pi-search', description: 'Review failed and pending settlements' },
+                  { label: 'Issue Refund', icon: 'pi pi-replay', description: 'Process full or partial customer refunds' },
+                  { label: 'Export Ledger', icon: 'pi pi-download', description: 'Download daily transaction register' }
+                ],
+                checklist: ['Payment statuses synced', 'Reconciliation report generated', 'Exception queue triaged', 'Audit trail archived']
+              }
+            }
+          },
+          {
+            path: 'cash',
+            loadComponent: () => import('./features/retail/retail-services/feature-page/retail-feature-page.component').then(m => m.RetailFeaturePageComponent),
+            data: {
+              featureConfig: {
+                title: 'Cash Management',
+                subtitle: 'Drawer balances, variance controls, and branch cash movement',
+                icon: 'pi pi-money-bill',
+                accent: '#16a34a',
+                stats: [
+                  { label: 'Open Drawers', value: '96', trend: '+3' },
+                  { label: 'Total Float', value: '$312,450', trend: '+1.8%' },
+                  { label: 'Variance Cases', value: '9', trend: '-40.0%' },
+                  { label: 'Safe Transfers', value: '64', trend: '+12.0%' }
+                ],
+                actions: [
+                  { label: 'Declare Closing', icon: 'pi pi-check', description: 'Submit shift-end cash declaration' },
+                  { label: 'Record Safe Drop', icon: 'pi pi-arrow-down', description: 'Log secure transfer from till to safe' },
+                  { label: 'Review Variance', icon: 'pi pi-exclamation-triangle', description: 'Resolve mismatch incidents' }
+                ],
+                checklist: ['Drawer policy assigned', 'Dual-control enabled', 'Variance thresholds set', 'Shift handover logs active']
+              }
+            }
+          },
+          {
+            path: 'orders',
+            loadComponent: () => import('./features/retail/retail-services/feature-page/retail-feature-page.component').then(m => m.RetailFeaturePageComponent),
+            data: {
+              featureConfig: {
+                title: 'Online Orders',
+                subtitle: 'End-to-end order lifecycle from placement to fulfillment',
+                icon: 'pi pi-shopping-bag',
+                accent: '#1d4ed8',
+                stats: [
+                  { label: 'New Orders', value: '4,129', trend: '+9.9%' },
+                  { label: 'Fulfillment SLA', value: '95.6%', trend: '+1.2%' },
+                  { label: 'Cancellation', value: '2.1%', trend: '-0.3%' },
+                  { label: 'Backorders', value: '148', trend: '-11.0%' }
+                ],
+                actions: [
+                  { label: 'Prioritize Queue', icon: 'pi pi-sort-amount-up', description: 'Auto-prioritize urgent and delayed orders' },
+                  { label: 'Batch Pack Slips', icon: 'pi pi-print', description: 'Generate labels and packing slips in batch' },
+                  { label: 'Resolve Exceptions', icon: 'pi pi-wrench', description: 'Handle payment and inventory mismatches' }
+                ],
+                checklist: ['Carrier integrations healthy', 'Inventory reservation enabled', 'SLA alerts enabled', 'Return pipeline configured']
+              }
+            }
+          },
+          {
+            path: 'customers',
+            loadComponent: () => import('./features/retail/retail-services/feature-page/retail-feature-page.component').then(m => m.RetailFeaturePageComponent),
+            data: {
+              featureConfig: {
+                title: 'Customer 360',
+                subtitle: 'Unified profiles, segmentation, and customer value tracking',
+                icon: 'pi pi-users',
+                accent: '#4338ca',
+                stats: [
+                  { label: 'Customer Profiles', value: '1.9M', trend: '+4.1%' },
+                  { label: 'VIP Segment', value: '24,870', trend: '+6.7%' },
+                  { label: 'NPS', value: '61', trend: '+3' },
+                  { label: 'Support Cases', value: '428', trend: '-8.5%' }
+                ],
+                actions: [
+                  { label: 'Create Segment', icon: 'pi pi-filter', description: 'Build behavior or demographic cohorts' },
+                  { label: 'Launch Retention Flow', icon: 'pi pi-send', description: 'Trigger lifecycle communication journeys' },
+                  { label: 'Review Churn Signals', icon: 'pi pi-chart-line', description: 'Inspect declining customer health' }
+                ],
+                checklist: ['Identity resolution active', 'Consent policy mapped', 'Segment sync to campaigns', 'Value model calibrated']
+              }
+            }
+          },
+          {
+            path: 'rewards',
+            loadComponent: () => import('./features/retail/retail-services/feature-page/retail-feature-page.component').then(m => m.RetailFeaturePageComponent),
+            data: {
+              featureConfig: {
+                title: 'Rewards Catalog',
+                subtitle: 'Reward design, partner offers, and redemption economics',
+                icon: 'pi pi-gift',
+                accent: '#c026d3',
+                stats: [
+                  { label: 'Active Rewards', value: '146', trend: '+18' },
+                  { label: 'Redeem Cost', value: '$2.31', trend: '-0.17' },
+                  { label: 'Redemption Volume', value: '78,212', trend: '+10.5%' },
+                  { label: 'Partner Offers', value: '29', trend: '+4' }
+                ],
+                actions: [
+                  { label: 'Add Reward', icon: 'pi pi-plus', description: 'Create fixed, tiered, or seasonal rewards' },
+                  { label: 'Adjust Point Cost', icon: 'pi pi-sliders-h', description: 'Optimize redemption economics' },
+                  { label: 'Track Utilization', icon: 'pi pi-chart-pie', description: 'Analyze reward performance by segment' }
+                ],
+                checklist: ['Reward SLAs validated', 'Partner contracts synced', 'Fraud checks enabled', 'Expiry policies configured']
+              }
+            }
+          },
+          {
+            path: 'campaigns',
+            loadComponent: () => import('./features/retail/retail-services/feature-page/retail-feature-page.component').then(m => m.RetailFeaturePageComponent),
+            data: {
+              featureConfig: {
+                title: 'Loyalty Campaigns',
+                subtitle: 'Campaign orchestration across channels and customer tiers',
+                icon: 'pi pi-megaphone',
+                accent: '#0f766e',
+                stats: [
+                  { label: 'Campaigns Live', value: '32', trend: '+5' },
+                  { label: 'Open Rate', value: '42.3%', trend: '+4.4%' },
+                  { label: 'Conversion', value: '9.8%', trend: '+1.6%' },
+                  { label: 'ROI', value: '3.7x', trend: '+0.5x' }
+                ],
+                actions: [
+                  { label: 'Launch Campaign', icon: 'pi pi-send', description: 'Deploy a targeted retention campaign' },
+                  { label: 'A/B Test Message', icon: 'pi pi-clone', description: 'Test creative and offer variants' },
+                  { label: 'Pause Low ROI', icon: 'pi pi-pause', description: 'Stop underperforming campaign streams' }
+                ],
+                checklist: ['Audience rules validated', 'Channel throttling configured', 'Attribution window set', 'Post-campaign report automated']
+              }
+            }
           },
         ]
       },

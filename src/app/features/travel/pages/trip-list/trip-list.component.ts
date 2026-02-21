@@ -1,12 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { SkeletonModule } from 'primeng/skeleton';
 import { DataViewModule } from 'primeng/dataview';
 import { TooltipModule } from 'primeng/tooltip';
+import { finalize } from 'rxjs';
 import { TravelService } from '../../services/travel.service';
 import { Trip } from '../../models/travel.model';
 
@@ -16,7 +16,6 @@ import { Trip } from '../../models/travel.model';
   imports: [
     CommonModule,
     RouterModule,
-    CardModule,
     ButtonModule,
     TagModule,
     SkeletonModule,
@@ -25,127 +24,79 @@ import { Trip } from '../../models/travel.model';
   ],
   template: `
     <div class="surface-ground px-4 py-5 md:px-6 lg:px-8 min-h-screen">
-      <!-- Header Section -->
       <div class="flex flex-column md:flex-row md:align-items-center justify-content-between mb-5 gap-3">
         <div>
-          <h1 class="text-3xl font-bold text-900 mt-0 mb-2">My Trips</h1>
-          <p class="text-600 text-lg mt-0 mb-0">Manage and plan your upcoming adventures</p>
+          <h1 class="text-3xl font-bold text-900 mt-0 mb-2">Travel Trips</h1>
+          <p class="text-600 text-lg mt-0 mb-0">Data source: <code>/data-mesh/domains/travel/trips</code></p>
         </div>
-        <button
-          pButton
-          label="New Trip"
-          icon="pi pi-plus"
-          class="p-button-primary p-button-rounded shadow-2"
-          (click)="navigateToDetail('new')">
-        </button>
+        <div class="flex gap-2">
+          <button pButton label="Refresh" icon="pi pi-refresh" class="p-button-outlined" (click)="loadTrips()"></button>
+          <button pButton label="New Trip" icon="pi pi-plus" (click)="createTripQuick()"></button>
+        </div>
       </div>
 
-      <!-- Loading State -->
       <div *ngIf="loading" class="grid">
         <div class="col-12 md:col-6 lg:col-4 p-3" *ngFor="let i of [1,2,3,4,5,6]">
           <div class="surface-card border-round shadow-2 p-4">
-            <p-skeleton height="200px" styleClass="mb-3 border-round"></p-skeleton>
-            <div class="flex justify-content-between align-items-center mb-3">
-              <p-skeleton width="6rem" height="1.5rem"></p-skeleton>
-              <p-skeleton width="4rem" height="1.5rem"></p-skeleton>
-            </div>
-            <p-skeleton width="80%" height="1rem" styleClass="mb-2"></p-skeleton>
-            <p-skeleton width="60%" height="1rem"></p-skeleton>
+            <p-skeleton height="120px" styleClass="mb-3 border-round"></p-skeleton>
+            <p-skeleton width="70%" height="1rem" styleClass="mb-2"></p-skeleton>
+            <p-skeleton width="50%" height="1rem"></p-skeleton>
           </div>
         </div>
       </div>
 
-      <!-- Trips Grid -->
       <p-dataView *ngIf="!loading" [value]="trips" layout="grid" [paginator]="true" [rows]="9">
-        <ng-template let-trip pTemplate="gridItem">
+        <ng-template pTemplate="gridItem" let-trip>
           <div class="col-12 md:col-6 lg:col-4 p-3">
-            <div
-              class="trip-card surface-card border-round shadow-2 h-full flex flex-column cursor-pointer transition-all transition-duration-200 hover:shadow-4"
-              (click)="navigateToDetail(trip.id)">
-
-              <!-- Cover Image -->
-              <div class="relative h-15rem w-full">
-                <img
-                  [src]="trip.coverImage"
-                  [alt]="trip.title"
-                  class="w-full h-full object-cover border-round-top"
-                  style="object-position: center;">
-                <div class="absolute top-0 right-0 m-3">
-                  <p-tag
-                    [value]="trip.status"
-                    [severity]="getStatusSeverity(trip.status)"
-                    styleClass="text-sm font-semibold shadow-1">
-                  </p-tag>
-                </div>
+            <div class="surface-card border-round shadow-2 h-full flex flex-column p-4 gap-3">
+              <div class="flex justify-content-between align-items-start gap-2">
+                <h2 class="text-xl font-bold text-900 m-0 line-clamp-2 cursor-pointer" [pTooltip]="trip.title" (click)="openTrip(trip)">
+                  {{ trip.title || 'Untitled trip' }}
+                </h2>
+                <p-tag [value]="trip.status || 'unknown'" [severity]="getStatusSeverity(trip.status)"></p-tag>
               </div>
 
-              <!-- Content -->
-              <div class="p-4 flex-grow-1 flex flex-column">
-                <div class="flex justify-content-between align-items-start mb-2">
-                  <h2 class="text-xl font-bold text-900 mt-0 mb-1 line-clamp-1" [pTooltip]="trip.title" tooltipPosition="top">{{ trip.title }}</h2>
-                </div>
+              <div class="text-600">
+                <div><i class="pi pi-map-marker mr-2"></i>{{ trip.destination || '-' }}</div>
+                <div><i class="pi pi-calendar mr-2"></i>{{ formatDateRange(trip.start_date, trip.end_date) }}</div>
+              </div>
 
-                <div class="flex align-items-center text-600 mb-3">
-                  <i class="pi pi-map-marker text-primary mr-2"></i>
-                  <span class="font-medium line-clamp-1">{{ trip.destination }}</span>
-                </div>
+              <p class="text-700 line-clamp-3 mb-0">{{ trip.description || 'No description' }}</p>
 
-                <div class="mt-auto pt-3 border-top-1 surface-border flex align-items-center justify-content-between text-sm text-500">
-                  <div class="flex align-items-center">
-                    <i class="pi pi-calendar mr-2"></i>
-                    <span>{{ trip.startDate | date:'mediumDate' }}</span>
-                  </div>
-                  <div class="flex align-items-center" *ngIf="trip.itinerary?.length">
-                    <i class="pi pi-list mr-2"></i>
-                    <span>{{ trip.itinerary.length }} Days</span>
-                  </div>
+              <div class="mt-auto flex justify-content-between align-items-center">
+                <small class="text-500">ID: {{ getTripId(trip) || '-' }}</small>
+                <div class="flex gap-2">
+                  <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text" (click)="openTrip(trip)"></button>
+                  <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="deleteTrip(trip)"></button>
                 </div>
               </div>
             </div>
           </div>
         </ng-template>
 
-        <!-- Empty State -->
         <ng-template pTemplate="empty">
-          <div class="flex flex-column align-items-center justify-content-center p-6 text-center surface-card border-round shadow-1 m-3">
-            <div class="bg-blue-50 border-circle p-4 mb-4">
-              <i class="pi pi-compass text-blue-500 text-5xl"></i>
-            </div>
-            <h3 class="text-2xl font-bold text-900 mb-2">No trips found</h3>
-            <p class="text-600 mb-4 max-w-20rem">You haven't planned any trips yet. Start your next adventure today!</p>
-            <button
-              pButton
-              label="Create First Trip"
-              icon="pi pi-plus"
-              class="p-button-primary"
-              (click)="navigateToDetail('new')">
-            </button>
+          <div class="surface-card border-round shadow-1 p-6 text-center">
+            <h3 class="text-xl font-bold">No trips found</h3>
+            <p class="text-600">Create your first trip to start using Travel domain APIs.</p>
           </div>
         </ng-template>
       </p-dataView>
     </div>
   `,
   styles: [`
-    :host {
-      display: block;
-    }
-
-    .line-clamp-1 {
+    :host { display: block; }
+    .line-clamp-2 {
       display: -webkit-box;
-      -webkit-line-clamp: 1;
+      -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
-
-    .trip-card:hover {
-      transform: translateY(-4px);
+    .line-clamp-3 {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
-
-    /* PrimeFlex utility overrides/polyfills if PrimeFlex is not fully loaded */
-    .h-15rem { height: 15rem; }
-    .object-cover { object-fit: cover; }
-    .border-round-top { border-top-left-radius: var(--border-radius); border-top-right-radius: var(--border-radius); }
-    .shadow-4 { box-shadow: 0 4px 10px rgba(0,0,0,0.03), 0 0 2px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.12); }
   `]
 })
 export class TripListComponent implements OnInit {
@@ -155,28 +106,96 @@ export class TripListComponent implements OnInit {
   trips: Trip[] = [];
   loading = false;
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadTrips();
   }
 
-  loadTrips() {
+  loadTrips(): void {
     this.loading = true;
-    this.travelService.getTrips().subscribe(data => {
-      this.trips = data;
-      this.loading = false;
-    });
+    this.travelService.listTrips()
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: (data) => {
+          this.trips = data;
+        },
+        error: (err) => {
+          console.error('Failed to load trips:', err);
+          this.trips = [];
+        }
+      });
   }
 
-  navigateToDetail(id: string) {
+  openTrip(trip: Trip): void {
+    const id = this.getTripId(trip);
+    if (!id) {
+      return;
+    }
     this.router.navigate(['/travel', id]);
   }
 
-  getStatusSeverity(status: 'Upcoming' | 'In Progress' | 'Completed'): "success" | "info" | "warning" | "danger" | "secondary" | "contrast" | undefined {
-    switch (status) {
-      case 'Upcoming': return 'info';
-      case 'In Progress': return 'warning';
-      case 'Completed': return 'success';
-      default: return 'info';
+  createTripQuick(): void {
+    const title = window.prompt('Trip title');
+    if (!title) {
+      return;
     }
+    const destination = window.prompt('Destination (optional)') || undefined;
+    const start_date = window.prompt('Start date (YYYY-MM-DD, optional)') || undefined;
+    const end_date = window.prompt('End date (YYYY-MM-DD, optional)') || undefined;
+
+    this.travelService.createTrip({ title, destination, start_date, end_date, status: 'upcoming' }).subscribe({
+      next: (created) => {
+        const createdId = created ? this.getTripId(created) : null;
+        if (createdId) {
+          this.router.navigate(['/travel', createdId]);
+          return;
+        }
+        this.loadTrips();
+      },
+      error: (err) => {
+        console.error('Create trip failed:', err);
+      }
+    });
+  }
+
+  deleteTrip(trip: Trip): void {
+    const id = this.getTripId(trip);
+    if (!id) {
+      return;
+    }
+    if (!window.confirm(`Delete trip "${trip.title}"?`)) {
+      return;
+    }
+    this.travelService.deleteTrip(id).subscribe({
+      next: () => this.loadTrips(),
+      error: (err) => console.error('Delete trip failed:', err)
+    });
+  }
+
+  getTripId(trip: Trip): string | null {
+    return trip.trip_id || trip.id || null;
+  }
+
+  getStatusSeverity(status?: string): 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast' {
+    switch ((status || '').toLowerCase()) {
+      case 'completed':
+        return 'success';
+      case 'in_progress':
+      case 'in progress':
+        return 'warning';
+      case 'upcoming':
+        return 'info';
+      default:
+        return 'secondary';
+    }
+  }
+
+  formatDateRange(start?: string, end?: string): string {
+    if (!start && !end) {
+      return '-';
+    }
+    if (start && end) {
+      return `${start} -> ${end}`;
+    }
+    return start || end || '-';
   }
 }

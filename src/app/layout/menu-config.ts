@@ -81,10 +81,14 @@ export const menu: MenuItem[] = [
         type: 'item',
         expanded: false,
         children: [
-            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-cog' },
-            { label: 'Stochastic', url: '/planning/stochastic', icon: 'pi pi-chart-pie' },
-            { label: 'Fleet', url: '/planning/fleet', icon: 'pi pi-truck' }
+            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-cog' }
         ]
+    },
+    {
+        label: 'Fleet',
+        icon: 'pi pi-truck',
+        type: 'item',
+        url: '/planning/fleet'
     },
     {
         label: 'Travel',

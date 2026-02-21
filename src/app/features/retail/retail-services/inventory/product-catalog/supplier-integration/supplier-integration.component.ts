@@ -58,6 +58,7 @@ interface SyncJob {
 
 @Component({
   selector: 'app-supplier-integration',
+  standalone: true,
   imports: [
     CommonModule,
     FormsModule,

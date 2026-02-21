@@ -1,0 +1,133 @@
+<div class="categories-container">
+  <div class="header-section">
+    <div class="header-content">
+      <h1><i class="pi pi-tags"></i> Category Management</h1>
+      <p>Manage inventory categories and hierarchy</p>
+    </div>
+    <div class="header-actions">
+      <p-button label="Add Category" icon="pi pi-plus" (onClick)="createCategory()"></p-button>
+      <p-button label="Refresh" icon="pi pi-refresh" [outlined]="true" (onClick)="loadCategories()"></p-button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Categories</div>
+      <div class="stat-value">{{ categories.length }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Active Categories</div>
+      <div class="stat-value">{{ getActiveCategories() }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Mapped Products</div>
+      <div class="stat-value">{{ getTotalProducts() }}</div>
+    </div>
+  </div>
+
+  <div class="filters-section">
+    <div class="filters-grid">
+      <div class="filter-item">
+        <label>Search</label>
+        <input pInputText [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Search by name, code, description..." class="search-input">
+      </div>
+      <div class="filter-item">
+        <label>Status</label>
+        <p-dropdown [(ngModel)]="selectedStatus" [options]="statusOptions" optionLabel="label" optionValue="value" (onChange)="applyFilters()"></p-dropdown>
+      </div>
+      <div class="filter-item">
+        <label>Parent Category</label>
+        <p-dropdown [(ngModel)]="selectedParentCategory" [options]="parentCategoryOptions" optionLabel="label" optionValue="value" (onChange)="applyFilters()"></p-dropdown>
+      </div>
+      <div class="filter-actions">
+        <p-button label="Clear Filters" [outlined]="true" size="small" (onClick)="clearFilters()"></p-button>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-section">
+    <p-table
+      [value]="filteredCategories"
+      [paginator]="true"
+      [rows]="10"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} categories">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Name</th>
+          <th>Code</th>
+          <th>Parent</th>
+          <th>Products</th>
+          <th>Status</th>
+          <th>Updated At</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>
+            <div class="name-cell">
+              <div class="name">{{ item.name }}</div>
+              <div class="desc">{{ item.description }}</div>
+            </div>
+          </td>
+          <td><code>{{ item.code }}</code></td>
+          <td>{{ item.parentCategory }}</td>
+          <td>{{ item.productCount }}</td>
+          <td>
+            <p-badge [value]="item.status" [severity]="getStatusSeverity(item.status)"></p-badge>
+          </td>
+          <td>{{ item.updatedAt | date: 'short' }}</td>
+          <td>
+            <div class="action-buttons">
+              <p-button icon="pi pi-pencil" [outlined]="true" size="small" (onClick)="editCategory(item)"></p-button>
+              <p-button icon="pi pi-trash" [outlined]="true" severity="danger" size="small" (onClick)="deleteCategory(item)"></p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="empty-message">No categories found</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <p-dialog
+    [(visible)]="showCategoryDialog"
+    [header]="editingCategory?.id ? 'Edit Category' : 'Add Category'"
+    [modal]="true"
+    [style]="{ width: '640px' }"
+    [closable]="true">
+    <div class="form-grid" *ngIf="editingCategory">
+      <div class="form-field">
+        <label>Name *</label>
+        <input pInputText [(ngModel)]="editingCategory.name" placeholder="Category name">
+      </div>
+      <div class="form-field">
+        <label>Code *</label>
+        <input pInputText [(ngModel)]="editingCategory.code" placeholder="CATEGORY_CODE">
+      </div>
+      <div class="form-field">
+        <label>Parent Category</label>
+        <p-dropdown [(ngModel)]="editingCategory.parentCategory" [options]="parentCategoryOptions.slice(1)" optionLabel="label" optionValue="value"></p-dropdown>
+      </div>
+      <div class="form-field">
+        <label>Status</label>
+        <p-dropdown [(ngModel)]="editingCategory.status" [options]="statusOptions.slice(1)" optionLabel="label" optionValue="value"></p-dropdown>
+      </div>
+      <div class="form-field full-width">
+        <label>Description</label>
+        <textarea pInputTextarea [(ngModel)]="editingCategory.description" rows="4" placeholder="Describe this category"></textarea>
+      </div>
+      <div class="dialog-actions full-width">
+        <p-button label="Cancel" [outlined]="true" (onClick)="cancelEdit()"></p-button>
+        <p-button label="Save" icon="pi pi-check" (onClick)="saveCategory()"></p-button>
+      </div>
+    </div>
+  </p-dialog>
+
+  <p-confirmDialog></p-confirmDialog>
+  <p-toast></p-toast>
+</div>

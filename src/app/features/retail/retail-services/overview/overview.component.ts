@@ -60,13 +60,6 @@ export class OverviewComponent implements OnInit {
       description: 'Real-time inventory tracking and management'
     },
     {
-      key: 'analytics',
-      label: 'Customer Analytics',
-      icon: 'pi pi-chart-bar',
-      color: '#8b5cf6',
-      description: 'Advanced customer behavior and analytics'
-    },
-    {
       key: 'loyalty',
       label: 'Loyalty Programs',
       icon: 'pi pi-star',
@@ -100,7 +93,6 @@ export class OverviewComponent implements OnInit {
     this.serviceStats = [
       { category: 'Payment Processing', count: 3, active: 3, revenue: 899, growth: 12.5 },
       { category: 'Inventory Management', count: 2, active: 2, revenue: 399, growth: 8.3 },
-      { category: 'Customer Analytics', count: 1, active: 1, revenue: 399, growth: 15.2 },
       { category: 'Loyalty Programs', count: 1, active: 0, revenue: 249, growth: -2.1 },
       { category: 'POS Systems', count: 1, active: 1, revenue: 349, growth: 22.4 },
       { category: 'E-commerce', count: 0, active: 0, revenue: 0, growth: 0 }
@@ -148,14 +140,13 @@ export class OverviewComponent implements OnInit {
     const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
 
     this.chartData = {
-      labels: ['Payment', 'Inventory', 'Analytics', 'Loyalty', 'POS', 'E-commerce'],
+      labels: ['Payment', 'Inventory', 'Loyalty', 'POS', 'E-commerce'],
       datasets: [
         {
           label: 'Active Services',
           backgroundColor: [
             '#10b981',
             '#f59e0b',
-            '#8b5cf6',
             '#ec4899',
             '#06b6d4',
             '#3b82f6'
@@ -163,12 +154,11 @@ export class OverviewComponent implements OnInit {
           borderColor: [
             '#059669',
             '#d97706',
-            '#7c3aed',
             '#db2777',
             '#0891b2',
             '#2563eb'
           ],
-          data: [3, 2, 1, 0, 1, 0]
+          data: [3, 2, 0, 1, 0]
         }
       ]
     };

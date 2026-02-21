@@ -319,15 +319,12 @@ export class SidebarComponent implements OnInit, OnChanges {
       expanded: false,
       items: [
         {
-          label: 'Inventory Management',
+          label: 'Inventory',
           icon: 'pi pi-box',
           children: [
-            { label: 'Overview', url: '/retail/inventory/overview', icon: 'pi pi-chart-bar' },
-            { label: 'Product Catalog', url: '/retail/inventory/product-catalog', icon: 'pi pi-list' },
+            { label: 'Category', url: '/retail/inventory/categories', icon: 'pi pi-tags' },
             { label: 'Products', url: '/retail/inventory/products', icon: 'pi pi-shopping-cart' },
-            { label: 'Movements', url: '/retail/inventory/movements', icon: 'pi pi-exchange' },
-            { label: 'Locations', url: '/retail/inventory/locations', icon: 'pi pi-map-marker' },
-            { label: 'Reports', url: '/retail/inventory/reports', icon: 'pi pi-chart-line' }
+            { label: 'Locations', url: '/retail/inventory/locations', icon: 'pi pi-map-marker' }
           ]
         },
         {
@@ -349,15 +346,6 @@ export class SidebarComponent implements OnInit, OnChanges {
           ]
         },
         {
-          label: 'Analytics',
-          icon: 'pi pi-chart-bar',
-          children: [
-            { label: 'Sales Analytics', url: '/retail/analytics', icon: 'pi pi-chart-line' },
-            { label: 'Customer Insights', url: '/retail/insights', icon: 'pi pi-users' },
-            { label: 'Performance', url: '/retail/performance', icon: 'pi pi-trophy' }
-          ]
-        },
-        {
           label: 'Loyalty Program',
           icon: 'pi pi-star',
           children: [
@@ -367,11 +355,16 @@ export class SidebarComponent implements OnInit, OnChanges {
           ]
         },
         {
-          label: 'Planning & Forecasting',
+          label: 'Planning',
+          icon: 'pi pi-cog',
+          children: [
+            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-cog' }
+          ]
+        },
+        {
+          label: 'Fleet',
           icon: 'pi pi-truck',
           children: [
-            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-cog' },
-            { label: 'Stochastic', url: '/planning/stochastic', icon: 'pi pi-chart-pie' },
             { label: 'Fleet', url: '/planning/fleet', icon: 'pi pi-truck' }
           ]
         }
@@ -535,40 +528,16 @@ export class SidebarComponent implements OnInit, OnChanges {
       this.onPresetChange(this.themeState().preset);
     }
 
-    // Load current user info
-    this.authServices.getCurrentUser().subscribe({
-      next: (resp: any) => {
-        // Response structure from log: { data: { full_name, email, identify, ... }, message, total }
-        // The actual user info is inside resp.data.data or resp.data
-        let userData: any = resp;
-
-        console.log('Raw response:', resp);
-
-        // Unwrap ApiResponse wrapper
-        if (userData?.data) {
-          userData = userData.data;
-          console.log('After first unwrap:', userData);
-        }
-
-        // If still wrapped in another data layer
-        if (userData?.data && typeof userData.data === 'object') {
-          userData = userData.data;
-          console.log('After second unwrap:', userData);
-        }
-
-        // Check for user wrapper
-        if (userData?.user) {
-          userData = userData.user;
-        }
-
-        console.log('Final user data:', userData);
-        console.log('full_name:', userData?.full_name);
-        this.currentUser.set(userData);
-      },
-      error: (err) => {
-        console.error('Failed to load user info:', err);
+    // Do not auto-call /authentication/me here to avoid hard redirects on environments
+    // that don't expose authentication endpoints (e.g. local travel API).
+    try {
+      const raw = sessionStorage.getItem('currentUser');
+      if (raw) {
+        this.currentUser.set(JSON.parse(raw));
       }
-    });
+    } catch (err) {
+      console.warn('Failed to restore user from session storage:', err);
+    }
 
     // Initialize primary menu structure
     this.menu = [
@@ -830,7 +799,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       return;
     }
 
-    // Special-case: for Retail app, show Inventory, POS, E-commerce, Analytics, Loyalty, and Planning
+    // Special-case: for Retail app, show Inventory, POS, E-commerce, Loyalty, Planning, and Fleet
     if (key === 'retail') {
       const retailGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('retail'));
       const groups: any[] = [];
@@ -848,10 +817,6 @@ export class SidebarComponent implements OnInit, OnChanges {
         const eco = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('e-commerce') || (it.label || '').toLowerCase().includes('ecommerce'));
         if (eco) groups.push({ label: eco.label, icon: eco.icon || this.getIconForMenuItem(eco), expanded: false, items: ((eco as any).children ?? (eco as any).items ?? []) });
 
-        // Analytics
-        const an = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('analytics'));
-        if (an) groups.push({ label: an.label, icon: an.icon || this.getIconForMenuItem(an), expanded: false, items: ((an as any).children ?? (an as any).items ?? []) });
-
         // Loyalty Program
         const loy = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('loyalty'));
         if (loy) groups.push({ label: loy.label, icon: loy.icon || this.getIconForMenuItem(loy), expanded: false, items: ((loy as any).children ?? (loy as any).items ?? []) });
@@ -859,10 +824,11 @@ export class SidebarComponent implements OnInit, OnChanges {
         // Planning & Forecasting
         const planning = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('planning'));
         if (planning) groups.push({ label: planning.label, icon: planning.icon || this.getIconForMenuItem(planning), expanded: false, items: ((planning as any).children ?? (planning as any).items ?? []) });
-      }
 
-      // Prepend a Retail Overview quick link as its own group
-      groups.unshift({ label: 'Retail Overview', icon: 'pi pi-shopping-bag', expanded: false, items: [{ label: 'Overview', url: '/retail', icon: 'pi pi-chart-bar' }] });
+        // Fleet (separate group)
+        const fleet = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase() === 'fleet');
+        if (fleet) groups.push({ label: fleet.label, icon: fleet.icon || this.getIconForMenuItem(fleet), expanded: false, items: ((fleet as any).children ?? (fleet as any).items ?? []) });
+      }
 
       this.visibleGroups = this.orderGroupsForApp(groups, key);
       // Close all groups by default

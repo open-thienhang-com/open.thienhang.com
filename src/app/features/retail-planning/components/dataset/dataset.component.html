@@ -2,7 +2,7 @@
   <!-- Page Header -->
   <app-page-header 
     title="Stochastic Dataset" 
-    subtitle="Quản lý và phân tích dữ liệu stochastic cho dự đoán"
+    subtitle="Manage and analyze stochastic datasets for forecasting"
     icon="📊">
   </app-page-header>
 
@@ -17,7 +17,7 @@
         <div *ngIf="loading" class="flex items-center justify-center py-12">
           <div class="text-center">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-            <span class="text-gray-600 font-medium">Đang tải datasets...</span>
+            <span class="text-gray-600 font-medium">Loading datasets...</span>
           </div>
         </div>
 
@@ -28,8 +28,21 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             <div>
-              <h4 class="text-red-800 font-bold mb-1">Lỗi tải dữ liệu</h4>
+              <h4 class="text-red-800 font-bold mb-1">Data loading error</h4>
               <span class="text-red-700">{{ error }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fallback Notice -->
+        <div *ngIf="fallbackNotice && !loading" class="bg-amber-50 border-2 border-amber-200 rounded-xl p-4 mb-6">
+          <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 3l9 16H3l9-16z"></path>
+            </svg>
+            <div>
+              <h4 class="text-amber-800 font-semibold mb-1">Default data mode</h4>
+              <span class="text-amber-700 text-sm">{{ fallbackNotice }}</span>
             </div>
           </div>
         </div>
@@ -91,11 +104,11 @@
             <p class="text-sm text-gray-600 line-clamp-2" *ngIf="dataset.description">{{ dataset.description }}</p>
             <div class="space-y-2">
               <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-600">Bản ghi:</span>
+                <span class="text-gray-600">Records:</span>
                 <span class="font-semibold text-gray-900">{{ dataset.records || 0 | number }}</span>
               </div>
               <div *ngIf="dataset.created_at" class="flex items-center justify-between text-sm">
-                <span class="text-gray-600">Ngày tạo:</span>
+                <span class="text-gray-600">Created:</span>
                 <span class="font-medium text-gray-700">{{ dataset.created_at | date:'short' }}</span>
               </div>
             </div>
@@ -108,12 +121,12 @@
             <svg class="w-20 h-20 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
             </svg>
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">Chưa có dataset nào</h3>
-            <p class="text-sm text-gray-500 mb-4">Tạo dataset mới để bắt đầu phân tích dữ liệu</p>
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">No datasets yet</h3>
+            <p class="text-sm text-gray-500 mb-4">Create a dataset to start analysis</p>
             <button 
               (click)="createDataset()"
               class="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-200">
-              Tạo Dataset Mới
+              Create Dataset
             </button>
           </div>
         </div>
@@ -124,16 +137,16 @@
       <div *ngIf="selectedDatasetId" class="w-full h-full flex gap-4">
         <!-- Left Column: Filters and Configuration -->
         <div class="w-fit min-w-[320px] max-w-[400px] sticky top-4 self-start max-h-[calc(100vh-2rem)] overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-200 flex flex-col">
-          <!-- Header: Thông tin -->
+          <!-- Header: Information -->
           <div class="bg-gray-50 border-b border-gray-200 px-4 py-3 flex-shrink-0">
             <div class="flex items-center justify-between">
               <h2 class="text-base font-bold text-gray-900 flex items-center gap-2">
                 <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <span>Thông tin</span>
+                <span>Information</span>
               </h2>
-              <button (click)="openSettingsModal()" class="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all" title="Chỉnh sửa">
+              <button (click)="openSettingsModal()" class="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all" title="Edit">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                 </svg>
@@ -141,23 +154,23 @@
             </div>
           </div>
 
-          <!-- Controls Section: Meta Data, Khoảng thời gian, Chọn điểm dừng -->
+          <!-- Controls Section: Meta Data, Time Range, Select Stops -->
           <div class="flex-1 overflow-y-auto p-4 space-y-4">
             <!-- Meta Data Table -->
             <div *ngIf="selectedDatasetId === 'demand'" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
               <table class="w-full text-sm">
                 <tbody>
                   <tr class="border-b border-gray-200">
-                    <td class="px-3 py-2.5 font-semibold text-gray-700 bg-gray-50 w-1/3">Thời gian:</td>
+                    <td class="px-3 py-2.5 font-semibold text-gray-700 bg-gray-50 w-1/3">Time Range:</td>
                     <td class="px-3 py-2.5 text-gray-900">
                       <span *ngIf="demandStartDate && demandEndDate">
                         {{ demandStartDate | date:'dd/MM/yyyy' }} - {{ demandEndDate | date:'dd/MM/yyyy' }}
                       </span>
-                      <span *ngIf="!demandStartDate || !demandEndDate" class="text-gray-400">Chưa chọn</span>
+                      <span *ngIf="!demandStartDate || !demandEndDate" class="text-gray-400">Not selected</span>
                     </td>
                   </tr>
                   <tr class="border-b border-gray-200">
-                    <td class="px-3 py-2.5 font-semibold text-gray-700 bg-gray-50 w-1/3">Vùng:</td>
+                    <td class="px-3 py-2.5 font-semibold text-gray-700 bg-gray-50 w-1/3">Region:</td>
                     <td class="px-3 py-2.5 text-gray-900">
                       <span *ngIf="warehouseRegionShortname">
                         {{ warehouseRegionShortname }} - {{ getRegionName(warehouseRegionShortname) }}
@@ -166,7 +179,7 @@
                     </td>
                   </tr>
                   <tr class="border-b border-gray-200">
-                    <td class="px-3 py-2.5 font-semibold text-gray-700 bg-gray-50 w-1/3">Tỉnh:</td>
+                    <td class="px-3 py-2.5 font-semibold text-gray-700 bg-gray-50 w-1/3">Province:</td>
                     <td class="px-3 py-2.5 text-gray-900">
                       <span *ngIf="timelineWarehouses.length > 0 && timelineWarehouses[0].province_name">
                         {{ timelineWarehouses[0].province_name }}
@@ -175,13 +188,13 @@
                     </td>
                   </tr>
                   <tr>
-                    <td class="px-3 py-2.5 font-semibold text-gray-700 bg-gray-50 w-1/3">Ca làm việc:</td>
+                    <td class="px-3 py-2.5 font-semibold text-gray-700 bg-gray-50 w-1/3">Shifts:</td>
                     <td class="px-3 py-2.5 text-gray-900">
                       <div *ngIf="shifts && shifts.length > 0" class="space-y-1">
                         <!-- Header for sub-columns -->
                         <div class="grid grid-cols-2 gap-3 pb-1 border-b border-gray-200 mb-1">
-                          <div class="text-xs font-semibold text-gray-600 uppercase">Tên ca</div>
-                          <div class="text-xs font-semibold text-gray-600 uppercase">Khoảng thời gian</div>
+                          <div class="text-xs font-semibold text-gray-600 uppercase">Shift Name</div>
+                          <div class="text-xs font-semibold text-gray-600 uppercase">Time Range</div>
                         </div>
                         <!-- Shift rows -->
                         <div *ngFor="let shift of shifts" class="grid grid-cols-2 gap-3 border-b border-gray-100 last:border-b-0 pb-1 last:pb-0">
@@ -196,20 +209,20 @@
               </table>
             </div>
 
-            <!-- Danh sách bưu cục -->
+            <!-- Warehouse List -->
             <div *ngIf="selectedDatasetId === 'demand'" class="bg-gray-50 rounded-lg border border-gray-200 p-3 flex-1 flex flex-col min-h-0">
               <div class="flex items-center justify-between mb-3 flex-shrink-0">
                 <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
                   <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                   </svg>
-                  <span>Danh sách bưu cục</span>
+                  <span>Warehouse List</span>
                   <span class="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold">{{ timelineWarehouses.length }}</span>
                 </h3>
                 <button *ngIf="timelineWarehouses.length > 0"
                         (click)="clearAllPoints()"
                         class="text-xs text-red-600 hover:text-red-700 font-medium">
-                  Xóa tất cả
+                  Clear all
                 </button>
               </div>
 
@@ -225,7 +238,7 @@
                     type="text" 
                     [(ngModel)]="demandSearchQuery"
                     (ngModelChange)="triggerChangeDetection()"
-                    placeholder="Tìm kiếm theo tên hoặc ID bưu cục..." 
+                    placeholder="Search by warehouse name or ID..." 
                     class="w-full pl-8 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-xs bg-white"
                   />
                   <button 
@@ -254,7 +267,7 @@
                   <button
                     (click)="removeFromTimeline(warehouse)"
                     class="flex-shrink-0 p-1 text-red-500 hover:bg-red-100 rounded transition-all opacity-0 group-hover:opacity-100"
-                    title="Xóa">
+                    title="Delete">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
@@ -265,14 +278,14 @@
               <!-- Pagination -->
               <div *ngIf="timelineWarehouses.length > timelinePageSize" class="flex items-center justify-between mt-3 pt-3 border-t border-gray-200 flex-shrink-0">
                 <div class="text-xs text-gray-600">
-                  Hiển thị {{ getTimelinePageStart() }}-{{ getTimelinePageEnd() }} / {{ timelineWarehouses.length }}
+                  Showing {{ getTimelinePageStart() }}-{{ getTimelinePageEnd() }} / {{ timelineWarehouses.length }}
                 </div>
                 <div class="flex items-center gap-2">
                   <button
                     (click)="goToTimelinePreviousPage()"
                     [disabled]="timelineCurrentPage === 1"
                     class="px-2 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-                    Trước
+                    Previous
                   </button>
                   <span class="text-xs text-gray-700 font-medium">
                     {{ timelineCurrentPage }} / {{ timelineTotalPages }}
@@ -281,7 +294,7 @@
                     (click)="goToTimelineNextPage()"
                     [disabled]="timelineCurrentPage === timelineTotalPages"
                     class="px-2 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-                    Sau
+                    Next
                   </button>
                 </div>
               </div>
@@ -291,8 +304,8 @@
                 <svg class="w-10 h-10 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <p class="text-xs font-medium text-gray-500">Chưa có bưu cục nào</p>
-                <p class="text-xs text-gray-400 mt-0.5">Chọn vùng và bưu cục để thêm vào danh sách</p>
+                <p class="text-xs font-medium text-gray-500">No warehouse selected</p>
+                <p class="text-xs text-gray-400 mt-0.5">Select region and warehouse to add to the list</p>
               </div>
             </div>
           </div>
@@ -302,14 +315,14 @@
         <div class="flex-1 min-w-0 h-full overflow-y-auto">
           <!-- Content View - Default Display Demand, or selected dataset -->
           <div *ngIf="selectedDatasetId === 'demand'" class="w-full h-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col">
-        <!-- Header: Quản lí sản lượng -->
+        <!-- Header: Volume Management -->
         <div class="bg-gray-50 border-b border-gray-200 px-6 py-4 flex-shrink-0">
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
               <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
               </svg>
-              <span>Quản lí sản lượng</span>
+              <span>Volume Management</span>
             </h2>
           </div>
         </div>
@@ -320,7 +333,7 @@
           <div *ngIf="loadingDemands" class="flex items-center justify-center py-20">
             <div class="text-center">
               <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400 mx-auto mb-4"></div>
-              <span class="text-sm text-gray-600 font-medium">Đang tải dữ liệu demands...</span>
+              <span class="text-sm text-gray-600 font-medium">Loading demand data...</span>
             </div>
           </div>
 
@@ -333,7 +346,7 @@
                 </svg>
               </div>
               <div>
-                <h4 class="text-red-800 font-bold mb-1">Lỗi tải dữ liệu</h4>
+                <h4 class="text-red-800 font-bold mb-1">Data loading error</h4>
                 <span class="text-red-700">{{ demandsError }}</span>
               </div>
             </div>
@@ -342,7 +355,7 @@
           <!-- Summary Statistics Cards - Always render -->
           <div class="px-6 pt-6 pb-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <!-- Tổng Lấy/Giao Card -->
+              <!-- Total Pick/Deliver Card -->
               <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-5 hover:shadow-md transition-all duration-200">
                 <div class="flex items-center justify-between mb-4">
                   <div class="w-12 h-12 rounded-lg bg-orange-500 flex items-center justify-center shadow-sm">
@@ -352,9 +365,9 @@
                   </div>
                 </div>
                 <div class="text-3xl font-bold text-gray-900 mb-1">{{ totalPickAndDeliver | number }}</div>
-                <div class="text-gray-600 text-sm font-medium">Tổng Lấy/Giao</div>
+                <div class="text-gray-600 text-sm font-medium">Total Pick/Deliver</div>
               </div>
-              <!-- Tổng Lấy Card -->
+              <!-- Total Pick Card -->
               <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-5 hover:shadow-md transition-all duration-200">
                 <div class="flex items-center justify-between mb-4">
                   <div class="w-12 h-12 rounded-lg bg-orange-500 flex items-center justify-center shadow-sm">
@@ -364,9 +377,9 @@
                   </div>
                 </div>
                 <div class="text-3xl font-bold text-gray-900 mb-1">{{ totalPick | number }}</div>
-                <div class="text-gray-600 text-sm font-medium">Tổng Lấy</div>
+                <div class="text-gray-600 text-sm font-medium">Total Pick</div>
               </div>
-              <!-- Tổng Giao Card -->
+              <!-- Total Deliver Card -->
               <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-5 hover:shadow-md transition-all duration-200">
                 <div class="flex items-center justify-between mb-4">
                   <div class="w-12 h-12 rounded-lg bg-orange-500 flex items-center justify-center shadow-sm">
@@ -376,7 +389,7 @@
                   </div>
                 </div>
                 <div class="text-3xl font-bold text-gray-900 mb-1">{{ totalDeliver | number }}</div>
-                <div class="text-gray-600 text-sm font-medium">Tổng Giao</div>
+                <div class="text-gray-600 text-sm font-medium">Total Deliver</div>
               </div>
             </div>
           </div>
@@ -393,8 +406,8 @@
                     </svg>
                   </div>
                   <div>
-                    <h3 class="text-2xl font-bold mb-1 text-gray-900">Biểu đồ Sản lượng theo thời gian</h3>
-                    <p class="text-gray-600 text-sm">Sản lượng theo Ngày - Tổng sản lượng lấy và giao theo từ ngày đến ngày (Lấy từ thời gian của Thông tin)</p>
+                    <h3 class="text-2xl font-bold mb-1 text-gray-900">Volume Trend Over Time</h3>
+                    <p class="text-gray-600 text-sm">Daily Volume - Total picked and delivered volume for the selected date range (based on Information time)</p>
                   </div>
                 </div>
               </div>
@@ -403,7 +416,7 @@
                 <div *ngIf="loadingTimelineData" class="bg-orange-50 border-2 border-orange-200 rounded-lg p-8 text-center">
                   <div class="flex items-center justify-center">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mr-3"></div>
-                    <span class="text-sm text-gray-600 font-medium">Đang tải dữ liệu timeline...</span>
+                    <span class="text-sm text-gray-600 font-medium">Loading timeline data...</span>
                   </div>
                 </div>
 
@@ -416,19 +429,19 @@
                 <div *ngIf="!loadingTimelineData && !timelineDataError && hasTimelineData" class="mb-4 space-y-4">
                   <!-- Chart Type Selector -->
                   <div class="flex items-center gap-4">
-                    <label class="text-sm font-semibold text-gray-700">Loại biểu đồ:</label>
+                    <label class="text-sm font-semibold text-gray-700">Chart Type:</label>
                     <div class="flex gap-2">
                       <button 
                         (click)="timelineChartType = 'column'; updateTimelineChart()" 
                         [ngClass]="{'bg-orange-600 text-white': timelineChartType === 'column', 'bg-gray-200 text-gray-700 hover:bg-gray-300': timelineChartType !== 'column'}"
                         class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                        Cột
+                        Bar
                       </button>
                       <button 
                         (click)="timelineChartType = 'line'; updateTimelineChart()" 
                         [ngClass]="{'bg-orange-600 text-white': timelineChartType === 'line', 'bg-gray-200 text-gray-700 hover:bg-gray-300': timelineChartType !== 'line'}"
                         class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                        Đường
+                        Line
                       </button>
                     </div>
                   </div>
@@ -442,7 +455,7 @@
                       (change)="updateTimelineChart()"
                       class="w-4 h-4 text-orange-600 rounded focus:ring-2 focus:ring-orange-300">
                     <label for="showTimelineAverage" class="text-sm text-gray-700 cursor-pointer">
-                      Hiển thị đường trung bình
+                      Show average line
                     </label>
                   </div>
 
@@ -456,7 +469,7 @@
                   </div>
                   <!-- Show message if no data -->
                   <div *ngIf="!hasTimelineData" class="mt-4 text-center">
-                    <p class="text-sm text-gray-500 italic">Không có dữ liệu để hiển thị</p>
+                    <p class="text-sm text-gray-500 italic">No data to display</p>
                   </div>
                 </div>
 
@@ -464,18 +477,18 @@
                 <div *ngIf="!loadingTimelineData && !timelineDataError && availableTimelineWarehouses.length > 1" class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
                   <div class="bg-orange-50 border-b border-orange-200 px-4 py-3 flex items-center justify-between">
                     <label class="text-sm font-semibold text-gray-700">
-                      Chọn Bưu cục ({{ selectedTimelineWarehouseIds.length === 0 ? 'Tất cả' : selectedTimelineWarehouseIds.length + ' đã chọn' }})
+                      Select Warehouses ({{ selectedTimelineWarehouseIds.length === 0 ? 'All' : selectedTimelineWarehouseIds.length + ' selected' }})
                     </label>
                     <div class="flex gap-2">
                       <button 
                         (click)="selectAllTimelineWarehouses()"
                         class="px-3 py-1 text-xs bg-orange-100 text-orange-700 rounded hover:bg-orange-200 transition-colors">
-                        Chọn tất cả
+                        Select all
                       </button>
                       <button 
                         (click)="deselectAllTimelineWarehouses()"
                         class="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors">
-                        Bỏ chọn
+                        Clear selection
                       </button>
                     </div>
                   </div>
@@ -490,7 +503,7 @@
                               (change)="selectedTimelineWarehouseIds.length === availableTimelineWarehouses.length ? deselectAllTimelineWarehouses() : selectAllTimelineWarehouses()"
                               class="w-4 h-4 text-orange-600 border-gray-400 rounded focus:ring-2 focus:ring-orange-500 cursor-pointer">
                           </th>
-                          <th class="px-4 py-2 text-left text-xs font-bold text-gray-700 uppercase">Tên bưu cục</th>
+                          <th class="px-4 py-2 text-left text-xs font-bold text-gray-700 uppercase">Warehouse Name</th>
                           <th class="px-4 py-2 text-left text-xs font-bold text-gray-700 uppercase w-24">ID</th>
                         </tr>
                       </thead>
@@ -515,9 +528,8 @@
                   <!-- Pagination Controls -->
                   <div *ngIf="timelineWarehouseTotalPages > 1" class="bg-gray-50 border-t border-gray-200 px-4 py-3 flex items-center justify-between">
                     <div class="text-sm text-gray-700">
-                      Hiển thị <span class="font-semibold">{{ getTimelineWarehousePageStart() }}</span> đến 
-                      <span class="font-semibold">{{ getTimelineWarehousePageEnd() }}</span> trong tổng số 
-                      <span class="font-semibold">{{ availableTimelineWarehouses.length }}</span> bưu cục
+                      Showing <span class="font-semibold">{{ getTimelineWarehousePageStart() }}</span> to                       <span class="font-semibold">{{ getTimelineWarehousePageEnd() }}</span> in total 
+                      <span class="font-semibold">{{ availableTimelineWarehouses.length }}</span> warehouses
                     </div>
                     <div class="flex items-center gap-2">
                       <button 
@@ -528,10 +540,10 @@
                           'bg-gray-100 text-gray-400 cursor-not-allowed': timelineWarehouseCurrentPage === 1
                         }"
                         class="px-3 py-1 text-xs rounded transition-colors">
-                        Trước
+                        Previous
                       </button>
                       <span class="text-sm text-gray-700">
-                        Trang <span class="font-semibold">{{ timelineWarehouseCurrentPage }}</span> / 
+                        Page <span class="font-semibold">{{ timelineWarehouseCurrentPage }}</span> / 
                         <span class="font-semibold">{{ timelineWarehouseTotalPages }}</span>
                       </span>
                       <button 
@@ -542,7 +554,7 @@
                           'bg-gray-100 text-gray-400 cursor-not-allowed': timelineWarehouseCurrentPage === timelineWarehouseTotalPages
                         }"
                         class="px-3 py-1 text-xs rounded transition-colors">
-                        Sau
+                        Next
                       </button>
                     </div>
                   </div>
@@ -551,10 +563,10 @@
             </div>
           </div>
 
-          <!-- Region Analysis Section V2 - Moved outside "Phân tích Sản lượng" -->
+          <!-- Region Analysis Section V2 - Moved outside "Volume Analysis" -->
           <div *ngIf="!selectedDatasetId || selectedDatasetId === 'demand'" class="mb-6 px-6 pt-6">
             <div>
-              <!-- Header Section - Consistent with "Biểu đồ Sản lượng theo Bưu cục" -->
+              <!-- Header Section - Consistent with "Volume Chart by Warehouse" -->
               <div class="bg-gray-50 border-b border-gray-200 p-6">
                 <div class="flex items-center gap-4">
                   <div class="w-14 h-14 rounded-xl bg-orange-500 flex items-center justify-center shadow-sm">
@@ -563,8 +575,8 @@
                     </svg>
                   </div>
                   <div>
-                    <h3 class="text-2xl font-bold mb-1 text-gray-900">Phân tích sản lượng theo ca</h3>
-                    <p class="text-gray-600 text-sm">Phân tích tỉ lệ sản lượng theo ca và khung giờ</p>
+                    <h3 class="text-2xl font-bold mb-1 text-gray-900">Shift-based Volume Analysis</h3>
+                    <p class="text-gray-600 text-sm">Analyze volume distribution by shift and time window</p>
                   </div>
                 </div>
               </div>
@@ -573,7 +585,7 @@
                 <div *ngIf="loadingShiftRatio" class="bg-orange-50 border-2 border-orange-200 rounded-lg p-8 text-center">
                   <div class="flex items-center justify-center">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mr-3"></div>
-                    <span class="text-sm text-gray-600 font-medium">Đang tải dữ liệu tỉ lệ ca...</span>
+                    <span class="text-sm text-gray-600 font-medium">Loading shift ratio data...</span>
                   </div>
                 </div>
 
@@ -583,9 +595,9 @@
                   <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                   </svg>
-                  <h3 class="text-lg font-medium text-gray-900 mb-2">Không có dữ liệu</h3>
+                  <h3 class="text-lg font-medium text-gray-900 mb-2">No data</h3>
                   <p class="text-gray-500" *ngIf="shiftRatioError">{{ shiftRatioError }}</p>
-                  <p class="text-gray-500" *ngIf="!shiftRatioError">Không tìm thấy dữ liệu phân tích theo vùng</p>
+                  <p class="text-gray-500" *ngIf="!shiftRatioError">No regional analysis data found</p>
                 </div>
 
                 <!-- Shift Ratios Table -->
@@ -594,22 +606,22 @@
                     <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    Bảng Tỉ lệ Sản lượng theo Ca
+                    Shift Volume Ratio Table
                   </h4>
                   <div class="overflow-x-auto">
                     <table class="min-w-full bg-white border border-gray-200 rounded-lg">
                       <thead class="bg-gradient-to-r from-orange-50 to-orange-100">
                         <tr>
-                          <th class="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider border-b border-gray-200">Ca</th>
-                          <th class="px-4 py-3 text-center text-xs font-bold text-orange-800 uppercase tracking-wider border-b border-gray-200">Khung giờ</th>
-                          <th class="px-4 py-3 text-right text-xs font-bold text-orange-800 uppercase tracking-wider border-b border-gray-200">Tỉ lệ Lấy (%)</th>
-                          <th class="px-4 py-3 text-right text-xs font-bold text-orange-800 uppercase tracking-wider border-b border-gray-200">Tỉ lệ Giao (%)</th>
+                          <th class="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider border-b border-gray-200">Shift</th>
+                          <th class="px-4 py-3 text-center text-xs font-bold text-orange-800 uppercase tracking-wider border-b border-gray-200">Time Slot</th>
+                          <th class="px-4 py-3 text-right text-xs font-bold text-orange-800 uppercase tracking-wider border-b border-gray-200">Pick Ratio (%)</th>
+                          <th class="px-4 py-3 text-right text-xs font-bold text-orange-800 uppercase tracking-wider border-b border-gray-200">Deliver Ratio (%)</th>
                         </tr>
                       </thead>
                       <tbody class="divide-y divide-gray-200">
                         <tr *ngIf="!shiftRatios || shiftRatios.length === 0" class="hover:bg-gray-50">
                           <td colspan="4" class="px-4 py-8 text-center text-sm text-gray-500">
-                            Không có dữ liệu
+                            No data
                           </td>
                         </tr>
                         <tr *ngFor="let ratio of shiftRatios; let i = index" class="hover:bg-orange-50 transition-colors">
@@ -619,7 +631,7 @@
                                 <span class="text-xs font-bold text-orange-700">{{ i + 1 }}</span>
                               </div>
                               <div>
-                                <div class="text-sm font-semibold text-gray-900">{{ ratio.shift_name || ratio.shift?.name || shifts[i]?.name || 'Ca ' + (i+1) }}</div>
+                                <div class="text-sm font-semibold text-gray-900">{{ ratio.shift_name || ratio.shift?.name || shifts[i]?.name || 'Shift ' + (i+1) }}</div>
                               </div>
                             </div>
                           </td>
@@ -661,8 +673,8 @@
                         </svg>
                       </div>
                       <div>
-                        <h5 class="text-lg font-bold text-gray-900">Phân bổ Lấy theo giờ</h5>
-                        <p class="text-xs text-gray-600">Tổng sản lượng lấy theo ca</p>
+                        <h5 class="text-lg font-bold text-gray-900">Pick Distribution by Shift</h5>
+                        <p class="text-xs text-gray-600">Total pick volume by shift</p>
                       </div>
                     </div>
                     <div class="flex items-center justify-center" style="height: 500px; position: relative;">
@@ -681,8 +693,8 @@
                         </svg>
                       </div>
                       <div>
-                        <h5 class="text-lg font-bold text-gray-900">Phân bổ Giao theo giờ</h5>
-                        <p class="text-xs text-gray-600">Tổng sản lượng giao theo ca</p>
+                        <h5 class="text-lg font-bold text-gray-900">Deliver Distribution by Shift</h5>
+                        <p class="text-xs text-gray-600">Total deliver volume by shift</p>
                       </div>
                     </div>
                     <div class="flex items-center justify-center" style="height: 500px; position: relative;">
@@ -709,8 +721,8 @@
                       </svg>
                     </div>
                     <div>
-                      <h3 class="text-2xl font-bold mb-1 text-gray-900">Biểu đồ Sản lượng theo Bưu cục</h3>
-                      <p class="text-gray-600 text-sm">Phân tích và so sánh sản lượng giữa các bưu cục</p>
+                      <h3 class="text-2xl font-bold mb-1 text-gray-900">Volume Chart by Warehouse</h3>
+                      <p class="text-gray-600 text-sm">Analyze and compare volume across warehouses</p>
                     </div>
                   </div>
                   <!-- Chart Type Selector -->
@@ -722,7 +734,7 @@
                       <svg class="w-4 h-4 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                       </svg>
-                      Cột
+                      Bar
                     </button>
                     <button 
                       (click)="chartType = 'line'; triggerChangeDetection()" 
@@ -731,7 +743,7 @@
                       <svg class="w-4 h-4 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
                       </svg>
-                      Đường
+                      Line
                     </button>
                   </div>
                 </div>
@@ -742,35 +754,35 @@
                     <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
                     </svg>
-                    <span class="text-sm font-semibold text-gray-700">Hiển thị dữ liệu:</span>
+                    <span class="text-sm font-semibold text-gray-700">Showing data:</span>
                   </div>
                   <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <label class="flex items-center gap-2.5 cursor-pointer group bg-white hover:bg-orange-50 rounded-lg p-3 transition-all border border-gray-200 hover:border-orange-200">
                       <input type="checkbox" [(ngModel)]="chartShowPick" (change)="triggerChangeDetection()" class="w-4 h-4 text-orange-500 rounded focus:ring-2 focus:ring-orange-300">
                       <div class="flex items-center gap-2 flex-1">
                         <div class="w-3 h-3 rounded-full bg-orange-500 shadow-sm"></div>
-                        <span class="text-sm font-medium text-gray-700">Tổng Lấy</span>
+                        <span class="text-sm font-medium text-gray-700">Total Pick</span>
                       </div>
                     </label>
                     <label class="flex items-center gap-2.5 cursor-pointer group bg-white hover:bg-orange-50 rounded-lg p-3 transition-all border border-gray-200 hover:border-orange-200">
                       <input type="checkbox" [(ngModel)]="chartShowDeliver" (change)="triggerChangeDetection()" class="w-4 h-4 text-orange-500 rounded focus:ring-2 focus:ring-orange-300">
                       <div class="flex items-center gap-2 flex-1">
                         <div class="w-3 h-3 rounded-full bg-orange-500 shadow-sm"></div>
-                        <span class="text-sm font-medium text-gray-700">Tổng Giao</span>
+                        <span class="text-sm font-medium text-gray-700">Total Deliver</span>
                       </div>
                     </label>
                     <label class="flex items-center gap-2.5 cursor-pointer group bg-white hover:bg-orange-50 rounded-lg p-3 transition-all border border-gray-200 hover:border-orange-200">
                       <input type="checkbox" [(ngModel)]="chartShowAvgPick" (change)="triggerChangeDetection()" class="w-4 h-4 text-orange-500 rounded focus:ring-2 focus:ring-orange-300">
                       <div class="flex items-center gap-2 flex-1">
                         <div class="w-3 h-3 rounded-full bg-orange-500 shadow-sm"></div>
-                        <span class="text-sm font-medium text-gray-700">TB Lấy/Ngày</span>
+                        <span class="text-sm font-medium text-gray-700">Avg Pick/Day</span>
                       </div>
                     </label>
                     <label class="flex items-center gap-2.5 cursor-pointer group bg-white hover:bg-orange-50 rounded-lg p-3 transition-all border border-gray-200 hover:border-orange-200">
                       <input type="checkbox" [(ngModel)]="chartShowAvgDeliver" (change)="triggerChangeDetection()" class="w-4 h-4 text-orange-500 rounded focus:ring-2 focus:ring-orange-300">
                       <div class="flex items-center gap-2 flex-1">
                         <div class="w-3 h-3 rounded-full bg-orange-500 shadow-sm"></div>
-                        <span class="text-sm font-medium text-gray-700">TB Giao/Ngày</span>
+                        <span class="text-sm font-medium text-gray-700">Avg Deliver/Day</span>
                       </div>
                     </label>
                   </div>
@@ -802,7 +814,7 @@
           <!-- Data Table Section - Always render -->
           <div class="mb-6 px-6">
             <div>
-              <!-- Header Section - Consistent with "Phân tích theo Vùng V2" -->
+              <!-- Header Section - Consistent with "Region Analysis V2" -->
               <div class="bg-white border-b-2 border-orange-200 p-6">
                 <div class="flex items-center gap-4 mb-4">
                   <div class="w-14 h-14 rounded-2xl bg-orange-500 flex items-center justify-center shadow-sm">
@@ -811,8 +823,8 @@
                       </svg>
                   </div>
                   <div class="flex-1">
-                    <h3 class="text-2xl font-bold mb-1 text-gray-900">Chi tiết Sản lượng theo Bưu cục</h3>
-                    <p class="text-gray-600 text-sm">Phân tích chi tiết sản lượng lấy và giao theo từng bưu cục</p>
+                    <h3 class="text-2xl font-bold mb-1 text-gray-900">Warehouse Volume Details</h3>
+                    <p class="text-gray-600 text-sm">Detailed analysis of picked and delivered volume by warehouse</p>
                   </div>
                 </div>
                 <!-- Color Legend and Summary Info -->
@@ -820,17 +832,17 @@
                     <div class="flex items-center gap-3 text-xs">
                       <div class="flex items-center gap-1.5">
                         <div class="w-4 h-4 rounded bg-green-100 border border-green-300"></div>
-                      <span class="text-gray-700">Cao hơn TB</span>
+                      <span class="text-gray-700">Above Avg</span>
                       </div>
                       <div class="flex items-center gap-1.5">
                         <div class="w-4 h-4 rounded bg-red-100 border border-red-300"></div>
-                      <span class="text-gray-700">Thấp hơn TB</span>
+                      <span class="text-gray-700">Below Avg</span>
                       </div>
                     </div>
                   <div class="text-sm text-gray-700 font-medium">
-                    Tổng: <span class="text-orange-600 font-bold">{{ demands.length }}</span> bưu cục
+                    Total: <span class="text-orange-600 font-bold">{{ demands.length }}</span> warehouses
                     <span *ngIf="demandSearchQuery" class="ml-2 text-gray-600">
-                        (Hiển thị: <span class="font-bold text-orange-600">{{ filteredDemands.length }}</span>)
+                        (Showing: <span class="font-bold text-orange-600">{{ filteredDemands.length }}</span>)
                       </span>
                   </div>
                 </div>
@@ -841,7 +853,7 @@
             <div *ngIf="loadingDemands" class="flex items-center justify-center py-20">
               <div class="text-center">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-                <span class="text-sm text-gray-600 font-medium">Đang tải dữ liệu demands...</span>
+                <span class="text-sm text-gray-600 font-medium">Loading demand data...</span>
               </div>
             </div>
 
@@ -854,7 +866,7 @@
                   </svg>
                 </div>
                 <div>
-                  <h4 class="text-red-800 font-bold mb-1">Lỗi tải dữ liệu</h4>
+                  <h4 class="text-red-800 font-bold mb-1">Data loading error</h4>
                   <span class="text-red-700">{{ demandsError }}</span>
                 </div>
               </div>
@@ -869,8 +881,8 @@
                   </svg>
                 </div>
                 <div>
-                  <h4 class="text-orange-800 font-bold mb-1">Chưa có bưu cục</h4>
-                  <p class="text-orange-700">Vui lòng thêm bưu cục vào timeline để xem dữ liệu demands.</p>
+                  <h4 class="text-orange-800 font-bold mb-1">No warehouses yet</h4>
+                  <p class="text-orange-700">Please add warehouses to the timeline to view demand data.</p>
                 </div>
               </div>
             </div>
@@ -879,7 +891,7 @@
                   <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <!-- Chart Column (Left) -->
                     <div class="lg:col-span-1 flex flex-col">
-                      <!-- Tỉ lệ Lấy/Giao Chart -->
+                      <!-- Pick/Deliver Ratio Chart -->
                       <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 flex-1 flex flex-col h-full">
                         <div class="flex items-center gap-3 mb-6">
                           <div class="w-10 h-10 rounded-lg bg-orange-500 flex items-center justify-center">
@@ -889,8 +901,8 @@
                             </svg>
                           </div>
                           <div>
-                            <h5 class="text-lg font-semibold text-gray-900">Tỉ lệ Lấy/Giao</h5>
-                            <p class="text-xs text-gray-500 mt-0.5">Phân bổ sản lượng</p>
+                            <h5 class="text-lg font-semibold text-gray-900">Pick/Deliver Ratio</h5>
+                            <p class="text-xs text-gray-500 mt-0.5">Volume distribution</p>
                           </div>
                         </div>
                         <div class="flex-1 flex items-center justify-center" style="min-height: 400px; position: relative;">
@@ -898,7 +910,7 @@
                             <svg class="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                             </svg>
-                            <p class="text-sm">Chọn bưu cục để xem chi tiết</p>
+                            <p class="text-sm">Select warehouses to view details</p>
                           </div>
                           <canvas #demandSummaryCanvas [style.display]="(!selectedDemand && (!demands || demands.length === 0)) ? 'none' : 'block'" style="max-width: 100%; max-height: 100%;"></canvas>
                         </div>
@@ -909,7 +921,7 @@
                     <div class="lg:col-span-1">
                       <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
                   <p-table [value]="filteredDemands" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
-                           currentPageReportTemplate="Hiển thị {first} đến {last} của {totalRecords} bưu cục"
+                           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} warehouses"
                            [rowsPerPageOptions]="[5,10,25,50]"
                            styleClass="p-datatable-striped"
                                  [tableStyle]="{'min-width': '100%'}">
@@ -917,7 +929,7 @@
                       <tr class="bg-white border-b-2 border-orange-200">
                         <th class="text-left font-semibold text-orange-600 py-4 px-6 border-b border-orange-200">
                           <button (click)="sortDemands('warehouse_name')" class="flex items-center gap-2 hover:text-orange-100 transition-colors text-white">
-                            Bưu cục
+                            Warehouse
                             <svg *ngIf="demandSortField === 'warehouse_name'" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet">
                               <path *ngIf="demandSortOrder === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
                               <path *ngIf="demandSortOrder === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -926,7 +938,7 @@
                         </th>
                         <th class="text-right font-semibold text-orange-600 py-4 px-6 border-b border-orange-200">
                           <button (click)="sortDemands('total_pick')" class="flex items-center justify-end gap-2 hover:text-orange-700 transition-colors w-full text-orange-600">
-                            Tổng Lấy
+                            Total Pick
                             <svg *ngIf="demandSortField === 'total_pick'" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet">
                               <path *ngIf="demandSortOrder === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
                               <path *ngIf="demandSortOrder === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -935,7 +947,7 @@
                         </th>
                         <th class="text-right font-semibold text-orange-600 py-4 px-6 border-b border-orange-200">
                           <button (click)="sortDemands('total_deliver')" class="flex items-center justify-end gap-2 hover:text-orange-700 transition-colors w-full text-orange-600">
-                            Tổng Giao
+                            Total Deliver
                             <svg *ngIf="demandSortField === 'total_deliver'" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet">
                               <path *ngIf="demandSortOrder === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
                               <path *ngIf="demandSortOrder === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -944,7 +956,7 @@
                         </th>
                         <th class="text-right font-semibold text-orange-600 py-4 px-6 border-b border-orange-200">
                           <button (click)="sortDemands('avg_pick_per_day')" class="flex items-center justify-end gap-2 hover:text-orange-700 transition-colors w-full text-orange-600">
-                            TB Lấy/Ngày
+                            Avg Pick/Day
                             <svg *ngIf="demandSortField === 'avg_pick_per_day'" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet">
                               <path *ngIf="demandSortOrder === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
                               <path *ngIf="demandSortOrder === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -953,7 +965,7 @@
                         </th>
                         <th class="text-right font-semibold text-orange-600 py-4 px-6 border-b border-orange-200">
                           <button (click)="sortDemands('avg_deliver_per_day')" class="flex items-center justify-end gap-2 hover:text-orange-700 transition-colors w-full text-orange-600">
-                            TB Giao/Ngày
+                            Avg Deliver/Day
                             <svg *ngIf="demandSortField === 'avg_deliver_per_day'" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet">
                               <path *ngIf="demandSortOrder === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
                               <path *ngIf="demandSortOrder === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -997,15 +1009,15 @@
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                             <div class="text-gray-500 font-medium">
-                              <span *ngIf="demandSearchQuery">Không tìm thấy kết quả cho "{{ demandSearchQuery }}"</span>
-                              <span *ngIf="!demandSearchQuery">Không có dữ liệu</span>
+                              <span *ngIf="demandSearchQuery">No results for "{{ demandSearchQuery }}"</span>
+                              <span *ngIf="!demandSearchQuery">No data</span>
                             </div>
                             <button 
                               *ngIf="demandSearchQuery"
                               (click)="clearSearch()"
                               class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium"
                             >
-                              Xóa bộ lọc
+                              Clear filter
                             </button>
                           </div>
                         </td>
@@ -1029,13 +1041,13 @@
             <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
             </svg>
-            <span>Chi tiết Dataset</span>
+            <span>Dataset Details</span>
           </h2>
           <button (click)="closeDetails()" class="bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-200 rounded-lg px-4 py-2 shadow-sm flex items-center gap-2 transition-all hover:shadow-md hover:border-gray-300">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
-            <span class="text-sm font-semibold">Đóng</span>
+            <span class="text-sm font-semibold">Close</span>
           </button>
         </div>
         <div class="flex-1 overflow-y-auto">
@@ -1057,8 +1069,8 @@
             </svg>
           </div>
           <div>
-            <h3 class="text-lg font-bold text-orange-600">Thông tin</h3>
-            <p class="text-sm text-gray-600">Chọn khoảng thời gian và cấu hình ca làm việc</p>
+            <h3 class="text-lg font-bold text-orange-600">Information</h3>
+            <p class="text-sm text-gray-600">Select time range and configure shifts</p>
           </div>
         </div>
         <button (click)="closeSettingsModal()" class="p-2 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-600 transition border border-orange-200">
@@ -1077,17 +1089,17 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
               </svg>
             </div>
-            <h4 class="text-base font-bold text-gray-900">Chọn vùng và bưu cục</h4>
+            <h4 class="text-base font-bold text-gray-900">Select region and warehouses</h4>
           </div>
           <div class="space-y-4">
             <!-- Region Selector -->
             <div>
-              <label class="text-sm font-semibold text-gray-700 mb-2 block">Vùng <span class="text-red-500">*</span></label>
+              <label class="text-sm font-semibold text-gray-700 mb-2 block">Region <span class="text-red-500">*</span></label>
               <select
                 [(ngModel)]="modalSelectedRegion"
                 (change)="onModalRegionChange()"
                 class="w-full border-2 border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 font-medium">
-                <option value="" disabled>-- Chọn vùng --</option>
+                <option value="" disabled>-- Select region --</option>
                 <option *ngFor="let region of availableRegions" [value]="region.code">
                   {{ region.code }} - {{ region.name }}
                 </option>
@@ -1100,7 +1112,7 @@
               <div *ngIf="loadingModalWarehouses" class="flex items-center justify-center py-8 bg-white rounded-lg border border-gray-200">
                 <div class="text-center">
                   <div class="animate-spin rounded-full h-8 w-8 border-3 border-orange-500 border-t-transparent mx-auto mb-2"></div>
-                  <p class="text-sm font-medium text-gray-600">Đang tải danh sách bưu cục...</p>
+                  <p class="text-sm font-medium text-gray-600">Loading warehouse list...</p>
                 </div>
               </div>
 
@@ -1118,11 +1130,11 @@
               <div *ngIf="!loadingModalWarehouses && !modalWarehousesError && modalWarehouses.length > 0" class="flex items-center justify-between bg-gradient-to-r from-gray-50 to-gray-50/50 rounded-lg px-4 py-2.5 border-2 border-gray-200">
                 <div class="flex items-center gap-3">
                   <div class="text-xs font-semibold text-gray-700">
-                    Tổng: <span class="text-gray-900 font-bold">{{ modalWarehouses.length }}</span>
+                    Total: <span class="text-gray-900 font-bold">{{ modalWarehouses.length }}</span>
                   </div>
                   <div class="w-px h-4 bg-gray-300"></div>
                   <div class="text-xs font-semibold text-orange-600">
-                    Đã chọn: <span class="text-orange-700 font-bold">{{ modalSelectedWarehouses.size }}</span>
+                    Selected: <span class="text-orange-700 font-bold">{{ modalSelectedWarehouses.size }}</span>
                   </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -1131,14 +1143,14 @@
                     (click)="selectAllWarehousesInModal()"
                     [disabled]="modalSelectedWarehouses.size === modalWarehouses.length"
                     class="px-3 py-1.5 text-xs font-bold bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-all shadow-sm">
-                    ✓ Tất cả
+                    ✓ All
                   </button>
                   <button
                     type="button"
                     (click)="deselectAllWarehousesInModal()"
                     [disabled]="modalSelectedWarehouses.size === 0"
                     class="px-3 py-1.5 text-xs font-bold bg-red-500 hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-all shadow-sm">
-                    ✕ Bỏ chọn
+                    ✕ Clear selection
                   </button>
                 </div>
               </div>
@@ -1156,8 +1168,8 @@
                           class="w-4 h-4 text-orange-600 border-gray-400 rounded focus:ring-2 focus:ring-orange-500 cursor-pointer">
                       </th>
                       <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase w-12">STT</th>
-                      <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase">Tên bưu cục</th>
-                      <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase">Địa chỉ</th>
+                      <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase">Warehouse Name</th>
+                      <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase">Address</th>
                       <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase w-20">ID</th>
                     </tr>
                   </thead>
@@ -1190,7 +1202,7 @@
                 <svg class="mx-auto h-10 w-10 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
                 </svg>
-                <p class="text-sm font-medium text-gray-500">Không có bưu cục nào</p>
+                <p class="text-sm font-medium text-gray-500">No warehouses available</p>
               </div>
             </div>
           </div>
@@ -1204,15 +1216,15 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
               </svg>
             </div>
-            <h4 class="text-base font-bold text-gray-900">Khoảng thời gian</h4>
+            <h4 class="text-base font-bold text-gray-900">Time Range</h4>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="text-sm font-semibold text-gray-700 mb-2 block">Từ ngày</label>
+              <label class="text-sm font-semibold text-gray-700 mb-2 block">From date</label>
               <input type="date" [(ngModel)]="demandStartDate" (ngModelChange)="onDateRangeChange()" class="w-full border-2 border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 font-medium" />
             </div>
             <div>
-              <label class="text-sm font-semibold text-gray-700 mb-2 block">Đến ngày</label>
+              <label class="text-sm font-semibold text-gray-700 mb-2 block">To date</label>
               <input type="date" [(ngModel)]="demandEndDate" (ngModelChange)="onDateRangeChange()" class="w-full border-2 border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 font-medium" />
             </div>
           </div>
@@ -1234,14 +1246,14 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
             </div>
-            <h4 class="text-base font-bold text-gray-900">Cấu hình ca làm việc</h4>
+            <h4 class="text-base font-bold text-gray-900">Shift configuration</h4>
           </div>
           <div class="space-y-3">
             <div *ngFor="let s of shifts; let i = index" class="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200">
               <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
                 {{ i + 1 }}
               </div>
-              <input [(ngModel)]="s.name" class="border-2 border-gray-300 rounded-lg px-4 py-2 text-sm w-36 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 font-medium" placeholder="Tên ca" />
+              <input [(ngModel)]="s.name" class="border-2 border-gray-300 rounded-lg px-4 py-2 text-sm w-36 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 font-medium" placeholder="Shift Name" />
               <select [(ngModel)]="s.start_hour" class="border-2 border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 font-medium">
                 <option *ngFor="let h of hours" [ngValue]="h">{{ h }}:00</option>
               </select>
@@ -1249,7 +1261,7 @@
               <select [(ngModel)]="s.end_hour" class="border-2 border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 font-medium">
                 <option *ngFor="let h of hoursInclusive" [ngValue]="h">{{ h }}:00</option>
               </select>
-              <button class="ml-auto text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors font-medium" (click)="removeShift(i)" title="Xóa ca">
+              <button class="ml-auto text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors font-medium" (click)="removeShift(i)" title="Delete ca">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
@@ -1259,7 +1271,7 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
               </svg>
-              Thêm ca làm việc
+              Add shift
             </button>
           </div>
           <div *ngIf="shiftErrors && shiftErrors.length" class="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
@@ -1274,8 +1286,8 @@
       </div>
 
       <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
-        <button (click)="closeSettingsModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition text-sm font-semibold">Hủy</button>
-        <button (click)="applySettings()" class="px-5 py-2 rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition shadow-md text-sm font-semibold">Lưu và áp dụng</button>
+        <button (click)="closeSettingsModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition text-sm font-semibold">Cancel</button>
+        <button (click)="applySettings()" class="px-5 py-2 rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition shadow-md text-sm font-semibold">Save and apply</button>
       </div>
     </div>
   </div>

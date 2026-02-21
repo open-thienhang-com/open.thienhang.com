@@ -15,6 +15,7 @@ import { SupplierIntegrationComponent } from './supplier-integration/supplier-in
 
 @Component({
   selector: 'app-product-catalog',
+  standalone: true,
   imports: [
     CommonModule,
     RouterModule,

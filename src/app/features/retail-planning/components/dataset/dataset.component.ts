@@ -57,6 +57,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
   datasets: Dataset[] = [];
   loading = false;
   error: string | null = null;
+  fallbackNotice: string | null = null;
 
   // Warehouses state
   warehouses: Warehouse[] = [];
@@ -82,16 +83,16 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Available regions for selection
   availableRegions = [
-    { code: 'HNO', name: 'Hà Nội' },
-    { code: 'HCM', name: 'Hồ Chí Minh' },
-    { code: 'HPG', name: 'Hải Phòng' },
-    { code: 'DAD', name: 'Đà Nẵng' },
-    { code: 'CXR', name: 'Cần Thơ' },
-    { code: 'HAN', name: 'Hà Nam' },
-    { code: 'VPC', name: 'Vĩnh Phúc' },
-    { code: 'HPH', name: 'Hải Phòng' },
-    { code: 'QNH', name: 'Quảng Ninh' },
-    { code: 'BNH', name: 'Bắc Ninh' }
+    { code: 'HNO', name: 'Ha Noi' },
+    { code: 'HCM', name: 'Ho Chi Minh' },
+    { code: 'HPG', name: 'Hai Phong' },
+    { code: 'DAD', name: 'Da Nang' },
+    { code: 'CXR', name: 'Can Tho' },
+    { code: 'HAN', name: 'Ha Nam' },
+    { code: 'VPC', name: 'Vinh Phuc' },
+    { code: 'HPH', name: 'Hai Phong' },
+    { code: 'QNH', name: 'Quang Ninh' },
+    { code: 'BNH', name: 'Bac Ninh' }
   ];
 
   // Computed paged warehouses for display (ensures we show at most `warehousePageSize` items per page
@@ -130,12 +131,12 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
             // Show data for selected warehouse
             pickValue = this.selectedDemand.total_pick || 0;
             deliverValue = this.selectedDemand.total_deliver || 0;
-            labels = ['Tổng Lấy', 'Tổng Giao'];
+            labels = ['Total Pick', 'Total Deliver'];
           } else {
             // Show aggregated data for all demands
             pickValue = this.demands.reduce((sum, d) => sum + (d.total_pick || 0), 0);
             deliverValue = this.demands.reduce((sum, d) => sum + (d.total_deliver || 0), 0);
-            labels = ['Tổng Lấy', 'Tổng Giao'];
+            labels = ['Total Pick', 'Total Deliver'];
           }
 
           // Destroy existing chart if any
@@ -153,7 +154,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
               labels: labels,
               datasets: [
                 {
-                  label: 'Tỉ lệ Lấy/Giao',
+                  label: 'Pick/Deliver Ratio',
                   data: [pickValue, deliverValue],
                   backgroundColor: [
                     'rgba(249, 115, 22, 0.9)',    // orange for pick
@@ -190,7 +191,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
                       const value = context.parsed || 0;
                       const total = pickValue + deliverValue;
                       const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0';
-                      return `${label}: ${new Intl.NumberFormat('vi-VN').format(value)} (${percentage}%)`;
+                      return `${label}: ${new Intl.NumberFormat('en-US').format(value)} (${percentage}%)`;
                     }
                   }
                 }
@@ -293,7 +294,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
           data: {
             labels,
             datasets: [{
-              label: 'Tổng Lấy (kg)',
+              label: 'Total Pick (kg)',
               data: pickupByShift,
               backgroundColor: labels.map((_, i) => orangeColors[i % orangeColors.length]),
               borderColor: '#ffffff',
@@ -323,7 +324,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
                     const value = context.parsed || 0;
                     const index = context.dataIndex;
                     const percentage = pickupRatios[index] || 0;
-                    return `${label}: ${new Intl.NumberFormat('vi-VN').format(value)} kg (${percentage.toFixed(1)}%)`;
+                    return `${label}: ${new Intl.NumberFormat('en-US').format(value)} kg (${percentage.toFixed(1)}%)`;
                   }
                 }
               }
@@ -469,7 +470,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
           data: {
             labels,
             datasets: [{
-              label: 'Tổng Giao (kg)',
+              label: 'Total Deliver (kg)',
               data: deliveryByShift,
               backgroundColor: labels.map((_, i) => blackColors[i % blackColors.length]),
               borderColor: '#ffffff',
@@ -499,7 +500,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
                     const value = context.parsed || 0;
                     const index = context.dataIndex;
                     const percentage = deliveryRatios[index] || 0;
-                    return `${label}: ${new Intl.NumberFormat('vi-VN').format(value)} kg (${percentage.toFixed(1)}%)`;
+                    return `${label}: ${new Intl.NumberFormat('en-US').format(value)} kg (${percentage.toFixed(1)}%)`;
                   }
                 }
               }
@@ -788,10 +789,10 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Shift editor state
   shifts: Array<{ name: string; start_hour: number; end_hour: number }> = [
-    { name: 'sáng', start_hour: 6, end_hour: 10 },
-    { name: 'trưa', start_hour: 10, end_hour: 14 },
-    { name: 'chiều', start_hour: 14, end_hour: 18 },
-    { name: 'tối', start_hour: 18, end_hour: 22 }
+    { name: 'morning', start_hour: 6, end_hour: 10 },
+    { name: 'noon', start_hour: 10, end_hour: 14 },
+    { name: 'afternoon', start_hour: 14, end_hour: 18 },
+    { name: 'evening', start_hour: 18, end_hour: 22 }
   ];
   shiftErrors: string[] = [];
 
@@ -1271,14 +1272,14 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
           const datasetData = resp.data.data || resp.data;
           this.datasetDetails = datasetData as Dataset;
         } else {
-          this.detailsError = 'Không thể tải chi tiết Data Product';
+          this.detailsError = 'Failed to load Data Product details';
           console.error('[Dataset] getDataset invalid response:', resp);
         }
         this.loadingDetails = false;
         this.cdr.markForCheck();
       },
       error: (err) => {
-        this.detailsError = err?.message || 'Lỗi khi tải chi tiết';
+        this.detailsError = err?.message || 'Failed to load details';
         this.loadingDetails = false;
         this.cdr.markForCheck();
         console.error('[Dataset] getDataset error:', err);
@@ -1310,6 +1311,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
   loadDatasets(): void {
     this.loading = true;
     this.error = null;
+    this.fallbackNotice = null;
 
     const params = {
       size: this.state.size,
@@ -1326,19 +1328,20 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
           // API returns: { code, message, data: [...], meta: {...} }
           this.datasets = response.data.data || [];
           this.state.total = response.data.meta?.total || 0;
+          this.fallbackNotice = null;
           console.log('[Dataset] Loaded datasets:', this.datasets.length);
           console.log('[Dataset] selectedDatasetId:', this.selectedDatasetId, 'should show list:', !this.selectedDatasetId);
         } else {
-          this.error = 'Failed to load datasets';
-          console.error('[Dataset] Invalid response:', response);
+          console.error('[Dataset] Invalid response, using fallback datasets:', response);
+          this.applyDefaultDatasets('Unable to fetch datasets from API. Showing default data.');
         }
         this.loading = false;
         this.cdr.markForCheck(); // Trigger change detection
       },
       error: (error) => {
-        this.error = error.message || 'Failed to load datasets';
+        console.error('[Dataset] Load error, using fallback datasets:', error);
+        this.applyDefaultDatasets('Dataset API unavailable. Showing default data.');
         this.loading = false;
-        console.error('[Dataset] Load error:', error);
         this.cdr.markForCheck(); // Trigger change detection
       }
     });
@@ -1429,7 +1432,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
 
   onInfoTableRegionChange(): void {
     // When region changes in info table, update warehouseRegionShortname
-    // but don't auto-add warehouses - user needs to click "Thêm tất cả" or search
+    // but don't auto-add warehouses - user needs to click "Add all" or search
     this.cdr.markForCheck();
   }
 
@@ -1472,14 +1475,14 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
           }
         } catch (e) {
           console.error('[Dataset] addAllWarehousesFromRegion error', e);
-          this.warehousesError = 'Lỗi khi tải danh sách bưu cục';
+          this.warehousesError = 'Failed to load warehouse list';
         }
         this.loadingWarehouses = false;
         this.cdr.markForCheck();
       },
       error: (error) => {
         console.error('[Dataset] addAllWarehousesFromRegion error', error);
-        this.warehousesError = error.message || 'Lỗi khi tải danh sách bưu cục';
+        this.warehousesError = error.message || 'Failed to load warehouse list';
         this.loadingWarehouses = false;
         this.cdr.markForCheck();
       }
@@ -1550,14 +1553,14 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
           }
         } catch (e) {
           console.error('[Dataset] loadWarehousesForModal error', e);
-          this.modalWarehousesError = 'Lỗi khi tải danh sách bưu cục';
+          this.modalWarehousesError = 'Failed to load warehouse list';
         }
         this.loadingModalWarehouses = false;
         this.cdr.markForCheck();
       },
       error: (error) => {
         console.error('[Dataset] loadWarehousesForModal error', error);
-        this.modalWarehousesError = error.message || 'Lỗi khi tải danh sách bưu cục';
+        this.modalWarehousesError = error.message || 'Failed to load warehouse list';
         this.loadingModalWarehouses = false;
         this.cdr.markForCheck();
       }
@@ -1867,7 +1870,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // Validate shifts if needed
     if (!this.validateShifts()) {
-      this.shiftErrors = this.shiftErrors.length ? this.shiftErrors : ['Cấu hình ca chưa hợp lệ'];
+      this.shiftErrors = this.shiftErrors.length ? this.shiftErrors : ['Invalid shift configuration'];
       this.cdr.markForCheck();
       return;
     }
@@ -2013,9 +2016,14 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
         }, 300);
       },
       error: (err) => {
-        this.shiftRatioError = err?.message || 'Lỗi khi tải tỉ lệ ca';
+        console.error('[Dataset] Error loading shift ratios, using fallback:', err);
+        this.shiftRatioError = 'Unable to load shift ratios from API, using default data';
+        this.applyDefaultShiftRatios();
         this.loadingShiftRatio = false;
-        console.error('[Dataset] Error loading shift ratios:', err);
+        setTimeout(() => {
+          this.updateCharts();
+          this.cdr.markForCheck();
+        }, 100);
         this.cdr.markForCheck();
       }
     });
@@ -2125,7 +2133,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
         setTimeout(() => renderChart(), 100);
       },
       error: (err) => {
-        this.timelineDataError = err?.message || 'Lỗi khi tải dữ liệu timeline';
+        this.timelineDataError = err?.message || 'Failed to load timeline data';
         this.loadingTimelineData = false;
         console.error('[Dataset] Error loading demands by days:', err);
         this.cdr.markForCheck();
@@ -2238,7 +2246,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
     const labels = dates.map(date => {
       const d = new Date(date);
       // Format: DD/MM/YYYY
-      return d.toLocaleDateString('vi-VN', { 
+      return d.toLocaleDateString('en-US', { 
         day: '2-digit', 
         month: '2-digit',
         year: 'numeric'
@@ -2279,7 +2287,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
       // Column chart for totals
       datasets.push({
         type: 'bar',
-        label: 'Tổng Lấy (kg)',
+        label: 'Total Pick (kg)',
         data: pickData,
         backgroundColor: 'rgba(249, 115, 22, 0.8)', // orange-500
         borderColor: 'rgba(249, 115, 22, 1)',
@@ -2287,7 +2295,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
       });
       datasets.push({
         type: 'bar',
-        label: 'Tổng Giao (kg)',
+        label: 'Total Deliver (kg)',
         data: deliverData,
         backgroundColor: 'rgba(0, 0, 0, 0.8)', // black
         borderColor: 'rgba(0, 0, 0, 1)',
@@ -2298,7 +2306,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
       if (this.showTimelineAverage) {
         datasets.push({
           type: 'line',
-          label: 'Trung bình Lấy (kg)',
+          label: 'Average Pick (kg)',
           data: avgPickData,
           borderColor: 'rgba(249, 115, 22, 0.6)',
           backgroundColor: 'transparent',
@@ -2311,7 +2319,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
         });
         datasets.push({
           type: 'line',
-          label: 'Trung bình Giao (kg)',
+          label: 'Average Deliver (kg)',
           data: avgDeliverData,
           borderColor: 'rgba(0, 0, 0, 0.6)',
           backgroundColor: 'transparent',
@@ -2327,7 +2335,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
       // Line chart
       datasets.push({
         type: 'line',
-        label: 'Tổng Lấy (kg)',
+        label: 'Total Pick (kg)',
         data: pickData,
         borderColor: 'rgba(249, 115, 22, 1)', // orange-500
         backgroundColor: 'rgba(249, 115, 22, 0.2)',
@@ -2341,7 +2349,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
       });
       datasets.push({
         type: 'line',
-        label: 'Tổng Giao (kg)',
+        label: 'Total Deliver (kg)',
         data: deliverData,
         borderColor: 'rgba(0, 0, 0, 1)', // black
         backgroundColor: 'rgba(0, 0, 0, 0.2)',
@@ -2358,7 +2366,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
       if (this.showTimelineAverage) {
         datasets.push({
           type: 'line',
-          label: 'Trung bình Lấy (kg)',
+          label: 'Average Pick (kg)',
           data: avgPickData,
           borderColor: 'rgba(249, 115, 22, 0.6)',
           backgroundColor: 'transparent',
@@ -2371,7 +2379,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
         });
         datasets.push({
           type: 'line',
-          label: 'Trung bình Giao (kg)',
+          label: 'Average Deliver (kg)',
           data: avgDeliverData,
           borderColor: 'rgba(0, 0, 0, 0.6)',
           backgroundColor: 'transparent',
@@ -2416,7 +2424,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
               label: (context: any) => {
                 const label = context.dataset.label || '';
                 const value = context.parsed.y || 0;
-                return `${label}: ${value.toLocaleString('vi-VN')} kg`;
+                return `${label}: ${value.toLocaleString('en-US')} kg`;
               }
             }
           }
@@ -2427,7 +2435,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
             display: true,
             title: {
               display: true,
-              text: 'Ngày',
+              text: 'Date',
               font: {
                 size: 12,
                 weight: 'bold'
@@ -2450,7 +2458,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
             display: true,
             title: {
               display: true,
-              text: 'Sản lượng (kg)',
+              text: 'Volume (kg)',
               font: {
                 size: 12,
                 weight: 'bold'
@@ -2463,7 +2471,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
             },
             ticks: {
               callback: (value: any) => {
-                return value.toLocaleString('vi-VN') + ' kg';
+                return value.toLocaleString('en-US') + ' kg';
               }
             }
           }
@@ -2472,7 +2480,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
             display: true,
             title: {
               display: true,
-              text: 'Ngày',
+              text: 'Date',
               font: {
                 size: 12,
                 weight: 'bold'
@@ -2494,7 +2502,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
             display: true,
             title: {
               display: true,
-              text: 'Sản lượng (kg)',
+              text: 'Volume (kg)',
               font: {
                 size: 12,
                 weight: 'bold'
@@ -2507,7 +2515,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
             },
             ticks: {
               callback: (value: any) => {
-                return value.toLocaleString('vi-VN') + ' kg';
+                return value.toLocaleString('en-US') + ' kg';
               }
             }
           }
@@ -2894,9 +2902,8 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
           }
         } catch (e) {
           console.error('[Dataset] Error parsing demands response:', e);
-          this.demandsError = 'Lỗi khi xử lý dữ liệu demands';
-          this.demands = [];
-          this.regionRatios = []; // Clear region ratios on error
+          this.demandsError = 'API parsing error, using default data';
+          this.applyDefaultDemands();
         }
 
         this.loadingDemands = false;
@@ -2904,19 +2911,133 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
         console.log('[Dataset] loadDemands completed. loadingDemands:', this.loadingDemands, 'demands.length:', this.demands.length);
       },
       error: (error) => {
-        console.error('[Dataset] getDemandsWithTimeRange error:', error);
-        this.demandsError = error?.message || 'Lỗi khi tải demands';
-        this.demands = [];
-        this.regionRatios = []; // Clear region ratios on error
+        console.error('[Dataset] getDemandsWithTimeRange error, using fallback:', error);
+        this.demandsError = 'Unable to load demands from API, using default data';
+        this.applyDefaultDemands();
         this.loadingDemands = false;
         this.cdr.markForCheck();
       }
     });
   }
 
+  private applyDefaultDatasets(message: string): void {
+    this.datasets = [
+      {
+        id: 'demand',
+        name: 'Demand Dataset',
+        type: 'demand',
+        description: 'Default demand dataset for fallback mode',
+        records: 12450,
+        created_at: new Date().toISOString()
+      },
+      {
+        id: 'truck',
+        name: 'Truck Dataset',
+        type: 'truck',
+        description: 'Default fleet dataset for fallback mode',
+        records: 3200,
+        created_at: new Date().toISOString()
+      },
+      {
+        id: 'trip',
+        name: 'Trip Dataset',
+        type: 'trip',
+        description: 'Default trip dataset for fallback mode',
+        records: 5800,
+        created_at: new Date().toISOString()
+      },
+      {
+        id: 'hub',
+        name: 'Hub Dataset',
+        type: 'hub',
+        description: 'Default hub dataset for fallback mode',
+        records: 640,
+        created_at: new Date().toISOString()
+      }
+    ];
+    this.state.total = this.datasets.length;
+    this.error = null;
+    this.fallbackNotice = message;
+  }
+
+  private applyDefaultDemands(): void {
+    this.demands = [
+      {
+        warehouse_id: 1001,
+        warehouse_name: 'HNO Central Hub',
+        province_name: 'Ha Noi',
+        district_name: 'Cau Giay',
+        total_pick: 12840,
+        total_deliver: 11960,
+        avg_pick_per_day: 428,
+        avg_deliver_per_day: 398,
+        active_days: 30
+      },
+      {
+        warehouse_id: 1002,
+        warehouse_name: 'HNO West Station',
+        province_name: 'Ha Noi',
+        district_name: 'Nam Tu Liem',
+        total_pick: 9320,
+        total_deliver: 8740,
+        avg_pick_per_day: 311,
+        avg_deliver_per_day: 291,
+        active_days: 30
+      },
+      {
+        warehouse_id: 1003,
+        warehouse_name: 'HNO East Station',
+        province_name: 'Ha Noi',
+        district_name: 'Long Bien',
+        total_pick: 7640,
+        total_deliver: 7210,
+        avg_pick_per_day: 255,
+        avg_deliver_per_day: 240,
+        active_days: 30
+      }
+    ];
+
+    if (!this.selectedDemand && this.demands.length > 0) {
+      this.selectedDemand = this.demands[0];
+    }
+    this.calculateRegionRatios();
+    this.applyDefaultShiftRatios();
+  }
+
+  private applyDefaultShiftRatios(): void {
+    const defaults = this.shifts.length ? this.shifts : [
+      { name: 'morning', start_hour: 6, end_hour: 10 },
+      { name: 'noon', start_hour: 10, end_hour: 14 },
+      { name: 'afternoon', start_hour: 14, end_hour: 18 },
+      { name: 'evening', start_hour: 18, end_hour: 22 }
+    ];
+
+    const pickRatios = [0.33, 0.22, 0.28, 0.17];
+    const deliverRatios = [0.26, 0.31, 0.25, 0.18];
+    const totalPick = this.demands.reduce((sum, d: any) => sum + (d.total_pick || 0), 0) || 29700;
+    const totalDeliver = this.demands.reduce((sum, d: any) => sum + (d.total_deliver || 0), 0) || 27910;
+    const activeDays = 30;
+
+    this.shiftRatios = defaults.map((s, idx) => {
+      const pickRatio = pickRatios[idx] ?? (1 / defaults.length);
+      const deliverRatio = deliverRatios[idx] ?? (1 / defaults.length);
+      return {
+        shift_name: s.name,
+        shift: { name: s.name, start_hour: s.start_hour, end_hour: s.end_hour },
+        pick_ratio: pickRatio,
+        deliver_ratio: deliverRatio,
+        total_pick: Math.round(totalPick * pickRatio),
+        total_deliver: Math.round(totalDeliver * deliverRatio),
+        avg_pick_per_day: Math.round((totalPick * pickRatio) / activeDays),
+        avg_deliver_per_day: Math.round((totalDeliver * deliverRatio) / activeDays),
+        active_days: activeDays
+      };
+    });
+  }
+
   // --- Shift editor helpers ---
   addShift(): void {
-    this.shifts.push({ name: 'ca mới', start_hour: 0, end_hour: 1 });
+    this.shifts.push({ name: 'new shift', start_hour: 0, end_hour: 1 });
   }
 
   removeShift(index: number): void {
@@ -2927,10 +3048,10 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
 
   loadDefaultShifts(): void {
     this.shifts = [
-      { name: 'sáng', start_hour: 6, end_hour: 10 },
-      { name: 'trưa', start_hour: 10, end_hour: 14 },
-      { name: 'chiều', start_hour: 14, end_hour: 18 },
-      { name: 'tối', start_hour: 18, end_hour: 22 }
+      { name: 'morning', start_hour: 6, end_hour: 10 },
+      { name: 'noon', start_hour: 10, end_hour: 14 },
+      { name: 'afternoon', start_hour: 14, end_hour: 18 },
+      { name: 'evening', start_hour: 18, end_hour: 22 }
     ];
 
     // If there are stops already added, re-run shifts query to refresh data
@@ -2945,16 +3066,16 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
     // Validate each shift
     this.shifts.forEach((s, idx) => {
       if (s.start_hour >= s.end_hour) {
-        this.shiftErrors.push(`Ca "${s.name || idx + 1}": giờ bắt đầu phải nhỏ hơn giờ kết thúc.`);
+        this.shiftErrors.push(`Shift "${s.name || idx + 1}": start hour must be earlier than end hour.`);
       }
       if (s.start_hour < 0 || s.start_hour > 23 || s.end_hour < 1 || s.end_hour > 24) {
-        this.shiftErrors.push(`Ca "${s.name || idx + 1}": giờ không hợp lệ (0-23/1-24).`);
+        this.shiftErrors.push(`Shift "${s.name || idx + 1}": invalid hour range (0-23/1-24).`);
       }
     });
 
     // Require at least one warehouse selected in Timeline
     if (!this.timelineWarehouses || this.timelineWarehouses.length === 0) {
-      this.shiftErrors.push('Vui lòng chọn ít nhất 1 bưu cục trong Timeline.');
+      this.shiftErrors.push('Please select at least one warehouse in Timeline.');
     }
 
     return this.shiftErrors.length === 0;
@@ -3002,32 +3123,32 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
           setTimeout(() => this.updateCharts(), 50);
           console.log('[Dataset] Received shift ratio response', payloadData);
         } else {
-          this.shiftErrors.push('Không thể lấy dữ liệu theo ca');
+          this.shiftErrors.push('Unable to fetch shift-based data');
           console.error('[Dataset] runShiftsQuery invalid response:', resp);
         }
         this.cdr.markForCheck();
       },
       error: (err: any) => {
-        this.shiftErrors.push(err?.message || 'Lỗi khi lấy dữ liệu theo ca');
+        this.shiftErrors.push(err?.message || 'Error while fetching shift-based data');
         console.error('[Dataset] runShiftsQuery error:', err);
         this.cdr.markForCheck();
       }
     });
   }
 
-  // --- Demands: Phân tích Sản lượng (date range filter) ---
+  // --- Demands: Volume Analysis (date range filter) ---
   demandErrors: string[] = [];
 
   validateDemandRange(): boolean {
     this.demandErrors = [];
     if (!this.timelineWarehouses || this.timelineWarehouses.length === 0) {
-      this.demandErrors.push('Vui lòng chọn ít nhất 1 bưu cục trong Timeline.');
+      this.demandErrors.push('Please select at least one warehouse in Timeline.');
     }
     if (!this.demandStartDate || !this.demandEndDate) {
-      this.demandErrors.push('Vui lòng chọn từ ngày và đến ngày.');
+      this.demandErrors.push('Please select both start and end dates.');
     }
     if (this.demandStartDate && this.demandEndDate && this.demandStartDate > this.demandEndDate) {
-      this.demandErrors.push('"Từ ngày" phải nhỏ hơn hoặc bằng "Đến ngày".');
+      this.demandErrors.push('"From date" must be earlier than or equal to "To date".');
     }
     return this.demandErrors.length === 0;
   }
@@ -3067,14 +3188,14 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
       this.loadDemandsByDays();
           setTimeout(() => this.updateCharts(), 50);
         } else {
-          this.demandErrors.push('Không thể tải dữ liệu Sản lượng');
+          this.demandErrors.push('Unable to load volume data');
           console.error('[Dataset] applyDemandFilter invalid response:', resp);
         }
         this.loadingDemands = false;
         this.cdr.markForCheck();
       },
       error: (err: any) => {
-        this.demandErrors.push(err?.message || 'Lỗi khi tải sản lượng');
+        this.demandErrors.push(err?.message || 'Failed to load volume data');
         this.loadingDemands = false;
         console.error('[Dataset] applyDemandFilter error:', err);
         this.cdr.markForCheck();
@@ -3131,14 +3252,14 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
           }
         } catch (e) {
           console.error('[Dataset] onWarehouseRegionChange processing error', e);
-          this.warehousesError = 'Lỗi khi xử lý danh sách bưu cục';
+          this.warehousesError = 'Error processing warehouse list';
         }
         this.loadingWarehouses = false;
         this.cdr.markForCheck();
       },
       error: (err: any) => {
         console.error('[Dataset] Load warehouses by region error:', err);
-        this.warehousesError = err?.message || 'Không thể tải bưu cục cho vùng này';
+        this.warehousesError = err?.message || 'Unable to load warehouses for this region';
         this.loadingWarehouses = false;
         this.cdr.markForCheck();
       }
@@ -3248,7 +3369,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
                 label += ': ';
               }
               if (context.parsed.y !== null) {
-                label += new Intl.NumberFormat('vi-VN').format(context.parsed.y);
+                label += new Intl.NumberFormat('en-US').format(context.parsed.y);
               }
               return label;
             }
@@ -3297,7 +3418,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
               }
               
               // Format the value
-              const formattedValue = new Intl.NumberFormat('vi-VN', {
+              const formattedValue = new Intl.NumberFormat('en-US', {
                 notation: 'compact',
                 maximumFractionDigits: 1
               }).format(value);
@@ -3339,7 +3460,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
           beginAtZero: true,
           title: {
             display: true,
-            text: 'Tổng (kg)',
+            text: 'Total (kg)',
             font: {
               size: 14,
               weight: 'bold' as const
@@ -3359,7 +3480,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
             color: 'rgba(249, 115, 22, 0.8)',
             padding: 8,
             callback: function (value: any) {
-              return new Intl.NumberFormat('vi-VN').format(value);
+              return new Intl.NumberFormat('en-US').format(value);
             }
           }
         },
@@ -3371,7 +3492,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
           },
           title: {
             display: true,
-            text: 'Trung bình/ngày (kg/ngày)',
+            text: 'Average/day (kg/day)',
             font: {
               size: 14,
               weight: 'bold' as const
@@ -3387,7 +3508,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
             color: 'rgba(251, 146, 60, 0.8)',
             padding: 8,
             callback: function (value: any) {
-              return new Intl.NumberFormat('vi-VN', {
+              return new Intl.NumberFormat('en-US', {
                 minimumFractionDigits: 1,
                 maximumFractionDigits: 1
               }).format(value);
@@ -3411,7 +3532,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // Use filtered demands for chart
     const dataSource = this.filteredDemands.length > 0 ? this.filteredDemands : this.demands;
-    const labels = dataSource.map((d: any) => d.warehouse_name || `Bưu cục ${d.warehouse_id}`);
+    const labels = dataSource.map((d: any) => d.warehouse_name || `Warehouse ${d.warehouse_id}`);
 
     if (type === 'combined') {
       const datasets: any[] = [];
@@ -3421,7 +3542,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
         if (isLineChart) {
           datasets.push({
             type: 'line',
-            label: 'Tổng Lấy',
+            label: 'Total Pick',
             data: dataSource.map((d: any) => d.total_pick || 0),
             borderColor: 'rgba(59, 130, 246, 1)',
             backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -3438,7 +3559,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
         } else {
           datasets.push({
             type: 'bar',
-            label: 'Tổng Lấy',
+            label: 'Total Pick',
             data: dataSource.map((d: any) => d.total_pick || 0),
             backgroundColor: 'rgba(59, 130, 246, 0.95)',
             borderColor: 'rgba(59, 130, 246, 1)',
@@ -3453,7 +3574,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
         if (isLineChart) {
           datasets.push({
             type: 'line',
-            label: 'Tổng Giao',
+            label: 'Total Deliver',
             data: dataSource.map((d: any) => d.total_deliver || 0),
             borderColor: 'rgba(16, 185, 129, 1)',
             backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -3470,7 +3591,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
         } else {
           datasets.push({
             type: 'bar',
-            label: 'Tổng Giao',
+            label: 'Total Deliver',
             data: dataSource.map((d: any) => d.total_deliver || 0),
             backgroundColor: 'rgba(16, 185, 129, 0.95)',
             borderColor: 'rgba(16, 185, 129, 1)',
@@ -3485,7 +3606,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
         if (isLineChart) {
           datasets.push({
             type: 'line',
-            label: 'TB Lấy/Ngày',
+            label: 'Avg Pick/Day',
             data: dataSource.map((d: any) => d.avg_pick_per_day || 0),
             borderColor: 'rgba(249, 115, 22, 1)',
             backgroundColor: 'rgba(249, 115, 22, 0.1)',
@@ -3502,7 +3623,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
         } else {
           datasets.push({
             type: 'line',
-            label: 'TB Lấy/Ngày',
+            label: 'Avg Pick/Day',
             data: dataSource.map((d: any) => d.avg_pick_per_day || 0),
             borderColor: 'rgba(249, 115, 22, 1)',
             backgroundColor: 'rgba(249, 115, 22, 0.1)',
@@ -3523,7 +3644,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
         if (isLineChart) {
           datasets.push({
             type: 'line',
-            label: 'TB Giao/Ngày',
+            label: 'Avg Deliver/Day',
             data: dataSource.map((d: any) => d.avg_deliver_per_day || 0),
             borderColor: 'rgba(139, 92, 246, 1)',
             backgroundColor: 'rgba(139, 92, 246, 0.1)',
@@ -3540,7 +3661,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
         } else {
           datasets.push({
             type: 'line',
-            label: 'TB Giao/Ngày',
+            label: 'Avg Deliver/Day',
             data: dataSource.map((d: any) => d.avg_deliver_per_day || 0),
             borderColor: 'rgba(139, 92, 246, 1)',
             backgroundColor: 'rgba(139, 92, 246, 0.1)',
@@ -3568,14 +3689,14 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
         labels,
         datasets: [
           {
-            label: 'Tổng Lấy',
+            label: 'Total Pick',
             data: this.demands.map(d => d.total_pick),
             backgroundColor: 'rgba(59, 130, 246, 0.8)',
             borderColor: 'rgba(59, 130, 246, 1)',
             borderWidth: 1
           },
           {
-            label: 'Tổng Giao',
+            label: 'Total Deliver',
             data: this.demands.map(d => d.total_deliver),
             backgroundColor: 'rgba(16, 185, 129, 0.8)',
             borderColor: 'rgba(16, 185, 129, 1)',
@@ -3588,14 +3709,14 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
         labels,
         datasets: [
           {
-            label: 'TB Lấy/Ngày',
+            label: 'Avg Pick/Day',
             data: this.demands.map(d => d.avg_pick_per_day),
             borderColor: 'rgba(139, 92, 246, 1)',
             backgroundColor: 'rgba(139, 92, 246, 0.1)',
             tension: 0.4
           },
           {
-            label: 'TB Giao/Ngày',
+            label: 'Avg Deliver/Day',
             data: this.demands.map(d => d.avg_deliver_per_day),
             borderColor: 'rgba(245, 158, 11, 1)',
             backgroundColor: 'rgba(245, 158, 11, 0.1)',
@@ -3619,7 +3740,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
 
   viewProductivity(): void {
     if (this.timelineWarehouses.length === 0) {
-      alert('Chưa có bưu cục nào trong timeline');
+      alert('No warehouse in timeline');
       return;
     }
 
@@ -3628,7 +3749,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
     const warehouseNames = this.timelineWarehouses.map((w: any) => w.warehouse_name).join(', ');
     const totalWarehouses = this.timelineWarehouses.length;
 
-    alert(`Sản lượng cho ${totalWarehouses} bưu cục:\n${warehouseNames}\n\nTính năng xem sản lượng chi tiết sẽ được triển khai trong phiên bản tiếp theo.`);
+    alert(`Volume for ${totalWarehouses} warehouses:\n${warehouseNames}\n\nDetailed volume view will be implemented in a future version.`);
 
     console.log('View productivity for warehouses:', this.timelineWarehouses);
   }

@@ -43,7 +43,9 @@ export interface SetNewPasswordRequest {
   providedIn: 'root',
 })
 export class AuthServices {
-  private baseUrl = getApiBase();
+  private get baseUrl(): string {
+    return getApiBase();
+  }
   private userSubject = new BehaviorSubject<UserProfile | null>(null);
 
   constructor(private http: HttpClient, private loadingService: LoadingService) {

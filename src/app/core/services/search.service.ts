@@ -35,15 +35,6 @@ export class SearchService {
 
     // Retail Services
     {
-      id: 'retail-overview',
-      title: 'Retail Services Overview',
-      description: 'Manage retail operations and services',
-      type: 'page',
-      url: '/retail',
-      category: 'Retail',
-      tags: ['retail', 'services', 'overview']
-    },
-    {
       id: 'inventory-management',
       title: 'Inventory Management',
       description: 'Complete inventory management system',
@@ -60,15 +51,6 @@ export class SearchService {
       url: '/retail/inventory/products',
       category: 'Retail',
       tags: ['products', 'catalog', 'inventory']
-    },
-    {
-      id: 'inventory-movements',
-      title: 'Stock Movements',
-      description: 'Track inventory movements and transactions',
-      type: 'page',
-      url: '/retail/inventory/movements',
-      category: 'Retail',
-      tags: ['movements', 'stock', 'transactions']
     },
 
     // Data Mesh

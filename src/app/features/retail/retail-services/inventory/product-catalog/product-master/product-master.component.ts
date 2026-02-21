@@ -43,6 +43,7 @@ interface Product {
 
 @Component({
   selector: 'app-product-master',
+  standalone: true,
   imports: [
     CommonModule,
     FormsModule,

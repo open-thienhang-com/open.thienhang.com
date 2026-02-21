@@ -33,7 +33,8 @@ export class LoginComponent extends AppBaseComponent {
   isLoading = false;
   apiOptions = [
     { label: 'Production (api.thienhang.com)', value: 'https://api.thienhang.com' },
-    { label: 'Local (api.thienhang.com)', value: 'https://api.thienhang.com' }
+    { label: 'Localhost (localhost:8080)', value: 'http://localhost:8080' },
+    { label: 'Localhost (localhost:8081)', value: 'http://localhost:8081' }
   ];
   selectedApi: string | null = null;
   // If true, the selected environment will be applied to the runtime API base (localStorage/window.__API_BASE__)
