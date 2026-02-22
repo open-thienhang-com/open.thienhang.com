@@ -210,6 +210,13 @@ export class SidebarComponent implements OnInit, OnChanges {
       description: ''
     },
     {
+      key: 'loyalty',
+      label: 'Loyalty Program',
+      icon: 'pi pi-star',
+      gradient: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
+      description: 'Customer loyalty, rewards, and campaigns'
+    },
+    {
       key: 'governance',
       label: 'Governance',
       icon: 'pi pi-shield',
@@ -324,50 +331,34 @@ export class SidebarComponent implements OnInit, OnChanges {
           children: [
             { label: 'Category', url: '/retail/inventory/categories', icon: 'pi pi-tags' },
             { label: 'Products', url: '/retail/inventory/products', icon: 'pi pi-shopping-cart' },
-            { label: 'Locations', url: '/retail/inventory/locations', icon: 'pi pi-map-marker' }
+            { label: 'Locations', url: '/retail/inventory/locations', icon: 'pi pi-map-marker' },
+            { label: 'Partners', url: '/retail/inventory/partners', icon: 'pi pi-briefcase' },
+            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-cog' },
+            { label: 'Fleet', url: '/planning/fleet', icon: 'pi pi-truck' }
           ]
         },
         {
-          label: 'Point of Sale',
-          icon: 'pi pi-credit-card',
+          label: 'Sales & Commerce',
+          icon: 'pi pi-shopping-cart',
           children: [
             { label: 'POS Terminal', url: '/retail/pos', icon: 'pi pi-desktop' },
             { label: 'Transactions', url: '/retail/transactions', icon: 'pi pi-receipt' },
-            { label: 'Cash Management', url: '/retail/cash', icon: 'pi pi-money-bill' }
-          ]
-        },
-        {
-          label: 'E-commerce',
-          icon: 'pi pi-globe',
-          children: [
+            { label: 'Cash Management', url: '/retail/cash', icon: 'pi pi-money-bill' },
             { label: 'Online Store', url: '/retail/ecommerce', icon: 'pi pi-shopping-bag' },
             { label: 'Orders', url: '/retail/orders', icon: 'pi pi-shopping-cart' },
             { label: 'Customers', url: '/retail/customers', icon: 'pi pi-users' }
           ]
-        },
-        {
-          label: 'Loyalty Program',
-          icon: 'pi pi-star',
-          children: [
-            { label: 'Members', url: '/retail/loyalty', icon: 'pi pi-users' },
-            { label: 'Rewards', url: '/retail/rewards', icon: 'pi pi-gift' },
-            { label: 'Campaigns', url: '/retail/campaigns', icon: 'pi pi-megaphone' }
-          ]
-        },
-        {
-          label: 'Planning',
-          icon: 'pi pi-cog',
-          children: [
-            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-cog' }
-          ]
-        },
-        {
-          label: 'Fleet',
-          icon: 'pi pi-truck',
-          children: [
-            { label: 'Fleet', url: '/planning/fleet', icon: 'pi pi-truck' }
-          ]
         }
+      ]
+    },
+    {
+      label: 'Loyalty Program',
+      icon: 'pi pi-star',
+      expanded: false,
+      items: [
+        { label: 'Members', url: '/retail/loyalty', icon: 'pi pi-users' },
+        { label: 'Rewards', url: '/retail/rewards', icon: 'pi pi-gift' },
+        { label: 'Campaigns', url: '/retail/campaigns', icon: 'pi pi-megaphone' }
       ]
     },
     {
@@ -799,7 +790,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       return;
     }
 
-    // Special-case: for Retail app, show Inventory, POS, E-commerce, Loyalty, Planning, and Fleet
+    // Special-case: for Retail app, show Inventory and merged Sales & Commerce
     if (key === 'retail') {
       const retailGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('retail'));
       const groups: any[] = [];
@@ -809,25 +800,13 @@ export class SidebarComponent implements OnInit, OnChanges {
         const inv = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('inventory'));
         if (inv) groups.push({ label: inv.label, icon: inv.icon || this.getIconForMenuItem(inv), expanded: false, items: ((inv as any).children ?? (inv as any).items ?? []) });
 
-        // Point of Sale
-        const pos = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('point of sale') || (it.label || '').toLowerCase().includes('pos'));
-        if (pos) groups.push({ label: pos.label, icon: pos.icon || this.getIconForMenuItem(pos), expanded: false, items: ((pos as any).children ?? (pos as any).items ?? []) });
+        // Sales & Commerce (POS + E-commerce merged)
+        const sales = (retailGroup.items || []).find((it: any) => {
+          const label = (it.label || '').toLowerCase();
+          return label.includes('sales') || label.includes('commerce');
+        });
+        if (sales) groups.push({ label: sales.label, icon: sales.icon || this.getIconForMenuItem(sales), expanded: false, items: ((sales as any).children ?? (sales as any).items ?? []) });
 
-        // E-commerce
-        const eco = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('e-commerce') || (it.label || '').toLowerCase().includes('ecommerce'));
-        if (eco) groups.push({ label: eco.label, icon: eco.icon || this.getIconForMenuItem(eco), expanded: false, items: ((eco as any).children ?? (eco as any).items ?? []) });
-
-        // Loyalty Program
-        const loy = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('loyalty'));
-        if (loy) groups.push({ label: loy.label, icon: loy.icon || this.getIconForMenuItem(loy), expanded: false, items: ((loy as any).children ?? (loy as any).items ?? []) });
-
-        // Planning & Forecasting
-        const planning = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('planning'));
-        if (planning) groups.push({ label: planning.label, icon: planning.icon || this.getIconForMenuItem(planning), expanded: false, items: ((planning as any).children ?? (planning as any).items ?? []) });
-
-        // Fleet (separate group)
-        const fleet = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase() === 'fleet');
-        if (fleet) groups.push({ label: fleet.label, icon: fleet.icon || this.getIconForMenuItem(fleet), expanded: false, items: ((fleet as any).children ?? (fleet as any).items ?? []) });
       }
 
       this.visibleGroups = this.orderGroupsForApp(groups, key);
@@ -836,6 +815,22 @@ export class SidebarComponent implements OnInit, OnChanges {
         g.expanded = false;
         (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
       });
+      return;
+    }
+
+    // Special-case: for Loyalty app - render its child menu items directly (no parent header)
+    if (key === 'loyalty') {
+      const loyaltyGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('loyalty'));
+      if (loyaltyGroup) {
+        const items: any[] = this.getFlattenedItems(loyaltyGroup.items || []);
+        const pseudo = { label: '', icon: '', expanded: false, _noHeader: true, items } as any;
+        pseudo._flattened = items;
+
+        this.visibleGroups = [pseudo];
+        this.visibleGroups.forEach(g => (g as any)._flattened = (g as any)._flattened || this.getFlattenedItems((g as any).items || []));
+      } else {
+        this.visibleGroups = [];
+      }
       return;
     }
 
@@ -1084,6 +1079,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     // Treat root path as the 'all' application so the unified sidebar is shown
     if (p === '/' || p === '') return 'all';
     if (p.startsWith('/governance')) return 'governance';
+    if (p.startsWith('/retail/loyalty') || p.startsWith('/retail/rewards') || p.startsWith('/retail/campaigns')) return 'loyalty';
     if (p.startsWith('/retail')) return 'retail';
     if (p.startsWith('/planning')) return 'planning';
     if (p.startsWith('/discovery') || p.startsWith('/explore') || p.startsWith('/data-catalog') || p.startsWith('/data-mesh')) return 'explore';
@@ -1102,6 +1098,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     // Simple prioritization map: which group labels should appear first per app
     const priorityMap: Record<AppKey, string[]> = {
       retail: ['retail'],
+      loyalty: ['loyalty'],
       catalog: [],
       explore: ['explore', 'data mesh'],
       chat: [],
@@ -1267,6 +1264,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       all: '/',
       explore: '/explore',
       retail: '/retail',
+      loyalty: '/retail/loyalty',
       catalog: '/',
       governance: '/governance/policies',
       planning: '/planning',

@@ -6,7 +6,14 @@ export interface Product {
   name: string;
   description?: string;
   category: string;
-  price: number;
+  price?: number;
+  selling_price?: number;
+  barcode?: string;
+  subcategory?: string;
+  discount_price?: number;
+  reorder_level?: number;
+  maximum_stock?: number;
+  supplier_id?: string;
   cost_price: number;
   sku: string;
   images?: string[];
@@ -187,12 +194,18 @@ export interface ListResponse<T> {
 
 // Request Models
 export interface ProductCreateRequest {
+  sku: string;
   name: string;
+  barcode: string;
+  cost_price: number;
+  selling_price: number;
   description?: string;
   category: string;
-  price: number;
-  cost_price: number;
-  sku: string;
+  subcategory?: string;
+  discount_price?: number;
+  reorder_level?: number;
+  maximum_stock?: number;
+  supplier_id?: string;
   images?: string[];
   is_active: boolean;
 }

@@ -8,6 +8,72 @@
 
   <!-- Main Layout -->
   <div class="p-4">
+    <!-- Retail Domain Overview -->
+    <div class="mb-6 bg-white border border-gray-200 rounded-xl shadow-sm p-5" *ngIf="!selectedDatasetId">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
+        <div>
+          <h2 class="text-lg font-bold text-gray-900">Retail Domain Overview</h2>
+          <p class="text-sm text-gray-600">Live status from Retail APIs</p>
+        </div>
+        <div *ngIf="loadingRetailOverview" class="text-sm text-gray-500">Loading retail APIs...</div>
+      </div>
+
+      <div *ngIf="retailOverviewNotice" class="mb-4 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm text-amber-700">
+        {{ retailOverviewNotice }}
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div class="border border-gray-200 rounded-lg p-4">
+          <p class="text-xs text-gray-500 mb-1">Health</p>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold" [ngClass]="getHealthBadgeClass(retailHealth.status)">
+              {{ retailHealth.status || 'unknown' }}
+            </span>
+          </div>
+          <p class="text-xs text-gray-600">{{ retailHealth.service || 'retail' }}</p>
+          <p class="text-xs text-gray-500 mt-1" *ngIf="retailHealth.timestamp">
+            {{ retailHealth.timestamp | date:'short' }}
+          </p>
+        </div>
+
+        <div class="border border-gray-200 rounded-lg p-4">
+          <p class="text-xs text-gray-500 mb-1">Version</p>
+          <p class="text-xl font-bold text-gray-900">{{ retailVersion.version || 'N/A' }}</p>
+          <p class="text-xs text-gray-600 mt-1">Adapter: {{ retailVersion.adapter || 'retail' }}</p>
+        </div>
+
+        <div class="border border-gray-200 rounded-lg p-4">
+          <p class="text-xs text-gray-500 mb-1">Total Products</p>
+          <p class="text-xl font-bold text-gray-900">{{ retailInventoryAnalytics.total_products || 0 | number }}</p>
+          <p class="text-xs text-gray-600 mt-1">Total Quantity: {{ retailInventoryAnalytics.total_quantity || 0 | number }}</p>
+        </div>
+
+        <div class="border border-gray-200 rounded-lg p-4">
+          <p class="text-xs text-gray-500 mb-1">Inventory Value</p>
+          <p class="text-xl font-bold text-gray-900">{{ retailInventoryAnalytics.inventory_value || 0 | number }}</p>
+          <p class="text-xs text-gray-600 mt-1">
+            Low stock: {{ retailInventoryAnalytics.low_stock_products || 0 }} | Out of stock: {{ retailInventoryAnalytics.out_of_stock_products || 0 }}
+          </p>
+        </div>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg">
+        <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+          <h3 class="font-semibold text-gray-900">Stock Alerts</h3>
+          <span class="text-xs text-gray-500">{{ retailAlerts.length }} alerts</span>
+        </div>
+        <div *ngIf="retailAlerts.length === 0" class="px-4 py-6 text-sm text-gray-500">
+          No active alerts
+        </div>
+        <div *ngIf="retailAlerts.length > 0" class="divide-y divide-gray-100">
+          <div *ngFor="let alert of retailAlerts | slice:0:5" class="px-4 py-3">
+            <p class="text-sm font-medium text-gray-900">{{ getAlertTitle(alert) }}</p>
+            <p class="text-xs text-gray-600" *ngIf="getAlertSubtitle(alert)">{{ getAlertSubtitle(alert) }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Content Area -->
     <div class="relative">
       <!-- Card View: When no dataset is selected -->

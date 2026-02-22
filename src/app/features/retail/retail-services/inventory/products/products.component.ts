@@ -11,6 +11,8 @@ import { FormsModule } from '@angular/forms';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { ProductService } from '../../../services/retail.service';
+import { Router } from '@angular/router';
 
 interface Product {
   id: string;
@@ -81,7 +83,9 @@ export class ProductsComponent implements OnInit {
 
   constructor(
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private productService: ProductService,
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -90,100 +94,26 @@ export class ProductsComponent implements OnInit {
 
   loadProducts() {
     this.loading = true;
-
-    // Mock data - replace with actual API call
-    setTimeout(() => {
-      this.products = [
-        {
-          id: '1',
-          name: 'Wireless Headphones Pro',
-          sku: 'WH-PRO-001',
-          category: 'electronics',
-          description: 'Premium wireless headphones with noise cancellation',
-          currentStock: 0,
-          minStock: 5,
-          maxStock: 50,
-          unitPrice: 299.99,
-          totalValue: 0,
-          location: 'Main Warehouse - Aisle 3',
-          supplier: 'AudioTech Inc.',
-          status: 'active',
-          lastUpdated: new Date('2024-01-15'),
-          barcode: '123456789012'
-        },
-        {
-          id: '2',
-          name: 'Bluetooth Speaker',
-          sku: 'BS-PORT-002',
-          category: 'electronics',
-          description: 'Portable Bluetooth speaker with waterproof design',
-          currentStock: 3,
-          minStock: 10,
-          maxStock: 100,
-          unitPrice: 79.99,
-          totalValue: 239.97,
-          location: 'Main Warehouse - Aisle 2',
-          supplier: 'SoundWave Ltd.',
-          status: 'active',
-          lastUpdated: new Date('2024-01-14'),
-          barcode: '123456789013'
-        },
-        {
-          id: '3',
-          name: 'Organic Cotton T-Shirt',
-          sku: 'TS-ORG-L',
-          category: 'clothing',
-          description: '100% organic cotton t-shirt, size Large',
-          currentStock: 25,
-          minStock: 20,
-          maxStock: 200,
-          unitPrice: 24.99,
-          totalValue: 624.75,
-          location: 'Clothing Section - Rack 5',
-          supplier: 'EcoWear Co.',
-          status: 'active',
-          lastUpdated: new Date('2024-01-13'),
-          barcode: '123456789014'
-        },
-        {
-          id: '4',
-          name: 'Gaming Mouse RGB',
-          sku: 'GM-RGB-001',
-          category: 'electronics',
-          description: 'High-precision gaming mouse with RGB lighting',
-          currentStock: 15,
-          minStock: 8,
-          maxStock: 80,
-          unitPrice: 49.99,
-          totalValue: 749.85,
-          location: 'Electronics Section - Shelf 2',
-          supplier: 'GameTech Corp.',
-          status: 'active',
-          lastUpdated: new Date('2024-01-12'),
-          barcode: '123456789015'
-        },
-        {
-          id: '5',
-          name: 'Stainless Steel Water Bottle',
-          sku: 'WB-SS-500',
-          category: 'home',
-          description: '500ml stainless steel insulated water bottle',
-          currentStock: 45,
-          minStock: 15,
-          maxStock: 150,
-          unitPrice: 19.99,
-          totalValue: 899.55,
-          location: 'Home Goods - Aisle 1',
-          supplier: 'HomeEssentials Inc.',
-          status: 'active',
-          lastUpdated: new Date('2024-01-11'),
-          barcode: '123456789016'
-        }
-      ];
-
-      this.filteredProducts = [...this.products];
-      this.loading = false;
-    }, 1000);
+    this.productService.listProducts(this.selectedCategory || undefined, 0, 20).subscribe({
+      next: (response: any) => {
+        const apiProducts = Array.isArray(response?.data) ? response.data : [];
+        this.products = apiProducts.map((item: any) => this.mapApiProduct(item));
+        this.refreshCategoryOptionsFromProducts();
+        this.applyFilters();
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Failed to load products', error);
+        this.products = [];
+        this.filteredProducts = [];
+        this.loading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load products from API'
+        });
+      }
+    });
   }
 
   toggleFilters() {
@@ -256,6 +186,11 @@ export class ProductsComponent implements OnInit {
     this.showProductDialog = true;
   }
 
+  viewProduct(product: Product) {
+    if (!product?.id) return;
+    this.router.navigate(['/retail/inventory/products', product.id]);
+  }
+
   deleteProduct(event: Event, product: Product) {
     this.confirmationService.confirm({
       target: event.target as EventTarget,
@@ -277,23 +212,7 @@ export class ProductsComponent implements OnInit {
   }
 
   createProduct() {
-    this.editingProduct = {
-      id: '',
-      name: '',
-      sku: '',
-      category: '',
-      description: '',
-      currentStock: 0,
-      minStock: 0,
-      maxStock: 0,
-      unitPrice: 0,
-      totalValue: 0,
-      location: '',
-      supplier: '',
-      status: 'active',
-      lastUpdated: new Date()
-    };
-    this.showProductDialog = true;
+    this.router.navigate(['/retail/inventory/products/create']);
   }
 
   saveProduct() {
@@ -364,10 +283,53 @@ export class ProductsComponent implements OnInit {
   }
 
   get filteredCategoryOptions() {
+    return this.categoryOptions;
+  }
+
+  get productCategoryOptions() {
     return this.categoryOptions.filter(opt => opt.value !== '');
   }
 
   get filteredStatusOptions() {
-    return this.statusOptions.filter(opt => opt.value !== null);
+    return this.statusOptions;
+  }
+
+  private mapApiProduct(item: any): Product {
+    const currentStock = Number(item?.stock ?? item?.quantity ?? 0);
+    const unitPrice = Number(item?.selling_price ?? item?.price ?? 0);
+    const minStock = Number(item?.reorder_level ?? 0);
+    const maxStock = Number(item?.maximum_stock ?? 0);
+    return {
+      id: String(item?._id ?? item?.id ?? ''),
+      name: String(item?.name ?? 'Unknown product'),
+      sku: String(item?.sku ?? '-'),
+      category: String(item?.category ?? 'other'),
+      description: String(item?.description ?? ''),
+      currentStock,
+      minStock,
+      maxStock,
+      unitPrice,
+      totalValue: currentStock * unitPrice,
+      location: String(item?.location ?? '-'),
+      supplier: String(item?.supplier_id ?? '-'),
+      status: item?.is_active === false ? 'inactive' : 'active',
+      lastUpdated: item?.updated_at ? new Date(item.updated_at) : new Date(),
+      barcode: item?.barcode ?? ''
+    };
+  }
+
+  private refreshCategoryOptionsFromProducts(): void {
+    const dynamic = Array.from(
+      new Set(
+        this.products
+          .map((p) => (p.category || '').trim())
+          .filter((v) => !!v)
+      )
+    ).sort((a, b) => a.localeCompare(b));
+
+    this.categoryOptions = [
+      { label: 'All Categories', value: '' },
+      ...dynamic.map((value) => ({ label: this.getCategoryLabel(value), value }))
+    ];
   }
 }

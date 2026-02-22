@@ -1,133 +1,177 @@
-<!-- Inventory Products Management -->
-<div class="products-container">
-  <div class="header-section">
-    <div class="header-content">
-      <h1>Product Management</h1>
-      <p>Manage product catalog, stock levels, and inventory details</p>
-    </div>
-    <div class="header-actions">
-      <p-button
-        icon="pi pi-filter"
-        [outlined]="!showFilters"
-        (onClick)="toggleFilters()"
-        pTooltip="Toggle Filters">
-      </p-button>
-      <p-button
-        label="Add Product"
-        icon="pi pi-plus"
-        (onClick)="createProduct()">
-      </p-button>
-      <p-button
-        label="Export"
-        icon="pi pi-download"
-        [outlined]="true"
-        (onClick)="exportProducts()">
-      </p-button>
-      <p-button
-        label="Refresh"
-        icon="pi pi-refresh"
-        [outlined]="true"
-        (onClick)="refreshData()">
-      </p-button>
-    </div>
-  </div>
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
 
-  <!-- Filters Section -->
-  <div class="filters-section" *ngIf="showFilters">
-    <div class="filters-grid">
-      <div class="filter-item">
-        <label>Search Products</label>
-        <input
-          pInputText
-          [(ngModel)]="searchTerm"
-          (input)="applyFilters()"
-          placeholder="Search by name, SKU, or description..."
-          class="search-input">
+<div class="bg-gray-50 min-h-screen p-6">
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 rounded-lg flex items-center justify-center">
+          <i class="pi pi-box text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Inventory Products</h1>
+          <p class="text-gray-600">Manage product records from Retail domain API</p>
+        </div>
       </div>
-
-      <div class="filter-item">
-        <label>Category</label>
-        <p-dropdown
-          [(ngModel)]="selectedCategory"
-          [options]="filteredCategoryOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="All Categories"
-          (onChange)="applyFilters()">
-        </p-dropdown>
-      </div>
-
-      <div class="filter-item">
-        <label>Status</label>
-        <p-dropdown
-          [(ngModel)]="selectedStatus"
-          [options]="filteredStatusOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="All Status"
-          (onChange)="applyFilters()">
-        </p-dropdown>
-      </div>
-
-      <div class="filter-actions">
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
         <p-button
-          label="Clear Filters"
+          icon="pi pi-filter"
+          severity="secondary"
+          [outlined]="!showFilters"
+          [rounded]="true"
+          (onClick)="toggleFilters()"
+          pTooltip="Toggle Filters"
+          class="hidden sm:inline-flex">
+        </p-button>
+        <p-button
+          icon="pi pi-download"
+          severity="secondary"
           [outlined]="true"
-          size="small"
-          (onClick)="clearFilters()">
+          [rounded]="true"
+          (onClick)="exportProducts()"
+          pTooltip="Export Products"
+          class="hidden sm:inline-flex">
+        </p-button>
+        <p-button
+          icon="pi pi-refresh"
+          severity="info"
+          [outlined]="true"
+          [rounded]="true"
+          (onClick)="refreshData()"
+          pTooltip="Refresh"
+          class="hidden sm:inline-flex">
+        </p-button>
+        <p-button
+          label="Add Product"
+          icon="pi pi-plus"
+          severity="primary"
+          (onClick)="createProduct()">
         </p-button>
       </div>
     </div>
   </div>
 
-  <!-- Stats Cards -->
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="pi pi-box"></i>
-      </div>
-      <div class="stat-content">
-        <div class="stat-value">{{ getTotalProducts() }}</div>
-        <div class="stat-label">Total Products</div>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="pi pi-dollar"></i>
-      </div>
-      <div class="stat-content">
-        <div class="stat-value">{{ formatCurrency(getTotalValue()) }}</div>
-        <div class="stat-label">Total Value</div>
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Total Products</p>
+          <p class="text-3xl font-bold text-gray-900">{{ getTotalProducts() }}</p>
+        </div>
+        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-box text-blue-600 text-xl"></i>
+        </div>
       </div>
     </div>
 
-    <div class="stat-card warning">
-      <div class="stat-icon">
-        <i class="pi pi-exclamation-triangle"></i>
-      </div>
-      <div class="stat-content">
-        <div class="stat-value">{{ getLowStockProducts() }}</div>
-        <div class="stat-label">Low Stock</div>
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Total Value</p>
+          <p class="text-2xl font-bold text-green-600">{{ formatCurrency(getTotalValue()) }}</p>
+        </div>
+        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-dollar text-green-600 text-xl"></i>
+        </div>
       </div>
     </div>
 
-    <div class="stat-card danger">
-      <div class="stat-icon">
-        <i class="pi pi-times-circle"></i>
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Low Stock</p>
+          <p class="text-3xl font-bold text-yellow-600">{{ getLowStockProducts() }}</p>
+        </div>
+        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-exclamation-triangle text-yellow-600 text-xl"></i>
+        </div>
       </div>
-      <div class="stat-content">
-        <div class="stat-value">{{ getOutOfStockProducts() }}</div>
-        <div class="stat-label">Out of Stock</div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Out Of Stock</p>
+          <p class="text-3xl font-bold text-red-600">{{ getOutOfStockProducts() }}</p>
+        </div>
+        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-times-circle text-red-600 text-xl"></i>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Products Table -->
-  <div class="products-table-section">
+  <div class="bg-white rounded-lg shadow-sm mb-6" *ngIf="showFilters">
+    <div class="p-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-search"></i>
+            <input
+              pInputText
+              [(ngModel)]="searchTerm"
+              (input)="applyFilters()"
+              placeholder="Search by name, SKU, description..."
+              class="w-full" />
+          </span>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+          <p-dropdown
+            [(ngModel)]="selectedCategory"
+            [options]="filteredCategoryOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="All Categories"
+            (onChange)="applyFilters()"
+            class="w-full">
+          </p-dropdown>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+          <p-dropdown
+            [(ngModel)]="selectedStatus"
+            [options]="filteredStatusOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="All Status"
+            (onChange)="applyFilters()"
+            class="w-full">
+          </p-dropdown>
+        </div>
+
+        <div class="flex items-end">
+          <p-button
+            label="Clear Filters"
+            icon="pi pi-times"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="clearFilters()">
+          </p-button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 p-12 text-center" *ngIf="loading">
+    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="pi pi-spin pi-spinner text-blue-500 text-2xl"></i>
+    </div>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">Loading products...</h3>
+    <p class="text-gray-500">Please wait while data is fetched from Retail API.</p>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" *ngIf="!loading">
+    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+      <h2 class="text-lg font-semibold text-gray-900">Product List ({{ filteredProducts.length }})</h2>
+      <p class="text-sm text-gray-500">Source: Retail Domain API</p>
+    </div>
+
     <p-table
       [value]="filteredProducts"
-      [loading]="loading"
       styleClass="p-datatable-sm"
       [paginator]="true"
       [rows]="10"
@@ -136,13 +180,11 @@
       <ng-template pTemplate="header">
         <tr>
           <th>Product</th>
-          <th>SKU</th>
+          <th>SKU / Barcode</th>
           <th>Category</th>
-          <th>Stock Status</th>
-          <th>Current Stock</th>
+          <th>Stock</th>
           <th>Unit Price</th>
           <th>Total Value</th>
-          <th>Location</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
@@ -152,7 +194,7 @@
           <td>
             <div class="product-info">
               <div class="product-name">{{ product.name }}</div>
-              <div class="product-description">{{ product.description }}</div>
+              <div class="product-description">{{ product.description || '-' }}</div>
             </div>
           </td>
           <td>
@@ -163,12 +205,6 @@
           </td>
           <td>{{ getCategoryLabel(product.category) }}</td>
           <td>
-            <p-badge
-              [value]="getStockStatus(product).status"
-              [severity]="getStockStatus(product).severity">
-            </p-badge>
-          </td>
-          <td>
             <div class="stock-info">
               <span class="current-stock">{{ product.currentStock }}</span>
               <span class="stock-limits">({{ product.minStock }}-{{ product.maxStock }})</span>
@@ -176,7 +212,6 @@
           </td>
           <td>{{ formatCurrency(product.unitPrice) }}</td>
           <td>{{ formatCurrency(product.totalValue) }}</td>
-          <td>{{ product.location }}</td>
           <td>
             <p-badge
               [value]="product.status"
@@ -185,6 +220,13 @@
           </td>
           <td>
             <div class="action-buttons">
+              <p-button
+                icon="pi pi-eye"
+                [outlined]="true"
+                size="small"
+                (onClick)="viewProduct(product)"
+                pTooltip="View Product">
+              </p-button>
               <p-button
                 icon="pi pi-pencil"
                 [outlined]="true"
@@ -206,9 +248,9 @@
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="10" class="empty-message">
+          <td colspan="8" class="empty-message">
             <div class="empty-content">
-              <i class="pi pi-box"></i>
+              <i class="pi pi-inbox"></i>
               <p>No products found</p>
             </div>
           </td>
@@ -217,7 +259,6 @@
     </p-table>
   </div>
 
-  <!-- Product Dialog -->
   <p-dialog
     [(visible)]="showProductDialog"
     [header]="editingProduct?.id ? 'Edit Product' : 'Add New Product'"
@@ -250,7 +291,7 @@
           <label for="category">Category *</label>
           <p-dropdown
             [(ngModel)]="editingProduct.category"
-            [options]="filteredCategoryOptions"
+            [options]="productCategoryOptions"
             optionLabel="label"
             optionValue="value"
             placeholder="Select category">
@@ -365,9 +406,7 @@
       <p-button
         label="Save"
         icon="pi pi-check"
-        severity="success"
-        (onClick)="saveProduct()"
-        [disabled]="!editingProduct?.name || !editingProduct?.sku || !editingProduct?.category">
+        (onClick)="saveProduct()">
       </p-button>
     </ng-template>
   </p-dialog>

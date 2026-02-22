@@ -6,30 +6,23 @@ import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
-import { InputTextarea } from 'primeng/inputtextarea';
-import { CardModule } from 'primeng/card';
-import { BadgeModule } from 'primeng/badge';
-import { MessageModule } from 'primeng/message';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { ToastModule } from 'primeng/toast';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { BadgeModule } from 'primeng/badge';
+import { MessageService } from 'primeng/api';
+import { WarehouseService } from '../../../services/retail.service';
 
-interface Location {
+interface WarehouseItem {
   id: string;
   name: string;
-  type: 'warehouse' | 'store' | 'office' | 'external';
+  location: string;
   address: string;
   city: string;
-  state: string;
-  zipCode: string;
   country: string;
-  manager?: string;
-  capacity: number;
-  currentStock: number;
-  status: 'active' | 'inactive' | 'maintenance';
-  description?: string;
-  contactPhone?: string;
-  operatingHours?: string;
+  totalCapacity: number;
+  isActive: boolean;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 }
 
 @Component({
@@ -43,46 +36,41 @@ interface Location {
     DialogModule,
     InputTextModule,
     DropdownModule,
-    InputTextarea,
-    CardModule,
-    BadgeModule,
-    MessageModule,
-    ConfirmDialogModule,
-    ToastModule
+    InputNumberModule,
+    ToastModule,
+    BadgeModule
   ],
   templateUrl: './locations.component.html',
-  styleUrl: './locations.component.scss',
-  providers: [ConfirmationService, MessageService]
+  providers: [MessageService]
 })
 export class LocationsComponent implements OnInit {
-  showLocationDialog = false;
-  editingLocation: Location | null = null;
+  locations: WarehouseItem[] = [];
+  filteredLocations: WarehouseItem[] = [];
 
-  // Filters
   searchTerm = '';
-  selectedType = '';
   selectedStatus = '';
 
-  // Data
-  locations: Location[] = [];
-  filteredLocations: Location[] = [];
+  loading = false;
+  saving = false;
+  showLocationDialog = false;
+  dialogMode: 'create' | 'view' = 'create';
 
-  typeOptions = [
-    { label: 'Warehouse', value: 'warehouse' },
-    { label: 'Store', value: 'store' },
-    { label: 'Office', value: 'office' },
-    { label: 'External', value: 'external' }
-  ];
+  editingLocation: WarehouseItem | null = null;
 
   statusOptions = [
+    { label: 'All Status', value: '' },
     { label: 'Active', value: 'active' },
-    { label: 'Inactive', value: 'inactive' },
-    { label: 'Maintenance', value: 'maintenance' }
+    { label: 'Inactive', value: 'inactive' }
+  ];
+
+  dialogStatusOptions = [
+    { label: 'Active', value: true },
+    { label: 'Inactive', value: false }
   ];
 
   constructor(
-    private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private warehouseService: WarehouseService
   ) { }
 
   ngOnInit() {
@@ -90,82 +78,45 @@ export class LocationsComponent implements OnInit {
   }
 
   loadLocations() {
-    // Mock data - replace with actual API call
-    this.locations = [
-      {
-        id: '1',
-        name: 'Main Warehouse',
-        type: 'warehouse',
-        address: '123 Industrial Blvd',
-        city: 'Springfield',
-        state: 'IL',
-        zipCode: '62701',
-        country: 'USA',
-        manager: 'John Smith',
-        capacity: 10000,
-        currentStock: 7500,
-        status: 'active',
-        description: 'Primary storage facility',
-        contactPhone: '+1-555-0123',
-        operatingHours: 'Mon-Fri 8AM-6PM'
+    this.loading = true;
+    this.warehouseService.listWarehouses(0, 50).subscribe({
+      next: (resp: any) => {
+        const data = Array.isArray(resp?.data) ? resp.data : [];
+        this.locations = data.map((item: any) => this.mapWarehouse(item));
+        this.applyFilters();
+        this.loading = false;
       },
-      {
-        id: '2',
-        name: 'Downtown Store',
-        type: 'store',
-        address: '456 Main Street',
-        city: 'Springfield',
-        state: 'IL',
-        zipCode: '62702',
-        country: 'USA',
-        manager: 'Sarah Johnson',
-        capacity: 2000,
-        currentStock: 1800,
-        status: 'active',
-        description: 'Retail storefront',
-        contactPhone: '+1-555-0456',
-        operatingHours: 'Mon-Sat 9AM-9PM, Sun 10AM-6PM'
-      },
-      {
-        id: '3',
-        name: 'Distribution Center',
-        type: 'warehouse',
-        address: '789 Logistics Way',
-        city: 'Springfield',
-        state: 'IL',
-        zipCode: '62703',
-        country: 'USA',
-        manager: 'Mike Wilson',
-        capacity: 15000,
-        currentStock: 12000,
-        status: 'maintenance',
-        description: 'Secondary distribution facility',
-        contactPhone: '+1-555-0789',
-        operatingHours: '24/7'
+      error: (err: any) => {
+        this.loading = false;
+        this.locations = [];
+        this.filteredLocations = [];
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: err?.error?.message || 'Failed to load warehouses'
+        });
       }
-    ];
-    this.applyFilters();
+    });
   }
 
   applyFilters() {
-    this.filteredLocations = this.locations.filter(location => {
-      const matchesSearch = !this.searchTerm ||
-        location.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        location.address.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        location.city.toLowerCase().includes(this.searchTerm.toLowerCase());
+    const keyword = this.searchTerm.trim().toLowerCase();
+    this.filteredLocations = this.locations.filter((location) => {
+      const matchesSearch = !keyword
+        || location.name.toLowerCase().includes(keyword)
+        || location.location.toLowerCase().includes(keyword)
+        || location.address.toLowerCase().includes(keyword)
+        || location.city.toLowerCase().includes(keyword)
+        || location.country.toLowerCase().includes(keyword);
 
-      const matchesType = !this.selectedType || location.type === this.selectedType;
-      const matchesStatus = !this.selectedStatus || location.status === this.selectedStatus;
+      const statusKey = location.isActive ? 'active' : 'inactive';
+      const matchesStatus = !this.selectedStatus || statusKey === this.selectedStatus;
 
-      return matchesSearch && matchesType && matchesStatus;
+      return matchesSearch && matchesStatus;
     });
   }
 
   onSearch() {
-    this.applyFilters();
-  }
-
-  onTypeChange() {
     this.applyFilters();
   }
 
@@ -175,55 +126,90 @@ export class LocationsComponent implements OnInit {
 
   clearFilters() {
     this.searchTerm = '';
-    this.selectedType = '';
     this.selectedStatus = '';
     this.applyFilters();
   }
 
   createLocation() {
+    this.dialogMode = 'create';
     this.editingLocation = {
       id: '',
       name: '',
-      type: 'warehouse',
+      location: '',
       address: '',
       city: '',
-      state: '',
-      zipCode: '',
       country: '',
-      capacity: 0,
-      currentStock: 0,
-      status: 'active'
+      totalCapacity: 0,
+      isActive: true,
+      createdAt: null,
+      updatedAt: null
     };
     this.showLocationDialog = true;
   }
 
-  editLocation(location: Location) {
-    this.editingLocation = { ...location };
-    this.showLocationDialog = true;
+  viewLocation(location: WarehouseItem) {
+    this.dialogMode = 'view';
+    this.saving = true;
+    this.warehouseService.getWarehouse(location.id).subscribe({
+      next: (resp: any) => {
+        this.editingLocation = this.mapWarehouse(resp?.data || location);
+        this.showLocationDialog = true;
+        this.saving = false;
+      },
+      error: () => {
+        this.editingLocation = { ...location };
+        this.showLocationDialog = true;
+        this.saving = false;
+      }
+    });
   }
 
   saveLocation() {
-    if (!this.editingLocation) return;
-
-    if (this.editingLocation.id) {
-      // Update existing
-      const index = this.locations.findIndex(l => l.id === this.editingLocation!.id);
-      if (index !== -1) {
-        this.locations[index] = { ...this.editingLocation! };
-      }
-    } else {
-      // Add new
-      this.editingLocation.id = Date.now().toString();
-      this.locations.unshift({ ...this.editingLocation! });
+    if (!this.editingLocation || this.dialogMode !== 'create') {
+      this.showLocationDialog = false;
+      return;
     }
 
-    this.applyFilters();
-    this.showLocationDialog = false;
-    this.editingLocation = null;
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'Location saved successfully'
+    const payload = {
+      name: this.editingLocation.name.trim(),
+      location: this.editingLocation.location.trim(),
+      address: this.editingLocation.address.trim(),
+      city: this.editingLocation.city.trim(),
+      country: this.editingLocation.country.trim(),
+      total_capacity: Number(this.editingLocation.totalCapacity || 0),
+      is_active: this.editingLocation.isActive
+    };
+
+    if (!payload.name || !payload.location || !payload.address || !payload.city || !payload.country) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Validation',
+        detail: 'Name, location, address, city, and country are required.'
+      });
+      return;
+    }
+
+    this.saving = true;
+    this.warehouseService.createWarehouse(payload).subscribe({
+      next: () => {
+        this.saving = false;
+        this.showLocationDialog = false;
+        this.editingLocation = null;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Created',
+          detail: 'Warehouse created successfully'
+        });
+        this.loadLocations();
+      },
+      error: (err: any) => {
+        this.saving = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Create Failed',
+          detail: err?.error?.message || 'Failed to create warehouse'
+        });
+      }
     });
   }
 
@@ -232,76 +218,27 @@ export class LocationsComponent implements OnInit {
     this.editingLocation = null;
   }
 
-  deleteLocation(location: Location) {
-    this.confirmationService.confirm({
-      message: `Are you sure you want to delete location "${location.name}"?`,
-      header: 'Confirm Deletion',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.locations = this.locations.filter(l => l.id !== location.id);
-        this.applyFilters();
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Location deleted successfully'
-        });
-      }
-    });
-  }
-
   getActiveLocationsCount(): number {
-    return this.locations.filter(loc => loc.status === 'active').length;
-  }
-
-  getMaintenanceLocationsCount(): number {
-    return this.locations.filter(loc => loc.status === 'maintenance').length;
+    return this.locations.filter(loc => loc.isActive).length;
   }
 
   getTotalCapacity(): number {
-    return this.locations.reduce((total, loc) => total + loc.capacity, 0);
+    return this.locations.reduce((total, loc) => total + loc.totalCapacity, 0);
   }
 
-  getTypeSeverity(type: string): string {
-    switch (type) {
-      case 'warehouse': return 'info';
-      case 'store': return 'success';
-      case 'office': return 'warning';
-      case 'external': return 'danger';
-      default: return 'info';
-    }
+  getStatusSeverity(isActive: boolean): 'success' | 'danger' {
+    return isActive ? 'success' : 'danger';
   }
 
-  getStatusSeverity(status: string): string {
-    switch (status) {
-      case 'active': return 'success';
-      case 'inactive': return 'danger';
-      case 'maintenance': return 'warning';
-      default: return 'info';
-    }
-  }
-
-  getCapacityUtilization(location: Location): number {
-    return location.capacity > 0 ? (location.currentStock / location.capacity) * 100 : 0;
-  }
-
-  getCapacityStatus(location: Location): string {
-    const utilization = this.getCapacityUtilization(location);
-    if (utilization >= 90) return 'critical';
-    if (utilization >= 75) return 'high';
-    if (utilization >= 50) return 'medium';
-    return 'low';
+  getStatusLabel(isActive: boolean): string {
+    return isActive ? 'active' : 'inactive';
   }
 
   formatNumber(value: number): string {
-    return new Intl.NumberFormat('en-US').format(value);
-  }
-
-  formatPercentage(value: number): string {
-    return `${value.toFixed(1)}%`;
+    return new Intl.NumberFormat('en-US').format(value || 0);
   }
 
   exportLocations() {
-    // Implement export functionality
     this.messageService.add({
       severity: 'info',
       summary: 'Export',
@@ -316,5 +253,20 @@ export class LocationsComponent implements OnInit {
       summary: 'Refreshed',
       detail: 'Data refreshed successfully'
     });
+  }
+
+  private mapWarehouse(raw: any): WarehouseItem {
+    return {
+      id: String(raw?._id || raw?.id || ''),
+      name: String(raw?.name || ''),
+      location: String(raw?.location || ''),
+      address: String(raw?.address || ''),
+      city: String(raw?.city || ''),
+      country: String(raw?.country || ''),
+      totalCapacity: Number(raw?.total_capacity || 0),
+      isActive: raw?.is_active !== false,
+      createdAt: raw?.created_at ? new Date(raw.created_at) : null,
+      updatedAt: raw?.updated_at ? new Date(raw.updated_at) : null
+    };
   }
 }

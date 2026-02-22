@@ -110,11 +110,11 @@ export class ProductCatalogComponent implements OnInit {
   }
 
   saveProduct(): void {
-    if (!this.formData.name || !this.formData.category || !this.formData.price) {
+    if (!this.formData.name || !this.formData.category || !this.formData.sku || !this.formData.barcode || this.formData.selling_price === undefined || this.formData.selling_price === null) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Validation',
-        detail: 'Please fill in required fields'
+        detail: 'Please fill in all required fields'
       });
       return;
     }
@@ -177,7 +177,8 @@ export class ProductCatalogComponent implements OnInit {
 
   getMarginPercentage(product: Product): number {
     if (!product.cost_price) return 0;
-    return ((product.price - product.cost_price) / product.cost_price) * 100;
+    const sellingPrice = product.selling_price ?? product.price ?? 0;
+    return ((sellingPrice - product.cost_price) / product.cost_price) * 100;
   }
 
   get filteredProducts(): Product[] {
@@ -195,12 +196,18 @@ export class ProductCatalogComponent implements OnInit {
 
   private getEmptyProductForm(): Partial<Product> {
     return {
+      sku: '',
       name: '',
+      barcode: '',
       description: '',
       category: '',
-      price: 0,
+      selling_price: 0,
       cost_price: 0,
-      sku: '',
+      subcategory: '',
+      discount_price: 0,
+      reorder_level: 10,
+      maximum_stock: 0,
+      supplier_id: '',
       is_active: true
     };
   }

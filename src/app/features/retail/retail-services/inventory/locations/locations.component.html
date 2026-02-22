@@ -1,129 +1,122 @@
-<!-- Inventory Locations Management -->
-<div class="locations-container">
-  <div class="header-section">
-    <div class="header-content">
-      <h1><i class="pi pi-map-marker"></i> Location Management</h1>
-      <p>Manage warehouses, stores, and storage locations</p>
-    </div>
-    <div class="header-actions">
-      <p-button
-        label="Add Location"
-        icon="pi pi-plus"
-        (onClick)="createLocation()">
-      </p-button>
-      <p-button
-        label="Export"
-        icon="pi pi-download"
-        [outlined]="true"
-        (onClick)="exportLocations()">
-      </p-button>
-      <p-button
-        label="Refresh"
-        icon="pi pi-refresh"
-        [outlined]="true"
-        (onClick)="refreshData()">
-      </p-button>
-    </div>
-  </div>
+<p-toast></p-toast>
 
-  <!-- Filters Section -->
-  <div class="filters-section">
-    <div class="filters-grid">
-      <div class="filter-item">
-        <label>Search</label>
-        <input
-          pInputText
-          [(ngModel)]="searchTerm"
-          (input)="onSearch()"
-          placeholder="Search by name, address, city..."
-          class="search-input">
+<div class="bg-gray-50 min-h-screen p-6">
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
+          <i class="pi pi-map-marker text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Inventory Locations</h1>
+          <p class="text-gray-600">Manage warehouses from Retail API</p>
+        </div>
       </div>
-
-      <div class="filter-item">
-        <label>Type</label>
-        <p-dropdown
-          [(ngModel)]="selectedType"
-          [options]="typeOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="All Types"
-          (onChange)="onTypeChange()">
-        </p-dropdown>
-      </div>
-
-      <div class="filter-item">
-        <label>Status</label>
-        <p-dropdown
-          [(ngModel)]="selectedStatus"
-          [options]="statusOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="All Status"
-          (onChange)="onStatusChange()">
-        </p-dropdown>
-      </div>
-
-      <div class="filter-actions">
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
         <p-button
-          label="Clear Filters"
+          icon="pi pi-download"
+          severity="secondary"
           [outlined]="true"
-          size="small"
-          (onClick)="clearFilters()">
+          [rounded]="true"
+          (onClick)="exportLocations()"
+          pTooltip="Export"
+          class="hidden sm:inline-flex">
+        </p-button>
+        <p-button
+          icon="pi pi-refresh"
+          severity="info"
+          [outlined]="true"
+          [rounded]="true"
+          (onClick)="refreshData()"
+          pTooltip="Refresh"
+          class="hidden sm:inline-flex">
+        </p-button>
+        <p-button
+          label="Add Location"
+          icon="pi pi-plus"
+          severity="primary"
+          (onClick)="createLocation()">
         </p-button>
       </div>
     </div>
   </div>
 
-  <!-- Summary Cards -->
-  <div class="summary-cards">
-    <p-card class="summary-card">
-      <ng-template pTemplate="header">
-        <div class="card-header">
-          <i class="pi pi-building card-icon warehouses"></i>
-          <div class="card-title">Total Locations</div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Total Locations</p>
+          <p class="text-3xl font-bold text-gray-900">{{ locations.length }}</p>
         </div>
-      </ng-template>
-      <div class="card-value">{{ locations.length }}</div>
-      <div class="card-subtitle">All storage locations</div>
-    </p-card>
+        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-building text-blue-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
 
-    <p-card class="summary-card">
-      <ng-template pTemplate="header">
-        <div class="card-header">
-          <i class="pi pi-check-circle card-icon active"></i>
-          <div class="card-title">Active Locations</div>
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Active Locations</p>
+          <p class="text-3xl font-bold text-green-600">{{ getActiveLocationsCount() }}</p>
         </div>
-      </ng-template>
-      <div class="card-value">{{ getActiveLocationsCount() }}</div>
-      <div class="card-subtitle">Currently operational</div>
-    </p-card>
+        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-check-circle text-green-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
 
-    <p-card class="summary-card">
-      <ng-template pTemplate="header">
-        <div class="card-header">
-          <i class="pi pi-cog card-icon maintenance"></i>
-          <div class="card-title">Under Maintenance</div>
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Total Capacity</p>
+          <p class="text-3xl font-bold text-purple-600">{{ formatNumber(getTotalCapacity()) }}</p>
         </div>
-      </ng-template>
-      <div class="card-value">{{ getMaintenanceLocationsCount() }}</div>
-      <div class="card-subtitle">Temporarily unavailable</div>
-    </p-card>
-
-    <p-card class="summary-card">
-      <ng-template pTemplate="header">
-        <div class="card-header">
-          <i class="pi pi-chart-bar card-icon capacity"></i>
-          <div class="card-title">Total Capacity</div>
+        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-chart-bar text-purple-600 text-xl"></i>
         </div>
-      </ng-template>
-      <div class="card-value">{{ formatNumber(getTotalCapacity()) }}</div>
-      <div class="card-subtitle">Storage units available</div>
-    </p-card>
+      </div>
+    </div>
   </div>
 
-  <!-- Locations Table -->
-  <div class="locations-table-section">
+  <div class="bg-white rounded-lg shadow-sm mb-6">
+    <div class="p-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-search"></i>
+            <input pInputText [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Search by name, location, city..." class="w-full" />
+          </span>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+          <p-dropdown [(ngModel)]="selectedStatus" [options]="statusOptions" optionLabel="label" optionValue="value" (onChange)="onStatusChange()" class="w-full"></p-dropdown>
+        </div>
+
+        <div class="flex items-end">
+          <p-button label="Clear Filters" icon="pi pi-times" severity="secondary" [outlined]="true" (onClick)="clearFilters()"></p-button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+      <h2 class="text-lg font-semibold text-gray-900">Warehouse List ({{ filteredLocations.length }})</h2>
+      <p class="text-sm text-gray-500">Source: Retail Domain API</p>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-200 p-10 text-center" *ngIf="loading">
+      <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+        <i class="pi pi-spin pi-spinner text-blue-500 text-xl"></i>
+      </div>
+      <p class="text-gray-600">Loading warehouses...</p>
+    </div>
+
     <p-table
+      *ngIf="!loading"
       [value]="filteredLocations"
       styleClass="p-datatable-sm"
       [paginator]="true"
@@ -133,266 +126,99 @@
       <ng-template pTemplate="header">
         <tr>
           <th>Name</th>
-          <th>Type</th>
+          <th>Location</th>
           <th>Address</th>
-          <th>Manager</th>
-          <th>Capacity</th>
-          <th>Current Stock</th>
-          <th>Utilization</th>
+          <th>City</th>
+          <th>Country</th>
+          <th>Total Capacity</th>
           <th>Status</th>
+          <th>Updated At</th>
           <th>Actions</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-location>
         <tr>
+          <td class="font-semibold text-gray-900">{{ location.name }}</td>
+          <td>{{ location.location || '-' }}</td>
+          <td>{{ location.address || '-' }}</td>
+          <td>{{ location.city || '-' }}</td>
+          <td>{{ location.country || '-' }}</td>
+          <td>{{ formatNumber(location.totalCapacity) }}</td>
           <td>
-            <div class="location-info">
-              <div class="location-name">{{ location.name }}</div>
-              <div class="location-description" *ngIf="location.description">{{ location.description }}</div>
-            </div>
+            <p-badge [value]="getStatusLabel(location.isActive)" [severity]="getStatusSeverity(location.isActive)"></p-badge>
           </td>
+          <td>{{ location.updatedAt | date: 'short' }}</td>
           <td>
-            <p-badge
-              [value]="location.type"
-              [severity]="getTypeSeverity(location.type)">
-            </p-badge>
-          </td>
-          <td>
-            <div class="address-info">
-              <div>{{ location.address }}</div>
-              <div>{{ location.city }}, {{ location.state }} {{ location.zipCode }}</div>
-              <div>{{ location.country }}</div>
-            </div>
-          </td>
-          <td>{{ location.manager || 'N/A' }}</td>
-          <td>{{ formatNumber(location.capacity) }}</td>
-          <td>{{ formatNumber(location.currentStock) }}</td>
-          <td>
-            <div class="utilization-info">
-              <div class="utilization-bar">
-                <div
-                  class="utilization-fill"
-                  [style.width.%]="getCapacityUtilization(location)"
-                  [ngClass]="getCapacityStatus(location)">
-                </div>
-              </div>
-              <div class="utilization-text">{{ formatPercentage(getCapacityUtilization(location)) }}</div>
-            </div>
-          </td>
-          <td>
-            <p-badge
-              [value]="location.status"
-              [severity]="getStatusSeverity(location.status)">
-            </p-badge>
-          </td>
-          <td>
-            <div class="action-buttons">
-              <p-button
-                icon="pi pi-pencil"
-                [outlined]="true"
-                size="small"
-                (onClick)="editLocation(location)"
-                pTooltip="Edit Location">
-              </p-button>
-              <p-button
-                icon="pi pi-trash"
-                [outlined]="true"
-                severity="danger"
-                size="small"
-                (onClick)="deleteLocation(location)"
-                pTooltip="Delete Location">
-              </p-button>
+            <div class="flex gap-1">
+              <p-button icon="pi pi-eye" [outlined]="true" size="small" (onClick)="viewLocation(location)" pTooltip="View Detail"></p-button>
             </div>
           </td>
         </tr>
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="9" class="empty-message">
-          <div class="empty-content">
-            <i class="pi pi-map-marker"></i>
-            <p>No locations found</p>
-          </div>
-        </td>
-      </tr>
+          <td colspan="9" class="text-center py-12 text-gray-500">No locations found</td>
+        </tr>
       </ng-template>
     </p-table>
   </div>
 
-  <!-- Location Dialog -->
   <p-dialog
     [(visible)]="showLocationDialog"
-    [header]="editingLocation?.id ? 'Edit Location' : 'Add New Location'"
+    [header]="dialogMode === 'create' ? 'Add New Location' : 'Location Detail'"
     [modal]="true"
     [style]="{width: '700px'}"
-    [closable]="true">
-    <div class="location-form" *ngIf="editingLocation">
-      <div class="form-grid">
-        <div class="form-field">
-          <label for="name">Location Name *</label>
-          <input
-            pInputText
-            id="name"
-            [(ngModel)]="editingLocation.name"
-            placeholder="Enter location name"
-            class="form-input">
-        </div>
+    [closable]="!saving">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" *ngIf="editingLocation">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+        <input pInputText [(ngModel)]="editingLocation.name" [disabled]="dialogMode === 'view'" class="w-full" placeholder="Warehouse name">
+      </div>
 
-        <div class="form-field">
-          <label for="type">Type *</label>
-          <p-dropdown
-            [(ngModel)]="editingLocation.type"
-            [options]="typeOptions"
-            optionLabel="label"
-            optionValue="value">
-          </p-dropdown>
-        </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Location *</label>
+        <input pInputText [(ngModel)]="editingLocation.location" [disabled]="dialogMode === 'view'" class="w-full" placeholder="Location code/name">
+      </div>
 
-        <div class="form-field">
-          <label for="address">Address *</label>
-          <input
-            pInputText
-            id="address"
-            [(ngModel)]="editingLocation.address"
-            placeholder="Enter street address"
-            class="form-input">
-        </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Address *</label>
+        <input pInputText [(ngModel)]="editingLocation.address" [disabled]="dialogMode === 'view'" class="w-full" placeholder="Address">
+      </div>
 
-        <div class="form-field">
-          <label for="city">City *</label>
-          <input
-            pInputText
-            id="city"
-            [(ngModel)]="editingLocation.city"
-            placeholder="Enter city"
-            class="form-input">
-        </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">City *</label>
+        <input pInputText [(ngModel)]="editingLocation.city" [disabled]="dialogMode === 'view'" class="w-full" placeholder="City">
+      </div>
 
-        <div class="form-field">
-          <label for="state">State/Province *</label>
-          <input
-            pInputText
-            id="state"
-            [(ngModel)]="editingLocation.state"
-            placeholder="Enter state/province"
-            class="form-input">
-        </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Country *</label>
+        <input pInputText [(ngModel)]="editingLocation.country" [disabled]="dialogMode === 'view'" class="w-full" placeholder="Country">
+      </div>
 
-        <div class="form-field">
-          <label for="zipCode">ZIP/Postal Code *</label>
-          <input
-            pInputText
-            id="zipCode"
-            [(ngModel)]="editingLocation.zipCode"
-            placeholder="Enter ZIP/postal code"
-            class="form-input">
-        </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Total Capacity</label>
+        <p-inputNumber [(ngModel)]="editingLocation.totalCapacity" [useGrouping]="false" [disabled]="dialogMode === 'view'" class="w-full"></p-inputNumber>
+      </div>
 
-        <div class="form-field">
-          <label for="country">Country *</label>
-          <input
-            pInputText
-            id="country"
-            [(ngModel)]="editingLocation.country"
-            placeholder="Enter country"
-            class="form-input">
-        </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+        <p-dropdown [(ngModel)]="editingLocation.isActive" [options]="dialogStatusOptions" optionLabel="label" optionValue="value" [disabled]="dialogMode === 'view'" class="w-full"></p-dropdown>
+      </div>
 
-        <div class="form-field">
-          <label for="manager">Manager</label>
-          <input
-            pInputText
-            id="manager"
-            [(ngModel)]="editingLocation.manager"
-            placeholder="Enter manager name"
-            class="form-input">
-        </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Created At</label>
+        <input pInputText [ngModel]="editingLocation.createdAt | date:'medium'" disabled class="w-full" />
+      </div>
 
-        <div class="form-field">
-          <label for="capacity">Capacity *</label>
-          <input
-            pInputText
-            id="capacity"
-            [(ngModel)]="editingLocation.capacity"
-            type="number"
-            placeholder="0"
-            class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label for="currentStock">Current Stock</label>
-          <input
-            pInputText
-            id="currentStock"
-            [(ngModel)]="editingLocation.currentStock"
-            type="number"
-            placeholder="0"
-            class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label for="status">Status</label>
-          <p-dropdown
-            [(ngModel)]="editingLocation.status"
-            [options]="statusOptions"
-            optionLabel="label"
-            optionValue="value">
-          </p-dropdown>
-        </div>
-
-        <div class="form-field">
-          <label for="contactPhone">Contact Phone</label>
-          <input
-            pInputText
-            id="contactPhone"
-            [(ngModel)]="editingLocation.contactPhone"
-            placeholder="Enter contact phone"
-            class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label for="operatingHours">Operating Hours</label>
-          <input
-            pInputText
-            id="operatingHours"
-            [(ngModel)]="editingLocation.operatingHours"
-            placeholder="e.g., Mon-Fri 9AM-5PM"
-            class="form-input">
-        </div>
-
-        <div class="form-field full-width">
-          <label for="description">Description</label>
-          <textarea
-            pInputTextarea
-            [(ngModel)]="editingLocation.description"
-            placeholder="Additional description..."
-            rows="3"
-            class="form-textarea">
-          </textarea>
-        </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Updated At</label>
+        <input pInputText [ngModel]="editingLocation.updatedAt | date:'medium'" disabled class="w-full" />
       </div>
     </div>
 
     <ng-template pTemplate="footer">
-      <p-button
-        label="Cancel"
-        icon="pi pi-times"
-        [outlined]="true"
-        (onClick)="cancelEdit()">
-      </p-button>
-      <p-button
-        label="Save"
-        icon="pi pi-check"
-        severity="success"
-        (onClick)="saveLocation()"
-        [disabled]="!editingLocation?.name || !editingLocation?.type || !editingLocation?.address || !editingLocation?.city || !editingLocation?.state || !editingLocation?.zipCode || !editingLocation?.country || !editingLocation?.capacity">
-      </p-button>
+      <p-button label="Close" icon="pi pi-times" [outlined]="true" (onClick)="cancelEdit()"></p-button>
+      <p-button *ngIf="dialogMode === 'create'" label="Create" icon="pi pi-check" [loading]="saving" (onClick)="saveLocation()"></p-button>
     </ng-template>
   </p-dialog>
-
-  <!-- Confirm Dialog -->
-  <p-confirmDialog></p-confirmDialog>
-
-  <!-- Toast Messages -->
-  <p-toast></p-toast>
 </div>

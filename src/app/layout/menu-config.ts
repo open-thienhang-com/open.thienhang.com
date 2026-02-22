@@ -76,19 +76,16 @@ export const menu: MenuItem[] = [
         ]
     },
     {
-        label: 'Planning',
-        icon: 'pi pi-truck',
+        label: 'Inventory',
+        icon: 'pi pi-box',
         type: 'item',
         expanded: false,
         children: [
-            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-cog' }
+            { label: 'Online Store', url: '/retail/ecommerce', icon: 'pi pi-shopping-bag' },
+            { label: 'Partners', url: '/retail/inventory/partners', icon: 'pi pi-briefcase' },
+            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-cog' },
+            { label: 'Fleet', url: '/planning/fleet', icon: 'pi pi-truck' }
         ]
-    },
-    {
-        label: 'Fleet',
-        icon: 'pi pi-truck',
-        type: 'item',
-        url: '/planning/fleet'
     },
     {
         label: 'Travel',

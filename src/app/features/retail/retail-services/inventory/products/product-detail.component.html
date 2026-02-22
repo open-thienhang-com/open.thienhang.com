@@ -1,0 +1,110 @@
+<div class="bg-gray-50 min-h-screen p-6">
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+        <i class="pi pi-box text-white text-xl"></i>
+      </div>
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">Product Detail</h1>
+        <p class="text-gray-600">Retail inventory product overview</p>
+      </div>
+    </div>
+    <p-button label="Back to Products" icon="pi pi-arrow-left" [outlined]="true" (onClick)="goBack()"></p-button>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 p-12 text-center" *ngIf="loading">
+    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="pi pi-spin pi-spinner text-blue-500 text-2xl"></i>
+    </div>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">Loading product detail...</h3>
+    <p class="text-gray-500">Please wait while data is fetched from Retail API.</p>
+  </div>
+
+  <div *ngIf="!loading && error" class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!loading && !error && product" class="space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <p class="text-sm text-gray-500">SKU</p>
+        <p class="text-xl font-bold text-gray-900 mt-1">{{ product.sku || '-' }}</p>
+      </div>
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <p class="text-sm text-gray-500">Selling Price</p>
+        <p class="text-xl font-bold text-green-600 mt-1">{{ asCurrency(product.selling_price) }}</p>
+      </div>
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <p class="text-sm text-gray-500">Cost Price</p>
+        <p class="text-xl font-bold text-gray-900 mt-1">{{ asCurrency(product.cost_price) }}</p>
+      </div>
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <p class="text-sm text-gray-500">Status</p>
+        <div class="mt-2">
+          <p-tag [value]="product.is_active ? 'active' : 'inactive'" [severity]="getStatusSeverity()"></p-tag>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-900">General Information</h2>
+      </div>
+      <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5 text-sm">
+        <div>
+          <div class="text-gray-500">Product ID</div>
+          <div class="font-semibold text-gray-900 mt-1">{{ product._id || '-' }}</div>
+        </div>
+        <div>
+          <div class="text-gray-500">Name</div>
+          <div class="font-semibold text-gray-900 mt-1">{{ product.name || '-' }}</div>
+        </div>
+        <div>
+          <div class="text-gray-500">Barcode</div>
+          <div class="font-semibold text-gray-900 mt-1">{{ product.barcode || '-' }}</div>
+        </div>
+        <div>
+          <div class="text-gray-500">Category</div>
+          <div class="font-semibold text-gray-900 mt-1">{{ product.category || '-' }}</div>
+        </div>
+        <div>
+          <div class="text-gray-500">Subcategory</div>
+          <div class="font-semibold text-gray-900 mt-1">{{ product.subcategory || '-' }}</div>
+        </div>
+        <div>
+          <div class="text-gray-500">Supplier ID</div>
+          <div class="font-semibold text-gray-900 mt-1">{{ product.supplier_id || '-' }}</div>
+        </div>
+        <div>
+          <div class="text-gray-500">Discount Price</div>
+          <div class="font-semibold text-gray-900 mt-1">{{ asCurrency(product.discount_price) }}</div>
+        </div>
+        <div>
+          <div class="text-gray-500">Reorder Level</div>
+          <div class="font-semibold text-gray-900 mt-1">{{ product.reorder_level ?? 0 }}</div>
+        </div>
+        <div>
+          <div class="text-gray-500">Maximum Stock</div>
+          <div class="font-semibold text-gray-900 mt-1">{{ product.maximum_stock ?? 0 }}</div>
+        </div>
+        <div>
+          <div class="text-gray-500">Created By</div>
+          <div class="font-semibold text-gray-900 mt-1">{{ product.created_by || '-' }}</div>
+        </div>
+        <div>
+          <div class="text-gray-500">Created At</div>
+          <div class="font-semibold text-gray-900 mt-1">{{ product.created_at | date: 'medium' }}</div>
+        </div>
+        <div>
+          <div class="text-gray-500">Updated At</div>
+          <div class="font-semibold text-gray-900 mt-1">{{ product.updated_at | date: 'medium' }}</div>
+        </div>
+        <div class="md:col-span-2">
+          <div class="text-gray-500">Description</div>
+          <div class="font-medium text-gray-900 mt-1 whitespace-pre-wrap">{{ product.description || '-' }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

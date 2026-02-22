@@ -263,6 +263,11 @@ export const routes: Routes = [
             loadComponent: () => import('./features/retail/pages/product-catalog/product-catalog.component').then(m => m.ProductCatalogComponent),
           },
           {
+            path: 'shop',
+            redirectTo: 'ecommerce',
+            pathMatch: 'full'
+          },
+          {
             path: 'inventory',
             children: [
               {
@@ -279,12 +284,24 @@ export const routes: Routes = [
                 loadComponent: () => import('./features/retail/retail-services/inventory/products/products.component').then(m => m.ProductsComponent),
               },
               {
+                path: 'products/create',
+                loadComponent: () => import('./features/retail/retail-services/inventory/products/product-create.component').then(m => m.ProductCreateComponent),
+              },
+              {
+                path: 'products/:id',
+                loadComponent: () => import('./features/retail/retail-services/inventory/products/product-detail.component').then(m => m.ProductDetailComponent),
+              },
+              {
                 path: 'categories',
                 loadComponent: () => import('./features/retail/retail-services/inventory/categories/categories.component').then(m => m.CategoriesComponent),
               },
               {
                 path: 'locations',
                 loadComponent: () => import('./features/retail/retail-services/inventory/locations/locations.component').then(m => m.LocationsComponent),
+              },
+              {
+                path: 'partners',
+                loadComponent: () => import('./features/retail/retail-services/inventory/partners/partners.component').then(m => m.PartnersComponent),
               },
               {
                 path: 'suppliers',
@@ -326,51 +343,11 @@ export const routes: Routes = [
           },
           {
             path: 'pos',
-            loadComponent: () => import('./features/retail/retail-services/feature-page/retail-feature-page.component').then(m => m.RetailFeaturePageComponent),
-            data: {
-              featureConfig: {
-                title: 'Point of Sale',
-                subtitle: 'Checkout operations, cash drawers, and in-store transaction flow',
-                icon: 'pi pi-shopping-cart',
-                accent: '#0891b2',
-                stats: [
-                  { label: 'Stores Online', value: '128/131', trend: '97.7%' },
-                  { label: 'Transactions Today', value: '16,204', trend: '+6.8%' },
-                  { label: 'Avg Checkout Time', value: '2m 14s', trend: '-9.1%' },
-                  { label: 'Void Rate', value: '0.42%', trend: '-0.1%' }
-                ],
-                actions: [
-                  { label: 'Open Register', icon: 'pi pi-play', description: 'Initialize store and register session' },
-                  { label: 'Manage Hold Orders', icon: 'pi pi-inbox', description: 'Review suspended in-store carts' },
-                  { label: 'Reconcile End-of-Day', icon: 'pi pi-check-square', description: 'Run till and payment reconciliation' }
-                ],
-                checklist: ['Terminal health checks passed', 'Payment routing active', 'Receipt templates updated', 'Cash policy acknowledged']
-              }
-            }
+            loadComponent: () => import('./features/retail/retail-services/pos/pos.component').then(m => m.PosComponent),
           },
           {
             path: 'ecommerce',
-            loadComponent: () => import('./features/retail/retail-services/feature-page/retail-feature-page.component').then(m => m.RetailFeaturePageComponent),
-            data: {
-              featureConfig: {
-                title: 'E-commerce',
-                subtitle: 'Web storefront operations, catalog publishing, and order conversion',
-                icon: 'pi pi-globe',
-                accent: '#2563eb',
-                stats: [
-                  { label: 'Sessions', value: '411k', trend: '+14.2%' },
-                  { label: 'Conversion Rate', value: '3.9%', trend: '+0.4%' },
-                  { label: 'AOV', value: '$74.90', trend: '+5.1%' },
-                  { label: 'Cart Recovery', value: '19.7%', trend: '+2.3%' }
-                ],
-                actions: [
-                  { label: 'Publish Promotions', icon: 'pi pi-megaphone', description: 'Deploy homepage and collection campaigns' },
-                  { label: 'Sync Catalog', icon: 'pi pi-refresh', description: 'Push latest products and inventory' },
-                  { label: 'Check Funnel', icon: 'pi pi-chart-bar', description: 'Inspect drop-off by checkout step' }
-                ],
-                checklist: ['Catalog synced', 'Payment gateway verified', 'Shipping rules active', 'SEO metadata complete']
-              }
-            }
+            loadComponent: () => import('./features/retail/pages/shop/shop.component').then(m => m.RetailShopComponent),
           },
           {
             path: 'transactions',
@@ -446,27 +423,7 @@ export const routes: Routes = [
           },
           {
             path: 'customers',
-            loadComponent: () => import('./features/retail/retail-services/feature-page/retail-feature-page.component').then(m => m.RetailFeaturePageComponent),
-            data: {
-              featureConfig: {
-                title: 'Customer 360',
-                subtitle: 'Unified profiles, segmentation, and customer value tracking',
-                icon: 'pi pi-users',
-                accent: '#4338ca',
-                stats: [
-                  { label: 'Customer Profiles', value: '1.9M', trend: '+4.1%' },
-                  { label: 'VIP Segment', value: '24,870', trend: '+6.7%' },
-                  { label: 'NPS', value: '61', trend: '+3' },
-                  { label: 'Support Cases', value: '428', trend: '-8.5%' }
-                ],
-                actions: [
-                  { label: 'Create Segment', icon: 'pi pi-filter', description: 'Build behavior or demographic cohorts' },
-                  { label: 'Launch Retention Flow', icon: 'pi pi-send', description: 'Trigger lifecycle communication journeys' },
-                  { label: 'Review Churn Signals', icon: 'pi pi-chart-line', description: 'Inspect declining customer health' }
-                ],
-                checklist: ['Identity resolution active', 'Consent policy mapped', 'Segment sync to campaigns', 'Value model calibrated']
-              }
-            }
+            loadComponent: () => import('./features/retail/retail-services/customers/customers.component').then(m => m.CustomersComponent),
           },
           {
             path: 'rewards',

@@ -1,1 +1,120 @@
-<p>pos works!</p>
+<p-toast></p-toast>
+
+<div class="pos-shell">
+  <header class="pos-header">
+    <div>
+      <p class="pos-label">Point of Sale</p>
+      <h1>Retail POS Terminal</h1>
+    </div>
+    <div class="pos-header-meta">
+      <div class="meta-card">
+        <span>Items</span>
+        <strong>{{ itemCount }}</strong>
+      </div>
+      <div class="meta-card">
+        <span>Total</span>
+        <strong>{{ formatCurrency(total) }}</strong>
+      </div>
+    </div>
+  </header>
+
+  <div class="pos-body">
+    <section class="catalog-panel">
+      <div class="toolbar">
+        <input pInputText [(ngModel)]="searchTerm" placeholder="Search by name, SKU, category..." />
+        <p-dropdown
+          [options]="categoryOptions"
+          [(ngModel)]="selectedCategory"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-full md:w-18rem">
+        </p-dropdown>
+      </div>
+
+      <div class="loading-state" *ngIf="loading">Loading catalog...</div>
+
+      <div class="catalog-grid" *ngIf="!loading">
+        <button type="button" class="product-card" *ngFor="let product of filteredProducts" (click)="addToCart(product)">
+          <div class="product-top">
+            <span class="category">{{ product.category }}</span>
+            <span class="sku">{{ product.sku || '-' }}</span>
+          </div>
+          <h3>{{ product.name }}</h3>
+          <p class="price">{{ formatCurrency(product.price) }}</p>
+          <span class="add">Tap to add</span>
+        </button>
+      </div>
+    </section>
+
+    <aside class="checkout-panel">
+      <div class="cart-header">
+        <h2>Current Order</h2>
+        <button type="button" class="clear-btn" (click)="clearCart()" [disabled]="!cart.length">Clear</button>
+      </div>
+
+      <div class="cart-list" *ngIf="cart.length; else emptyCart">
+        <article class="line-item" *ngFor="let line of cart">
+          <div class="line-main">
+            <h4>{{ line.product.name }}</h4>
+            <p>{{ formatCurrency(line.product.price) }}</p>
+          </div>
+          <div class="line-actions">
+            <button type="button" (click)="decrease(line)">-</button>
+            <span>{{ line.quantity }}</span>
+            <button type="button" (click)="increase(line)">+</button>
+            <button type="button" class="remove" (click)="remove(line)">x</button>
+          </div>
+          <div class="line-total">{{ formatCurrency(line.product.price * line.quantity) }}</div>
+        </article>
+      </div>
+
+      <ng-template #emptyCart>
+        <div class="empty-cart">No products in order.</div>
+      </ng-template>
+
+      <div class="payment-box">
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <strong>{{ formatCurrency(subtotal) }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Tax (8%)</span>
+          <strong>{{ formatCurrency(tax) }}</strong>
+        </div>
+        <div class="summary-row total">
+          <span>Total Due</span>
+          <strong>{{ formatCurrency(total) }}</strong>
+        </div>
+
+        <div class="payment-controls">
+          <label>Payment Method</label>
+          <p-dropdown
+            [options]="paymentOptions"
+            [(ngModel)]="paymentMethod"
+            optionLabel="label"
+            optionValue="value"
+            styleClass="w-full">
+          </p-dropdown>
+
+          <ng-container *ngIf="paymentMethod === 'cash'">
+            <label>Amount Received</label>
+            <p-inputNumber [(ngModel)]="amountReceived" mode="currency" currency="USD" locale="en-US" [min]="0" styleClass="w-full"></p-inputNumber>
+            <div class="summary-row">
+              <span>Change</span>
+              <strong>{{ formatCurrency(changeAmount) }}</strong>
+            </div>
+          </ng-container>
+        </div>
+
+        <p-button
+          label="Complete Sale"
+          icon="pi pi-check"
+          styleClass="w-full"
+          [loading]="placingOrder"
+          [disabled]="!cart.length || total <= 0"
+          (onClick)="completeSale()">
+        </p-button>
+      </div>
+    </aside>
+  </div>
+</div>

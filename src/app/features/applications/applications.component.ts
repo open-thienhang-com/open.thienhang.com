@@ -27,6 +27,13 @@ export class ApplicationsComponent implements OnInit {
       description: ''
     },
     {
+      key: 'loyalty',
+      label: 'Loyalty Program',
+      icon: 'pi pi-star',
+      gradient: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
+      description: 'Customer loyalty, rewards, and campaigns'
+    },
+    {
       key: 'governance',
       label: 'Governance',
       icon: 'pi pi-shield',
@@ -103,6 +110,7 @@ export class ApplicationsComponent implements OnInit {
       all: '/',
       explore: '/explore',
       retail: '/retail',
+      loyalty: '/retail/loyalty',
       catalog: '/',
       governance: '/governance/policies',
       planning: '/planning',

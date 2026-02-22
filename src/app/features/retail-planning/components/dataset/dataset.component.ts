@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 // PrimeNG modules used by the DataView-based warehouses list
 import { DataViewModule } from 'primeng/dataview';
 import { TagModule } from 'primeng/tag';
@@ -14,8 +15,9 @@ import { Router } from '@angular/router';
 import { DatasetService, Dataset, DatasetListResponse, Warehouse } from '../../services/dataset.service';
 import { DatasetDetailComponent } from '../dataset-detail/dataset-detail.component';
 import { PageHeaderComponent } from '../page-header/page-header.component';
-import { Subject, debounceTime, distinctUntilChanged, of } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, of, forkJoin } from 'rxjs';
 import { switchMap, map, catchError } from 'rxjs/operators';
+import { getApiBase } from '../../../../core/config/api-config';
 
 interface DatasetState {
   size: number;
@@ -37,6 +39,25 @@ interface TypeConfig {
   icon: string;
 }
 
+interface RetailHealth {
+  status: string;
+  service: string;
+  timestamp: string;
+}
+
+interface RetailVersion {
+  version: string;
+  adapter: string;
+}
+
+interface RetailInventoryAnalytics {
+  total_products: number;
+  total_quantity: number;
+  inventory_value: number;
+  low_stock_products: number;
+  out_of_stock_products: number;
+}
+
 @Component({
   selector: 'app-dataset',
   imports: [CommonModule, FormsModule, DataViewModule, TagModule, ButtonModule, ChartModule, AutoCompleteModule, DialogModule, TableModule, DatasetDetailComponent, PageHeaderComponent],
@@ -45,6 +66,8 @@ interface TypeConfig {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
+  private retailBaseUrl = `${getApiBase()}/data-mesh/domains/retail`;
+
   state: DatasetState = {
     size: 12,
     offset: 0,
@@ -58,6 +81,26 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
   loading = false;
   error: string | null = null;
   fallbackNotice: string | null = null;
+
+  retailHealth: RetailHealth = {
+    status: 'unknown',
+    service: 'retail',
+    timestamp: ''
+  };
+  retailVersion: RetailVersion = {
+    version: 'N/A',
+    adapter: 'retail'
+  };
+  retailInventoryAnalytics: RetailInventoryAnalytics = {
+    total_products: 0,
+    total_quantity: 0,
+    inventory_value: 0,
+    low_stock_products: 0,
+    out_of_stock_products: 0
+  };
+  retailAlerts: any[] = [];
+  loadingRetailOverview = false;
+  retailOverviewNotice: string | null = null;
 
   // Warehouses state
   warehouses: Warehouse[] = [];
@@ -1102,7 +1145,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   };
 
-  constructor(private datasetService: DatasetService, private router: Router, private cdr: ChangeDetectorRef,
+  constructor(private datasetService: DatasetService, private router: Router, private cdr: ChangeDetectorRef, private http: HttpClient,
     @Inject(PLATFORM_ID) private platformId: Object) { }
 
   ngOnDestroy(): void {
@@ -1134,6 +1177,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
     
     // Load datasets on init
     this.loadDatasets();
+    this.loadRetailOverview();
     
     // Trigger change detection after initialization
     this.cdr.markForCheck();
@@ -1345,6 +1389,101 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
         this.cdr.markForCheck(); // Trigger change detection
       }
     });
+  }
+
+  private loadRetailOverview(): void {
+    this.loadingRetailOverview = true;
+    this.retailOverviewNotice = null;
+
+    forkJoin({
+      health: this.http.get<any>(`${this.retailBaseUrl}/health`).pipe(
+        catchError(() => of(null))
+      ),
+      version: this.http.get<any>(`${this.retailBaseUrl}/version`).pipe(
+        catchError(() => of(null))
+      ),
+      analytics: this.http.get<any>(`${this.retailBaseUrl}/analytics/inventory`).pipe(
+        catchError(() => of(null))
+      ),
+      alerts: this.http.get<any>(`${this.retailBaseUrl}/analytics/alerts`).pipe(
+        catchError(() => of(null))
+      )
+    }).subscribe({
+      next: ({ health, version, analytics, alerts }) => {
+        let hasFallback = false;
+
+        if (health?.status || health?.service || health?.timestamp) {
+          this.retailHealth = {
+            status: String(health?.status || 'unknown'),
+            service: String(health?.service || 'retail'),
+            timestamp: String(health?.timestamp || '')
+          };
+        } else {
+          hasFallback = true;
+        }
+
+        if (version?.version || version?.adapter) {
+          this.retailVersion = {
+            version: String(version?.version || 'N/A'),
+            adapter: String(version?.adapter || 'retail')
+          };
+        } else {
+          hasFallback = true;
+        }
+
+        const inv = analytics?.data;
+        if (inv && typeof inv === 'object') {
+          this.retailInventoryAnalytics = {
+            total_products: Number(inv?.total_products || 0),
+            total_quantity: Number(inv?.total_quantity || 0),
+            inventory_value: Number(inv?.inventory_value || 0),
+            low_stock_products: Number(inv?.low_stock_products || 0),
+            out_of_stock_products: Number(inv?.out_of_stock_products || 0)
+          };
+        } else {
+          hasFallback = true;
+        }
+
+        if (Array.isArray(alerts?.data)) {
+          this.retailAlerts = alerts.data;
+        } else {
+          this.retailAlerts = [];
+          hasFallback = true;
+        }
+
+        this.retailOverviewNotice = hasFallback
+          ? 'Some Retail APIs are unavailable. Showing default values for missing sections.'
+          : null;
+        this.loadingRetailOverview = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loadingRetailOverview = false;
+        this.retailOverviewNotice = 'Retail APIs are unavailable. Showing default values.';
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  getHealthBadgeClass(status: string): string {
+    const normalized = String(status || '').toLowerCase();
+    if (normalized === 'healthy') {
+      return 'bg-green-100 text-green-700';
+    }
+    if (normalized === 'degraded') {
+      return 'bg-amber-100 text-amber-700';
+    }
+    return 'bg-red-100 text-red-700';
+  }
+
+  getAlertTitle(alert: any): string {
+    if (!alert || typeof alert !== 'object') return 'Alert';
+    return String(alert.title || alert.name || alert.type || alert._id || 'Alert');
+  }
+
+  getAlertSubtitle(alert: any): string {
+    if (!alert || typeof alert !== 'object') return '';
+    return String(alert.message || alert.severity || alert.status || '');
   }
 
   onSearch(): void {
