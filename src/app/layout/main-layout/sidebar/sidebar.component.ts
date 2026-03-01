@@ -484,7 +484,8 @@ export class SidebarComponent implements OnInit, OnChanges {
         icon: 'pi pi-globe',
         expanded: false,
         items: [
-            { label: 'My Trips', url: '/travel', icon: 'pi pi-briefcase' }
+            { label: 'My Trips', url: '/travel', icon: 'pi pi-briefcase' },
+            { label: 'Create Trip', url: '/travel/new', icon: 'pi pi-plus-circle' }
         ]
     }
   ];

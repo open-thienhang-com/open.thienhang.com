@@ -12,4 +12,9 @@ export class PageHeaderComponent {
   @Input() title: string = '';
   @Input() subtitle: string = '';
   @Input() icon: string = '';
+
+  get isPrimeIcon(): boolean {
+    const value = (this.icon || '').trim();
+    return value.startsWith('pi ');
+  }
 }

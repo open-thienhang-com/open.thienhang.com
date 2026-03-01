@@ -1,4 +1,4 @@
-export type TripStatus = 'upcoming' | 'in_progress' | 'completed' | string;
+export type TripStatus = 'draft' | 'upcoming' | 'in_progress' | 'completed' | string;
 export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | string;
 export type PaymentStatus = 'unpaid' | 'paid' | 'partial' | string;
 
@@ -34,6 +34,9 @@ export interface TripCreate {
   description?: string;
   start_date?: string;
   end_date?: string;
+  budget?: number;
+  people_count?: number;
+  timezone?: string;
   status?: TripStatus;
   cover_image?: string;
 }
@@ -43,22 +46,34 @@ export interface TripUpdate extends Partial<TripCreate> {}
 export interface ItineraryItem {
   id?: string;
   item_id?: string;
+  _id?: string;
   trip_id?: string;
+  day?: string;
+  start_time?: string;
+  end_time?: string;
   date?: string;
   time?: string;
   title: string;
   description?: string;
+  note?: string;
   location?: string;
+  activity_type?: string;
   created_at?: string;
   updated_at?: string;
 }
 
 export interface ItineraryItemCreate {
+  trip_id?: string;
+  day?: string;
+  start_time?: string;
+  end_time?: string;
   date?: string;
   time?: string;
   title: string;
   description?: string;
+  note?: string;
   location?: string;
+  activity_type?: string;
 }
 
 export interface ItineraryItemUpdate extends Partial<ItineraryItemCreate> {}

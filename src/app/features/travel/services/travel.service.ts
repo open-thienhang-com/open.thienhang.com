@@ -87,16 +87,23 @@ export class TravelService {
   }
 
   // Itinerary
-  listItineraryItems(tripId: string): Observable<ItineraryItem[]> {
+  listItineraryItems(tripId: string, limit: number = 50, offset: number = 0): Observable<ItineraryItem[]> {
+    const params = new HttpParams()
+      .set('limit', String(limit))
+      .set('offset', String(offset));
+
     return this.http
-      .get<ApiListResponse<ItineraryItem> | ItineraryItem[]>(`${this.travelBaseUrl}/trips/${tripId}/itinerary`)
-      .pipe(map((res) => this.unwrapList<ItineraryItem>(res)));
+      .get<ApiListResponse<ItineraryItem> | ItineraryItem[]>(`${this.travelBaseUrl}/trips/${tripId}/itinerary`, { params })
+      .pipe(map((res) => this.unwrapList<ItineraryItem>(res).map((item) => this.normalizeItineraryItem(item))));
   }
 
   createItineraryItem(tripId: string, payload: ItineraryItemCreate): Observable<ItineraryItem | null> {
     return this.http
       .post<any>(`${this.travelBaseUrl}/trips/${tripId}/itinerary`, payload)
-      .pipe(map((res) => this.unwrapOne<ItineraryItem>(res)));
+      .pipe(map((res) => {
+        const item = this.unwrapOne<ItineraryItem>(res);
+        return item ? this.normalizeItineraryItem(item) : null;
+      }));
   }
 
   updateItineraryItem(itemId: string, payload: ItineraryItemUpdate): Observable<ItineraryItem | null> {
@@ -355,5 +362,21 @@ export class TravelService {
       title: raw?.title || raw?.name || 'Untitled trip'
     };
     return normalized;
+  }
+
+  private normalizeItineraryItem(raw: any): ItineraryItem {
+    return {
+      ...raw,
+      _id: raw?._id,
+      id: raw?.id || raw?.item_id || raw?._id,
+      item_id: raw?.item_id || raw?.id || raw?._id,
+      day: raw?.day || raw?.date,
+      start_time: raw?.start_time || raw?.time,
+      end_time: raw?.end_time,
+      date: raw?.date || raw?.day,
+      time: raw?.time || raw?.start_time,
+      note: raw?.note || raw?.description,
+      description: raw?.description || raw?.note
+    };
   }
 }

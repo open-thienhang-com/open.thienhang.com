@@ -1,7 +1,8 @@
 <div class="page-header">
   <div class="page-header-content">
     <div class="page-header-icon-wrapper">
-      <span class="page-header-icon" *ngIf="icon">{{ icon }}</span>
+      <i class="page-header-icon" [ngClass]="icon" *ngIf="icon && isPrimeIcon"></i>
+      <span class="page-header-icon" *ngIf="icon && !isPrimeIcon">{{ icon }}</span>
     </div>
     <div class="page-header-text">
       <h1 class="page-header-title">{{ title }}</h1>

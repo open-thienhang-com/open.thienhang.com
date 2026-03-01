@@ -14,159 +14,212 @@ import { Asset, Booking, BudgetItem, ItineraryItem, Trip, TripNotification } fro
   standalone: true,
   imports: [CommonModule, RouterModule, ButtonModule, CardModule, SkeletonModule, TagModule],
   template: `
-    <div class="p-4 md:p-6">
-      <div class="flex justify-content-between align-items-center mb-4">
-        <button pButton icon="pi pi-arrow-left" label="Back to Trips" class="p-button-text" (click)="navigateToList()"></button>
-        <button pButton icon="pi pi-refresh" label="Refresh" class="p-button-outlined" (click)="reload()"></button>
+    <div class="bg-gray-50 min-h-screen p-6">
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
+              <i class="pi pi-map text-white text-xl"></i>
+            </div>
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900 m-0">{{ trip?.title || 'Trip Detail' }}</h1>
+              <p class="text-gray-600 m-0 mt-1">{{ trip?.destination || 'No destination' }}</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+            <p-button icon="pi pi-arrow-left" severity="secondary" [outlined]="true" [rounded]="true" (onClick)="navigateToList()"></p-button>
+            <p-button icon="pi pi-refresh" severity="info" [outlined]="true" [rounded]="true" (onClick)="reload()"></p-button>
+            <p-tag *ngIf="trip" [value]="trip.status || 'unknown'" [severity]="getStatusSeverity(trip.status)"></p-tag>
+          </div>
+        </div>
       </div>
 
       <div *ngIf="loading">
-        <p-skeleton height="3rem" styleClass="mb-3"></p-skeleton>
-        <p-skeleton height="2rem" styleClass="mb-5"></p-skeleton>
-        <p-skeleton height="18rem"></p-skeleton>
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <p-skeleton height="3rem" styleClass="mb-3"></p-skeleton>
+          <p-skeleton height="2rem" styleClass="mb-5"></p-skeleton>
+          <p-skeleton height="18rem"></p-skeleton>
+        </div>
       </div>
 
-      <div *ngIf="!loading && !trip" class="surface-card border-round shadow-1 p-5 text-center">
+      <div *ngIf="!loading && !trip" class="bg-white rounded-lg shadow-sm p-8 text-center">
         <h3 class="m-0 mb-2">Trip not found</h3>
         <p class="m-0 text-600">Trip ID: {{ tripId }}</p>
       </div>
 
-      <div *ngIf="!loading && trip" class="grid">
-        <div class="col-12">
-          <div class="surface-card border-round shadow-2 p-4">
-            <div class="flex justify-content-between align-items-start gap-3">
+      <div *ngIf="!loading && trip">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex items-center justify-between">
               <div>
-                <h1 class="text-2xl font-bold mt-0 mb-2">{{ trip.title }}</h1>
-                <p class="text-600 mt-0 mb-2"><i class="pi pi-map-marker mr-2"></i>{{ trip.destination || '-' }}</p>
-                <p class="text-700 mb-0">{{ trip.description || 'No description' }}</p>
+                <p class="text-sm font-medium text-gray-600">Itinerary</p>
+                <p class="text-3xl font-bold text-gray-900 m-0">{{ itinerary.length }}</p>
               </div>
-              <p-tag [value]="trip.status || 'unknown'" [severity]="getStatusSeverity(trip.status)"></p-tag>
+              <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="pi pi-calendar text-blue-600 text-xl"></i>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Bookings</p>
+                <p class="text-3xl font-bold text-indigo-600 m-0">{{ bookings.length }}</p>
+              </div>
+              <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                <i class="pi pi-ticket text-indigo-600 text-xl"></i>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Planned Budget</p>
+                <p class="text-3xl font-bold text-green-600 m-0">{{ getBudgetTotal('planned') }}</p>
+              </div>
+              <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="pi pi-wallet text-green-600 text-xl"></i>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Notifications</p>
+                <p class="text-3xl font-bold text-orange-600 m-0">{{ notifications.length }}</p>
+              </div>
+              <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                <i class="pi pi-bell text-orange-600 text-xl"></i>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="col-12 lg:col-6">
-          <p-card>
-            <ng-template pTemplate="title">
-              <div class="flex justify-content-between align-items-center">
-                <span>Itinerary ({{ itinerary.length }})</span>
-                <button pButton icon="pi pi-plus" class="p-button-text p-button-sm" (click)="createItineraryItem()"></button>
-              </div>
-            </ng-template>
-            <ng-template pTemplate="content">
-              <div class="list-block" *ngFor="let item of itinerary">
-                <div class="flex justify-content-between gap-2">
-                  <div>
-                    <div class="font-semibold">{{ item.title }}</div>
-                    <small class="text-600">{{ item.date || '-' }} {{ item.time || '' }}</small>
-                    <div class="text-700">{{ item.description || '-' }}</div>
-                  </div>
-                  <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm" (click)="deleteItineraryItem(item)"></button>
+        <div class="grid">
+          <div class="col-12 lg:col-6">
+            <p-card>
+              <ng-template pTemplate="title">
+                <div class="flex justify-content-between align-items-center">
+                  <span>Itinerary ({{ itinerary.length }})</span>
+                  <button pButton icon="pi pi-plus" class="p-button-text p-button-sm" (click)="createItineraryItem()"></button>
                 </div>
-              </div>
-              <div *ngIf="!itinerary.length" class="text-600">No itinerary items.</div>
-            </ng-template>
-          </p-card>
-        </div>
+              </ng-template>
+              <ng-template pTemplate="content">
+                <div class="list-block" *ngFor="let item of itinerary">
+                  <div class="flex justify-content-between gap-2">
+                    <div>
+                      <div class="font-semibold">{{ item.title }}</div>
+                      <small class="text-600">{{ item.date || '-' }} {{ item.time || '' }}</small>
+                      <div class="text-700">{{ item.description || '-' }}</div>
+                    </div>
+                    <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm" (click)="deleteItineraryItem(item)"></button>
+                  </div>
+                </div>
+                <div *ngIf="!itinerary.length" class="text-600">No itinerary items.</div>
+              </ng-template>
+            </p-card>
+          </div>
 
-        <div class="col-12 lg:col-6">
-          <p-card>
-            <ng-template pTemplate="title">
-              <div class="flex justify-content-between align-items-center">
-                <span>Bookings ({{ bookings.length }})</span>
-                <button pButton icon="pi pi-plus" class="p-button-text p-button-sm" (click)="createBooking()"></button>
-              </div>
-            </ng-template>
-            <ng-template pTemplate="content">
-              <div class="list-block" *ngFor="let item of bookings">
-                <div class="flex justify-content-between gap-2">
-                  <div>
-                    <div class="font-semibold">{{ item.type || 'Booking' }} - {{ item.provider || '-' }}</div>
-                    <small class="text-600">{{ item.reference_code || '-' }}</small>
-                    <div class="text-700">{{ item.amount || 0 }} {{ item.currency || '' }}</div>
-                  </div>
-                  <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm" (click)="deleteBooking(item)"></button>
+          <div class="col-12 lg:col-6">
+            <p-card>
+              <ng-template pTemplate="title">
+                <div class="flex justify-content-between align-items-center">
+                  <span>Bookings ({{ bookings.length }})</span>
+                  <button pButton icon="pi pi-plus" class="p-button-text p-button-sm" (click)="createBooking()"></button>
                 </div>
-              </div>
-              <div *ngIf="!bookings.length" class="text-600">No bookings.</div>
-            </ng-template>
-          </p-card>
-        </div>
+              </ng-template>
+              <ng-template pTemplate="content">
+                <div class="list-block" *ngFor="let item of bookings">
+                  <div class="flex justify-content-between gap-2">
+                    <div>
+                      <div class="font-semibold">{{ item.type || 'Booking' }} - {{ item.provider || '-' }}</div>
+                      <small class="text-600">{{ item.reference_code || '-' }}</small>
+                      <div class="text-700">{{ item.amount || 0 }} {{ item.currency || '' }}</div>
+                    </div>
+                    <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm" (click)="deleteBooking(item)"></button>
+                  </div>
+                </div>
+                <div *ngIf="!bookings.length" class="text-600">No bookings.</div>
+              </ng-template>
+            </p-card>
+          </div>
 
-        <div class="col-12 lg:col-6">
-          <p-card>
-            <ng-template pTemplate="title">
-              <div class="flex justify-content-between align-items-center">
-                <span>Budget Items ({{ budgets.length }})</span>
-                <button pButton icon="pi pi-plus" class="p-button-text p-button-sm" (click)="createBudgetItem()"></button>
-              </div>
-            </ng-template>
-            <ng-template pTemplate="content">
-              <div class="list-block" *ngFor="let item of budgets">
-                <div class="flex justify-content-between gap-2">
-                  <div>
-                    <div class="font-semibold">{{ item.title || item.category || 'Budget item' }}</div>
-                    <small class="text-600">Planned: {{ item.planned_amount || 0 }} {{ item.currency || '' }}</small>
-                    <div class="text-700">Actual: {{ item.actual_amount || 0 }} {{ item.currency || '' }}</div>
-                  </div>
-                  <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm" (click)="deleteBudgetItem(item)"></button>
+          <div class="col-12 lg:col-6">
+            <p-card>
+              <ng-template pTemplate="title">
+                <div class="flex justify-content-between align-items-center">
+                  <span>Budget Items ({{ budgets.length }})</span>
+                  <button pButton icon="pi pi-plus" class="p-button-text p-button-sm" (click)="createBudgetItem()"></button>
                 </div>
-              </div>
-              <div *ngIf="!budgets.length" class="text-600">No budget items.</div>
-            </ng-template>
-          </p-card>
-        </div>
+              </ng-template>
+              <ng-template pTemplate="content">
+                <div class="list-block" *ngFor="let item of budgets">
+                  <div class="flex justify-content-between gap-2">
+                    <div>
+                      <div class="font-semibold">{{ item.title || item.category || 'Budget item' }}</div>
+                      <small class="text-600">Planned: {{ item.planned_amount || 0 }} {{ item.currency || '' }}</small>
+                      <div class="text-700">Actual: {{ item.actual_amount || 0 }} {{ item.currency || '' }}</div>
+                    </div>
+                    <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm" (click)="deleteBudgetItem(item)"></button>
+                  </div>
+                </div>
+                <div *ngIf="!budgets.length" class="text-600">No budget items.</div>
+              </ng-template>
+            </p-card>
+          </div>
 
-        <div class="col-12 lg:col-6">
-          <p-card>
-            <ng-template pTemplate="title">
-              <div class="flex justify-content-between align-items-center">
-                <span>Notifications ({{ notifications.length }})</span>
-                <button pButton icon="pi pi-plus" class="p-button-text p-button-sm" (click)="createNotification()"></button>
-              </div>
-            </ng-template>
-            <ng-template pTemplate="content">
-              <div class="list-block" *ngFor="let item of notifications">
-                <div class="flex justify-content-between gap-2">
-                  <div>
-                    <div class="font-semibold">{{ item.title || item.type || 'Notification' }}</div>
-                    <small class="text-600">{{ item.channel || '-' }} - {{ item.status || 'pending' }}</small>
-                    <div class="text-700">{{ item.message || '-' }}</div>
-                  </div>
-                  <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm" (click)="deleteNotification(item)"></button>
+          <div class="col-12 lg:col-6">
+            <p-card>
+              <ng-template pTemplate="title">
+                <div class="flex justify-content-between align-items-center">
+                  <span>Notifications ({{ notifications.length }})</span>
+                  <button pButton icon="pi pi-plus" class="p-button-text p-button-sm" (click)="createNotification()"></button>
                 </div>
-              </div>
-              <div *ngIf="!notifications.length" class="text-600">No notifications.</div>
-            </ng-template>
-          </p-card>
-        </div>
+              </ng-template>
+              <ng-template pTemplate="content">
+                <div class="list-block" *ngFor="let item of notifications">
+                  <div class="flex justify-content-between gap-2">
+                    <div>
+                      <div class="font-semibold">{{ item.title || item.type || 'Notification' }}</div>
+                      <small class="text-600">{{ item.channel || '-' }} - {{ item.status || 'pending' }}</small>
+                      <div class="text-700">{{ item.message || '-' }}</div>
+                    </div>
+                    <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm" (click)="deleteNotification(item)"></button>
+                  </div>
+                </div>
+                <div *ngIf="!notifications.length" class="text-600">No notifications.</div>
+              </ng-template>
+            </p-card>
+          </div>
 
-        <div class="col-12">
-          <p-card>
-            <ng-template pTemplate="title">
-              <div class="flex justify-content-between align-items-center">
-                <span>Data Catalog Assets (domain=travel)</span>
-                <button pButton icon="pi pi-refresh" class="p-button-text p-button-sm" (click)="loadAssets()"></button>
-              </div>
-            </ng-template>
-            <ng-template pTemplate="content">
-              <div class="list-block" *ngFor="let asset of assets">
-                <div class="flex justify-content-between gap-2">
-                  <div>
-                    <div class="font-semibold">{{ asset.name || asset.asset_id || asset.id }}</div>
-                    <small class="text-600">{{ asset.type || '-' }} - {{ asset.status || '-' }}</small>
-                    <div class="text-700">{{ asset.description || '-' }}</div>
+          <div class="col-12">
+            <p-card>
+              <ng-template pTemplate="title">
+                <div class="flex justify-content-between align-items-center">
+                  <span>Data Catalog Assets (domain=travel)</span>
+                  <button pButton icon="pi pi-refresh" class="p-button-text p-button-sm" (click)="loadAssets()"></button>
+                </div>
+              </ng-template>
+              <ng-template pTemplate="content">
+                <div class="list-block" *ngFor="let asset of assets">
+                  <div class="flex justify-content-between gap-2">
+                    <div>
+                      <div class="font-semibold">{{ asset.name || asset.asset_id || asset.id }}</div>
+                      <small class="text-600">{{ asset.type || '-' }} - {{ asset.status || '-' }}</small>
+                      <div class="text-700">{{ asset.description || '-' }}</div>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div *ngIf="!assets.length" class="text-600">No assets found for domain travel.</div>
-            </ng-template>
-          </p-card>
+                <div *ngIf="!assets.length" class="text-600">No assets found for domain travel.</div>
+              </ng-template>
+            </p-card>
+          </div>
         </div>
       </div>
     </div>
   `,
   styles: [`
+    :host { display: block; }
     .list-block {
       padding: 0.75rem 0;
       border-bottom: 1px solid var(--surface-border);
@@ -357,5 +410,12 @@ export class TripDetailComponent implements OnInit {
       default:
         return 'secondary';
     }
+  }
+
+  getBudgetTotal(type: 'planned' | 'actual'): number {
+    return this.budgets.reduce((acc, item) => {
+      const value = type === 'planned' ? item.planned_amount : item.actual_amount;
+      return acc + (typeof value === 'number' ? value : 0);
+    }, 0);
   }
 }
