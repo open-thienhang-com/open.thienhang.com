@@ -1,598 +1,629 @@
+
 <div class="settings-main">
-  <!-- Flat Header -->
-  <div class="settings-header">
-    <div class="settings-header-content">
-      <h1 class="settings-title">Settings</h1>
-      <p class="settings-subtitle">Manage your account and preferences</p>
-    </div>
-  </div>
-
-  <!-- Horizontal Navigation -->
-  <div class="settings-nav">
-    <nav class="nav-menu">
-      <button 
-        *ngFor="let section of settingSections"
-        (click)="switchSection(section.key)"
-        [class.active]="activeSection === section.key"
-        class="nav-item">
-        <i [class]="section.icon"></i>
-        <span class="nav-label">{{ section.label }}</span>
-      </button>
-    </nav>
-  </div>
-
-  <!-- Scrollable Content -->
   <div class="settings-content-wrapper">
     <div class="settings-content-inner">
+      <section class="settings-hero">
+        <div class="settings-hero-copy">
+          <div class="settings-hero-badge">
+            <i class="pi pi-cog"></i>
+          </div>
+          <div>
+            <p class="settings-eyebrow">Workspace governance</p>
+            <h1 class="settings-title">Settings</h1>
+            <p class="settings-subtitle">Manage identity, security, notification policy, and appearance from one governed surface.</p>
+          </div>
+        </div>
 
-      <!-- Profile Section -->
-      <ng-container *ngIf="activeSection === 'profile'">
-        <div class="settings-section">
-          <!-- Profile Card -->
-          <div class="flat-card">
-            <div class="card-header">
-              <div class="card-icon profile-icon">
-                <i class="pi pi-user"></i>
-              </div>
-              <div class="card-title-group">
-                <h2 class="card-title">Profile Information</h2>
-                <p class="card-subtitle">Update your account details</p>
-              </div>
+        <div class="settings-hero-actions">
+          <button pButton type="button" icon="pi pi-refresh" label="Refresh" class="p-button-sm p-button-outlined"
+                  (click)="refreshData()" [loading]="loading || localLoading"></button>
+          <button pButton type="button" icon="pi pi-palette" label="Appearance" class="p-button-sm"
+                  (click)="switchSection('appearance')"></button>
+        </div>
+      </section>
+
+      <section class="settings-overview-grid">
+        <article *ngFor="let card of settingsSummaryCards" class="summary-card" [attr.data-tone]="card.tone">
+          <div>
+            <p class="summary-label">{{ card.label }}</p>
+            <h3 class="summary-value">{{ card.value }}</h3>
+            <p class="summary-caption">{{ card.caption }}</p>
+          </div>
+          <div class="summary-icon">
+            <i [class]="card.icon"></i>
+          </div>
+        </article>
+      </section>
+
+      <section class="settings-workspace">
+        <aside class="settings-sidebar">
+          <div class="settings-sidebar-panel">
+            <p class="sidebar-eyebrow">Governance areas</p>
+            <div class="sidebar-heading">Account controls</div>
+            <nav class="nav-menu">
+              <button
+                *ngFor="let section of settingSections"
+                type="button"
+                (click)="switchSection(section.key)"
+                [class.active]="activeSection === section.key"
+                class="nav-item">
+                <span class="nav-icon"><i [class]="section.icon"></i></span>
+                <span class="nav-content">
+                  <span class="nav-label">{{ section.label }}</span>
+                  <span class="nav-description">{{ section.description }}</span>
+                </span>
+                <i class="pi pi-angle-right nav-chevron"></i>
+              </button>
+            </nav>
+          </div>
+
+          <div class="settings-sidebar-panel sidebar-help">
+            <div class="sidebar-help-icon"><i class="pi pi-shield"></i></div>
+            <div>
+              <div class="sidebar-help-title">Governed updates</div>
+              <p class="sidebar-help-text">Keep high-risk actions isolated, prefer explicit save actions, and maintain clear status feedback.</p>
             </div>
-            <div class="card-body">
-              <div class="profile-grid">
-                <!-- Avatar -->
-                <div class="avatar-section">
-                  <div class="avatar-wrapper">
-                    <img *ngIf="profile.avatar" [src]="profile.avatar" alt="Profile" class="avatar-image">
-                    <div *ngIf="!profile.avatar" class="avatar-placeholder">
+          </div>
+        </aside>
+
+        <div class="settings-panel">
+          <div class="settings-panel-header">
+            <div>
+              <p class="panel-eyebrow">Settings module</p>
+              <h2 class="panel-title">{{ activeSectionMeta.label }}</h2>
+              <p class="panel-subtitle">{{ activeSectionMeta.description }}</p>
+            </div>
+            <div class="panel-chip">
+              <i [class]="activeSectionMeta.icon"></i>
+              <span>{{ activeSectionMeta.label }}</span>
+            </div>
+          </div>
+
+          <div class="settings-panel-content">
+            <ng-container *ngIf="activeSection === 'profile'">
+              <div class="settings-section">
+                <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon profile-icon">
                       <i class="pi pi-user"></i>
                     </div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">Profile Information</h2>
+                      <p class="card-subtitle">Update your account details</p>
+                    </div>
                   </div>
-                  <h3 class="avatar-name">{{ profile.firstName || 'N/A' }} {{ profile.lastName || '' }}</h3>
-                  <p class="avatar-role">{{ profile.role || 'N/A' }}</p>
-                  <button pButton type="button" label="Change Photo" 
-                          icon="pi pi-upload" class="p-button-sm mt-3"
-                          (click)="openPhotoUpload()"></button>
+                  <div class="card-body">
+                    <div class="profile-grid">
+                      <div class="avatar-section">
+                        <div class="avatar-wrapper">
+                          <img *ngIf="profile.avatar" [src]="profile.avatar" alt="Profile" class="avatar-image">
+                          <div *ngIf="!profile.avatar" class="avatar-placeholder">
+                            <i class="pi pi-user"></i>
+                          </div>
+                        </div>
+                        <h3 class="avatar-name">{{ profile.firstName || 'N/A' }} {{ profile.lastName || '' }}</h3>
+                        <p class="avatar-role">{{ profile.role || 'N/A' }}</p>
+                        <button pButton type="button" label="Change Photo"
+                                icon="pi pi-upload" class="p-button-sm mt-3"
+                                (click)="openPhotoUpload()"></button>
+                      </div>
+
+                      <div class="form-section">
+                        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="form-grid">
+                          <div class="form-group">
+                            <label>First Name *</label>
+                            <input type="text" pInputText formControlName="firstName"
+                                   placeholder="Enter first name" class="form-input">
+                          </div>
+
+                          <div class="form-group">
+                            <label>Last Name *</label>
+                            <input type="text" pInputText formControlName="lastName"
+                                   placeholder="Enter last name" class="form-input">
+                          </div>
+
+                          <div class="form-group full-width">
+                            <label>Email *</label>
+                            <input type="email" pInputText formControlName="email"
+                                   placeholder="Enter email" class="form-input">
+                          </div>
+
+                          <div class="form-group">
+                            <label>Phone</label>
+                            <input type="tel" pInputText formControlName="phone"
+                                   placeholder="Enter phone" class="form-input">
+                          </div>
+
+                          <div class="form-group">
+                            <label>Department</label>
+                            <p-dropdown [options]="departmentOptions" formControlName="department"
+                                        placeholder="Select Department" class="w-full"></p-dropdown>
+                          </div>
+
+                          <div class="form-group">
+                            <label>Timezone</label>
+                            <p-dropdown [options]="timezoneOptions" formControlName="timezone"
+                                        placeholder="Select Timezone" class="w-full"></p-dropdown>
+                          </div>
+
+                          <div class="form-actions">
+                            <button pButton type="button" label="Cancel" severity="secondary"
+                                    class="p-button-sm p-button-outlined"></button>
+                            <button pButton type="submit" label="Save"
+                                    class="p-button-sm" [disabled]="profileForm.invalid"></button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <!-- Profile Form -->
-                <div class="form-section">
-                  <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="form-grid">
-                    <div class="form-group">
-                      <label>First Name *</label>
-                      <input type="text" pInputText formControlName="firstName" 
-                             placeholder="Enter first name" class="form-input">
+                <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon sessions-icon">
+                      <i class="pi pi-clock"></i>
+                    </div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">Active Sessions</h2>
+                      <p class="card-subtitle">Manage your login sessions</p>
+                    </div>
+                    <button pButton type="button" icon="pi pi-refresh" class="p-button-sm p-button-text"
+                            (click)="refreshData()" [loading]="localLoading"></button>
+                  </div>
+                  <div class="card-body">
+                    <div *ngIf="!localLoading && sessions?.length > 0" class="sessions-list">
+                      <div *ngFor="let s of sessions" class="session-item">
+                        <div class="session-icon">
+                          <i class="pi pi-desktop"></i>
+                        </div>
+                        <div class="session-info">
+                          <div class="session-name">{{ s.device }}</div>
+                          <div class="session-meta">{{ maskSession(s.session) }}</div>
+                        </div>
+                        <div class="session-expires">
+                          <span class="badge">{{ formatRemaining(s.remaining_seconds) }}</span>
+                        </div>
+                        <button pButton type="button" icon="pi pi-trash" class="p-button-sm p-button-danger p-button-text"
+                                (click)="revokeSession(s.session)"></button>
+                      </div>
+                      <div class="mt-4 pt-4 border-top">
+                        <button pButton type="button" label="Revoke All Other Sessions"
+                                severity="warning" class="p-button-sm p-button-outlined"
+                                (click)="revokeOtherSessions()"></button>
+                      </div>
+                    </div>
+                    <div *ngIf="!localLoading && sessions?.length === 0" class="empty-state">
+                      <i class="pi pi-info-circle"></i>
+                      <p>No active sessions</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+            <ng-container *ngIf="activeSection === 'security'">
+              <div class="settings-section">
+                <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon security-icon">
+                      <i class="pi pi-shield"></i>
+                    </div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">Security Settings</h2>
+                      <p class="card-subtitle">Manage authentication and security</p>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="settings-toggle-list">
+                      <div class="toggle-item">
+                        <div class="toggle-info">
+                          <div class="toggle-label">Two-Factor Authentication</div>
+                          <div class="toggle-desc">Require additional verification step</div>
+                        </div>
+                        <p-inputSwitch [(ngModel)]="securitySettings.twoFactorEnabled"></p-inputSwitch>
+                      </div>
+
+                      <div class="toggle-item">
+                        <div class="toggle-info">
+                          <div class="toggle-label">Login Notifications</div>
+                          <div class="toggle-desc">Get notified of new sign-ins</div>
+                        </div>
+                        <p-inputSwitch [(ngModel)]="securitySettings.loginNotifications"></p-inputSwitch>
+                      </div>
+
+                      <div class="settings-item">
+                        <div class="settings-label">Session Timeout</div>
+                        <p-dropdown [options]="sessionTimeoutOptions" [(ngModel)]="securitySettings.sessionTimeout"
+                                    placeholder="Select timeout" class="w-full md:w-64"></p-dropdown>
+                      </div>
+                    </div>
+                    <div class="card-actions">
+                      <button pButton type="button" label="Save Settings"
+                              class="p-button-sm" (click)="saveSecuritySettings()"></button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon password-icon">
+                      <i class="pi pi-key"></i>
+                    </div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">Change Password</h2>
+                      <p class="card-subtitle">Update your account password</p>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="form-column">
+                      <div class="form-group">
+                        <label>Current Password *</label>
+                        <input type="password" pInputText formControlName="currentPassword"
+                               placeholder="Enter current password" class="form-input">
+                      </div>
+
+                      <div class="form-group">
+                        <label>New Password *</label>
+                        <input type="password" pInputText formControlName="newPassword"
+                               placeholder="Enter new password" class="form-input">
+                        <small>Minimum 8 characters</small>
+                      </div>
+
+                      <div class="form-group">
+                        <label>Confirm Password *</label>
+                        <input type="password" pInputText formControlName="confirmPassword"
+                               placeholder="Confirm new password" class="form-input">
+                      </div>
+
+                      <div class="form-actions">
+                        <button pButton type="button" label="Cancel" severity="secondary"
+                                class="p-button-sm p-button-outlined" (click)="passwordForm.reset()"></button>
+                        <button pButton type="submit" label="Update"
+                                class="p-button-sm" [disabled]="passwordForm.invalid"></button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="activeSection === 'users'">
+              <div class="settings-section">
+                <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon users-icon">
+                      <i class="pi pi-users"></i>
+                    </div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">User Management</h2>
+                      <p class="card-subtitle">View and manage all users</p>
+                    </div>
+                    <div class="user-count-badge">{{ allUsers.length }} Users</div>
+                  </div>
+                  <div class="card-body">
+                    <div class="search-box mb-4">
+                      <i class="pi pi-search"></i>
+                      <input type="text" [(ngModel)]="userSearchText" (input)="filterUsers()"
+                             placeholder="Search users..." class="search-input">
                     </div>
 
-                    <div class="form-group">
-                      <label>Last Name *</label>
-                      <input type="text" pInputText formControlName="lastName" 
-                             placeholder="Enter last name" class="form-input">
+                    <div *ngIf="!managementLoading && filteredUsers?.length > 0" class="users-list">
+                      <div *ngFor="let user of filteredUsers" class="user-item">
+                        <div class="user-avatar">
+                          {{ getUserInitials(user) }}
+                        </div>
+                        <div class="user-details">
+                          <div class="user-name">{{ user.first_name || user.last_name ? (user.first_name + ' ' + (user.last_name || '')) : (user.full_name || 'Unknown') }}</div>
+                          <div class="user-email">{{ user.email }}</div>
+                        </div>
+                        <div class="user-meta">
+                          <p-tag [value]="getRoleDisplayText(user.role || 'user')"
+                                 [severity]="getRoleSeverity(user.role || 'user')"></p-tag>
+                          <p-tag [value]="getUserStatus(user)"
+                                 [severity]="getUserStatusSeverity(user)"></p-tag>
+                        </div>
+                        <button pButton type="button" icon="pi pi-eye" class="p-button-sm p-button-text"
+                                (click)="viewUser(user)"></button>
+                      </div>
                     </div>
 
-                    <div class="form-group full-width">
-                      <label>Email *</label>
-                      <input type="email" pInputText formControlName="email" 
-                             placeholder="Enter email" class="form-input">
+                    <div *ngIf="!managementLoading && filteredUsers?.length === 0" class="empty-state">
+                      <i class="pi pi-users"></i>
+                      <p>No users found</p>
                     </div>
 
-                    <div class="form-group">
-                      <label>Phone</label>
-                      <input type="tel" pInputText formControlName="phone" 
-                             placeholder="Enter phone" class="form-input">
+                    <div class="card-actions mt-4">
+                      <button pButton type="button" icon="pi pi-refresh"
+                              class="p-button-sm" (click)="fetchUsersForManagement(true)"
+                              [loading]="managementLoading"></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="activeSection === 'data'">
+              <div class="settings-section">
+                <div class="grid-2">
+                  <div class="flat-card">
+                    <div class="card-header">
+                      <div class="card-icon export-icon">
+                        <i class="pi pi-download"></i>
+                      </div>
+                      <h2 class="card-title">Export My Data</h2>
+                    </div>
+                    <div class="card-body">
+                      <p class="card-desc">Download a copy of your data including profile and activity history.</p>
+                      <button pButton type="button" label="Export Data" icon="pi pi-download"
+                              class="p-button-sm w-full" (click)="exportData()"></button>
+                    </div>
+                  </div>
+
+                  <div class="flat-card danger">
+                    <div class="card-header">
+                      <div class="card-icon delete-icon">
+                        <i class="pi pi-trash"></i>
+                      </div>
+                      <h2 class="card-title">Delete Account</h2>
+                    </div>
+                    <div class="card-body">
+                      <p class="card-desc">Permanently delete your account and all data. This cannot be undone.</p>
+                      <button pButton type="button" label="Delete Account" icon="pi pi-trash"
+                              severity="danger" class="p-button-sm w-full" (click)="deleteAccount()"></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+            <ng-container *ngIf="activeSection === 'notifications'">
+              <div class="settings-section">
+                <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon notifications-icon">
+                      <i class="pi pi-bell"></i>
+                    </div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">Notification Preferences</h2>
+                      <p class="card-subtitle">Choose how you receive notifications</p>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="grid-2">
+                      <div>
+                        <h4 class="section-subtitle">Communication</h4>
+                        <div class="settings-toggle-list">
+                          <div class="toggle-item">
+                            <div>
+                              <div class="toggle-label">Email Notifications</div>
+                              <div class="toggle-desc">Receive notifications via email</div>
+                            </div>
+                            <p-inputSwitch [(ngModel)]="notificationSettings.emailNotifications"></p-inputSwitch>
+                          </div>
+                          <div class="toggle-item">
+                            <div>
+                              <div class="toggle-label">Push Notifications</div>
+                              <div class="toggle-desc">Receive browser notifications</div>
+                            </div>
+                            <p-inputSwitch [(ngModel)]="notificationSettings.pushNotifications"></p-inputSwitch>
+                          </div>
+                          <div class="toggle-item">
+                            <div>
+                              <div class="toggle-label">SMS Notifications</div>
+                              <div class="toggle-desc">Receive text messages</div>
+                            </div>
+                            <p-inputSwitch [(ngModel)]="notificationSettings.smsNotifications"></p-inputSwitch>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 class="section-subtitle">Content</h4>
+                        <div class="settings-toggle-list">
+                          <div class="toggle-item">
+                            <div>
+                              <div class="toggle-label">Marketing Emails</div>
+                              <div class="toggle-desc">Product updates and newsletters</div>
+                            </div>
+                            <p-inputSwitch [(ngModel)]="notificationSettings.marketingEmails"></p-inputSwitch>
+                          </div>
+                          <div class="toggle-item">
+                            <div>
+                              <div class="toggle-label">Security Alerts</div>
+                              <div class="toggle-desc">Important security notifications</div>
+                            </div>
+                            <p-inputSwitch [(ngModel)]="notificationSettings.securityAlerts"></p-inputSwitch>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    <div class="form-group">
-                      <label>Department</label>
-                      <p-dropdown [options]="departmentOptions" formControlName="department" 
-                                 placeholder="Select Department" class="w-full"></p-dropdown>
-                    </div>
-
-                    <div class="form-group">
-                      <label>Timezone</label>
-                      <p-dropdown [options]="timezoneOptions" formControlName="timezone" 
-                                 placeholder="Select Timezone" class="w-full"></p-dropdown>
-                    </div>
-
-                    <div class="form-actions">
-                      <button pButton type="button" label="Cancel" severity="secondary" 
+                    <div class="card-actions mt-6">
+                      <button pButton type="button" label="Cancel" severity="secondary"
                               class="p-button-sm p-button-outlined"></button>
-                      <button pButton type="submit" label="Save" 
-                              class="p-button-sm" [disabled]="profileForm.invalid"></button>
+                      <button pButton type="button" label="Save Preferences"
+                              class="p-button-sm" (click)="saveNotificationSettings()"></button>
                     </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Sessions Card -->
-          <div class="flat-card">
-            <div class="card-header">
-              <div class="card-icon sessions-icon">
-                <i class="pi pi-clock"></i>
-              </div>
-              <div class="card-title-group">
-                <h2 class="card-title">Active Sessions</h2>
-                <p class="card-subtitle">Manage your login sessions</p>
-              </div>
-              <button pButton type="button" icon="pi pi-refresh" class="p-button-sm p-button-text" 
-                      (click)="refreshData()" [loading]="localLoading"></button>
-            </div>
-            <div class="card-body">
-              <div *ngIf="!localLoading && sessions?.length > 0" class="sessions-list">
-                <div *ngFor="let s of sessions" class="session-item">
-                  <div class="session-icon">
-                    <i class="pi pi-desktop"></i>
                   </div>
-                  <div class="session-info">
-                    <div class="session-name">{{ s.device }}</div>
-                    <div class="session-meta">{{ maskSession(s.session) }}</div>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="activeSection === 'appearance'">
+              <div class="settings-section">
+                <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon appearance-icon">
+                      <i class="pi pi-palette"></i>
+                    </div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">Appearance & Theme</h2>
+                      <p class="card-subtitle">Customize how the app looks</p>
+                    </div>
                   </div>
-                  <div class="session-expires">
-                    <span class="badge">{{ formatRemaining(s.remaining_seconds) }}</span>
-                  </div>
-                  <button pButton type="button" icon="pi pi-trash" class="p-button-sm p-button-danger p-button-text"
-                          (click)="revokeSession(s.session)"></button>
-                </div>
-                <div class="mt-4 pt-4 border-top">
-                  <button pButton type="button" label="Revoke All Other Sessions" 
-                          severity="warning" class="p-button-sm p-button-outlined" 
-                          (click)="revokeOtherSessions()"></button>
-                </div>
-              </div>
-              <div *ngIf="!localLoading && sessions?.length === 0" class="empty-state">
-                <i class="pi pi-info-circle"></i>
-                <p>No active sessions</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </ng-container>
+                  <div class="card-body">
+                    <div class="settings-group">
+                      <div class="group-title">Color Theme</div>
+                      <p-selectButton [options]="themeOptions" [(ngModel)]="appearanceSettings.theme"
+                                      (onChange)="onThemeChange()" optionLabel="label" optionValue="value"
+                                      class="w-full"></p-selectButton>
+                    </div>
 
-      <!-- Security Section -->
-      <ng-container *ngIf="activeSection === 'security'">
-        <div class="settings-section">
-          <!-- Security Settings Card -->
-          <div class="flat-card">
-            <div class="card-header">
-              <div class="card-icon security-icon">
-                <i class="pi pi-shield"></i>
-              </div>
-              <div class="card-title-group">
-                <h2 class="card-title">Security Settings</h2>
-                <p class="card-subtitle">Manage authentication and security</p>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="settings-toggle-list">
-                <div class="toggle-item">
-                  <div class="toggle-info">
-                    <div class="toggle-label">Two-Factor Authentication</div>
-                    <div class="toggle-desc">Require additional verification step</div>
-                  </div>
-                  <p-inputSwitch [(ngModel)]="securitySettings.twoFactorEnabled"></p-inputSwitch>
-                </div>
-
-                <div class="toggle-item">
-                  <div class="toggle-info">
-                    <div class="toggle-label">Login Notifications</div>
-                    <div class="toggle-desc">Get notified of new sign-ins</div>
-                  </div>
-                  <p-inputSwitch [(ngModel)]="securitySettings.loginNotifications"></p-inputSwitch>
-                </div>
-
-                <div class="settings-item">
-                  <div class="settings-label">Session Timeout</div>
-                  <p-dropdown [options]="sessionTimeoutOptions" [(ngModel)]="securitySettings.sessionTimeout" 
-                             placeholder="Select timeout" class="w-full md:w-64"></p-dropdown>
-                </div>
-              </div>
-              <div class="card-actions">
-                <button pButton type="button" label="Save Settings" 
-                        class="p-button-sm" (click)="saveSecuritySettings()"></button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Change Password Card -->
-          <div class="flat-card">
-            <div class="card-header">
-              <div class="card-icon password-icon">
-                <i class="pi pi-key"></i>
-              </div>
-              <div class="card-title-group">
-                <h2 class="card-title">Change Password</h2>
-                <p class="card-subtitle">Update your account password</p>
-              </div>
-            </div>
-            <div class="card-body">
-              <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="form-column">
-                <div class="form-group">
-                  <label>Current Password *</label>
-                  <input type="password" pInputText formControlName="currentPassword" 
-                         placeholder="Enter current password" class="form-input">
-                </div>
-
-                <div class="form-group">
-                  <label>New Password *</label>
-                  <input type="password" pInputText formControlName="newPassword" 
-                         placeholder="Enter new password" class="form-input">
-                  <small>Minimum 8 characters</small>
-                </div>
-
-                <div class="form-group">
-                  <label>Confirm Password *</label>
-                  <input type="password" pInputText formControlName="confirmPassword" 
-                         placeholder="Confirm new password" class="form-input">
-                </div>
-
-                <div class="form-actions">
-                  <button pButton type="button" label="Cancel" severity="secondary" 
-                          class="p-button-sm p-button-outlined" (click)="passwordForm.reset()"></button>
-                  <button pButton type="submit" label="Update" 
-                          class="p-button-sm" [disabled]="passwordForm.invalid"></button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </ng-container>
-
-      <!-- Users Section -->
-      <ng-container *ngIf="activeSection === 'users'">
-        <div class="settings-section">
-          <div class="flat-card">
-            <div class="card-header">
-              <div class="card-icon users-icon">
-                <i class="pi pi-users"></i>
-              </div>
-              <div class="card-title-group">
-                <h2 class="card-title">User Management</h2>
-                <p class="card-subtitle">View and manage all users</p>
-              </div>
-              <div class="user-count-badge">{{ allUsers.length }} Users</div>
-            </div>
-            <div class="card-body">
-              <div class="search-box mb-4">
-                <i class="pi pi-search"></i>
-                <input type="text" [(ngModel)]="userSearchText" (input)="filterUsers()" 
-                       placeholder="Search users..." class="search-input">
-              </div>
-
-              <div *ngIf="!managementLoading && filteredUsers?.length > 0" class="users-list">
-                <div *ngFor="let user of filteredUsers" class="user-item">
-                  <div class="user-avatar">
-                    {{ getUserInitials(user) }}
-                  </div>
-                  <div class="user-details">
-                    <div class="user-name">{{ user.first_name || user.last_name ? (user.first_name + ' ' + (user.last_name || '')) : (user.full_name || 'Unknown') }}</div>
-                    <div class="user-email">{{ user.email }}</div>
-                  </div>
-                  <div class="user-meta">
-                    <p-tag [value]="getRoleDisplayText(user.role || 'user')" 
-                           [severity]="getRoleSeverity(user.role || 'user')"></p-tag>
-                    <p-tag [value]="getUserStatus(user)" 
-                           [severity]="getUserStatusSeverity(user)"></p-tag>
-                  </div>
-                  <button pButton type="button" icon="pi pi-eye" class="p-button-sm p-button-text"
-                          (click)="viewUser(user)"></button>
-                </div>
-              </div>
-
-              <div *ngIf="!managementLoading && filteredUsers?.length === 0" class="empty-state">
-                <i class="pi pi-users"></i>
-                <p>No users found</p>
-              </div>
-
-              <div class="card-actions mt-4">
-                <button pButton type="button" icon="pi pi-refresh" 
-                        class="p-button-sm" (click)="fetchUsersForManagement(true)" 
-                        [loading]="managementLoading"></button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </ng-container>
-
-      <!-- Data & Privacy Section -->
-      <ng-container *ngIf="activeSection === 'data'">
-        <div class="settings-section">
-          <div class="grid-2">
-            <!-- Export Data -->
-            <div class="flat-card">
-              <div class="card-header">
-                <div class="card-icon export-icon">
-                  <i class="pi pi-download"></i>
-                </div>
-                <h2 class="card-title">Export My Data</h2>
-              </div>
-              <div class="card-body">
-                <p class="card-desc">Download a copy of your data including profile and activity history.</p>
-                <button pButton type="button" label="Export Data" icon="pi pi-download" 
-                        class="p-button-sm w-full" (click)="exportData()"></button>
-              </div>
-            </div>
-
-            <!-- Delete Account -->
-            <div class="flat-card danger">
-              <div class="card-header">
-                <div class="card-icon delete-icon">
-                  <i class="pi pi-trash"></i>
-                </div>
-                <h2 class="card-title">Delete Account</h2>
-              </div>
-              <div class="card-body">
-                <p class="card-desc">Permanently delete your account and all data. This cannot be undone.</p>
-                <button pButton type="button" label="Delete Account" icon="pi pi-trash" 
-                        severity="danger" class="p-button-sm w-full" (click)="deleteAccount()"></button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </ng-container>
-
-      <!-- Notifications Section -->
-      <ng-container *ngIf="activeSection === 'notifications'">
-        <div class="settings-section">
-          <div class="flat-card">
-            <div class="card-header">
-              <div class="card-icon notifications-icon">
-                <i class="pi pi-bell"></i>
-              </div>
-              <div class="card-title-group">
-                <h2 class="card-title">Notification Preferences</h2>
-                <p class="card-subtitle">Choose how you receive notifications</p>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="grid-2">
-                <!-- Communication -->
-                <div>
-                  <h4 class="section-subtitle">Communication</h4>
-                  <div class="settings-toggle-list">
-                    <div class="toggle-item">
-                      <div>
-                        <div class="toggle-label">Email Notifications</div>
-                        <div class="toggle-desc">Receive notifications via email</div>
+                    <div class="settings-group">
+                      <div class="group-title">UI Style</div>
+                      <div class="style-grid">
+                        <div *ngFor="let style of uiStyleOptions"
+                             class="style-option"
+                             [class.active]="appearanceSettings.uiStyle === style.value"
+                             (click)="appearanceSettings.uiStyle = style.value; onUiStyleChange()">
+                          <div class="style-name">{{ style.label }}</div>
+                          <div class="style-desc">{{ style.description }}</div>
+                        </div>
                       </div>
-                      <p-inputSwitch [(ngModel)]="notificationSettings.emailNotifications"></p-inputSwitch>
                     </div>
-                    <div class="toggle-item">
-                      <div>
-                        <div class="toggle-label">Push Notifications</div>
-                        <div class="toggle-desc">Receive browser notifications</div>
-                      </div>
-                      <p-inputSwitch [(ngModel)]="notificationSettings.pushNotifications"></p-inputSwitch>
-                    </div>
-                    <div class="toggle-item">
-                      <div>
-                        <div class="toggle-label">SMS Notifications</div>
-                        <div class="toggle-desc">Receive text messages</div>
-                      </div>
-                      <p-inputSwitch [(ngModel)]="notificationSettings.smsNotifications"></p-inputSwitch>
-                    </div>
-                  </div>
-                </div>
 
-                <!-- Content -->
-                <div>
-                  <h4 class="section-subtitle">Content</h4>
-                  <div class="settings-toggle-list">
-                    <div class="toggle-item">
-                      <div>
-                        <div class="toggle-label">Marketing Emails</div>
-                        <div class="toggle-desc">Product updates and newsletters</div>
+                    <div class="settings-group">
+                      <div class="group-title">Colors</div>
+                      <div class="grid-2">
+                        <div>
+                          <label class="setting-label">Primary Color</label>
+                          <div class="color-picker-row">
+                            <p-colorPicker [(ngModel)]="appearanceSettings.primaryColor" format="hex"
+                                           [inline]="false" [showTransparency]="false"
+                                           (ngModelChange)="triggerPreviewUpdate()"></p-colorPicker>
+                            <input type="text" pInputText [(ngModel)]="appearanceSettings.primaryColor"
+                                   placeholder="#000000" class="color-input"
+                                   (ngModelChange)="triggerPreviewUpdate()">
+                          </div>
+                          <div class="color-swatches">
+                            <button *ngFor="let preset of colorPresets" type="button" class="swatch"
+                                    [style.backgroundColor]="preset.value"
+                                    (click)="selectColorPreset(preset.value, 'primary')"
+                                    [title]="preset.name"
+                                    [class.selected]="appearanceSettings.primaryColor === preset.value"></button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label class="setting-label">Accent Color</label>
+                          <div class="color-picker-row">
+                            <p-colorPicker [(ngModel)]="appearanceSettings.accentColor" format="hex"
+                                           [inline]="false" [showTransparency]="false"
+                                           (ngModelChange)="triggerPreviewUpdate()"></p-colorPicker>
+                            <input type="text" pInputText [(ngModel)]="appearanceSettings.accentColor"
+                                   placeholder="#000000" class="color-input"
+                                   (ngModelChange)="triggerPreviewUpdate()">
+                          </div>
+                          <div class="color-swatches">
+                            <button *ngFor="let preset of colorPresets" type="button" class="swatch"
+                                    [style.backgroundColor]="preset.value"
+                                    (click)="selectColorPreset(preset.value, 'accent')"
+                                    [title]="preset.name"
+                                    [class.selected]="appearanceSettings.accentColor === preset.value"></button>
+                          </div>
+                        </div>
                       </div>
-                      <p-inputSwitch [(ngModel)]="notificationSettings.marketingEmails"></p-inputSwitch>
                     </div>
-                    <div class="toggle-item">
-                      <div>
-                        <div class="toggle-label">Security Alerts</div>
-                        <div class="toggle-desc">Important security notifications</div>
+
+                    <div class="settings-group">
+                      <div class="group-title">Typography</div>
+                      <div class="grid-2">
+                        <div>
+                          <label class="setting-label">Font Family</label>
+                          <div class="font-chips">
+                            <p-chip *ngFor="let font of fontPresets" [label]="font.name"
+                                    class="cursor-pointer"
+                                    [class.selected]="appearanceSettings.fontFamily === font.value"
+                                    (click)="selectFontPreset(font.value)"></p-chip>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label class="setting-label">Font Size</label>
+                          <p-selectButton [options]="fontSizeOptions" [(ngModel)]="appearanceSettings.fontSize"
+                                          optionLabel="label" optionValue="value" class="w-full"></p-selectButton>
+                        </div>
                       </div>
-                      <p-inputSwitch [(ngModel)]="notificationSettings.securityAlerts"></p-inputSwitch>
+                    </div>
+                    <div class="settings-group">
+                      <div class="group-title">Layout & Behavior</div>
+                      <div class="grid-2">
+                        <div>
+                          <label class="setting-label">Border Radius</label>
+                          <p-selectButton [options]="borderRadiusOptions" [(ngModel)]="appearanceSettings.borderRadius"
+                                          (ngModelChange)="triggerPreviewUpdate()"
+                                          optionLabel="label" optionValue="value" class="w-full"></p-selectButton>
+                        </div>
+
+                        <div>
+                          <label class="setting-label">Layout Style</label>
+                          <p-dropdown [options]="layoutStyleOptions" [(ngModel)]="appearanceSettings.layoutStyle"
+                                      placeholder="Select layout" class="w-full"></p-dropdown>
+                        </div>
+
+                        <div>
+                          <label class="setting-label">Background</label>
+                          <p-dropdown [options]="backgroundPatternOptions" [(ngModel)]="appearanceSettings.backgroundPattern"
+                                      placeholder="Select background" class="w-full"></p-dropdown>
+                        </div>
+
+                        <div>
+                          <label class="setting-label">Language</label>
+                          <p-dropdown [options]="languageOptions" [(ngModel)]="appearanceSettings.language"
+                                      placeholder="Select language" class="w-full"></p-dropdown>
+                        </div>
+                      </div>
+
+                      <div class="settings-toggle-list mt-4">
+                        <div class="toggle-item">
+                          <div class="toggle-label">Animations</div>
+                          <p-inputSwitch [(ngModel)]="appearanceSettings.animationEnabled"></p-inputSwitch>
+                        </div>
+                        <div class="toggle-item">
+                          <div class="toggle-label">Shadows</div>
+                          <p-inputSwitch [(ngModel)]="appearanceSettings.shadowEnabled"></p-inputSwitch>
+                        </div>
+                        <div class="toggle-item">
+                          <div class="toggle-label">Compact Mode</div>
+                          <p-inputSwitch [(ngModel)]="appearanceSettings.compactMode"></p-inputSwitch>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="settings-group">
+                      <div class="group-title">Preview</div>
+                      <div class="preview-box"
+                           [ngStyle]="{'background-color': appearanceSettings.theme === 'dark' ? '#1a1a1a' : '#f5f5f5', 'color': appearanceSettings.theme === 'dark' ? '#e0e0e0' : '#333333', 'font-family': appearanceSettings.fontFamily}">
+                        <div class="preview-header">
+                          <div class="preview-color-swatch" [style.background]="appearanceSettings.primaryColor"></div>
+                          <h4>Preview</h4>
+                        </div>
+                        <div class="preview-content">
+                          <div class="preview-line short"></div>
+                          <div class="preview-line"></div>
+                          <div class="preview-buttons">
+                            <button pButton type="button" label="Primary" class="p-button-sm" [style.background]="appearanceSettings.primaryColor"></button>
+                            <button pButton type="button" label="Accent" class="p-button-sm p-button-outlined" [style.border]="'2px solid ' + appearanceSettings.accentColor" [style.color]="appearanceSettings.accentColor"></button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="card-actions">
+                      <button pButton type="button" label="Reset" severity="secondary"
+                              icon="pi pi-refresh" class="p-button-sm p-button-outlined"
+                              (click)="resetAppearanceSettings()"></button>
+                      <button pButton type="button" label="Save" icon="pi pi-check"
+                              class="p-button-sm" (click)="saveAppearanceSettings()"></button>
                     </div>
                   </div>
                 </div>
               </div>
-
-              <div class="card-actions mt-6">
-                <button pButton type="button" label="Cancel" severity="secondary" 
-                        class="p-button-sm p-button-outlined"></button>
-                <button pButton type="button" label="Save Preferences" 
-                        class="p-button-sm" (click)="saveNotificationSettings()"></button>
-              </div>
-            </div>
+            </ng-container>
           </div>
         </div>
-      </ng-container>
-
-      <!-- Appearance Section -->
-      <ng-container *ngIf="activeSection === 'appearance'">
-        <div class="settings-section">
-          <div class="flat-card">
-            <div class="card-header">
-              <div class="card-icon appearance-icon">
-                <i class="pi pi-palette"></i>
-              </div>
-              <div class="card-title-group">
-                <h2 class="card-title">Appearance & Theme</h2>
-                <p class="card-subtitle">Customize how the app looks</p>
-              </div>
-            </div>
-            <div class="card-body">
-              <!-- Theme Selection -->
-              <div class="settings-group">
-                <div class="group-title">Color Theme</div>
-                <p-selectButton [options]="themeOptions" [(ngModel)]="appearanceSettings.theme" 
-                               (onChange)="onThemeChange()" optionLabel="label" optionValue="value" 
-                               class="w-full"></p-selectButton>
-              </div>
-
-              <!-- UI Style -->
-              <div class="settings-group">
-                <div class="group-title">UI Style</div>
-                <div class="style-grid">
-                  <div *ngFor="let style of uiStyleOptions" 
-                       class="style-option" 
-                       [class.active]="appearanceSettings.uiStyle === style.value"
-                       (click)="appearanceSettings.uiStyle = style.value; onUiStyleChange()">
-                    <div class="style-name">{{ style.label }}</div>
-                    <div class="style-desc">{{ style.description }}</div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Colors -->
-              <div class="settings-group">
-                <div class="group-title">Colors</div>
-                <div class="grid-2">
-                  <div>
-                    <label class="setting-label">Primary Color</label>
-                    <div class="color-picker-row">
-                      <p-colorPicker [(ngModel)]="appearanceSettings.primaryColor" format="hex" 
-                                    [inline]="false" [showTransparency]="false"
-                                    (ngModelChange)="triggerPreviewUpdate()"></p-colorPicker>
-                      <input type="text" pInputText [(ngModel)]="appearanceSettings.primaryColor" 
-                            placeholder="#000000" class="color-input"
-                            (ngModelChange)="triggerPreviewUpdate()">
-                    </div>
-                    <div class="color-swatches">
-                      <button *ngFor="let preset of colorPresets" type="button" class="swatch" 
-                             [style.backgroundColor]="preset.value" 
-                             (click)="selectColorPreset(preset.value, 'primary')"
-                             [title]="preset.name"
-                             [class.selected]="appearanceSettings.primaryColor === preset.value"></button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label class="setting-label">Accent Color</label>
-                    <div class="color-picker-row">
-                      <p-colorPicker [(ngModel)]="appearanceSettings.accentColor" format="hex" 
-                                    [inline]="false" [showTransparency]="false"
-                                    (ngModelChange)="triggerPreviewUpdate()"></p-colorPicker>
-                      <input type="text" pInputText [(ngModel)]="appearanceSettings.accentColor" 
-                            placeholder="#000000" class="color-input"
-                            (ngModelChange)="triggerPreviewUpdate()">
-                    </div>
-                    <div class="color-swatches">
-                      <button *ngFor="let preset of colorPresets" type="button" class="swatch" 
-                             [style.backgroundColor]="preset.value" 
-                             (click)="selectColorPreset(preset.value, 'accent')"
-                             [title]="preset.name"
-                             [class.selected]="appearanceSettings.accentColor === preset.value"></button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Typography -->
-              <div class="settings-group">
-                <div class="group-title">Typography</div>
-                <div class="grid-2">
-                  <div>
-                    <label class="setting-label">Font Family</label>
-                    <div class="font-chips">
-                      <p-chip *ngFor="let font of fontPresets" [label]="font.name" 
-                             class="cursor-pointer" 
-                             [class.selected]="appearanceSettings.fontFamily === font.value"
-                             (click)="selectFontPreset(font.value)"></p-chip>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label class="setting-label">Font Size</label>
-                    <p-selectButton [options]="fontSizeOptions" [(ngModel)]="appearanceSettings.fontSize" 
-                                   optionLabel="label" optionValue="value" class="w-full"></p-selectButton>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Layout -->
-              <div class="settings-group">
-                <div class="group-title">Layout & Behavior</div>
-                <div class="grid-2">
-                  <div>
-                    <label class="setting-label">Border Radius</label>
-                    <p-selectButton [options]="borderRadiusOptions" [(ngModel)]="appearanceSettings.borderRadius" 
-                                   (ngModelChange)="triggerPreviewUpdate()"
-                                   optionLabel="label" optionValue="value" class="w-full"></p-selectButton>
-                  </div>
-
-                  <div>
-                    <label class="setting-label">Layout Style</label>
-                    <p-dropdown [options]="layoutStyleOptions" [(ngModel)]="appearanceSettings.layoutStyle" 
-                               placeholder="Select layout" class="w-full"></p-dropdown>
-                  </div>
-
-                  <div>
-                    <label class="setting-label">Background</label>
-                    <p-dropdown [options]="backgroundPatternOptions" [(ngModel)]="appearanceSettings.backgroundPattern" 
-                               placeholder="Select background" class="w-full"></p-dropdown>
-                  </div>
-
-                  <div>
-                    <label class="setting-label">Language</label>
-                    <p-dropdown [options]="languageOptions" [(ngModel)]="appearanceSettings.language" 
-                               placeholder="Select language" class="w-full"></p-dropdown>
-                  </div>
-                </div>
-
-                <div class="settings-toggle-list mt-4">
-                  <div class="toggle-item">
-                    <div class="toggle-label">Animations</div>
-                    <p-inputSwitch [(ngModel)]="appearanceSettings.animationEnabled"></p-inputSwitch>
-                  </div>
-                  <div class="toggle-item">
-                    <div class="toggle-label">Shadows</div>
-                    <p-inputSwitch [(ngModel)]="appearanceSettings.shadowEnabled"></p-inputSwitch>
-                  </div>
-                  <div class="toggle-item">
-                    <div class="toggle-label">Compact Mode</div>
-                    <p-inputSwitch [(ngModel)]="appearanceSettings.compactMode"></p-inputSwitch>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Preview -->
-              <div class="settings-group">
-                <div class="group-title">Preview</div>
-                <div class="preview-box" 
-                     [ngStyle]="{'background-color': appearanceSettings.theme === 'dark' ? '#1a1a1a' : '#f5f5f5', 'color': appearanceSettings.theme === 'dark' ? '#e0e0e0' : '#333333', 'font-family': appearanceSettings.fontFamily}">
-                  <div class="preview-header">
-                    <div class="preview-color-swatch" [style.background]="appearanceSettings.primaryColor"></div>
-                    <h4>Preview</h4>
-                  </div>
-                  <div class="preview-content">
-                    <div class="preview-line short"></div>
-                    <div class="preview-line"></div>
-                    <div class="preview-buttons">
-                      <button pButton type="button" label="Primary" class="p-button-sm" [style.background]="appearanceSettings.primaryColor"></button>
-                      <button pButton type="button" label="Accent" class="p-button-sm p-button-outlined" [style.border]="'2px solid ' + appearanceSettings.accentColor" [style.color]="appearanceSettings.accentColor"></button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="card-actions">
-                <button pButton type="button" label="Reset" severity="secondary" 
-                        icon="pi pi-refresh" class="p-button-sm p-button-outlined" 
-                        (click)="resetAppearanceSettings()"></button>
-                <button pButton type="button" label="Save" icon="pi pi-check" 
-                        class="p-button-sm" (click)="saveAppearanceSettings()"></button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </ng-container>
-
+      </section>
     </div>
   </div>
 
-  <!-- Toast & Dialogs -->
   <p-toast></p-toast>
   <p-confirmDialog></p-confirmDialog>
 </div>

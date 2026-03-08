@@ -1,16 +1,19 @@
 .suppliers-container {
+  min-height: 100%;
   padding: 1.5rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  background: #f9fafb;
 }
 
 .header-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e9ecef;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 
   .header-content {
     h1 {
@@ -39,10 +42,12 @@
 }
 
 .filters-section {
-  background: #f8f9fa;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   padding: 1.5rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 
   .filters-grid {
     display: grid;

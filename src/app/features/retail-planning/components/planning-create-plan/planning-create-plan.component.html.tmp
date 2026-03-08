@@ -1,15 +1,15 @@
 <!-- Planning - Create Plan Page -->
-<div class="planning-page planning-governance-shell" id="planning-create-plan">
+<div class="planning-page" id="planning-create-plan">
 
   <!-- Page Header -->
-  <app-page-header
-    title="Auto Planning"
+  <app-page-header 
+    title="Auto Planning" 
     subtitle="Automatic route planning - Please fill in the parameters below to create a plan"
     icon="🗺️">
   </app-page-header>
 
   <!-- Stepper Container -->
-  <div class="planning-stepper-container planning-governance-frame">
+  <div class="planning-stepper-container">
 
     <!-- Left: Stepper Navigation -->
     <div class="planning-stepper-nav">
@@ -70,9 +70,9 @@
           <!-- Delivery Points: 2-Column Layout - Bản đồ trái, Controls & Stops phải -->
           <div class="planning-form-section">
             <!-- Layout: Bản đồ bên trái, Controls bên phải -->
-            <div class="planning-step-one-layout">
+            <div class="flex gap-4" style="display: flex; gap: 20px; min-height: 650px;">
               <!-- Left: Bản đồ (chiếm 65% width) -->
-              <div class="planning-map-card">
+              <div class="flex-1" style="flex: 1.65; position: relative; background: #e5e7eb; border-radius: 10px; overflow: hidden; min-height: 650px; max-height: 650px;">
                 <!-- Map Loading State -->
                 <div *ngIf="!mapLoaded" class="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg">
                   <div class="text-center">
@@ -80,7 +80,7 @@
                     <span class="text-gray-600 font-medium text-sm">Loading map...</span>
                   </div>
                 </div>
-
+                
                 <div #createPlanMap id="cp_route_map" class="planning-map-container" [style.opacity]="mapLoaded ? '1' : '0'" [style.pointer-events]="mapLoaded ? 'auto' : 'none'" style="width: 100%; height: 100%; min-height: 650px; transition: opacity 0.3s;"></div>
 
                 <!-- Map Stats -->
@@ -93,8 +93,8 @@
               </div>
 
               <!-- Right: Vùng chọn, Tìm kiếm & Stops (chiếm 35% width) -->
-              <div class="planning-sidebar-stack">
-
+              <div class="flex flex-col space-y-3" style="flex: 0 0 400px; display: flex; flex-direction: column; gap: 12px; max-height: 650px; overflow-y: auto; padding-right: 8px;">
+                
                 <!-- Region Selection: Nằm trên Search warehouse -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 flex-shrink-0">
                   <label class="block text-xs font-semibold text-gray-700 mb-2">
@@ -123,7 +123,7 @@
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 flex-shrink-0">
                   <label class="block text-xs font-semibold text-gray-700 mb-2">🔍 Search warehouse</label>
                   <div class="relative">
-                    <p-autoComplete
+                    <p-autoComplete 
                       [(ngModel)]="warehouseSearchQuery"
                       (completeMethod)="onWarehouseAutoComplete($event)"
                       (onSelect)="onWarehouseAutoSelect($event)"
@@ -143,8 +143,8 @@
 
                     <!-- Search Results Dropdown -->
                     <div *ngIf="warehouseSuggestions && warehouseSuggestions.length > 0" class="absolute left-0 mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-50 max-h-52 overflow-auto">
-                      <div *ngFor="let s of warehouseSuggestions; let i = index"
-                           (click)="onWarehouseResultClick(s)"
+                      <div *ngFor="let s of warehouseSuggestions; let i = index" 
+                           (click)="onWarehouseResultClick(s)" 
                            class="py-2 px-3 hover:bg-orange-50 cursor-pointer flex items-start gap-2 border-b border-gray-100 last:border-b-0 rounded transition-colors">
                         <div class="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-white flex items-center justify-center font-semibold text-xs flex-shrink-0">{{ i + 1 }}</div>
                         <div class="flex-1 min-w-0">
@@ -237,7 +237,7 @@
         header="Select region và bưu cục"
         styleClass="p-fluid"
         (onHide)="closeRegionSelectionModal()">
-
+        
         <div class="space-y-4">
           <!-- Region Selector - Compact -->
           <div class="bg-gradient-to-r from-orange-50 to-orange-50/50 border-2 border-orange-200 rounded-xl p-4">
@@ -319,40 +319,40 @@
               <div class="border-2 border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm max-h-[420px] overflow-y-auto">
                 <table class="w-full">
                   <thead class="bg-gradient-to-r from-gray-100 to-gray-50 sticky top-0 z-10 border-b-2 border-gray-200">
-                  <tr>
-                    <th class="px-3 py-2.5 text-left w-12">
-                      <input
-                        type="checkbox"
-                        [checked]="modalSelectedWarehouses.size === modalWarehouses.length && modalWarehouses.length > 0"
-                        (change)="modalSelectedWarehouses.size === modalWarehouses.length ? deselectAllWarehousesInModal() : selectAllWarehousesInModal()"
-                        class="w-4 h-4 text-orange-600 border-gray-400 rounded focus:ring-2 focus:ring-orange-500 cursor-pointer">
-                    </th>
-                    <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase w-12">STT</th>
-                    <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase">Warehouse name</th>
-                    <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase">Address</th>
-                    <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase w-20">ID</th>
-                  </tr>
+                    <tr>
+                      <th class="px-3 py-2.5 text-left w-12">
+                        <input
+                          type="checkbox"
+                          [checked]="modalSelectedWarehouses.size === modalWarehouses.length && modalWarehouses.length > 0"
+                          (change)="modalSelectedWarehouses.size === modalWarehouses.length ? deselectAllWarehousesInModal() : selectAllWarehousesInModal()"
+                          class="w-4 h-4 text-orange-600 border-gray-400 rounded focus:ring-2 focus:ring-orange-500 cursor-pointer">
+                      </th>
+                      <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase w-12">STT</th>
+                      <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase">Warehouse name</th>
+                      <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase">Address</th>
+                      <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase w-20">ID</th>
+                    </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-150">
-                  <tr *ngFor="let warehouse of modalWarehouses; let i = index"
-                      class="hover:bg-orange-50/50 transition-colors cursor-pointer border-b border-gray-100"
-                      (click)="toggleWarehouseSelection(warehouse)">
-                    <td class="px-3 py-2.5" (click)="$event.stopPropagation()">
-                      <input
-                        type="checkbox"
-                        [checked]="isWarehouseSelectedInModal(warehouse)"
-                        (change)="toggleWarehouseSelection(warehouse)"
-                        class="w-4 h-4 text-orange-600 border-gray-400 rounded focus:ring-2 focus:ring-orange-500 cursor-pointer">
-                    </td>
-                    <td class="px-3 py-2.5 text-sm font-bold text-gray-700">{{ i + 1 }}</td>
-                    <td class="px-3 py-2.5">
-                      <div class="text-sm font-semibold text-gray-900">{{ warehouse.warehouse_name }}</div>
-                    </td>
-                    <td class="px-3 py-2.5">
-                      <div class="text-xs text-gray-600">{{ warehouse.district_name || '-' }}, {{ warehouse.province_name || '-' }}</div>
-                    </td>
-                    <td class="px-3 py-2.5 text-xs text-gray-500 font-mono">{{ warehouse.warehouse_id }}</td>
-                  </tr>
+                    <tr *ngFor="let warehouse of modalWarehouses; let i = index"
+                        class="hover:bg-orange-50/50 transition-colors cursor-pointer border-b border-gray-100"
+                        (click)="toggleWarehouseSelection(warehouse)">
+                      <td class="px-3 py-2.5" (click)="$event.stopPropagation()">
+                        <input
+                          type="checkbox"
+                          [checked]="isWarehouseSelectedInModal(warehouse)"
+                          (change)="toggleWarehouseSelection(warehouse)"
+                          class="w-4 h-4 text-orange-600 border-gray-400 rounded focus:ring-2 focus:ring-orange-500 cursor-pointer">
+                      </td>
+                      <td class="px-3 py-2.5 text-sm font-bold text-gray-700">{{ i + 1 }}</td>
+                      <td class="px-3 py-2.5">
+                        <div class="text-sm font-semibold text-gray-900">{{ warehouse.warehouse_name }}</div>
+                      </td>
+                      <td class="px-3 py-2.5">
+                        <div class="text-xs text-gray-600">{{ warehouse.district_name || '-' }}, {{ warehouse.province_name || '-' }}</div>
+                      </td>
+                      <td class="px-3 py-2.5 text-xs text-gray-500 font-mono">{{ warehouse.warehouse_id }}</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -539,7 +539,7 @@
                       </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-demand let-rowIndex="rowIndex">
-                      <tr (click)="selectDemand(demand)"
+                      <tr (click)="selectDemand(demand)" 
                           [ngClass]="{
                             'bg-orange-50 border-l-4 border-l-orange-500': isDemandSelected(demand),
                             'bg-white hover:bg-orange-50/50': !isDemandSelected(demand) && rowIndex % 2 === 0,
@@ -559,7 +559,7 @@
                           <span class="text-gray-800 font-semibold">{{ demand.total_deliver | number }}</span>
                         </td>
                         <td class="text-center py-4 px-6" (click)="$event.stopPropagation()">
-                          <select
+                          <select 
                             [value]="demandShiftAssignment.get(demand.warehouse_id || demand.id)"
                             (change)="setDemandShift(demand, +$any($event.target).value)"
                             class="text-sm font-semibold px-3 py-1.5 border border-gray-300 rounded-lg bg-white hover:border-orange-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors cursor-pointer">
@@ -585,7 +585,7 @@
                               <span *ngIf="demandSearchQuery">No results found for "{{ demandSearchQuery }}"</span>
                               <span *ngIf="!demandSearchQuery">No data available</span>
                             </div>
-                            <button
+                            <button 
                               *ngIf="demandSearchQuery"
                               (click)="clearSearch()"
                               class="px-6 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-semibold shadow-sm"
@@ -621,7 +621,7 @@
         </div>
       </div>
 
-
+      
 
       <!-- STEP 3: FLEET (Vehicles) -->
       <div class="planning-step-panel" [class.active]="currentStep === 3" id="create-plan-step-3">
@@ -806,155 +806,927 @@
 
 </div>
 
+<style>
+/* Create Plan Page Styles */
+.planning-page {
+  min-height: 100%;
+}
+
+.planning-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.planning-page-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.planning-title-icon {
+  font-size: 36px;
+}
+
+.planning-page-title h2 {
+  margin: 0 0 4px;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--p-surface-900);
+}
+
+.planning-page-title p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--p-surface-600);
+}
+
+.planning-status-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.planning-status-badge.draft {
+  background: var(--p-surface-100);
+  color: var(--p-surface-600);
+}
+
+/* Stepper Container */
+.planning-stepper-container {
+  display: flex;
+  gap: 24px;
+  background: var(--p-surface-0);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  /* allow the container to size to content */
+  min-height: auto;
+}
+
+.planning-stepper-nav {
+  width: 240px;
+  background: var(--p-surface-50);
+  border-radius: 12px 0 0 12px;
+  padding: 20px;
+  border-right: 1px solid var(--p-surface-200);
+}
+
+.planning-stepper-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--p-surface-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 20px;
+}
+
+.planning-step-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: all 0.2s;
+}
+
+.planning-step-item:hover {
+  background: rgba(var(--p-primary-500), 0.05);
+}
+
+.planning-step-item.active {
+  background: rgba(var(--p-primary-500), 0.1);
+}
+
+.planning-step-item.active .planning-step-indicator {
+  background: var(--p-primary-500);
+  color: white;
+}
+
+.planning-step-item.completed .planning-step-indicator {
+  background: var(--p-primary-500);
+  color: white;
+}
+
+.planning-step-indicator {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--p-surface-200);
+  color: var(--p-surface-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.planning-step-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.planning-step-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--p-surface-700);
+}
+
+.planning-step-desc {
+  font-size: 12px;
+  color: var(--p-surface-500);
+}
+
+/* Step Content */
+.planning-step-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.planning-step-panel {
+  display: none;
+  flex-direction: column;
+  /* allow panels to size naturally instead of forcing full height */
+  height: auto;
+}
+
+.planning-step-panel.active {
+  display: flex;
+}
+
+.planning-step-header {
+  padding: 24px 24px 0;
+}
+
+.planning-step-header h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--p-surface-900);
+}
+
+.planning-step-header p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--p-surface-600);
+}
+
+.planning-step-body {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.planning-step-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-top: 1px solid var(--p-surface-200);
+  background: var(--p-surface-50);
+  border-radius: 0 0 12px 0;
+}
+
+/* Form Elements */
+.planning-form-section {
+  margin-bottom: 20px;
+}
+
+.planning-form-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--p-surface-700);
+  margin-bottom: 12px;
+}
+
+.planning-form-field {
+  margin-bottom: 12px;
+}
+
+.planning-form-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--p-surface-600);
+  margin-bottom: 6px;
+}
+
+.planning-form-field label .required {
+  color: #ef4444;
+}
+
+.planning-form-hint {
+  font-size: 12px;
+  color: var(--p-surface-500);
+  margin-top: 4px;
+}
+
+.planning-select, .planning-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--p-surface-300);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--p-surface-700);
+  background: var(--p-surface-0);
+  transition: border-color 0.2s;
+}
+
+.planning-select:focus, .planning-input:focus {
+  outline: none;
+  border-color: var(--p-primary-500);
+  box-shadow: 0 0 0 3px rgba(var(--p-primary-500), 0.1);
+}
+
+/* Depot Grid */
+.planning-depot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.planning-depot-card {
+  background: var(--p-surface-50);
+  border: 1px solid var(--p-surface-200);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 12px;
+}
+
+.depot-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+.depot-label {
+  color: var(--p-surface-600);
+}
+
+.depot-value {
+  color: var(--p-surface-700);
+  font-weight: 500;
+}
+
+/* Mode Selector */
+.planning-mode-selector {
+  display: flex;
+  gap: 12px;
+}
+
+.planning-mode-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  border: 2px solid var(--p-surface-200);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.planning-mode-option:hover {
+  border-color: var(--p-primary-500);
+}
+
+.planning-mode-option.active,
+.planning-mode-option:has(input:checked) {
+  border-color: var(--p-primary-500);
+  background: rgba(var(--p-primary-500), 0.05);
+}
+
+.planning-mode-option input {
+  display: none;
+}
+
+.mode-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.mode-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--p-surface-700);
+}
+
+/* Buttons */
+.planning-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.planning-btn-primary {
+  background: linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600));
+  color: white;
+}
+
+.planning-btn-primary:hover {
+  box-shadow: 0 4px 12px rgba(var(--p-primary-500), 0.3);
+}
+
+.planning-btn-secondary {
+  background: var(--p-surface-100);
+  color: var(--p-surface-700);
+}
+
+.planning-btn-secondary:hover {
+  background: var(--p-surface-200);
+}
+
+.planning-btn-outline {
+  background: transparent;
+  border: 1px solid var(--p-surface-300);
+  color: var(--p-surface-700);
+}
+
+.planning-btn-outline:hover {
+  background: var(--p-surface-50);
+}
+
+.planning-btn-ghost {
+  background: transparent;
+  color: var(--p-surface-600);
+}
+
+.planning-btn-ghost:hover {
+  background: var(--p-surface-100);
+}
+
+.planning-btn-lg {
+  padding: 12px 28px;
+  font-size: 15px;
+}
+
+.planning-btn-icon {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--p-surface-200);
+  border-radius: 8px;
+  background: var(--p-surface-0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.planning-btn-icon.small {
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+}
+
+/* Empty State */
+.planning-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: var(--p-surface-500);
+  text-align: center;
+}
+
+.planning-empty-state svg {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.planning-empty-state p {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--p-surface-600);
+  margin: 0 0 4px;
+}
+
+.planning-empty-state span {
+  font-size: 13px;
+}
+
+.planning-empty-state.small {
+  padding: 24px;
+}
+
+.planning-empty-state.small svg {
+  width: 32px;
+  height: 32px;
+}
+
+/* Actions Bar */
+.planning-demands-actions, .planning-fleet-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.planning-hint-text {
+  font-size: 13px;
+  color: var(--p-surface-600);
+}
+
+.planning-action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* Table Container */
+.planning-demands-table-container, .planning-fleet-table {
+  background: var(--p-surface-0);
+  border: 1px solid var(--p-surface-200);
+  border-radius: 10px;
+  overflow: hidden;
+  min-height: 200px;
+}
+
+/* Fleet Stats */
+.planning-fleet-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.planning-stat-card {
+  padding: 16px;
+  border-radius: 10px;
+}
+
+.planning-stat-card.orange {
+  background: rgba(var(--p-primary-500), 0.1);
+  border: 1px solid rgba(var(--p-primary-500), 0.2);
+}
+
+.planning-stat-card.orange-light {
+  background: rgba(var(--p-primary-500), 0.15);
+  border: 1px solid rgba(var(--p-primary-500), 0.3);
+}
+
+.planning-stat-card.orange-dark {
+  background: rgba(var(--p-primary-500), 0.15);
+  border: 1px solid rgba(var(--p-primary-500), 0.3);
+}
+
+.planning-stat-card .stat-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--p-surface-600);
+  margin-bottom: 4px;
+}
+
+.planning-stat-card .stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--p-surface-900);
+}
+
+/* Settings Grid */
+.planning-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.planning-setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.planning-setting-group label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--p-surface-600);
+}
+
+/* Summary Grid */
+.planning-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.planning-summary-section {
+  background: var(--p-surface-50);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.summary-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--p-surface-700);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--p-surface-200);
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 13px;
+}
+
+.summary-row span:first-child {
+  color: var(--p-surface-600);
+}
+
+.summary-row span:last-child {
+  font-weight: 600;
+  color: var(--p-surface-900);
+}
+
+.planning-summary-estimate {
+  background: linear-gradient(135deg, var(--p-primary-500), var(--p-primary-600));
+  border-radius: 10px;
+  padding: 24px;
+  text-align: center;
+  color: white;
+  grid-column: span 2;
+}
+
+.estimate-title {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+
+.estimate-value {
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.estimate-label {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Footer Actions */
+.planning-footer-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Status Bar */
+.planning-status-bar {
+  background: var(--p-surface-0);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-top: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.status-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+#cp_status_text {
+  font-weight: 600;
+  color: var(--p-surface-700);
+}
+
+#cp_status_progress {
+  color: var(--p-surface-600);
+}
+
+.status-bar {
+  height: 8px;
+  background: var(--p-surface-200);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.status-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--p-primary-500), var(--p-primary-600));
+  transition: width 0.3s;
+}
+
+/* Map Section */
+.planning-points-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 20px;
+  padding: 0 !important;
+  height: 100%;
+}
+
+.planning-map-section {
+  position: relative;
+  background: var(--p-surface-200);
+  border-radius: 10px;
+  overflow: hidden;
+  min-height: 400px;
+}
+
+.planning-map-container {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+}
+
+.planning-map-stats {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.planning-map-stat {
+  background: var(--p-surface-0);
+  padding: 8px 14px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.planning-map-stat .stat-label {
+  font-size: 10px;
+  color: var(--p-surface-600);
+  display: block;
+}
+
+.planning-map-stat .stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--p-surface-900);
+}
+
+/* Points List */
+.planning-points-list {
+  display: flex;
+  flex-direction: column;
+  background: var(--p-surface-0);
+  border-radius: 10px;
+  border: 1px solid var(--p-surface-200);
+  overflow: hidden;
+}
+
+.planning-points-header {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid var(--p-surface-200);
+  background: var(--p-surface-50);
+}
+
+.planning-search-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--p-surface-200);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.planning-points-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.planning-points-items {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 350px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .planning-stepper-container {
+    flex-direction: column;
+  }
+
+  .planning-stepper-nav {
+    width: 100%;
+    border-radius: 12px 12px 0 0;
+    border-right: none;
+    border-bottom: 1px solid var(--p-surface-200);
+    padding: 16px;
+  }
+
+  .planning-stepper-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+  }
+
+  .planning-stepper-title {
+    display: none;
+  }
+
+  .planning-step-item {
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 16px;
+    margin-bottom: 0;
+    min-width: max-content;
+  }
+
+  .planning-step-label {
+    text-align: center;
+  }
+
+  .planning-step-desc {
+    display: none;
+  }
+
+  .planning-depot-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-points-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-summary-estimate {
+    grid-column: span 1;
+  }
+}
+</style>
+
 <script>
-  // Create Plan Step Navigation
-  let currentCreatePlanStep = 1;
+// Create Plan Step Navigation
+let currentCreatePlanStep = 1;
 
-  // Export function immediately to global scope
-  window.goToCreatePlanStep = function(step) {
-    console.log('[CreatePlanStep] Going to step:', step);
+// Export function immediately to global scope
+window.goToCreatePlanStep = function(step) {
+  console.log('[CreatePlanStep] Going to step:', step);
 
-    // Update step navigation
-    const stepItems = document.querySelectorAll('.planning-step-item');
-    console.log('[CreatePlanStep] Found step items:', stepItems.length);
+  // Update step navigation
+  const stepItems = document.querySelectorAll('.planning-step-item');
+  console.log('[CreatePlanStep] Found step items:', stepItems.length);
 
-    stepItems.forEach((item, idx) => {
-      const isActive = idx + 1 === step;
-      const isCompleted = idx + 1 < step;
+  stepItems.forEach((item, idx) => {
+    const isActive = idx + 1 === step;
+    const isCompleted = idx + 1 < step;
 
-      item.classList.toggle('active', isActive);
-      if (isCompleted) {
-        item.classList.add('completed');
-      } else {
-        item.classList.remove('completed');
-      }
-    });
-
-    // Update step panels
-    const stepPanels = document.querySelectorAll('.planning-step-panel');
-    console.log('[CreatePlanStep] Found step panels:', stepPanels.length);
-
-    stepPanels.forEach((panel, idx) => {
-      panel.classList.toggle('active', idx + 1 === step);
-    });
-
-    currentCreatePlanStep = step;
-
-    // Update summary when reaching final step (now step 5)
-    if (step === 5) {
-      updateCreatePlanSummary();
-    }
-  };
-
-  console.log('[CreatePlan] goToCreatePlanStep function registered globally');
-
-  function updateCreatePlanSummary() {
-    // Get values and update summary display
-    const startDepot = document.getElementById('cp_start_depot')?.selectedOptions[0]?.text || '-';
-    const endDepot = document.getElementById('cp_end_depot')?.selectedOptions[0]?.text || '-';
-    const mode = document.querySelector('input[name="cp_planning_mode"]:checked')?.value || 'standard';
-
-    const summaryStart = document.getElementById('cp_summary_start');
-    const summaryEnd = document.getElementById('cp_summary_end');
-    const summaryMode = document.getElementById('cp_summary_mode');
-
-    if (summaryStart) summaryStart.textContent = startDepot;
-    if (summaryEnd) summaryEnd.textContent = endDepot;
-    if (summaryMode) summaryMode.textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
-  }
-
-  // Mode selector - use event delegation instead of immediate binding
-  function setupModeSelectorListeners() {
-    document.querySelectorAll('.planning-mode-option').forEach(option => {
-      option.addEventListener('click', function() {
-        document.querySelectorAll('.planning-mode-option').forEach(o => o.classList.remove('active'));
-        this.classList.add('active');
-      });
-    });
-  }
-
-  // Initialize create plan
-  function initCreatePlan() {
-    console.log('[Planning] Initializing Create Plan...');
-
-    // Setup event listeners
-    setupModeSelectorListeners();
-
-    // Wait for DOM to be ready
-    setTimeout(() => {
-      goToCreatePlanStep(1);
-      loadWarehousesForCreatePlan();
-    }, 100);
-  }
-
-  // Load warehouses for depot selection
-  async function loadWarehousesForCreatePlan() {
-    try {
-      // This would call your API
-      // const response = await fetch('/api/warehouses');
-      // const warehouses = await response.json();
-
-      // Sample data
-      const warehouses = [
-        { id: 'WH001', name: 'Hub HCM - Q7', address: 'District 7, Ho Chi Minh City', lat: 10.7325, lng: 106.7175 },
-        { id: 'WH002', name: 'Hub HCM - Q12', address: 'District 12, Ho Chi Minh City', lat: 10.8565, lng: 106.6417 },
-        { id: 'WH003', name: 'Thu Duc Sorting Center', address: 'Thu Duc, Ho Chi Minh City', lat: 10.8505, lng: 106.7717 }
-      ];
-
-      const startSelect = document.getElementById('cp_start_depot');
-      const endSelect = document.getElementById('cp_end_depot');
-
-      if (startSelect && endSelect) {
-        const options = warehouses.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
-        startSelect.innerHTML = '<option value="">-- Select warehouse --</option>' + options;
-        endSelect.innerHTML = '<option value="">-- Select warehouse --</option>' + options;
-      } else {
-        console.warn('[Planning] Depot select elements not found');
-      }
-    } catch (error) {
-      console.error('[Planning] Error loading warehouses:', error);
-    }
-  }
-
-  function onDepotChange(type) {
-    const select = document.getElementById(`cp_${type}_depot`);
-    const infoCard = document.getElementById(`cp_${type}_depot_info`);
-
-    if (select && select.value) {
-      if (infoCard) infoCard.style.display = 'block';
-      // Update info card with selected depot details
+    item.classList.toggle('active', isActive);
+    if (isCompleted) {
+      item.classList.add('completed');
     } else {
-      if (infoCard) infoCard.style.display = 'none';
+      item.classList.remove('completed');
     }
+  });
+
+  // Update step panels
+  const stepPanels = document.querySelectorAll('.planning-step-panel');
+  console.log('[CreatePlanStep] Found step panels:', stepPanels.length);
+
+  stepPanels.forEach((panel, idx) => {
+    panel.classList.toggle('active', idx + 1 === step);
+  });
+
+  currentCreatePlanStep = step;
+
+  // Update summary when reaching final step (now step 5)
+  if (step === 5) {
+    updateCreatePlanSummary();
+  }
+};
+
+console.log('[CreatePlan] goToCreatePlanStep function registered globally');
+
+function updateCreatePlanSummary() {
+  // Get values and update summary display
+  const startDepot = document.getElementById('cp_start_depot')?.selectedOptions[0]?.text || '-';
+  const endDepot = document.getElementById('cp_end_depot')?.selectedOptions[0]?.text || '-';
+  const mode = document.querySelector('input[name="cp_planning_mode"]:checked')?.value || 'standard';
+
+  const summaryStart = document.getElementById('cp_summary_start');
+  const summaryEnd = document.getElementById('cp_summary_end');
+  const summaryMode = document.getElementById('cp_summary_mode');
+
+  if (summaryStart) summaryStart.textContent = startDepot;
+  if (summaryEnd) summaryEnd.textContent = endDepot;
+  if (summaryMode) summaryMode.textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
+}
+
+// Mode selector - use event delegation instead of immediate binding
+function setupModeSelectorListeners() {
+  document.querySelectorAll('.planning-mode-option').forEach(option => {
+    option.addEventListener('click', function() {
+      document.querySelectorAll('.planning-mode-option').forEach(o => o.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+}
+
+// Initialize create plan
+function initCreatePlan() {
+  console.log('[Planning] Initializing Create Plan...');
+
+  // Setup event listeners
+  setupModeSelectorListeners();
+
+  // Wait for DOM to be ready
+  setTimeout(() => {
+    goToCreatePlanStep(1);
+    loadWarehousesForCreatePlan();
+  }, 100);
+}
+
+// Load warehouses for depot selection
+async function loadWarehousesForCreatePlan() {
+  try {
+    // This would call your API
+    // const response = await fetch('/api/warehouses');
+    // const warehouses = await response.json();
+
+    // Sample data
+    const warehouses = [
+      { id: 'WH001', name: 'Hub HCM - Q7', address: 'District 7, Ho Chi Minh City', lat: 10.7325, lng: 106.7175 },
+      { id: 'WH002', name: 'Hub HCM - Q12', address: 'District 12, Ho Chi Minh City', lat: 10.8565, lng: 106.6417 },
+      { id: 'WH003', name: 'Thu Duc Sorting Center', address: 'Thu Duc, Ho Chi Minh City', lat: 10.8505, lng: 106.7717 }
+    ];
+
+    const startSelect = document.getElementById('cp_start_depot');
+    const endSelect = document.getElementById('cp_end_depot');
+
+    if (startSelect && endSelect) {
+      const options = warehouses.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+      startSelect.innerHTML = '<option value="">-- Select warehouse --</option>' + options;
+      endSelect.innerHTML = '<option value="">-- Select warehouse --</option>' + options;
+    } else {
+      console.warn('[Planning] Depot select elements not found');
+    }
+  } catch (error) {
+    console.error('[Planning] Error loading warehouses:', error);
+  }
+}
+
+function onDepotChange(type) {
+  const select = document.getElementById(`cp_${type}_depot`);
+  const infoCard = document.getElementById(`cp_${type}_depot_info`);
+
+  if (select && select.value) {
+    if (infoCard) infoCard.style.display = 'block';
+    // Update info card with selected depot details
+  } else {
+    if (infoCard) infoCard.style.display = 'none';
+  }
+}
+
+// Stub functions for actions
+function cpImportDemandsCsv() { alert('Import Demands CSV - Coming soon'); }
+function cpImportDemandsJson() { alert('Import Demands JSON - Coming soon'); }
+function cpRefreshDemands() { alert('Refresh Demands - Coming soon'); }
+function cpFilterPoints(query) { console.log('Filter points:', query); }
+
+// Add a new point (max 100 points)
+function cpAddPoint() {
+  const maxPoints = 100;
+  const list = document.getElementById('cp_points_list');
+  const stat = document.getElementById('cp_stat_points');
+  if (!list) return alert('Point list not found');
+
+  const existing = list.querySelectorAll('.cp-point-item');
+  if (existing.length >= maxPoints) {
+    alert(`Cannot add more than ${maxPoints} stops`);
+    return;
   }
 
-  // Stub functions for actions
-  function cpImportDemandsCsv() { alert('Import Demands CSV - Coming soon'); }
-  function cpImportDemandsJson() { alert('Import Demands JSON - Coming soon'); }
-  function cpRefreshDemands() { alert('Refresh Demands - Coming soon'); }
-  function cpFilterPoints(query) { console.log('Filter points:', query); }
+  // Remove empty state if present
+  const empty = list.querySelector('.planning-empty-state');
+  if (empty) empty.remove();
 
-  // Add a new point (max 100 points)
-  function cpAddPoint() {
-    const maxPoints = 100;
-    const list = document.getElementById('cp_points_list');
-    const stat = document.getElementById('cp_stat_points');
-    if (!list) return alert('Point list not found');
-
-    const existing = list.querySelectorAll('.cp-point-item');
-    if (existing.length >= maxPoints) {
-      alert(`Cannot add more than ${maxPoints} stops`);
-      return;
-    }
-
-    // Remove empty state if present
-    const empty = list.querySelector('.planning-empty-state');
-    if (empty) empty.remove();
-
-    const idx = existing.length + 1;
-    const item = document.createElement('div');
-    item.className = 'cp-point-item border border-gray-200 rounded p-3 mb-2 flex items-center justify-between';
-    item.innerHTML = `
+  const idx = existing.length + 1;
+  const item = document.createElement('div');
+  item.className = 'cp-point-item border border-gray-200 rounded p-3 mb-2 flex items-center justify-between';
+  item.innerHTML = `
     <div class="flex items-center gap-3">
       <div class="w-8 h-8 bg-orange-100 text-orange-700 rounded-full flex items-center justify-center font-semibold">${idx}</div>
       <div>
@@ -968,108 +1740,106 @@
     </div>
   `;
 
-    list.appendChild(item);
-    if (stat) stat.textContent = String(existing.length + 1);
-  }
+  list.appendChild(item);
+  if (stat) stat.textContent = String(existing.length + 1);
+}
 
-  function cpRemovePoint(btn) {
-    const item = btn.closest('.cp-point-item');
-    if (!item) return;
-    const list = document.getElementById('cp_points_list');
-    item.remove();
+function cpRemovePoint(btn) {
+  const item = btn.closest('.cp-point-item');
+  if (!item) return;
+  const list = document.getElementById('cp_points_list');
+  item.remove();
 
-    // Re-number remaining points
-    const items = list.querySelectorAll('.cp-point-item');
-    items.forEach((it, i) => {
-      const badge = it.querySelector('div > .w-8');
-      if (badge) badge.textContent = String(i + 1);
-    });
-
-    const stat = document.getElementById('cp_stat_points');
-    if (stat) stat.textContent = String(items.length);
-
-    if (items.length === 0) {
-      const empty = document.createElement('div');
-      empty.className = 'planning-empty-state small';
-      empty.innerHTML = '<p>No points added</p>';
-      list.appendChild(empty);
-    }
-  }
-
-  function cpEditPoint(btn) {
-    // Simple prompt-based edit for now
-    const item = btn.closest('.cp-point-item');
-    if (!item) return;
-    const name = prompt('Point name', item.querySelector('.font-semibold').textContent || '');
-    if (name !== null) {
-      item.querySelector('.font-semibold').textContent = name;
-    }
-  }
-
-  function cpClearPoints() {
-    const list = document.getElementById('cp_points_list');
-    if (!list) return;
-    list.innerHTML = '<div class="planning-empty-state small"><p>No points added</p></div>';
-    const stat = document.getElementById('cp_stat_points');
-    if (stat) stat.textContent = '0';
-  }
-  function cpImportVehiclesCsv() { alert('Import Vehicles CSV - Coming soon'); }
-  function cpImportVehiclesJson() { alert('Import Vehicles JSON - Coming soon'); }
-  function cpClearVehicles() { alert('Clear Vehicles - Coming soon'); }
-  function cpPreviewPayload() { alert('Preview Payload - Coming soon'); }
-  function cpSubmitPlan() {
-    const stat = document.getElementById('cp_stat_points');
-    const totalPoints = stat ? parseInt(stat.textContent || '0', 10) : 0;
-    if (totalPoints > 100) {
-      alert('Cannot create plan: total stops exceed 100');
-      return;
-    }
-
-    const statusBar = document.getElementById('cp_status_bar');
-    const progressBar = document.getElementById('cp_progress_bar');
-    const statusProgress = document.getElementById('cp_status_progress');
-    const statusText = document.getElementById('cp_status_text');
-
-    if (statusBar) statusBar.style.display = 'block';
-
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 5;
-      if (progressBar) progressBar.style.width = progress + '%';
-      if (statusProgress) statusProgress.textContent = progress + '%';
-      if (progress >= 100) {
-        clearInterval(interval);
-        if (statusText) statusText.textContent = 'Plan created successfully!';
-      }
-    }, 200);
-  }
-
-  // Make functions globally available (backup - already exported above)
-  window.updateCreatePlanSummary = updateCreatePlanSummary;
-  window.loadWarehousesForCreatePlan = loadWarehousesForCreatePlan;
-  window.onDepotChange = onDepotChange;
-  window.cpImportDemandsCsv = cpImportDemandsCsv;
-  window.cpImportDemandsJson = cpImportDemandsJson;
-  window.cpRefreshDemands = cpRefreshDemands;
-  window.cpFilterPoints = cpFilterPoints;
-  window.cpAddPoint = cpAddPoint;
-  window.cpClearPoints = cpClearPoints;
-  window.cpImportVehiclesCsv = cpImportVehiclesCsv;
-  window.cpImportVehiclesJson = cpImportVehiclesJson;
-  window.cpClearVehicles = cpClearVehicles;
-  window.cpPreviewPayload = cpPreviewPayload;
-  window.cpSubmitPlan = cpSubmitPlan;
-
-  console.log('[CreatePlan] All functions registered:', {
-    goToCreatePlanStep: typeof window.goToCreatePlanStep,
-    initCreatePlan: typeof window.initCreatePlan,
-    updateCreatePlanSummary: typeof window.updateCreatePlanSummary
+  // Re-number remaining points
+  const items = list.querySelectorAll('.cp-point-item');
+  items.forEach((it, i) => {
+    const badge = it.querySelector('div > .w-8');
+    if (badge) badge.textContent = String(i + 1);
   });
 
-  // Don't auto-init - wait for planning-module.js to call it
-  // if (typeof initCreatePlan === 'function') {
-  //   initCreatePlan();
-  // }
+  const stat = document.getElementById('cp_stat_points');
+  if (stat) stat.textContent = String(items.length);
+
+  if (items.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'planning-empty-state small';
+    empty.innerHTML = '<p>No points added</p>';
+    list.appendChild(empty);
+  }
+}
+
+function cpEditPoint(btn) {
+  // Simple prompt-based edit for now
+  const item = btn.closest('.cp-point-item');
+  if (!item) return;
+  const name = prompt('Point name', item.querySelector('.font-semibold').textContent || '');
+  if (name !== null) {
+    item.querySelector('.font-semibold').textContent = name;
+  }
+}
+
+function cpClearPoints() {
+  const list = document.getElementById('cp_points_list');
+  if (!list) return;
+  list.innerHTML = '<div class="planning-empty-state small"><p>No points added</p></div>';
+  const stat = document.getElementById('cp_stat_points');
+  if (stat) stat.textContent = '0';
+}
+function cpImportVehiclesCsv() { alert('Import Vehicles CSV - Coming soon'); }
+function cpImportVehiclesJson() { alert('Import Vehicles JSON - Coming soon'); }
+function cpClearVehicles() { alert('Clear Vehicles - Coming soon'); }
+function cpPreviewPayload() { alert('Preview Payload - Coming soon'); }
+function cpSubmitPlan() {
+  const stat = document.getElementById('cp_stat_points');
+  const totalPoints = stat ? parseInt(stat.textContent || '0', 10) : 0;
+  if (totalPoints > 100) {
+    alert('Cannot create plan: total stops exceed 100');
+    return;
+  }
+
+  const statusBar = document.getElementById('cp_status_bar');
+  const progressBar = document.getElementById('cp_progress_bar');
+  const statusProgress = document.getElementById('cp_status_progress');
+  const statusText = document.getElementById('cp_status_text');
+
+  if (statusBar) statusBar.style.display = 'block';
+
+  let progress = 0;
+  const interval = setInterval(() => {
+    progress += 5;
+    if (progressBar) progressBar.style.width = progress + '%';
+    if (statusProgress) statusProgress.textContent = progress + '%';
+    if (progress >= 100) {
+      clearInterval(interval);
+      if (statusText) statusText.textContent = 'Plan created successfully!';
+    }
+  }, 200);
+}
+
+// Make functions globally available (backup - already exported above)
+window.updateCreatePlanSummary = updateCreatePlanSummary;
+window.loadWarehousesForCreatePlan = loadWarehousesForCreatePlan;
+window.onDepotChange = onDepotChange;
+window.cpImportDemandsCsv = cpImportDemandsCsv;
+window.cpImportDemandsJson = cpImportDemandsJson;
+window.cpRefreshDemands = cpRefreshDemands;
+window.cpFilterPoints = cpFilterPoints;
+window.cpAddPoint = cpAddPoint;
+window.cpClearPoints = cpClearPoints;
+window.cpImportVehiclesCsv = cpImportVehiclesCsv;
+window.cpImportVehiclesJson = cpImportVehiclesJson;
+window.cpClearVehicles = cpClearVehicles;
+window.cpPreviewPayload = cpPreviewPayload;
+window.cpSubmitPlan = cpSubmitPlan;
+
+console.log('[CreatePlan] All functions registered:', {
+  goToCreatePlanStep: typeof window.goToCreatePlanStep,
+  initCreatePlan: typeof window.initCreatePlan,
+  updateCreatePlanSummary: typeof window.updateCreatePlanSummary
+});
+
+// Don't auto-init - wait for planning-module.js to call it
+// if (typeof initCreatePlan === 'function') {
+//   initCreatePlan();
+// }
 </script>
-
-

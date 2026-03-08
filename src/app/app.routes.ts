@@ -252,7 +252,8 @@ export const routes: Routes = [
         children: [
           {
             path: '',
-            loadComponent: () => import('./features/retail-planning/components/dataset/dataset.component').then(m => m.DatasetComponent),
+            redirectTo: '/planning/stochastic',
+            pathMatch: 'full'
           },
           {
             path: 'payment',
@@ -309,7 +310,8 @@ export const routes: Routes = [
               },
               {
                 path: 'support',
-                loadComponent: () => import('./features/retail/retail-services/inventory/support/support.component').then(m => m.SupportComponent),
+                redirectTo: 'settings',
+                pathMatch: 'full'
               },
               {
                 path: 'settings',
@@ -350,76 +352,21 @@ export const routes: Routes = [
             loadComponent: () => import('./features/retail/pages/shop/shop.component').then(m => m.RetailShopComponent),
           },
           {
+            path: 'omni-channel',
+            loadComponent: () => import('./features/retail/retail-services/omni-channel/omni-channel.component').then(m => m.OmniChannelComponent),
+          },
+          {
             path: 'transactions',
-            loadComponent: () => import('./features/retail/retail-services/feature-page/retail-feature-page.component').then(m => m.RetailFeaturePageComponent),
-            data: {
-              featureConfig: {
-                title: 'POS Transactions',
-                subtitle: 'Live transaction feed with settlement and exception handling',
-                icon: 'pi pi-receipt',
-                accent: '#0ea5e9',
-                stats: [
-                  { label: 'Captured Today', value: '14,882', trend: '+7.2%' },
-                  { label: 'Settled', value: '13,901', trend: '93.4%' },
-                  { label: 'Refunds', value: '214', trend: '1.4%' },
-                  { label: 'Exceptions', value: '37', trend: '-22.9%' }
-                ],
-                actions: [
-                  { label: 'Investigate Exceptions', icon: 'pi pi-search', description: 'Review failed and pending settlements' },
-                  { label: 'Issue Refund', icon: 'pi pi-replay', description: 'Process full or partial customer refunds' },
-                  { label: 'Export Ledger', icon: 'pi pi-download', description: 'Download daily transaction register' }
-                ],
-                checklist: ['Payment statuses synced', 'Reconciliation report generated', 'Exception queue triaged', 'Audit trail archived']
-              }
-            }
+            loadComponent: () => import('./features/retail/retail-services/transactions/transactions.component').then(m => m.TransactionsComponent),
           },
           {
             path: 'cash',
-            loadComponent: () => import('./features/retail/retail-services/feature-page/retail-feature-page.component').then(m => m.RetailFeaturePageComponent),
-            data: {
-              featureConfig: {
-                title: 'Cash Management',
-                subtitle: 'Drawer balances, variance controls, and branch cash movement',
-                icon: 'pi pi-money-bill',
-                accent: '#16a34a',
-                stats: [
-                  { label: 'Open Drawers', value: '96', trend: '+3' },
-                  { label: 'Total Float', value: '$312,450', trend: '+1.8%' },
-                  { label: 'Variance Cases', value: '9', trend: '-40.0%' },
-                  { label: 'Safe Transfers', value: '64', trend: '+12.0%' }
-                ],
-                actions: [
-                  { label: 'Declare Closing', icon: 'pi pi-check', description: 'Submit shift-end cash declaration' },
-                  { label: 'Record Safe Drop', icon: 'pi pi-arrow-down', description: 'Log secure transfer from till to safe' },
-                  { label: 'Review Variance', icon: 'pi pi-exclamation-triangle', description: 'Resolve mismatch incidents' }
-                ],
-                checklist: ['Drawer policy assigned', 'Dual-control enabled', 'Variance thresholds set', 'Shift handover logs active']
-              }
-            }
+            redirectTo: 'payment',
+            pathMatch: 'full'
           },
           {
             path: 'orders',
-            loadComponent: () => import('./features/retail/retail-services/feature-page/retail-feature-page.component').then(m => m.RetailFeaturePageComponent),
-            data: {
-              featureConfig: {
-                title: 'Online Orders',
-                subtitle: 'End-to-end order lifecycle from placement to fulfillment',
-                icon: 'pi pi-shopping-bag',
-                accent: '#1d4ed8',
-                stats: [
-                  { label: 'New Orders', value: '4,129', trend: '+9.9%' },
-                  { label: 'Fulfillment SLA', value: '95.6%', trend: '+1.2%' },
-                  { label: 'Cancellation', value: '2.1%', trend: '-0.3%' },
-                  { label: 'Backorders', value: '148', trend: '-11.0%' }
-                ],
-                actions: [
-                  { label: 'Prioritize Queue', icon: 'pi pi-sort-amount-up', description: 'Auto-prioritize urgent and delayed orders' },
-                  { label: 'Batch Pack Slips', icon: 'pi pi-print', description: 'Generate labels and packing slips in batch' },
-                  { label: 'Resolve Exceptions', icon: 'pi pi-wrench', description: 'Handle payment and inventory mismatches' }
-                ],
-                checklist: ['Carrier integrations healthy', 'Inventory reservation enabled', 'SLA alerts enabled', 'Return pipeline configured']
-              }
-            }
+            loadComponent: () => import('./features/retail/retail-services/orders/orders.component').then(m => m.OrdersComponent),
           },
           {
             path: 'customers',

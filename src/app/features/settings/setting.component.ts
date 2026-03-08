@@ -33,6 +33,7 @@ import { BadgeModule } from 'primeng/badge';
 import { AccordionModule } from 'primeng/accordion';
 import { UserService } from '../../core/services/user.service';
 import { I18nService } from '../../core/services/i18n.service';
+import { getApiBase } from '../../core/config/api-config';
 import { forkJoin } from 'rxjs';
 
 interface UserProfile {
@@ -116,12 +117,12 @@ interface AppearanceSettings {
 export class SettingsComponent implements OnInit {
   // Non-collapsing sidebar sections for stable two-column layout
   settingSections = [
-    { key: 'profile', label: 'Profile', icon: 'pi pi-user' },
-    { key: 'security', label: 'Security & Password', icon: 'pi pi-lock' },
-    { key: 'users', label: 'User Management', icon: 'pi pi-users' },
-    { key: 'data', label: 'Data & Privacy', icon: 'pi pi-database' },
-    { key: 'notifications', label: 'Notifications', icon: 'pi pi-bell' },
-    { key: 'appearance', label: 'Appearance', icon: 'pi pi-palette' }
+    { key: 'profile', label: 'Profile', icon: 'pi pi-user', description: 'Identity, avatar, and active sessions' },
+    { key: 'security', label: 'Security & Password', icon: 'pi pi-lock', description: 'Authentication and access protection' },
+    { key: 'users', label: 'User Management', icon: 'pi pi-users', description: 'Workspace members, roles, and status' },
+    { key: 'data', label: 'Data & Privacy', icon: 'pi pi-database', description: 'Export, retention, and destructive actions' },
+    { key: 'notifications', label: 'Notifications', icon: 'pi pi-bell', description: 'Channels, alerts, and preferences' },
+    { key: 'appearance', label: 'Appearance', icon: 'pi pi-palette', description: 'Theme, layout, and visual behavior' }
   ];
   activeSection: string = 'profile';
 
@@ -154,6 +155,65 @@ export class SettingsComponent implements OnInit {
   profileForm: FormGroup;
   passwordForm: FormGroup;
   activeTabIndex: number = 0;
+
+  get activeSectionMeta() {
+    return this.settingSections.find(section => section.key === this.activeSection) || this.settingSections[0];
+  }
+
+  get profileCompleteness(): number {
+    const values = [
+      this.profile.firstName,
+      this.profile.lastName,
+      this.profile.email,
+      this.profile.phone,
+      this.profile.department,
+      this.profile.timezone
+    ];
+    const completed = values.filter(value => {
+      if (value === null || value === undefined) return false;
+      if (typeof value !== 'string') return true;
+      const normalized = value.trim().toLowerCase();
+      return normalized !== '' && normalized !== 'no information' && normalized !== 'n/a';
+    }).length;
+    return Math.round((completed / values.length) * 100);
+  }
+
+  get enabledNotificationCount(): number {
+    return Object.values(this.notificationSettings).filter(Boolean).length;
+  }
+
+  get settingsSummaryCards() {
+    return [
+      {
+        label: 'Profile completeness',
+        value: `${this.profileCompleteness}%`,
+        caption: 'Core identity fields populated',
+        icon: 'pi pi-id-card',
+        tone: 'blue'
+      },
+      {
+        label: 'Active sessions',
+        value: `${this.sessions?.length || 0}`,
+        caption: 'Signed-in devices tracked',
+        icon: 'pi pi-desktop',
+        tone: 'orange'
+      },
+      {
+        label: 'Notification channels',
+        value: `${this.enabledNotificationCount}/5`,
+        caption: 'Preferences currently enabled',
+        icon: 'pi pi-bell',
+        tone: 'purple'
+      },
+      {
+        label: 'Theme mode',
+        value: this.appearanceSettings.theme.charAt(0).toUpperCase() + this.appearanceSettings.theme.slice(1),
+        caption: 'Workspace visual mode',
+        icon: 'pi pi-palette',
+        tone: 'emerald'
+      }
+    ];
+  }
 
   profile: UserProfile = {
     firstName: 'John',
@@ -323,7 +383,7 @@ export class SettingsComponent implements OnInit {
 
   // Local profile & session management
   sessions: any[] = [];
-  localProfileSource = 'https://api.thienhang.com';
+  localProfileSource = getApiBase();
   localLoading = false;
 
   // NOTE: navigation-based user detail view (navigates to dedicated page)
@@ -753,7 +813,7 @@ export class SettingsComponent implements OnInit {
       error: (err) => {
         this.localLoading = false;
         console.error('Error fetching local profile:', err);
-        this.messageService.add({ severity: 'error', summary: 'Local API error', detail: 'Failed to call https://api.thienhang.com/authentication/me' });
+        this.messageService.add({ severity: 'error', summary: 'API error', detail: `Failed to call ${url}` });
       }
     });
   }

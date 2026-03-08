@@ -339,3 +339,29 @@ export class CustomerService {
     return this.http.put<any>(`${this.baseUrl}/${id}`, data);
   }
 }
+
+@Injectable({
+  providedIn: 'root'
+})
+export class TransactionService {
+  private baseUrl = `${getApiBase()}/data-mesh/domains/retail/transactions`;
+
+  constructor(private http: HttpClient) { }
+
+  listTransactions(skip: number = 0, limit: number = 20): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}?skip=${skip}&limit=${limit}`);
+  }
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class RetailOrderService {
+  private baseUrl = `${getApiBase()}/data-mesh/domains/retail/orders`;
+
+  constructor(private http: HttpClient) { }
+
+  listOrders(skip: number = 0, limit: number = 20): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}?skip=${skip}&limit=${limit}`);
+  }
+}

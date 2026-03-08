@@ -1,4 +1,4 @@
-<div class="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+<div class="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
   <!-- Mobile overlay -->
   <div 
     class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden transition-opacity duration-300"
@@ -9,7 +9,7 @@
   </div>
 
   <!-- Sidebar -->
-  <div class="fixed inset-y-0 left-0 z-40 transition-all duration-300 lg:relative lg:translate-x-0 lg:h-auto min-h-screen"
+  <div class="fixed inset-y-0 left-0 z-40 h-screen transition-all duration-300 lg:relative lg:translate-x-0 lg:h-auto"
        [class.w-64]="!collapsed"
        [class.w-16]="collapsed"
        [class.-translate-x-full]="!sidebarOpen && !collapsed"
@@ -18,14 +18,13 @@
   </div>
 
   <!-- Main content -->
-  <div class="flex-1 min-w-0">
+  <div class="flex-1 min-w-0 h-screen flex flex-col">
     <!-- Page content -->
-    <main class="overflow-x-hidden">
+    <main class="flex-1 overflow-y-auto overflow-x-hidden">
       <router-outlet></router-outlet>
+      <!-- Footer -->
+      <app-footer *ngIf="showFooter"></app-footer>
     </main>
-
-    <!-- Footer -->
-    <app-footer *ngIf="showFooter"></app-footer>
   </div>
 
   <!-- Global Loading Component -->

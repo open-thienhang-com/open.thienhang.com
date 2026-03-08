@@ -326,39 +326,65 @@ export class SidebarComponent implements OnInit, OnChanges {
       expanded: false,
       items: [
         {
-          label: 'Inventory',
-          icon: 'pi pi-box',
+          label: 'Forecast',
+          icon: 'pi pi-chart-line',
           children: [
-            { label: 'Category', url: '/retail/inventory/categories', icon: 'pi pi-tags' },
-            { label: 'Products', url: '/retail/inventory/products', icon: 'pi pi-shopping-cart' },
-            { label: 'Locations', url: '/retail/inventory/locations', icon: 'pi pi-map-marker' },
-            { label: 'Partners', url: '/retail/inventory/partners', icon: 'pi pi-briefcase' },
-            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-cog' },
-            { label: 'Fleet', url: '/planning/fleet', icon: 'pi pi-truck' }
+            { label: 'Stochastic', url: '/planning/stochastic', icon: 'pi pi-database' },
+            { label: 'Demand', url: '/planning/demand', icon: 'pi pi-chart-bar' }
           ]
         },
         {
-          label: 'Sales & Commerce',
+          label: 'Planning',
+          icon: 'pi pi-truck',
+          children: [
+            { label: 'Truck', url: '/planning/fleet', icon: 'pi pi-truck' },
+            { label: 'Trip', url: '/planning/auto-planning', icon: 'pi pi-directions' },
+            { label: 'Warehouse/Hub', url: '/planning/delivery-points', icon: 'pi pi-building' }
+          ]
+        },
+        {
+          label: 'Sales Channels',
           icon: 'pi pi-shopping-cart',
           children: [
             { label: 'POS Terminal', url: '/retail/pos', icon: 'pi pi-desktop' },
-            { label: 'Transactions', url: '/retail/transactions', icon: 'pi pi-receipt' },
-            { label: 'Cash Management', url: '/retail/cash', icon: 'pi pi-money-bill' },
             { label: 'Online Store', url: '/retail/ecommerce', icon: 'pi pi-shopping-bag' },
+            { label: 'Omni Channel', url: '/retail/omni-channel', icon: 'pi pi-comments' }
+          ]
+        },
+        {
+          label: 'Order',
+          icon: 'pi pi-receipt',
+          children: [
             { label: 'Orders', url: '/retail/orders', icon: 'pi pi-shopping-cart' },
+            { label: 'Transactions', url: '/retail/transactions', icon: 'pi pi-receipt' },
+            { label: 'Payment', url: '/retail/payment', icon: 'pi pi-credit-card' }
+          ]
+        },
+        {
+          label: 'Inventory',
+          icon: 'pi pi-box',
+          children: [
+            { label: 'Products', url: '/retail/inventory/products', icon: 'pi pi-shopping-cart' },
+            { label: 'Categories', url: '/retail/inventory/categories', icon: 'pi pi-tags' },
+            { label: 'Suppliers', url: '/retail/inventory/suppliers', icon: 'pi pi-truck' },
+            { label: 'Partners', url: '/retail/inventory/partners', icon: 'pi pi-briefcase' },
+            { label: 'Locations', url: '/retail/inventory/locations', icon: 'pi pi-map-marker' }
+          ]
+        },
+        {
+          label: 'Customer',
+          icon: 'pi pi-users',
+          children: [
             { label: 'Customers', url: '/retail/customers', icon: 'pi pi-users' }
           ]
+        },
+        {
+          label: 'Configuration',
+          icon: 'pi pi-cog',
+          children: [
+            { label: 'Settings', url: '/retail/inventory/settings', icon: 'pi pi-cog' }
+          ]
         }
-      ]
-    },
-    {
-      label: 'Loyalty Program',
-      icon: 'pi pi-star',
-      expanded: false,
-      items: [
-        { label: 'Members', url: '/retail/loyalty', icon: 'pi pi-users' },
-        { label: 'Rewards', url: '/retail/rewards', icon: 'pi pi-gift' },
-        { label: 'Campaigns', url: '/retail/campaigns', icon: 'pi pi-megaphone' }
       ]
     },
     {
@@ -703,7 +729,6 @@ export class SidebarComponent implements OnInit, OnChanges {
       'reports': 'pi pi-chart-line',
       'movements': 'pi pi-exchange',
       'transactions': 'pi pi-receipt',
-      'cash': 'pi pi-money-bill',
       'orders': 'pi pi-shopping-cart',
       'analytics': 'pi pi-chart-bar',
       'insights': 'pi pi-users',
@@ -791,23 +816,33 @@ export class SidebarComponent implements OnInit, OnChanges {
       return;
     }
 
-    // Special-case: for Retail app, show Inventory and merged Sales & Commerce
+    // Special-case: for Retail app, show business sections in a fixed order.
     if (key === 'retail') {
       const retailGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('retail'));
       const groups: any[] = [];
 
       if (retailGroup) {
-        // Keep Inventory Management subgroup
-        const inv = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes('inventory'));
-        if (inv) groups.push({ label: inv.label, icon: inv.icon || this.getIconForMenuItem(inv), expanded: false, items: ((inv as any).children ?? (inv as any).items ?? []) });
+        const businessOrder = [
+          'forecast',
+          'planning',
+          'sales channels',
+          'order',
+          'inventory',
+          'customer',
+          'operations'
+        ];
 
-        // Sales & Commerce (POS + E-commerce merged)
-        const sales = (retailGroup.items || []).find((it: any) => {
-          const label = (it.label || '').toLowerCase();
-          return label.includes('sales') || label.includes('commerce');
+        businessOrder.forEach(keyPart => {
+          const section = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes(keyPart));
+          if (section) {
+            groups.push({
+              label: section.label,
+              icon: section.icon || this.getIconForMenuItem(section),
+              expanded: false,
+              items: ((section as any).children ?? (section as any).items ?? [])
+            });
+          }
         });
-        if (sales) groups.push({ label: sales.label, icon: sales.icon || this.getIconForMenuItem(sales), expanded: false, items: ((sales as any).children ?? (sales as any).items ?? []) });
-
       }
 
       this.visibleGroups = this.orderGroupsForApp(groups, key);
@@ -821,9 +856,12 @@ export class SidebarComponent implements OnInit, OnChanges {
 
     // Special-case: for Loyalty app - render its child menu items directly (no parent header)
     if (key === 'loyalty') {
-      const loyaltyGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('loyalty'));
+      const retailGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('retail'));
+      const loyaltyGroup =
+        (retailGroup?.items || []).find((it: any) => (it.label || '').toLowerCase().includes('customer') || (it.label || '').toLowerCase().includes('loyalty')) ||
+        this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('loyalty'));
       if (loyaltyGroup) {
-        const items: any[] = this.getFlattenedItems(loyaltyGroup.items || []);
+        const items: any[] = this.getFlattenedItems((loyaltyGroup as any).items || (loyaltyGroup as any).children || []);
         const pseudo = { label: '', icon: '', expanded: false, _noHeader: true, items } as any;
         pseudo._flattened = items;
 

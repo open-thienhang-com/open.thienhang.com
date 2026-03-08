@@ -79,6 +79,13 @@ export class OverviewComponent implements OnInit {
       icon: 'pi pi-globe',
       color: '#3b82f6',
       description: 'Online retail and marketplace solutions'
+    },
+    {
+      key: 'omni-channel',
+      label: 'Omni Channel',
+      icon: 'pi pi-comments',
+      color: '#0f766e',
+      description: 'Unified conversations across social, chat, and marketplace support'
     }
   ];
 
@@ -95,7 +102,8 @@ export class OverviewComponent implements OnInit {
       { category: 'Inventory Management', count: 2, active: 2, revenue: 399, growth: 8.3 },
       { category: 'Loyalty Programs', count: 1, active: 0, revenue: 249, growth: -2.1 },
       { category: 'POS Systems', count: 1, active: 1, revenue: 349, growth: 22.4 },
-      { category: 'E-commerce', count: 0, active: 0, revenue: 0, growth: 0 }
+      { category: 'E-commerce', count: 0, active: 0, revenue: 0, growth: 0 },
+      { category: 'Omni Channel', count: 1, active: 1, revenue: 429, growth: 17.9 }
     ];
   }
 
@@ -140,25 +148,27 @@ export class OverviewComponent implements OnInit {
     const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
 
     this.chartData = {
-      labels: ['Payment', 'Inventory', 'Loyalty', 'POS', 'E-commerce'],
+      labels: ['Payment', 'Inventory', 'Loyalty', 'POS', 'E-commerce', 'Omni Channel'],
       datasets: [
         {
           label: 'Active Services',
           backgroundColor: [
-            '#10b981',
-            '#f59e0b',
-            '#ec4899',
-            '#06b6d4',
-            '#3b82f6'
-          ],
-          borderColor: [
-            '#059669',
-            '#d97706',
-            '#db2777',
-            '#0891b2',
-            '#2563eb'
-          ],
-          data: [3, 2, 0, 1, 0]
+          '#10b981',
+          '#f59e0b',
+          '#ec4899',
+          '#06b6d4',
+          '#3b82f6',
+          '#0f766e'
+        ],
+        borderColor: [
+          '#059669',
+          '#d97706',
+          '#db2777',
+          '#0891b2',
+          '#2563eb',
+          '#115e59'
+        ],
+          data: [3, 2, 0, 1, 0, 1]
         }
       ]
     };

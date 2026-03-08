@@ -72,12 +72,20 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$)
       )
       .subscribe((event: NavigationEnd) => {
-        // Hide footer when on hotel routes
-        this.showFooter = !event.url.startsWith('/hotel');
+        // Hide footer for vertical app experiences that own full page layout.
+        this.showFooter = !(
+          event.url.startsWith('/hotel') ||
+          event.url.startsWith('/retail') ||
+          event.url.startsWith('/planning')
+        );
       });
 
     // Check initial route
-    this.showFooter = !this.router.url.startsWith('/hotel');
+    this.showFooter = !(
+      this.router.url.startsWith('/hotel') ||
+      this.router.url.startsWith('/retail') ||
+      this.router.url.startsWith('/planning')
+    );
 
     // Show beautiful loading animation on page refresh/initial load
     this.showInitialLoading();

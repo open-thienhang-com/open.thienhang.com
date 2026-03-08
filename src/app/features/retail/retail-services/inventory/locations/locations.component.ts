@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ElementRef, Inject, OnDestroy, OnInit, PLATFORM_ID, ViewChild } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
@@ -14,11 +14,17 @@ import { WarehouseService } from '../../../services/retail.service';
 
 interface WarehouseItem {
   id: string;
+  warehouseId: number | null;
   name: string;
   location: string;
   address: string;
+  district: string;
   city: string;
-  country: string;
+  region: string;
+  type: string;
+  wardCode: string;
+  latitude: number | null;
+  longitude: number | null;
   totalCapacity: number;
   isActive: boolean;
   createdAt: Date | null;
@@ -44,6 +50,8 @@ interface WarehouseItem {
   providers: [MessageService]
 })
 export class LocationsComponent implements OnInit {
+  @ViewChild('locationDetailMap', { static: false }) locationDetailMapRef?: ElementRef<HTMLDivElement>;
+
   locations: WarehouseItem[] = [];
   filteredLocations: WarehouseItem[] = [];
 
@@ -56,6 +64,8 @@ export class LocationsComponent implements OnInit {
   dialogMode: 'create' | 'view' = 'create';
 
   editingLocation: WarehouseItem | null = null;
+  detailMap: any = null;
+  detailMarker: any = null;
 
   statusOptions = [
     { label: 'All Status', value: '' },
@@ -69,12 +79,17 @@ export class LocationsComponent implements OnInit {
   ];
 
   constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
     private messageService: MessageService,
     private warehouseService: WarehouseService
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.loadLocations();
+  }
+
+  ngOnDestroy() {
+    this.destroyLocationDetailMap();
   }
 
   loadLocations() {
@@ -106,8 +121,11 @@ export class LocationsComponent implements OnInit {
         || location.name.toLowerCase().includes(keyword)
         || location.location.toLowerCase().includes(keyword)
         || location.address.toLowerCase().includes(keyword)
+        || location.district.toLowerCase().includes(keyword)
         || location.city.toLowerCase().includes(keyword)
-        || location.country.toLowerCase().includes(keyword);
+        || location.region.toLowerCase().includes(keyword)
+        || location.type.toLowerCase().includes(keyword)
+        || String(location.warehouseId || '').includes(keyword);
 
       const statusKey = location.isActive ? 'active' : 'inactive';
       const matchesStatus = !this.selectedStatus || statusKey === this.selectedStatus;
@@ -134,11 +152,17 @@ export class LocationsComponent implements OnInit {
     this.dialogMode = 'create';
     this.editingLocation = {
       id: '',
+      warehouseId: null,
       name: '',
       location: '',
       address: '',
+      district: '',
       city: '',
-      country: '',
+      region: '',
+      type: '',
+      wardCode: '',
+      latitude: null,
+      longitude: null,
       totalCapacity: 0,
       isActive: true,
       createdAt: null,
@@ -171,20 +195,30 @@ export class LocationsComponent implements OnInit {
     }
 
     const payload = {
+      warehouse_name: this.editingLocation.name.trim(),
+      warehouse_address: this.editingLocation.address.trim(),
+      province_name: this.editingLocation.city.trim(),
+      district_name: this.editingLocation.district.trim(),
+      region_shortname: this.editingLocation.location.trim() || this.editingLocation.region.trim(),
+      warehouse_type: this.editingLocation.type.trim() || null,
+      ward_code: this.editingLocation.wardCode.trim() || null,
+      latitude: this.editingLocation.latitude,
+      longitude: this.editingLocation.longitude,
       name: this.editingLocation.name.trim(),
       location: this.editingLocation.location.trim(),
       address: this.editingLocation.address.trim(),
       city: this.editingLocation.city.trim(),
-      country: this.editingLocation.country.trim(),
+      country: this.editingLocation.region.trim(),
       total_capacity: Number(this.editingLocation.totalCapacity || 0),
-      is_active: this.editingLocation.isActive
+      is_active: this.editingLocation.isActive,
+      is_enabled: this.editingLocation.isActive
     };
 
-    if (!payload.name || !payload.location || !payload.address || !payload.city || !payload.country) {
+    if (!payload.warehouse_name || !payload.warehouse_address || !payload.province_name || !payload.district_name) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Validation',
-        detail: 'Name, location, address, city, and country are required.'
+        detail: 'Warehouse name, address, province, and district are required.'
       });
       return;
     }
@@ -214,12 +248,34 @@ export class LocationsComponent implements OnInit {
   }
 
   cancelEdit() {
+    this.destroyLocationDetailMap();
     this.showLocationDialog = false;
     this.editingLocation = null;
   }
 
+  hasValidCoordinates(location: WarehouseItem | null): boolean {
+    return !!location
+      && location.latitude != null
+      && location.longitude != null
+      && !Number.isNaN(location.latitude)
+      && !Number.isNaN(location.longitude);
+  }
+
+  async onLocationDialogShow() {
+    if (this.dialogMode !== 'view' || !this.hasValidCoordinates(this.editingLocation) || !isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 120));
+    await this.renderLocationDetailMap();
+  }
+
+  onLocationDialogHide() {
+    this.destroyLocationDetailMap();
+  }
+
   getActiveLocationsCount(): number {
-    return this.locations.filter(loc => loc.isActive).length;
+    return this.locations.filter((loc) => loc.isActive).length;
   }
 
   getTotalCapacity(): number {
@@ -236,6 +292,10 @@ export class LocationsComponent implements OnInit {
 
   formatNumber(value: number): string {
     return new Intl.NumberFormat('en-US').format(value || 0);
+  }
+
+  formatCoordinate(value: number | null): string {
+    return value == null ? '-' : value.toFixed(6);
   }
 
   exportLocations() {
@@ -258,15 +318,80 @@ export class LocationsComponent implements OnInit {
   private mapWarehouse(raw: any): WarehouseItem {
     return {
       id: String(raw?._id || raw?.id || ''),
-      name: String(raw?.name || ''),
-      location: String(raw?.location || ''),
-      address: String(raw?.address || ''),
-      city: String(raw?.city || ''),
-      country: String(raw?.country || ''),
+      warehouseId: raw?.warehouse_id != null ? Number(raw.warehouse_id) : null,
+      name: String(raw?.warehouse_name || raw?.name || ''),
+      location: String(raw?.region_shortname || raw?.location || ''),
+      address: String(raw?.warehouse_address || raw?.address || ''),
+      district: String(raw?.district_name || ''),
+      city: String(raw?.province_name || raw?.city || ''),
+      region: String(raw?.region_fullname || raw?.country || ''),
+      type: String(raw?.warehouse_type || ''),
+      wardCode: String(raw?.ward_code || ''),
+      latitude: raw?.latitude != null ? Number(raw.latitude) : null,
+      longitude: raw?.longitude != null ? Number(raw.longitude) : null,
       totalCapacity: Number(raw?.total_capacity || 0),
-      isActive: raw?.is_active !== false,
+      isActive: raw?.is_enabled ?? raw?.is_active ?? true,
       createdAt: raw?.created_at ? new Date(raw.created_at) : null,
-      updatedAt: raw?.updated_at ? new Date(raw.updated_at) : null
+      updatedAt: raw?.last_updated_time
+        ? new Date(raw.last_updated_time)
+        : raw?.updated_at
+          ? new Date(raw.updated_at)
+          : null
     };
+  }
+
+  private async renderLocationDetailMap() {
+    if (!this.locationDetailMapRef?.nativeElement || !this.editingLocation || !this.hasValidCoordinates(this.editingLocation)) {
+      return;
+    }
+
+    const L = await import('leaflet');
+    delete (L.Icon.Default.prototype as any)._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: 'assets/leaflet/marker-icon-2x.png',
+      iconUrl: 'assets/leaflet/marker-icon.png',
+      shadowUrl: 'assets/leaflet/marker-shadow.png'
+    });
+
+    const lat = Number(this.editingLocation.latitude);
+    const lng = Number(this.editingLocation.longitude);
+
+    if (!this.detailMap) {
+      this.detailMap = L.map(this.locationDetailMapRef.nativeElement, {
+        zoomControl: true,
+        attributionControl: true
+      });
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(this.detailMap);
+    }
+
+    if (this.detailMarker) {
+      this.detailMap.removeLayer(this.detailMarker);
+      this.detailMarker = null;
+    }
+
+    this.detailMarker = L.marker([lat, lng]).addTo(this.detailMap);
+    this.detailMarker.bindPopup(`
+      <div style="min-width: 220px;">
+        <div style="font-weight: 700; margin-bottom: 6px;">${this.editingLocation.name}</div>
+        <div><strong>Region:</strong> ${this.editingLocation.location || '-'}</div>
+        <div><strong>Province:</strong> ${this.editingLocation.city || '-'}</div>
+        <div><strong>District:</strong> ${this.editingLocation.district || '-'}</div>
+      </div>
+    `);
+    this.detailMarker.openPopup();
+    this.detailMap.setView([lat, lng], 15);
+    setTimeout(() => this.detailMap?.invalidateSize(), 0);
+  }
+
+  private destroyLocationDetailMap() {
+    if (this.detailMap) {
+      this.detailMap.remove();
+      this.detailMap = null;
+      this.detailMarker = null;
+    }
   }
 }

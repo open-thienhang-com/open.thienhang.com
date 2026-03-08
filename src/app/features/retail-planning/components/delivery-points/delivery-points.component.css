@@ -1,0 +1,217 @@
+.delivery-points-page {
+  min-height: 100%;
+  padding: 1.5rem;
+  background: #f9fafb;
+}
+
+.delivery-points-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(360px, 0.9fr);
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.delivery-map-panel {
+  position: relative;
+  min-height: 720px;
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid #dbe1ea;
+  background: linear-gradient(180deg, #eff6ff 0%, #f8fafc 100%);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+.delivery-map-canvas {
+  width: 100%;
+  height: 100%;
+  min-height: 720px;
+}
+
+.delivery-map-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(241, 245, 249, 0.96), rgba(226, 232, 240, 0.92));
+}
+
+.delivery-map-focus {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  right: 1rem;
+  z-index: 650;
+  pointer-events: none;
+}
+
+.delivery-map-focus-card {
+  pointer-events: auto;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  border-radius: 1rem;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+  padding: 0.875rem 1rem;
+  backdrop-filter: blur(8px);
+}
+
+.delivery-map-focus-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  margin-bottom: 0.4rem;
+}
+
+.delivery-map-focus-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.delivery-map-focus-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.delivery-map-focus-subtitle,
+.delivery-map-focus-empty {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.delivery-map-focus-badge {
+  flex-shrink: 0;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.delivery-map-focus-badge.ready {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.delivery-map-focus-badge.empty {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.delivery-list-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 720px;
+  max-height: 720px;
+}
+
+.delivery-list-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.95), rgba(248, 250, 252, 0.78));
+}
+
+.delivery-list-search {
+  min-width: 0;
+}
+
+.delivery-list-filter {
+  min-width: 0;
+}
+
+.delivery-list-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.delivery-list-table {
+  flex: 1;
+  min-height: 0;
+}
+
+:host ::ng-deep .delivery-list-datatable {
+  height: 100%;
+}
+
+:host ::ng-deep .delivery-list-datatable .p-datatable-wrapper {
+  min-height: 0;
+}
+
+:host ::ng-deep .delivery-list-datatable .p-datatable-table {
+  table-layout: fixed;
+}
+
+:host ::ng-deep .delivery-list-datatable .p-datatable-tbody > tr > td,
+:host ::ng-deep .delivery-list-datatable .p-datatable-thead > tr > th {
+  vertical-align: top;
+}
+
+:host ::ng-deep tr.delivery-row-selected {
+  background: #fff7ed;
+}
+
+:host ::ng-deep .leaflet-container {
+  font-family: inherit;
+  background: #dbeafe;
+}
+
+:host ::ng-deep .leaflet-control-container .leaflet-top,
+:host ::ng-deep .leaflet-control-container .leaflet-bottom {
+  z-index: 500;
+}
+
+@media (max-width: 1280px) {
+  .delivery-points-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .delivery-list-toolbar {
+    grid-template-columns: minmax(0, 1fr) 180px auto;
+  }
+
+  .delivery-map-panel,
+  .delivery-list-panel,
+  .delivery-map-canvas {
+    min-height: 560px;
+    max-height: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .delivery-points-page {
+    padding: 1rem;
+  }
+
+  .delivery-map-focus {
+    top: 0.75rem;
+    left: 0.75rem;
+    right: 0.75rem;
+  }
+
+  .delivery-map-focus-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .delivery-list-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .delivery-list-actions {
+    justify-content: stretch;
+  }
+
+  .delivery-map-panel,
+  .delivery-list-panel,
+  .delivery-map-canvas {
+    min-height: 480px;
+  }
+}

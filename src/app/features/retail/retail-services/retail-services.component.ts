@@ -144,6 +144,13 @@ export class RetailServicesComponent implements OnInit {
       icon: 'pi pi-globe',
       description: 'Online retail and marketplace solutions',
       submenus: []
+    },
+    {
+      key: 'omni-channel',
+      label: 'Omni Channel',
+      icon: 'pi pi-comments',
+      description: 'Unified messaging across social, web chat, and marketplaces',
+      submenus: []
     }
   ];
 
@@ -153,7 +160,8 @@ export class RetailServicesComponent implements OnInit {
     { label: 'Inventory Management', value: 'inventory' },
     { label: 'Loyalty Programs', value: 'loyalty' },
     { label: 'POS Systems', value: 'pos' },
-    { label: 'E-commerce', value: 'ecommerce' }
+    { label: 'E-commerce', value: 'ecommerce' },
+    { label: 'Omni Channel', value: 'omni-channel' }
   ];
 
   statusOptions = [

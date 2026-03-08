@@ -36,10 +36,22 @@ export class RetailShopComponent implements OnInit {
 
   products: ShopProduct[] = [];
   categories: { label: string; value: string }[] = [{ label: 'All categories', value: '' }];
+  sortOptions: { label: string; value: string }[] = [
+    { label: 'Featured', value: 'featured' },
+    { label: 'Price: Low to high', value: 'price-asc' },
+    { label: 'Price: High to low', value: 'price-desc' },
+    { label: 'Name: A-Z', value: 'name-asc' },
+    { label: 'Name: Z-A', value: 'name-desc' }
+  ];
 
   searchTerm = '';
   selectedCategory = '';
+  selectedSort = 'featured';
   cart: CartItem[] = [];
+  freeShippingThreshold = 120;
+  shippingFee = 8;
+  voucherApplied = false;
+  voucherAmount = 0;
 
   constructor(
     private productService: ProductService,
@@ -53,7 +65,7 @@ export class RetailShopComponent implements OnInit {
 
   get filteredProducts(): ShopProduct[] {
     const keyword = this.searchTerm.trim().toLowerCase();
-    return this.products.filter((p) => {
+    const filtered = this.products.filter((p) => {
       const matchesKeyword = !keyword
         || p.name.toLowerCase().includes(keyword)
         || p.category.toLowerCase().includes(keyword)
@@ -63,6 +75,21 @@ export class RetailShopComponent implements OnInit {
       const matchesCategory = !this.selectedCategory || p.category === this.selectedCategory;
       return matchesKeyword && matchesCategory;
     });
+
+    if (this.selectedSort === 'price-asc') {
+      return [...filtered].sort((a, b) => this.getDisplayPrice(a) - this.getDisplayPrice(b));
+    }
+    if (this.selectedSort === 'price-desc') {
+      return [...filtered].sort((a, b) => this.getDisplayPrice(b) - this.getDisplayPrice(a));
+    }
+    if (this.selectedSort === 'name-asc') {
+      return [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+    }
+    if (this.selectedSort === 'name-desc') {
+      return [...filtered].sort((a, b) => b.name.localeCompare(a.name));
+    }
+
+    return [...filtered].sort((a, b) => Number(this.hasDiscount(b)) - Number(this.hasDiscount(a)));
   }
 
   get totalCartItems(): number {
@@ -77,8 +104,44 @@ export class RetailShopComponent implements OnInit {
     return this.cartSubtotal * 0.1;
   }
 
+  get cartShipping(): number {
+    if (!this.cart.length) return 0;
+    return this.cartSubtotal >= this.freeShippingThreshold ? 0 : this.shippingFee;
+  }
+
   get cartTotal(): number {
-    return this.cartSubtotal + this.cartTax;
+    return this.cartSubtotal + this.cartTax + this.cartShipping - this.voucherAmount;
+  }
+
+  get totalSavings(): number {
+    const savingsFromDiscount = this.cart.reduce((sum, item) => {
+      const discount = Math.max(item.product.price - this.getDisplayPrice(item.product), 0);
+      return sum + (discount * item.quantity);
+    }, 0);
+    return savingsFromDiscount + this.voucherAmount;
+  }
+
+  get totalProducts(): number {
+    return this.products.length;
+  }
+
+  get discountedProducts(): number {
+    return this.products.filter((p) => this.hasDiscount(p)).length;
+  }
+
+  get categoryCount(): number {
+    const onlyCategories = this.categories.filter((c) => !!c.value);
+    return onlyCategories.length;
+  }
+
+  get averageTicket(): number {
+    if (!this.products.length) return 0;
+    const total = this.products.reduce((sum, item) => sum + this.getDisplayPrice(item), 0);
+    return total / this.products.length;
+  }
+
+  get shippingLeft(): number {
+    return Math.max(this.freeShippingThreshold - this.cartSubtotal, 0);
   }
 
   loadProducts(): void {
@@ -157,11 +220,34 @@ export class RetailShopComponent implements OnInit {
   clearFilters(): void {
     this.searchTerm = '';
     this.selectedCategory = '';
+    this.selectedSort = 'featured';
+  }
+
+  clearCart(): void {
+    this.cart = [];
+    this.voucherApplied = false;
+    this.voucherAmount = 0;
+  }
+
+  applyVoucher(): void {
+    if (!this.cart.length || this.voucherApplied) return;
+    const discount = this.cartSubtotal * 0.08;
+    this.voucherAmount = Number(discount.toFixed(2));
+    this.voucherApplied = true;
   }
 
   checkoutDemo(): void {
     if (!this.cart.length) return;
-    alert('Demo checkout. Integrate real checkout API later.');
+    alert(`Demo checkout successful. Total charged: ${this.formatCurrency(this.cartTotal)}.`);
+  }
+
+  hasDiscount(product: ShopProduct): boolean {
+    return product.discountPrice > 0 && product.discountPrice < product.price;
+  }
+
+  getDiscountPercent(product: ShopProduct): number {
+    if (!this.hasDiscount(product) || product.price <= 0) return 0;
+    return Math.round(((product.price - product.discountPrice) / product.price) * 100);
   }
 
   formatCurrency(value: number): string {
