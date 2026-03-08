@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, Inject, PLATFORM_ID } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -11,10 +11,9 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { DialogModule } from 'primeng/dialog';
 import Chart from 'chart.js/auto';
 import { TableModule } from 'primeng/table';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DatasetService, Dataset, DatasetListResponse, Warehouse } from '../../services/dataset.service';
 import { DatasetDetailComponent } from '../dataset-detail/dataset-detail.component';
-import { PageHeaderComponent } from '../page-header/page-header.component';
 import { Subject, debounceTime, distinctUntilChanged, of, forkJoin } from 'rxjs';
 import { switchMap, map, catchError } from 'rxjs/operators';
 import { getApiBase } from '../../../../core/config/api-config';
@@ -60,13 +59,26 @@ interface RetailInventoryAnalytics {
 
 @Component({
   selector: 'app-dataset',
-  imports: [CommonModule, FormsModule, DataViewModule, TagModule, ButtonModule, ChartModule, AutoCompleteModule, DialogModule, TableModule, DatasetDetailComponent, PageHeaderComponent],
+  imports: [CommonModule, FormsModule, RouterModule, DataViewModule, TagModule, ButtonModule, ChartModule, AutoCompleteModule, DialogModule, TableModule, DatasetDetailComponent],
   templateUrl: './dataset.component.html',
   styleUrl: './dataset.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
   private retailBaseUrl = `${getApiBase()}/data-mesh/domains/retail`;
+  readonly forecastModules = [
+    { key: 'demand', label: 'Demand Dataset', description: '', icon: 'pi pi-chart-line', route: '/planning/forecast/demand' },
+    { key: 'truck', label: 'Truck Dataset', description: '', icon: 'pi pi-truck', route: '/planning/forecast/truck' },
+    { key: 'trip', label: 'Trip Dataset', description: '', icon: 'pi pi-directions', route: '/planning/forecast/trip' },
+    { key: 'hub', label: 'Hub Dataset', description: '', icon: 'pi pi-building', route: '/planning/forecast/hub' }
+  ];
+  readonly demandWorkspaceTabs = [
+    { key: 'trend', label: 'Volume Trend Over Time' },
+    { key: 'shift', label: 'Shift-based Volume Analysis' },
+    { key: 'warehouse-chart', label: 'Volume Chart by Warehouse' },
+    { key: 'warehouse-details', label: 'Warehouse Volume Details' }
+  ] as const;
+  activeDemandWorkspaceTab: 'trend' | 'shift' | 'warehouse-chart' | 'warehouse-details' = 'trend';
 
   state: DatasetState = {
     size: 12,
@@ -78,6 +90,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
   };
 
   datasets: Dataset[] = [];
+  currentDatasetType = '';
   loading = false;
   error: string | null = null;
   fallbackNotice: string | null = null;
@@ -1145,7 +1158,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   };
 
-  constructor(private datasetService: DatasetService, private router: Router, private cdr: ChangeDetectorRef, private http: HttpClient,
+  constructor(private datasetService: DatasetService, private router: Router, private route: ActivatedRoute, private cdr: ChangeDetectorRef, private http: HttpClient,
     @Inject(PLATFORM_ID) private platformId: Object) { }
 
   ngOnDestroy(): void {
@@ -1166,23 +1179,30 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit(): void {
-    // Ensure selectedDatasetId is null to show the list view
-    this.selectedDatasetId = null;
-    
     // Set default values for date range and region
     const { start, end } = this.getDefaultDateRange();
     this.demandStartDate = start;
     this.demandEndDate = end;
     this.warehouseRegionShortname = 'HNO';
-    
+
+    this.applyRouteDatasetType(this.route.snapshot.data['datasetType'] || '');
+
     // Load datasets on init
     this.loadDatasets();
     this.loadRetailOverview();
-    
+
     // Trigger change detection after initialization
     this.cdr.markForCheck();
-    
+
     console.log('[Dataset] ngOnInit - selectedDatasetId:', this.selectedDatasetId, 'loading:', this.loading);
+
+    this.route.data.subscribe(data => {
+      const nextType = data['datasetType'] || '';
+      if (nextType !== this.currentDatasetType) {
+        this.applyRouteDatasetType(nextType);
+        this.loadDatasets();
+      }
+    });
 
     // Setup search debounce
     this.warehouseSearchSubject
@@ -1240,8 +1260,9 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
   async ngAfterViewInit(): Promise<void> {
     // Wait a bit to ensure DOM is fully rendered
     await new Promise(resolve => setTimeout(resolve, 100));
-    // Ensure selectedDatasetId is still null (don't auto-select)
-    if (this.selectedDatasetId !== null) {
+    // Demand forecast opens directly into its operational view.
+    // Other forecast routes stay on the list/default state until a dataset is chosen.
+    if (this.currentDatasetType !== 'demand' && this.isFocusedForecastView && this.selectedDatasetId !== null) {
       console.warn('[Dataset] ngAfterViewInit - selectedDatasetId was set to:', this.selectedDatasetId, 'resetting to null');
       this.selectedDatasetId = null;
     }
@@ -1372,6 +1393,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
           // API returns: { code, message, data: [...], meta: {...} }
           this.datasets = response.data.data || [];
           this.state.total = response.data.meta?.total || 0;
+          this.syncDatasetsWithRoute();
           this.fallbackNotice = null;
           console.log('[Dataset] Loaded datasets:', this.datasets.length);
           console.log('[Dataset] selectedDatasetId:', this.selectedDatasetId, 'should show list:', !this.selectedDatasetId);
@@ -3059,6 +3081,140 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
+
+  get pageTitle(): string {
+    switch (this.currentDatasetType) {
+      case 'demand':
+        return 'Demand Forecast Dataset';
+      case 'truck':
+        return 'Truck Forecast Dataset';
+      case 'trip':
+        return 'Trip Forecast Dataset';
+      case 'hub':
+        return 'Hub Forecast Dataset';
+      default:
+        return 'Stochastic Dataset';
+    }
+  }
+
+  get pageSubtitle(): string {
+    switch (this.currentDatasetType) {
+      case 'demand':
+        return 'Analyze demand scenarios, warehouse loads, and forecast signals.';
+      case 'truck':
+        return 'Review truck-related stochastic datasets for fleet forecasting.';
+      case 'trip':
+        return 'Review trip datasets used for route and demand planning.';
+      case 'hub':
+        return 'Review hub datasets used for warehouse and node forecasting.';
+      default:
+        return 'Manage and analyze stochastic datasets for forecasting';
+    }
+  }
+
+  get isFocusedForecastView(): boolean {
+    return ['demand', 'truck', 'trip', 'hub'].includes(this.currentDatasetType);
+  }
+
+  get activeForecastModule() {
+    return this.forecastModules.find(module => module.key === this.currentDatasetType) || this.forecastModules[0];
+  }
+
+  setActiveDemandWorkspaceTab(tab: 'trend' | 'shift' | 'warehouse-chart' | 'warehouse-details'): void {
+    this.activeDemandWorkspaceTab = tab;
+    setTimeout(() => {
+      if (tab === 'trend') {
+        this.updateTimelineChart();
+      }
+      if (tab === 'warehouse-chart' || tab === 'warehouse-details') {
+        this.updateCharts();
+      }
+      this.cdr.markForCheck();
+    }, 0);
+  }
+
+  get forecastSummaryCards() {
+    const totalDatasets = this.datasets.length || 0;
+    const activeDataset = this.datasets.find(dataset => dataset.id === this.selectedDatasetId);
+    const operationalValue = this.currentDatasetType === 'demand'
+      ? `${this.demands.length}`
+      : `${totalDatasets}`;
+
+    return [
+      {
+        label: 'Forecast Module',
+        value: this.activeForecastModule.label,
+        caption: this.activeForecastModule.description,
+        tone: 'blue',
+        icon: this.activeForecastModule.icon
+      },
+      {
+        label: 'Datasets In Scope',
+        value: `${totalDatasets}`,
+        caption: 'Records filtered by the selected forecast area.',
+        tone: 'orange',
+        icon: 'pi pi-database'
+      },
+      {
+        label: this.currentDatasetType === 'demand' ? 'Warehouse Signals' : 'Active Dataset',
+        value: operationalValue,
+        caption: this.currentDatasetType === 'demand'
+          ? 'Demand rows loaded for the current range and region.'
+          : (activeDataset?.name || 'Waiting for dataset selection'),
+        tone: 'purple',
+        icon: this.currentDatasetType === 'demand' ? 'pi pi-map-marker' : 'pi pi-file'
+      },
+      {
+        label: 'Fallback Mode',
+        value: this.fallbackNotice ? 'Enabled' : 'Live API',
+        caption: this.fallbackNotice || 'Data is loading from the current planning environment.',
+        tone: 'emerald',
+        icon: this.fallbackNotice ? 'pi pi-exclamation-triangle' : 'pi pi-check-circle'
+      }
+    ];
+  }
+
+  private applyRouteDatasetType(type: string): void {
+    this.currentDatasetType = type || '';
+    this.state.type = type || '';
+    this.state.offset = 0;
+
+    if (type === 'demand') {
+      this.selectedDatasetId = 'demand';
+      this.demands = [];
+      this.demandsError = null;
+      this.loadingDemands = false;
+      this.selectedDemand = null;
+      this.chartsInitialized = false;
+      this.destroyCharts();
+      this.loadDemands();
+      this.loadShiftRatios();
+      this.loadDemandsByDays();
+      return;
+    }
+
+    this.selectedDatasetId = null;
+    this.demands = [];
+    this.demandsError = null;
+    this.loadingDemands = false;
+    this.selectedDemand = null;
+    this.chartsInitialized = false;
+    this.destroyCharts();
+  }
+
+  private syncDatasetsWithRoute(): void {
+    if (this.currentDatasetType) {
+      this.datasets = this.datasets.filter(dataset => dataset.type === this.currentDatasetType);
+      this.state.total = this.datasets.length;
+
+      if (this.currentDatasetType !== 'demand') {
+        const hasValidSelection = !!this.selectedDatasetId && this.datasets.some(dataset => dataset.id === this.selectedDatasetId);
+        this.selectedDatasetId = hasValidSelection
+          ? this.selectedDatasetId
+          : (this.datasets[0]?.id || null);
+      }
+    }
+  }
   private applyDefaultDatasets(message: string): void {
     this.datasets = [
       {
@@ -3095,6 +3251,7 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     ];
     this.state.total = this.datasets.length;
+    this.syncDatasetsWithRoute();
     this.error = null;
     this.fallbackNotice = message;
   }
@@ -3893,3 +4050,8 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
     console.log('View productivity for warehouses:', this.timelineWarehouses);
   }
 }
+
+
+
+
+

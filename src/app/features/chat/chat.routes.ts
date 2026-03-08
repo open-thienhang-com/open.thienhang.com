@@ -14,6 +14,10 @@ export const chatRoutes: Routes = [
     loadComponent: () => import('./pages/dashboard/chat-dashboard.component').then(m => m.ChatDashboardComponent),
   },
   {
+    path: 'facebook-workspace',
+    loadComponent: () => import('./pages/facebook-workspace/facebook-workspace.component').then(m => m.FacebookWorkspaceComponent),
+  },
+  {
     path: 'templates',
     loadComponent: () => import('./pages/templates/chat-templates.component').then(m => m.ChatTemplatesComponent),
   },

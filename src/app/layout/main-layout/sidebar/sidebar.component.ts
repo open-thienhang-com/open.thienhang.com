@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnChanges, OnInit, computed, effect, inject, PLATFORM_ID, signal, ElementRef } from '@angular/core';
+﻿import { Component, EventEmitter, Input, Output, OnChanges, OnInit, computed, effect, inject, PLATFORM_ID, signal, ElementRef } from '@angular/core';
 import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
@@ -329,17 +329,19 @@ export class SidebarComponent implements OnInit, OnChanges {
           label: 'Forecast',
           icon: 'pi pi-chart-line',
           children: [
-            { label: 'Stochastic', url: '/planning/stochastic', icon: 'pi pi-database' },
-            { label: 'Demand', url: '/planning/demand', icon: 'pi pi-chart-bar' }
+            { label: 'Demand Dataset', url: '/planning/forecast/demand', icon: 'pi pi-chart-bar' },
+            { label: 'Truck Dataset', url: '/planning/forecast/truck', icon: 'pi pi-truck' },
+            { label: 'Trip Dataset', url: '/planning/forecast/trip', icon: 'pi pi-directions' },
+            { label: 'Hub Dataset', url: '/planning/forecast/hub', icon: 'pi pi-building' }
           ]
         },
         {
           label: 'Planning',
           icon: 'pi pi-truck',
           children: [
-            { label: 'Truck', url: '/planning/fleet', icon: 'pi pi-truck' },
-            { label: 'Trip', url: '/planning/auto-planning', icon: 'pi pi-directions' },
-            { label: 'Warehouse/Hub', url: '/planning/delivery-points', icon: 'pi pi-building' }
+            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-directions' },
+            { label: 'Delivery Points', url: '/planning/delivery-points', icon: 'pi pi-map-marker' },
+            { label: 'Fleet Operations', url: '/planning/fleet', icon: 'pi pi-truck' }
           ]
         },
         {
@@ -395,7 +397,7 @@ export class SidebarComponent implements OnInit, OnChanges {
         // 1. Dashboard - Overview
         { label: 'Dashboard', url: '/hotel', icon: 'pi pi-home' },
 
-        // 2. Property Management - Quản lý tài sản
+        // 2. Property Management - Quáº£n lÃ½ tÃ i sáº£n
         {
           label: 'Property Management',
           icon: 'pi pi-building',
@@ -405,7 +407,7 @@ export class SidebarComponent implements OnInit, OnChanges {
           ]
         },
 
-        // 3. Reservations & Bookings - Đặt phòng và lịch
+        // 3. Reservations & Bookings - Äáº·t phÃ²ng vÃ  lá»‹ch
         {
           label: 'Reservations & Bookings',
           icon: 'pi pi-calendar',
@@ -416,7 +418,7 @@ export class SidebarComponent implements OnInit, OnChanges {
           ]
         },
 
-        // 4. Guest Services - Dịch vụ khách hàng
+        // 4. Guest Services - Dá»‹ch vá»¥ khÃ¡ch hÃ ng
         {
           label: 'Guest Services',
           icon: 'pi pi-users',
@@ -428,7 +430,7 @@ export class SidebarComponent implements OnInit, OnChanges {
           ]
         },
 
-        // 5. Operations - Vận hành
+        // 5. Operations - Váº­n hÃ nh
         {
           label: 'Operations',
           icon: 'pi pi-cog',
@@ -439,7 +441,7 @@ export class SidebarComponent implements OnInit, OnChanges {
           ]
         },
 
-        // 6. Analytics & Reports - Phân tích và báo cáo
+        // 6. Analytics & Reports - PhÃ¢n tÃ­ch vÃ  bÃ¡o cÃ¡o
         {
           label: 'Analytics & Reports',
           icon: 'pi pi-chart-bar',
@@ -451,7 +453,7 @@ export class SidebarComponent implements OnInit, OnChanges {
           ]
         },
 
-        // 7. Settings - Cài đặt (cuối cùng)
+        // 7. Settings - CÃ i Ä‘áº·t (cuá»‘i cÃ¹ng)
         { label: 'Settings', url: '/hotel/settings', icon: 'pi pi-cog' }
       ]
     },
@@ -483,6 +485,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       expanded: false,
       items: [
         { label: 'Telegram Workspace', url: '/chat', icon: 'pi pi-comments' },
+        { label: 'Facebook Workspace', url: '/chat/facebook-workspace', icon: 'pi pi-comments' },
         { label: 'Templates', url: '/chat/templates', icon: 'pi pi-file-edit' },
         { label: 'Automation', url: '/chat/automation', icon: 'pi pi-bolt' },
         { label: 'Bot Settings', url: '/chat/bot-settings', icon: 'pi pi-cog' },
@@ -1610,3 +1613,4 @@ interface MenuInfo {
   usage: string;
   tips?: string[];
 }
+

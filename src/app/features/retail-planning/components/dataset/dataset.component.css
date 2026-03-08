@@ -1,3 +1,887 @@
+:host {
+    display: block;
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at top left, rgba(59, 130, 246, 0.12), transparent 28%),
+        radial-gradient(circle at top right, rgba(249, 115, 22, 0.14), transparent 24%),
+        #f8fafc;
+    color: #0f172a;
+}
+
+.forecast-shell {
+    min-height: 100vh;
+}
+
+.forecast-content-wrapper {
+    padding: 2rem;
+}
+
+.forecast-content-inner {
+    max-width: 1520px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.forecast-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.75rem 2rem;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 58%, #0f766e 100%);
+    color: #fff;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+}
+
+.forecast-hero-copy {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.forecast-hero-badge,
+.forecast-summary-icon,
+.forecast-sidebar-help-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.forecast-hero-badge {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(10px);
+    font-size: 1.5rem;
+}
+
+.forecast-eyebrow,
+.forecast-sidebar-eyebrow,
+.forecast-panel-eyebrow {
+    margin: 0 0 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.forecast-eyebrow {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.forecast-title {
+    margin: 0;
+    font-size: clamp(2rem, 3vw, 2.75rem);
+    line-height: 1.05;
+    font-weight: 800;
+}
+
+.forecast-subtitle {
+    max-width: 760px;
+    margin: 0.5rem 0 0;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.98rem;
+    line-height: 1.6;
+}
+
+.forecast-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.forecast-action-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 0;
+    border-radius: 14px;
+    background: #fff;
+    color: #0f172a;
+    padding: 0.8rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.forecast-action-button--secondary {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+
+.forecast-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.forecast-summary-card,
+.forecast-sidebar-panel,
+.forecast-panel {
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+    backdrop-filter: blur(12px);
+}
+
+.forecast-summary-card {
+    border-radius: 20px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.forecast-summary-label,
+.forecast-summary-caption {
+    margin: 0;
+}
+
+.forecast-summary-label {
+    color: #475569;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.forecast-summary-value {
+    margin: 0.35rem 0;
+    font-size: 1.5rem;
+    line-height: 1.15;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.forecast-summary-caption {
+    color: #64748b;
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.forecast-summary-icon,
+.forecast-sidebar-help-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    font-size: 1.2rem;
+}
+
+.forecast-summary-card[data-tone='blue'] .forecast-summary-icon { background: #dbeafe; color: #2563eb; }
+.forecast-summary-card[data-tone='orange'] .forecast-summary-icon { background: #ffedd5; color: #ea580c; }
+.forecast-summary-card[data-tone='purple'] .forecast-summary-icon { background: #f3e8ff; color: #9333ea; }
+.forecast-summary-card[data-tone='emerald'] .forecast-summary-icon { background: #d1fae5; color: #059669; }
+
+.forecast-workspace {
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.forecast-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: sticky;
+    top: 1.5rem;
+}
+
+.forecast-sidebar-panel,
+.forecast-panel {
+    border-radius: 24px;
+}
+
+.forecast-sidebar-panel {
+    padding: 1.25rem;
+}
+
+.forecast-sidebar-eyebrow,
+.forecast-panel-eyebrow {
+    color: #64748b;
+}
+
+.forecast-sidebar-heading,
+.forecast-panel-title {
+    margin: 0;
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.forecast-sidebar-heading {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.forecast-nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    padding: 0.25rem 0;
+}
+
+.forecast-nav-item {
+    width: 100%;
+    border: 1px solid transparent;
+    border-radius: 18px;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    text-align: left;
+    padding: 0.9rem 1rem;
+    color: #334155;
+    text-decoration: none;
+    transition: 0.2s ease;
+    cursor: pointer;
+}
+
+.forecast-nav-item:hover {
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(191, 219, 254, 0.9);
+    transform: translateY(-1px);
+}
+
+.forecast-nav-item.active {
+    background: linear-gradient(135deg, #eff6ff 0%, #ecfeff 100%);
+    border-color: rgba(125, 211, 252, 0.9);
+    color: #0f172a;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.forecast-nav-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #eff6ff;
+    color: #2563eb;
+    flex-shrink: 0;
+}
+
+.forecast-nav-content {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 0.18rem;
+}
+
+.forecast-nav-label {
+    font-weight: 700;
+    color: inherit;
+}
+
+.forecast-nav-description {
+    font-size: 0.78rem;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+.forecast-nav-chevron {
+    margin-left: auto;
+    color: #94a3b8;
+}
+
+.forecast-sidebar-help {
+    display: flex;
+    gap: 0.9rem;
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+.forecast-sidebar-help-icon {
+    background: #e0f2fe;
+    color: #0284c7;
+    flex-shrink: 0;
+}
+
+.forecast-sidebar-help-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.forecast-sidebar-help-text {
+    margin: 0.35rem 0 0;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: #64748b;
+}
+
+.forecast-sidebar-help-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    width: 100%;
+}
+
+.forecast-sidebar-help-copy {
+    flex: 1;
+    min-width: 0;
+}
+
+.forecast-sidebar-help-edit {
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgba(191, 219, 254, 0.9);
+    border-radius: 12px;
+    background: #eff6ff;
+    color: #2563eb;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.forecast-sidebar-help-body {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+}
+
+.forecast-sidebar-timeline {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.forecast-panel {
+    padding: 1.5rem;
+}
+
+.forecast-panel-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+    margin-bottom: 1.25rem;
+}
+
+.forecast-panel-title {
+    font-size: 1.45rem;
+}
+
+.forecast-panel-subtitle {
+    margin: 0.45rem 0 0;
+    color: #64748b;
+    font-size: 0.92rem;
+    line-height: 1.6;
+}
+
+.forecast-panel-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+.forecast-demand-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.forecast-demand-tab {
+    padding: 0.72rem 1rem;
+    border: 1px solid rgba(203, 213, 225, 0.9);
+    border-radius: 999px;
+    background: #ffffff;
+    color: #475569;
+    font-size: 0.86rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.forecast-demand-tab:hover {
+    border-color: #93c5fd;
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.forecast-demand-tab.active {
+    border-color: #60a5fa;
+    background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+    color: #1d4ed8;
+    box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.18);
+}
+
+.forecast-demand-warehouse-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.forecast-demand-warehouse-card__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid rgba(191, 219, 254, 0.9);
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.96) 0%, rgba(255, 255, 255, 0.96) 100%);
+}
+
+.forecast-demand-warehouse-card__eyebrow {
+    margin: 0 0 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.forecast-demand-warehouse-card__title {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.forecast-demand-warehouse-card__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    padding: 0.22rem 0.6rem;
+    border-radius: 999px;
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.forecast-demand-warehouse-card__subtitle {
+    margin: 0.4rem 0 0;
+    max-width: 48rem;
+    color: #64748b;
+    font-size: 0.92rem;
+}
+
+.forecast-demand-warehouse-card__clear,
+.forecast-demand-warehouse-card__page-button {
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #475569;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.forecast-demand-warehouse-card__clear {
+    padding: 0.7rem 1rem;
+}
+
+.forecast-demand-warehouse-card__clear:hover,
+.forecast-demand-warehouse-card__page-button:hover:not(:disabled) {
+    border-color: #93c5fd;
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.forecast-demand-warehouse-card__page-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.forecast-demand-warehouse-card__search {
+    padding: 0 1.5rem;
+}
+
+.forecast-demand-warehouse-card__input {
+    width: 100%;
+    padding: 0.82rem 2.5rem 0.82rem 2.5rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 16px;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.forecast-demand-warehouse-card__input:focus {
+    outline: none;
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+}
+
+.forecast-demand-warehouse-card__clear-search {
+    position: absolute;
+    inset: 0 0 0 auto;
+    display: flex;
+    align-items: center;
+    padding-right: 0.9rem;
+    color: #94a3b8;
+}
+
+.forecast-demand-warehouse-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0.9rem;
+    padding: 0 1.5rem;
+}
+
+.forecast-demand-warehouse-item {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    min-width: 0;
+    padding: 1rem;
+    border: 1px solid rgba(191, 219, 254, 0.88);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.04);
+}
+
+.forecast-demand-warehouse-item__index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+    border-radius: 999px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.forecast-demand-warehouse-item__copy {
+    min-width: 0;
+    flex: 1;
+}
+
+.forecast-demand-warehouse-item__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.forecast-demand-warehouse-item__meta {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-top: 0.15rem;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.forecast-demand-warehouse-item__remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+    border-radius: 999px;
+    color: #ef4444;
+    transition: all 0.2s ease;
+}
+
+.forecast-demand-warehouse-item__remove:hover {
+    background: #fef2f2;
+}
+
+.forecast-demand-warehouse-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0 1.5rem 0.5rem;
+}
+
+.forecast-demand-warehouse-card__footnote,
+.forecast-demand-warehouse-card__page-state {
+    color: #64748b;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.forecast-demand-warehouse-card__pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.forecast-demand-warehouse-empty {
+    margin: 0 1.5rem;
+    padding: 2rem 1.5rem;
+    border: 1px dashed #cbd5e1;
+    border-radius: 18px;
+    background: #f8fafc;
+    text-align: center;
+}
+
+.forecast-demand-warehouse-empty__title {
+    margin: 0;
+    color: #475569;
+    font-size: 0.92rem;
+    font-weight: 700;
+}
+
+.forecast-demand-warehouse-empty__copy {
+    margin: 0.35rem 0 0;
+    color: #94a3b8;
+    font-size: 0.82rem;
+}
+
+.forecast-panel-content {
+    min-width: 0;
+}
+
+.forecast-panel-content {
+    --forecast-accent-50: #eff6ff;
+    --forecast-accent-100: #dbeafe;
+    --forecast-accent-200: #bfdbfe;
+    --forecast-accent-300: #93c5fd;
+    --forecast-accent-500: #2563eb;
+    --forecast-accent-600: #1d4ed8;
+    --forecast-accent-700: #1e40af;
+    --forecast-info-50: #ecfeff;
+    --forecast-info-100: #cffafe;
+    --forecast-info-200: #a5f3fc;
+    --forecast-info-600: #0891b2;
+    --forecast-danger-50: #fef2f2;
+    --forecast-danger-100: #fee2e2;
+    --forecast-danger-200: #fecaca;
+    --forecast-danger-600: #dc2626;
+}
+
+.forecast-panel-content .bg-orange-50,
+.forecast-panel-content .hover\:bg-orange-50:hover,
+.forecast-panel-content .group:hover .group-hover\:bg-orange-50 {
+    background-color: var(--forecast-accent-50) !important;
+}
+
+.forecast-panel-content .bg-orange-100,
+.forecast-panel-content .hover\:bg-orange-100:hover {
+    background-color: var(--forecast-accent-100) !important;
+}
+
+.forecast-panel-content .bg-orange-200,
+.forecast-panel-content .hover\:bg-orange-200:hover {
+    background-color: var(--forecast-accent-200) !important;
+}
+
+.forecast-panel-content .bg-orange-500,
+.forecast-panel-content .bg-orange-600,
+.forecast-panel-content .hover\:bg-orange-600:hover,
+.forecast-panel-content .hover\:bg-orange-700:hover {
+    background-color: var(--forecast-accent-500) !important;
+    color: #ffffff !important;
+}
+
+.forecast-panel-content .border-orange-100,
+.forecast-panel-content .border-orange-200,
+.forecast-panel-content .border-orange-300,
+.forecast-panel-content .hover\:border-orange-200:hover,
+.forecast-panel-content .hover\:border-orange-400:hover {
+    border-color: var(--forecast-accent-200) !important;
+}
+
+.forecast-panel-content .border-b-2.border-orange-200,
+.forecast-panel-content .border-t.border-orange-200,
+.forecast-panel-content .border-b.border-orange-200 {
+    border-color: var(--forecast-accent-200) !important;
+}
+
+.forecast-panel-content .text-orange-600,
+.forecast-panel-content .text-orange-700,
+.forecast-panel-content .text-orange-800,
+.forecast-panel-content .hover\:text-orange-600:hover,
+.forecast-panel-content .hover\:text-orange-700:hover {
+    color: var(--forecast-accent-600) !important;
+}
+
+.forecast-panel-content .ring-orange-200 {
+    --tw-ring-color: rgba(191, 219, 254, 0.9) !important;
+}
+
+.forecast-panel-content .focus\:ring-orange-300:focus,
+.forecast-panel-content .focus\:ring-orange-500:focus {
+    --tw-ring-color: rgba(37, 99, 235, 0.2) !important;
+}
+
+.forecast-panel-content .focus\:border-orange-500:focus {
+    border-color: var(--forecast-accent-500) !important;
+}
+
+.forecast-panel-content input:focus,
+.forecast-panel-content select:focus,
+.forecast-panel-content textarea:focus {
+    outline: none;
+    border-color: var(--forecast-accent-500) !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+}
+
+.forecast-panel-content [class*='from-orange-50'] {
+    --tw-gradient-from: #eff6ff var(--tw-gradient-from-position) !important;
+    --tw-gradient-to: rgb(239 246 255 / 0) var(--tw-gradient-to-position) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+.forecast-panel-content [class*='from-orange-100'] {
+    --tw-gradient-from: #dbeafe var(--tw-gradient-from-position) !important;
+    --tw-gradient-to: rgb(219 234 254 / 0) var(--tw-gradient-to-position) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+.forecast-panel-content [class*='from-orange-400'] {
+    --tw-gradient-from: #60a5fa var(--tw-gradient-from-position) !important;
+    --tw-gradient-to: rgb(96 165 250 / 0) var(--tw-gradient-to-position) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+.forecast-panel-content [class*='from-orange-500'] {
+    --tw-gradient-from: #2563eb var(--tw-gradient-from-position) !important;
+    --tw-gradient-to: rgb(37 99 235 / 0) var(--tw-gradient-to-position) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+.forecast-panel-content [class*='to-orange-50'] {
+    --tw-gradient-to: #ecfeff var(--tw-gradient-to-position) !important;
+}
+
+.forecast-panel-content [class*='to-orange-100'] {
+    --tw-gradient-to: #cffafe var(--tw-gradient-to-position) !important;
+}
+
+.forecast-panel-content [class*='to-orange-600'] {
+    --tw-gradient-to: #0f766e var(--tw-gradient-to-position) !important;
+}
+
+.forecast-panel-content .bg-amber-50 {
+    background-color: #f8fafc !important;
+}
+
+.forecast-panel-content .border-amber-200 {
+    border-color: #cbd5e1 !important;
+}
+
+.forecast-panel-content .text-amber-600,
+.forecast-panel-content .text-amber-700,
+.forecast-panel-content .text-amber-800 {
+    color: #0f766e !important;
+}
+
+.forecast-panel-content .bg-red-50 {
+    background-color: var(--forecast-danger-50) !important;
+}
+
+.forecast-panel-content .bg-red-100 {
+    background-color: var(--forecast-danger-100) !important;
+}
+
+.forecast-panel-content .border-red-200,
+.forecast-panel-content .border-red-300 {
+    border-color: var(--forecast-danger-200) !important;
+}
+
+.forecast-panel-content .text-red-500,
+.forecast-panel-content .text-red-600,
+.forecast-panel-content .text-red-700,
+.forecast-panel-content .text-red-800 {
+    color: var(--forecast-danger-600) !important;
+}
+
+.forecast-panel-content .bg-green-100 {
+    background-color: #dcfce7 !important;
+}
+
+.forecast-panel-content .border-green-300 {
+    border-color: #86efac !important;
+}
+
+.forecast-panel-content .text-green-600,
+.forecast-panel-content .text-green-700 {
+    color: #15803d !important;
+}
+
+@media (max-width: 1200px) {
+    .forecast-overview-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .forecast-workspace {
+        grid-template-columns: 1fr;
+    }
+
+    .forecast-sidebar {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .forecast-content-wrapper {
+        padding: 1rem;
+    }
+
+    .forecast-hero,
+    .forecast-panel {
+        padding: 1.25rem;
+    }
+
+    .forecast-hero,
+    .forecast-panel-header {
+        flex-direction: column;
+    }
+
+    .forecast-demand-warehouse-card__header,
+    .forecast-demand-warehouse-card__footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .forecast-demand-warehouse-card__search,
+    .forecast-demand-warehouse-list,
+    .forecast-demand-warehouse-empty,
+    .forecast-demand-warehouse-card__footer {
+        padding-left: 0;
+        padding-right: 0;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .forecast-overview-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .forecast-hero-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .forecast-action-button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
 /* Custom SVG marker styles with enhanced effects */
 .custom-svg-marker {
     background: transparent !important;

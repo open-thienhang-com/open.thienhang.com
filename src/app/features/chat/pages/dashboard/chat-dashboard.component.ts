@@ -48,6 +48,7 @@ export class ChatDashboardComponent implements OnInit {
   updatingStatus = false;
   sendingReply = false;
   sendingTemplate = false;
+  templateDialogVisible = false;
 
   profile: TelegramBotProfile | null = null;
   dashboard: TelegramDashboard | null = null;
@@ -63,7 +64,6 @@ export class ChatDashboardComponent implements OnInit {
   internalNote = '';
   replyText = '';
   disableNotification = false;
-  composerMode: 'reply' | 'template' = 'reply';
   activeQueue = 'all';
   searchTerm = '';
 
@@ -152,7 +152,7 @@ export class ChatDashboardComponent implements OnInit {
         this.selectedAgentId = response.data.agent_id || this.selectedAgentId;
         this.replyText = '';
         this.disableNotification = false;
-        this.composerMode = 'reply';
+        this.templateDialogVisible = false;
         this.resetTemplateForm();
       },
       error: (error) => {
@@ -275,6 +275,21 @@ export class ChatDashboardComponent implements OnInit {
     this.templateVariableValues = nextValues;
   }
 
+  openTemplateDialog(): void {
+    if (!this.selectedConversation) {
+      return;
+    }
+
+    this.templateDialogVisible = true;
+    if (this.selectedTemplateId) {
+      this.onTemplateChange(this.selectedTemplateId);
+    }
+  }
+
+  closeTemplateDialog(): void {
+    this.templateDialogVisible = false;
+  }
+
   sendTemplate(): void {
     const conversation = this.selectedConversation;
     const template = this.getSelectedTemplate();
@@ -325,6 +340,7 @@ export class ChatDashboardComponent implements OnInit {
         this.selectedConversation = updatedConversation;
         this.patchConversation(updatedConversation);
         this.resetTemplateForm();
+        this.templateDialogVisible = false;
         this.sendingTemplate = false;
         this.messageService.add({ severity: 'success', summary: 'Template sent', detail: `${template.name} was sent successfully` });
       },
@@ -446,6 +462,19 @@ export class ChatDashboardComponent implements OnInit {
 
   getSelectedTemplate() {
     return this.templates.find(item => item.value === this.selectedTemplateId)?.template || null;
+  }
+
+  get selectedTemplatePreview(): string {
+    const template = this.getSelectedTemplate();
+    if (!template) {
+      return '';
+    }
+
+    const variables = Object.fromEntries(
+      (template.variables || []).map((variable: string) => [variable, this.templateVariableValues[variable] || `{{${variable}}}`])
+    );
+
+    return this.renderTemplatePreview(template.content, variables);
   }
 
   getStatusSeverity(status: string): 'success' | 'info' | 'warning' | 'danger' | 'secondary' {

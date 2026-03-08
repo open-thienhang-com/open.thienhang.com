@@ -1,317 +1,367 @@
-﻿<div class="chat-shell">
-  <header class="workspace-topbar" *ngIf="!loading && profile && dashboard && settings">
-    <div class="workspace-title-block">
-      <div class="workspace-icon"><i class="pi pi-telegram"></i></div>
-      <div>
-        <p class="workspace-eyebrow">Support Inbox</p>
-        <h1 class="workspace-title">Telegram Support Inbox</h1>
-        <p class="workspace-subtitle">Triaging, replying, assigning, and resolving Telegram conversations in one workspace.</p>
-      </div>
-    </div>
-
-    <div class="workspace-toolbar">
-      <div class="workspace-chip-row">
-        <span class="workspace-chip">Pending {{ dashboard.counters.pending_human }}</span>
-        <span class="workspace-chip">Unread {{ dashboard.counters.unread_messages }}</span>
-        <span class="workspace-chip">Active {{ dashboard.counters.active_conversations }}</span>
-        <span class="workspace-chip">Templates {{ templates.length }}</span>
-      </div>
-      <button pButton type="button" icon="pi pi-refresh" label="Refresh" class="p-button-sm p-button-outlined"
-              (click)="loadTelegramWorkspace()" [loading]="loading"></button>
-    </div>
-  </header>
-
-  <ng-container *ngIf="loading">
-    <section class="loading-shell">
-      <aside class="queue-column"><p-skeleton height="44rem"></p-skeleton></aside>
-      <section class="thread-column"><p-skeleton height="44rem"></p-skeleton></section>
-      <aside class="context-column"><p-skeleton height="44rem"></p-skeleton></aside>
-    </section>
-  </ng-container>
-
-  <ng-container *ngIf="!loading && profile && dashboard && settings">
-    <section class="inbox-shell">
-      <aside class="queue-column">
-        <div class="queue-surface">
-          <div class="queue-header">
-            <div>
-              <p class="panel-label">Queue</p>
-              <h2 class="panel-heading">Conversation List</h2>
-              <p class="panel-help">Choose a queue, scan the latest customer messages, then open the thread.</p>
-            </div>
-            <div class="queue-count-badge">{{ filteredConversations.length }}</div>
+<div class="chat-main">
+  <div class="chat-content-wrapper">
+    <div class="chat-content-inner">
+      <section class="chat-hero" *ngIf="!loading && profile && dashboard && settings">
+        <div class="chat-hero-copy">
+          <div class="chat-hero-badge">
+            <i class="pi pi-telegram"></i>
           </div>
-
-          <div class="queue-search">
-            <i class="pi pi-search"></i>
-            <input type="text" [(ngModel)]="searchTerm" placeholder="Search customer, message, tag, or agent" class="queue-search-input" />
-          </div>
-
-          <div class="queue-tabs">
-            <button *ngFor="let tab of queueTabs"
-                    type="button"
-                    class="queue-tab"
-                    [class.active]="activeQueue === tab.value"
-                    (click)="setActiveQueue(tab.value)">
-              <span>{{ tab.label }}</span>
-              <span class="queue-tab-count">{{ getQueueCount(tab.value) }}</span>
-            </button>
-          </div>
-
-          <div class="queue-summary-row">
-            <div class="queue-summary-card">
-              <span>Unread</span>
-              <strong>{{ dashboard.counters.unread_messages }}</strong>
-            </div>
-            <div class="queue-summary-card">
-              <span>Bot</span>
-              <strong>{{ settings.bot_enabled ? 'On' : 'Off' }}</strong>
-            </div>
-          </div>
-
-          <div class="queue-list">
-            <button *ngFor="let conversation of filteredConversations"
-                    type="button"
-                    (click)="selectConversation(conversation.id)"
-                    class="conversation-row"
-                    [disabled]="!canOpenConversation(conversation)"
-                    [class.is-disabled]="!canOpenConversation(conversation)"
-                    [class.active]="selectedConversation?.id === conversation.id">
-              <div class="conversation-row-top">
-                <div class="conversation-identity">
-                  <span class="conversation-name">{{ conversation.user_name }}</span>
-                  <span class="conversation-handle">{{ '@' + conversation.username }}</span>
-                </div>
-                <div class="conversation-time-block">
-                  <span>{{ conversation.last_message_time | date:'shortTime' }}</span>
-                  <span *ngIf="conversation.unread_count > 0" class="unread-badge">{{ conversation.unread_count }}</span>
-                </div>
-              </div>
-
-              <p class="conversation-preview">{{ conversation.last_message }}</p>
-
-              <div class="conversation-row-bottom">
-                <p-tag [value]="conversation.status" [severity]="getStatusSeverity(conversation.status)"></p-tag>
-                <span class="meta-pill">{{ conversation.category }}</span>
-                <span class="meta-pill">{{ conversation.agent || 'Unassigned' }}</span>
-                <span class="meta-pill" [class.meta-pill-danger]="conversation.priority === 'high'">{{ conversation.priority }}</span>
-              </div>
-            </button>
-
-            <div *ngIf="!filteredConversations.length" class="empty-card">
-              <i class="pi pi-inbox"></i>
-              <h3>No conversations</h3>
-              <p>Change the queue or search term to find another conversation.</p>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <section class="thread-column">
-        <div class="thread-surface" *ngIf="selectedConversation; else emptyConversationState">
-          <div class="thread-header">
-            <div>
-              <div class="thread-title-row">
-                <h2 class="thread-customer-name">{{ selectedConversation.user_name }}</h2>
-                <p-tag value="telegram" severity="info"></p-tag>
-                <p-tag [value]="selectedConversation.status" [severity]="getStatusSeverity(selectedConversation.status)"></p-tag>
-              </div>
-              <p class="thread-subtitle">
-                Chat ID {{ selectedConversation.chat_id }} | {{ '@' + selectedConversation.username }} | {{ selectedConversation.message_count }} messages
-              </p>
-            </div>
-
-            <button pButton type="button" icon="pi pi-refresh" label="Refresh detail"
-                    class="p-button-sm p-button-outlined"
-                    (click)="selectConversation(selectedConversation.id)"></button>
-          </div>
-
-          <div class="thread-meta-row">
-            <span class="meta-pill">Sentiment {{ selectedConversation.sentiment }}</span>
-            <span class="meta-pill">Unread {{ selectedConversation.unread_count }}</span>
-            <span class="meta-pill">Agent {{ selectedConversation.agent || 'Unassigned' }}</span>
-            <span class="meta-pill">Created {{ selectedConversation.created_at | date:'short' }}</span>
-          </div>
-
-          <div class="thread-body">
-            <div class="message-thread">
-              <div *ngFor="let message of selectedConversation.messages"
-                   class="message-row"
-                   [class.is-agent]="message.sender !== 'user'">
-                <div class="message-bubble">
-                  <div class="message-meta">
-                    <span>{{ message.sender_name }}</span>
-                    <span>|</span>
-                    <span>{{ message.timestamp | date:'shortTime' }}</span>
-                    <span>|</span>
-                    <span>{{ message.message_type }}</span>
-                  </div>
-                  <p>{{ message.content }}</p>
-                  <div class="message-status">{{ message.delivery_status }}</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="composer-shell">
-              <div class="composer-header">
-                <div class="composer-mode-switch">
-                  <button type="button" class="composer-mode"
-                          [class.active]="composerMode === 'reply'"
-                          (click)="composerMode = 'reply'">Direct Reply</button>
-                  <button type="button" class="composer-mode"
-                          [class.active]="composerMode === 'template'"
-                          (click)="composerMode = 'template'">Template</button>
-                </div>
-
-                <label class="composer-toggle">
-                  <input type="checkbox" [(ngModel)]="disableNotification" />
-                  <span>Disable notification</span>
-                </label>
-              </div>
-
-              <div *ngIf="composerMode === 'reply'" class="composer-panel">
-                <textarea pInputTextarea [(ngModel)]="replyText" rows="4" class="w-full"
-                          placeholder="Write a direct reply for this customer"></textarea>
-                <div class="composer-actions">
-                  <button pButton type="button" label="Send reply" icon="pi pi-send"
-                          class="p-button-sm"
-                          (click)="sendReply()" [loading]="sendingReply"
-                          [disabled]="!replyText.trim()"></button>
-                </div>
-              </div>
-
-              <div *ngIf="composerMode === 'template'" class="composer-panel">
-                <p-dropdown [options]="templates" [(ngModel)]="selectedTemplateId"
-                            optionLabel="label" optionValue="value" class="w-full"
-                            placeholder="Choose a template"
-                            (onChange)="onTemplateChange($event.value)"></p-dropdown>
-
-                <div *ngIf="getSelectedTemplate() as selectedTemplate" class="template-panel">
-                  <div class="template-panel-header">
-                    <div>
-                      <div class="template-name">{{ selectedTemplate.name }}</div>
-                      <p class="template-content">{{ selectedTemplate.content }}</p>
-                    </div>
-                    <span class="meta-pill">{{ selectedTemplate.category }}</span>
-                  </div>
-
-                  <div *ngFor="let variable of selectedTemplate.variables" class="template-field">
-                    <label>{{ variable }}</label>
-                    <input pInputText type="text" class="w-full"
-                           [(ngModel)]="templateVariableValues[variable]"
-                           [placeholder]="'Enter value for ' + variable" />
-                  </div>
-                </div>
-
-                <div class="composer-actions">
-                  <button pButton type="button" label="Send template" icon="pi pi-file-export"
-                          class="p-button-sm p-button-outlined"
-                          (click)="sendTemplate()" [loading]="sendingTemplate"
-                          [disabled]="!selectedTemplateId"></button>
-                </div>
-              </div>
-            </div>
+          <div>
+            <p class="chat-eyebrow">Support governance</p>
+            <h1 class="chat-title">Telegram Support Inbox</h1>
+            <p class="chat-subtitle">Manage queue triage, active conversations, agent routing, and reply operations from one governed workspace.</p>
           </div>
         </div>
 
-        <ng-template #emptyConversationState>
-          <div class="thread-empty-state">
-            <i class="pi pi-comments"></i>
-            <h2>No conversation selected</h2>
-            <p>Open a conversation from the queue to read the thread, reply, send templates, and update handling status.</p>
+        <div class="chat-hero-actions">
+          <button pButton type="button" icon="pi pi-refresh" label="Refresh" class="p-button-sm p-button-outlined"
+                  (click)="loadTelegramWorkspace()" [loading]="loading"></button>
+          <div class="panel-chip hero-chip">
+            <i class="pi pi-send"></i>
+            <span>{{ profile.first_name }}</span>
           </div>
-        </ng-template>
+        </div>
       </section>
 
-      <aside class="context-column">
-        <div class="context-stack" *ngIf="selectedConversation; else queueOverviewState">
-          <section class="context-card profile-card">
-            <div class="profile-avatar">{{ selectedConversation.user_name?.charAt(0) }}</div>
+      <ng-container *ngIf="loading">
+        <section class="chat-overview-grid">
+          <article *ngFor="let item of [1, 2, 3, 4]" class="summary-card">
+            <p-skeleton height="6rem"></p-skeleton>
+          </article>
+        </section>
+
+        <section class="chat-workspace loading-workspace">
+          <aside class="chat-sidebar"><div class="chat-sidebar-panel"><p-skeleton height="44rem"></p-skeleton></div></aside>
+          <div class="chat-panel"><div class="chat-panel-content"><p-skeleton height="44rem"></p-skeleton></div></div>
+        </section>
+      </ng-container>
+
+      <ng-container *ngIf="!loading && profile && dashboard && settings">
+        <section class="chat-overview-grid">
+          <article class="summary-card" data-tone="blue">
             <div>
-              <div class="profile-name">{{ selectedConversation.user_name }}</div>
-              <div class="profile-handle">{{ '@' + selectedConversation.username }}</div>
-              <p class="profile-copy">Telegram contact routed through {{ profile.first_name }}.</p>
+              <p class="summary-label">Open queue</p>
+              <h3 class="summary-value">{{ dashboard.counters.total_conversations }}</h3>
+              <p class="summary-caption">Total Telegram conversations visible to the support operation.</p>
             </div>
-          </section>
+            <div class="summary-icon"><i class="pi pi-comments"></i></div>
+          </article>
 
-          <section class="context-card">
-            <p class="panel-label">Conversation Context</p>
-            <div class="context-stat-list">
-              <div class="context-stat"><span>Priority</span><strong>{{ selectedConversation.priority }}</strong></div>
-              <div class="context-stat"><span>Category</span><strong>{{ selectedConversation.category }}</strong></div>
-              <div class="context-stat"><span>Messages</span><strong>{{ selectedConversation.message_count }}</strong></div>
-              <div class="context-stat"><span>Tags</span><strong>{{ selectedConversation.tags?.length || 0 }}</strong></div>
+          <article class="summary-card" data-tone="orange">
+            <div>
+              <p class="summary-label">Pending human</p>
+              <h3 class="summary-value">{{ dashboard.counters.pending_human }}</h3>
+              <p class="summary-caption">Conversations escalated beyond automation and waiting for an agent.</p>
             </div>
-            <div class="context-pill-row">
-              <span *ngFor="let tag of selectedConversation.tags" class="meta-pill">{{ tag }}</span>
+            <div class="summary-icon"><i class="pi pi-user-plus"></i></div>
+          </article>
+
+          <article class="summary-card" data-tone="purple">
+            <div>
+              <p class="summary-label">Unread messages</p>
+              <h3 class="summary-value">{{ dashboard.counters.unread_messages }}</h3>
+              <p class="summary-caption">Messages that still need a first response or a follow-up.</p>
             </div>
-          </section>
+            <div class="summary-icon"><i class="pi pi-inbox"></i></div>
+          </article>
 
-          <section class="context-card">
-            <p class="panel-label">Routing</p>
-            <div class="panel-section-title">Assign Agent</div>
-            <p-dropdown [options]="agentOptions" [(ngModel)]="selectedAgentId"
-                        optionLabel="label" optionValue="value" class="w-full"></p-dropdown>
-            <button pButton type="button" label="Assign conversation" icon="pi pi-user-plus"
-                    class="p-button-sm w-full mt-3"
-                    (click)="assignConversation()" [loading]="assigning"></button>
-          </section>
+          <article class="summary-card" data-tone="emerald">
+            <div>
+              <p class="summary-label">Bot status</p>
+              <h3 class="summary-value">{{ settings.bot_enabled ? 'Enabled' : 'Disabled' }}</h3>
+              <p class="summary-caption">{{ dashboard.bot.auto_reply ? 'Auto reply is active.' : 'Agent-only handling is in effect.' }}</p>
+            </div>
+            <div class="summary-icon"><i class="pi pi-telegram"></i></div>
+          </article>
+        </section>
 
-          <section class="context-card">
-            <p class="panel-label">Resolution</p>
-            <div class="panel-section-title">Update Status</div>
-            <p-dropdown [options]="statusOptions" [(ngModel)]="selectedStatus"
-                        optionLabel="label" optionValue="value" class="w-full"></p-dropdown>
-            <textarea pInputTextarea [(ngModel)]="internalNote" rows="5" class="w-full mt-3"
-                      placeholder="Add an internal note for the next agent or support team"></textarea>
-            <button pButton type="button" label="Save status" icon="pi pi-check-circle"
-                    class="p-button-sm p-button-warning w-full mt-3"
-                    (click)="updateConversationStatus()" [loading]="updatingStatus"></button>
-          </section>
-
-          <section class="context-card" *ngIf="selectedConversation.internal_notes?.length">
-            <p class="panel-label">Internal Notes</p>
-            <div class="internal-note-list">
-              <div *ngFor="let note of selectedConversation.internal_notes" class="internal-note-item">
-                <p>{{ note.note }}</p>
-                <span>{{ note.created_at | date:'short' }}</span>
+        <section class="chat-workspace">
+          <aside class="chat-sidebar">
+            <div class="chat-sidebar-panel queue-panel">
+              <div class="queue-header queue-header-minimal">
+                <div class="queue-count-badge">{{ filteredConversations.length }}</div>
               </div>
-            </div>
-          </section>
-        </div>
 
-        <ng-template #queueOverviewState>
-          <div class="context-stack">
-            <section class="context-card bot-status-card">
-              <div class="bot-status-top">
-                <div class="workspace-icon small"><i class="pi pi-telegram"></i></div>
-                <div>
-                  <div class="profile-name">{{ profile.first_name }}</div>
-                  <div class="profile-handle">{{ '@' + profile.username }}</div>
+              <div class="queue-search">
+                <i class="pi pi-search"></i>
+                <input type="text" [(ngModel)]="searchTerm" placeholder="Search customer, message, tag, or agent" class="queue-search-input" />
+              </div>
+
+              <div class="queue-tabs">
+                <button type="button"
+                        class="queue-tab"
+                        [class.active]="activeQueue === 'pending_human'"
+                        (click)="setActiveQueue('pending_human')">
+                  <span>Pending</span>
+                  <span class="queue-tab-count">{{ getQueueCount('pending_human') }}</span>
+                </button>
+                <button type="button"
+                        class="queue-tab"
+                        [class.active]="activeQueue === 'unread'"
+                        (click)="setActiveQueue('unread')">
+                  <span>Unread</span>
+                  <span class="queue-tab-count">{{ getQueueCount('unread') }}</span>
+                </button>
+                <button type="button"
+                        class="queue-tab"
+                        [class.active]="activeQueue === 'all'"
+                        (click)="setActiveQueue('all')">
+                  <span>All</span>
+                  <span class="queue-tab-count">{{ getQueueCount('all') }}</span>
+                </button>
+              </div>
+
+              <div class="queue-list">
+                <button *ngFor="let conversation of filteredConversations"
+                        type="button"
+                        (click)="selectConversation(conversation.id)"
+                        class="conversation-row"
+                        [disabled]="!canOpenConversation(conversation)"
+                        [class.is-disabled]="!canOpenConversation(conversation)"
+                        [class.active]="selectedConversation?.id === conversation.id">
+                  <div class="conversation-row-top">
+                    <div class="conversation-identity">
+                      <span class="conversation-name">{{ conversation.user_name }}</span>
+                      <span class="conversation-handle">{{ '@' + conversation.username }}</span>
+                    </div>
+                    <div class="conversation-time-block">
+                      <span>{{ conversation.last_message_time | date:'shortTime' }}</span>
+                      <span *ngIf="conversation.unread_count > 0" class="unread-badge">{{ conversation.unread_count }}</span>
+                    </div>
+                  </div>
+
+                  <p class="conversation-preview">{{ conversation.last_message }}</p>
+
+                  <div class="conversation-row-bottom">
+                    <p-tag [value]="conversation.status" [severity]="getStatusSeverity(conversation.status)"></p-tag>
+                    <span class="meta-pill">{{ conversation.category }}</span>
+                    <span class="meta-pill">{{ conversation.agent || 'Unassigned' }}</span>
+                    <span class="meta-pill" [class.meta-pill-danger]="conversation.priority === 'high'">{{ conversation.priority }}</span>
+                  </div>
+                </button>
+
+                <div *ngIf="!filteredConversations.length" class="empty-card">
+                  <i class="pi pi-inbox"></i>
+                  <h3>No conversations</h3>
+                  <p>Change the queue or search term to find another conversation.</p>
                 </div>
               </div>
-              <div class="context-stat-list">
-                <div class="context-stat"><span>Bot</span><strong>{{ settings.bot_enabled ? 'Enabled' : 'Disabled' }}</strong></div>
-                <div class="context-stat"><span>Auto Reply</span><strong>{{ dashboard.bot.auto_reply ? 'On' : 'Off' }}</strong></div>
-                <div class="context-stat"><span>Handoff</span><strong>{{ dashboard.bot.human_handoff ? 'On' : 'Off' }}</strong></div>
-                <div class="context-stat"><span>Language</span><strong>{{ settings.default_language }}</strong></div>
-              </div>
-            </section>
+            </div>
+          </aside>
 
-            <section class="context-card">
-              <p class="panel-label">Queue Snapshot</p>
-              <div class="context-stat-list">
-                <div class="context-stat"><span>Total</span><strong>{{ dashboard.counters.total_conversations }}</strong></div>
-                <div class="context-stat"><span>Pending</span><strong>{{ dashboard.counters.pending_human }}</strong></div>
-                <div class="context-stat"><span>Unread</span><strong>{{ dashboard.counters.unread_messages }}</strong></div>
-                <div class="context-stat"><span>Commands</span><strong>{{ dashboard.counters.commands }}</strong></div>
+          <div class="chat-panel">
+            <div class="chat-panel-header">
+              <div>
+                <p class="panel-eyebrow">Active workspace</p>
+                <h2 class="panel-title">Support Inbox</h2>
+                <p class="panel-subtitle">Read the current thread, send a reply or template, then route or resolve the conversation from the same governed surface.</p>
               </div>
-            </section>
+              <div class="panel-chip">
+                <i class="pi pi-comments"></i>
+                <span>{{ selectedConversation ? (selectedConversation.agent || 'Unassigned') : 'No conversation selected' }}</span>
+              </div>
+            </div>
+
+            <div class="chat-panel-content">
+              <div class="detail-layout" *ngIf="selectedConversation; else emptyConversationState">
+                <section class="thread-surface">
+                  <div class="thread-header">
+                    <div>
+                      <div class="thread-title-row">
+                        <h2 class="thread-customer-name">{{ selectedConversation.user_name }}</h2>
+                        <p-tag value="telegram" severity="info"></p-tag>
+                        <p-tag [value]="selectedConversation.status" [severity]="getStatusSeverity(selectedConversation.status)"></p-tag>
+                      </div>
+                      <p class="thread-subtitle">
+                        Chat ID {{ selectedConversation.chat_id }} | {{ '@' + selectedConversation.username }} | {{ selectedConversation.message_count }} messages
+                      </p>
+                    </div>
+
+                    <button pButton type="button" icon="pi pi-refresh" label="Refresh detail"
+                            class="p-button-sm p-button-outlined"
+                            (click)="selectConversation(selectedConversation.id)"></button>
+                  </div>
+
+                  <div class="thread-meta-row">
+                    <span class="meta-pill">Sentiment {{ selectedConversation.sentiment }}</span>
+                    <span class="meta-pill">Unread {{ selectedConversation.unread_count }}</span>
+                    <span class="meta-pill">Agent {{ selectedConversation.agent || 'Unassigned' }}</span>
+                    <span class="meta-pill">Created {{ selectedConversation.created_at | date:'short' }}</span>
+                  </div>
+
+                  <div class="thread-body">
+                    <div class="message-thread">
+                      <div *ngFor="let message of selectedConversation.messages"
+                           class="message-row"
+                           [class.is-agent]="message.sender !== 'user'">
+                        <div class="message-bubble">
+                          <div class="message-meta">
+                            <span>{{ message.sender_name }}</span>
+                            <span>|</span>
+                            <span>{{ message.timestamp | date:'shortTime' }}</span>
+                            <span>|</span>
+                            <span>{{ message.message_type }}</span>
+                          </div>
+                          <p>{{ message.content }}</p>
+                          <div class="message-status">{{ message.delivery_status }}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="composer-shell">
+                      <div class="composer-header">
+                        <div class="composer-title-group">
+                          <h3 class="panel-heading">Reply</h3>
+                          <p class="panel-help">Send a direct message or use a Telegram template from the same composer.</p>
+                        </div>
+
+                        <label class="composer-toggle">
+                          <input type="checkbox" [(ngModel)]="disableNotification" />
+                          <span>Disable notification</span>
+                        </label>
+                      </div>
+
+                      <div class="composer-panel">
+                        <textarea pInputTextarea [(ngModel)]="replyText" rows="4" class="w-full"
+                                  placeholder="Write a direct reply for this customer"></textarea>
+                        <div class="composer-actions composer-actions-split">
+                          <button pButton type="button" label="Send template" icon="pi pi-file-export"
+                                  class="p-button-sm p-button-outlined"
+                                  (click)="openTemplateDialog()" [disabled]="!templates.length"></button>
+                          <button pButton type="button" label="Send reply" icon="pi pi-send"
+                                  class="p-button-sm"
+                                  (click)="sendReply()" [loading]="sendingReply"
+                                  [disabled]="!replyText.trim()"></button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <aside class="context-column">
+                  <div class="context-stack">
+                    <section class="context-card profile-card">
+                      <div class="profile-avatar">{{ selectedConversation.user_name?.charAt(0) }}</div>
+                      <div>
+                        <div class="profile-name">{{ selectedConversation.user_name }}</div>
+                        <div class="profile-handle">{{ '@' + selectedConversation.username }}</div>
+                        <p class="profile-copy">Telegram contact routed through {{ profile.first_name }}.</p>
+                      </div>
+                    </section>
+
+                    <section class="context-card">
+                      <p class="panel-label">Conversation Context</p>
+                      <div class="context-stat-list">
+                        <div class="context-stat"><span>Priority</span><strong>{{ selectedConversation.priority }}</strong></div>
+                        <div class="context-stat"><span>Category</span><strong>{{ selectedConversation.category }}</strong></div>
+                        <div class="context-stat"><span>Messages</span><strong>{{ selectedConversation.message_count }}</strong></div>
+                        <div class="context-stat"><span>Tags</span><strong>{{ selectedConversation.tags?.length || 0 }}</strong></div>
+                      </div>
+                      <div class="context-pill-row">
+                        <span *ngFor="let tag of selectedConversation.tags" class="meta-pill">{{ tag }}</span>
+                      </div>
+                    </section>
+
+                    <section class="context-card">
+                      <p class="panel-label">Routing</p>
+                      <div class="panel-section-title">Assign Agent</div>
+                      <p-dropdown [options]="agentOptions" [(ngModel)]="selectedAgentId"
+                                  optionLabel="label" optionValue="value" class="w-full"></p-dropdown>
+                      <button pButton type="button" label="Assign conversation" icon="pi pi-user-plus"
+                              class="p-button-sm w-full mt-3"
+                              (click)="assignConversation()" [loading]="assigning"></button>
+                    </section>
+
+                    <section class="context-card">
+                      <p class="panel-label">Resolution</p>
+                      <div class="panel-section-title">Update Status</div>
+                      <p-dropdown [options]="statusOptions" [(ngModel)]="selectedStatus"
+                                  optionLabel="label" optionValue="value" class="w-full"></p-dropdown>
+                      <textarea pInputTextarea [(ngModel)]="internalNote" rows="5" class="w-full mt-3"
+                                placeholder="Add an internal note for the next agent or support team"></textarea>
+                      <button pButton type="button" label="Save status" icon="pi pi-check-circle"
+                              class="p-button-sm p-button-warning w-full mt-3"
+                              (click)="updateConversationStatus()" [loading]="updatingStatus"></button>
+                    </section>
+
+                    <section class="context-card" *ngIf="selectedConversation.internal_notes?.length">
+                      <p class="panel-label">Internal Notes</p>
+                      <div class="internal-note-list">
+                        <div *ngFor="let note of selectedConversation.internal_notes" class="internal-note-item">
+                          <p>{{ note.note }}</p>
+                          <span>{{ note.created_at | date:'short' }}</span>
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </aside>
+              </div>
+            </div>
           </div>
-        </ng-template>
-      </aside>
+        </section>
+      </ng-container>
+
+      <ng-template #emptyConversationState>
+        <div class="thread-empty-state">
+          <i class="pi pi-comments"></i>
+          <h2>No conversation selected</h2>
+          <p>Open a conversation from the queue to read the thread, reply, send templates, and update handling status.</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <div class="template-dialog-backdrop" *ngIf="templateDialogVisible" (click)="closeTemplateDialog()">
+    <section class="template-dialog" (click)="$event.stopPropagation()">
+      <div class="template-dialog-header">
+        <div>
+          <p class="panel-eyebrow">Telegram template</p>
+          <h2 class="panel-title">Preview Before Send</h2>
+          <p class="panel-subtitle">Choose a template, review the rendered message, and confirm before sending it to the customer.</p>
+        </div>
+        <button type="button" class="template-dialog-close" (click)="closeTemplateDialog()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="template-dialog-body">
+        <p-dropdown [options]="templates" [(ngModel)]="selectedTemplateId"
+                    optionLabel="label" optionValue="value" class="w-full"
+                    placeholder="Choose a template"
+                    (onChange)="onTemplateChange($event.value)"></p-dropdown>
+
+        <div *ngIf="getSelectedTemplate() as selectedTemplate" class="template-panel">
+          <div class="template-panel-header">
+            <div>
+              <div class="template-name">{{ selectedTemplate.name }}</div>
+              <p class="template-content">{{ selectedTemplate.content }}</p>
+            </div>
+            <span class="meta-pill">{{ selectedTemplate.category }}</span>
+          </div>
+
+          <div *ngFor="let variable of selectedTemplate.variables" class="template-field">
+            <label>{{ variable }}</label>
+            <input pInputText type="text" class="w-full"
+                   [(ngModel)]="templateVariableValues[variable]"
+                   [placeholder]="'Enter value for ' + variable" />
+          </div>
+
+          <div class="template-preview-card">
+            <div class="template-preview-label">Preview</div>
+            <p>{{ selectedTemplatePreview }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="template-dialog-actions">
+        <button pButton type="button" label="Cancel" class="p-button-sm p-button-text" (click)="closeTemplateDialog()"></button>
+        <button pButton type="button" label="Send template" icon="pi pi-file-export"
+                class="p-button-sm"
+                (click)="sendTemplate()" [loading]="sendingTemplate"
+                [disabled]="!selectedTemplateId"></button>
+      </div>
     </section>
-  </ng-container>
+  </div>
 
   <p-toast></p-toast>
 </div>

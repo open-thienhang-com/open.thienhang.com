@@ -1,0 +1,363 @@
+﻿<div class="chat-main">
+  <div class="chat-content-wrapper">
+    <div class="chat-content-inner">
+      <ng-container *ngIf="loading">
+        <section class="chat-hero omni-hero">
+          <div class="chat-hero-copy">
+            <div class="chat-hero-badge"><i class="pi pi-share-alt"></i></div>
+            <div>
+              <p class="chat-eyebrow">Omni channel governance</p>
+              <h1 class="chat-title">Unified Support Inbox</h1>
+              <p class="chat-subtitle">Loading workspace data for the shared inbox.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="chat-overview-grid">
+          <article *ngFor="let item of [1,2,3,4]" class="summary-card">
+            <p-skeleton height="6rem"></p-skeleton>
+          </article>
+        </section>
+
+        <section class="chat-panel omni-panel">
+          <div class="chat-panel-content omni-layout">
+            <article class="flat-card compact-card"><div class="card-body"><p-skeleton height="34rem"></p-skeleton></div></article>
+            <article class="flat-card thread-card-shell"><div class="card-body"><p-skeleton height="34rem"></p-skeleton></div></article>
+          </div>
+        </section>
+      </ng-container>
+
+      <ng-container *ngIf="!loading && profile && dashboard && settings">
+        <section class="chat-hero omni-hero">
+          <div class="chat-hero-copy">
+            <div class="chat-hero-badge"><i class="pi pi-share-alt"></i></div>
+            <div>
+              <p class="chat-eyebrow">Omni channel governance</p>
+              <h1 class="chat-title">Unified Support Inbox</h1>
+              <p class="chat-subtitle">One chat UI for every connected channel. This workspace now uses the same live APIs as `/chat`, so queue, detail, reply, and template flows stay consistent.</p>
+            </div>
+          </div>
+          <div class="hero-actions">
+            <button pButton type="button" icon="pi pi-refresh" label="Refresh" class="p-button-sm p-button-outlined" (click)="loadWorkspace()"></button>
+            <div class="panel-chip omni-chip"><i class="pi pi-comments"></i><span>{{ filteredConversations.length }} visible threads</span></div>
+          </div>
+        </section>
+
+        <section class="chat-overview-grid">
+          <article *ngFor="let card of overviewCards" class="summary-card" [attr.data-tone]="card.tone">
+            <div>
+              <p class="summary-label">{{ card.label }}</p>
+              <h3 class="summary-value">{{ card.value }}</h3>
+              <p class="summary-caption">{{ card.caption }}</p>
+            </div>
+            <div class="summary-icon"><i [class]="card.icon"></i></div>
+          </article>
+        </section>
+
+        <section class="chat-panel omni-panel">
+          <div class="chat-panel-header">
+            <div>
+              <p class="panel-eyebrow">Single inbox UI</p>
+              <h2 class="panel-title">Omni Channel Workspace</h2>
+              <p class="panel-subtitle">The inbox stays simple even as new channels are added. Extra context is hidden in on-demand panels instead of living permanently in the main layout.</p>
+            </div>
+            <div class="panel-chip"><i class="pi pi-clone"></i><span>{{ selectedConversation ? getConversationSourceLabel(selectedConversation) : 'No thread selected' }}</span></div>
+          </div>
+
+          <div class="chat-panel-content omni-layout">
+            <aside class="queue-column">
+              <article class="flat-card compact-card">
+                <div class="card-header compact-header">
+                  <div class="card-title-group">
+                    <h3 class="card-title">Inbox Filters</h3>
+                    <p class="card-subtitle">Minimal controls for queue and channel switching.</p>
+                  </div>
+                </div>
+                <div class="card-body compact-body">
+                  <div class="queue-search-box">
+                    <i class="pi pi-search"></i>
+                    <input type="text" class="form-input queue-search-input" [(ngModel)]="searchTerm" placeholder="Search customer, category, or tag" />
+                  </div>
+
+                  <div class="filter-group">
+                    <div class="filter-chip-row compact">
+                      <button *ngFor="let tab of queueTabs" type="button" class="queue-filter-btn" [class.active]="activeQueue === tab.value" (click)="setActiveQueue(tab.value)">
+                        <span>{{ tab.label }}</span>
+                        <span class="pill count-pill">{{ getQueueCount(tab.value) }}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="filter-group">
+                    <div class="filter-chip-row compact">
+                      <button *ngFor="let filter of channelFilters" type="button" class="queue-filter-btn" [class.active]="activeChannel === filter.value" (click)="setActiveChannel(filter.value)">
+                        <span>{{ filter.label }}</span>
+                        <span class="pill count-pill">{{ getChannelCount(filter.value) }}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="flat-card queue-card-shell">
+                <div class="card-header compact-header">
+                  <div class="card-title-group">
+                    <h3 class="card-title">Conversations</h3>
+                    <p class="card-subtitle">A single list across all connected channels.</p>
+                  </div>
+                  <span class="queue-total">{{ filteredConversations.length }}</span>
+                </div>
+                <div class="card-body queue-body">
+                  <div class="queue-list">
+                    <button *ngFor="let conversation of filteredConversations"
+                            type="button"
+                            class="conversation-row omni-conversation-row"
+                            [class.active]="selectedConversation?.id === conversation.id"
+                            (click)="selectConversation(conversation.id)">
+                      <div class="conversation-row-top">
+                        <div class="conversation-identity">
+                          <span class="conversation-name">{{ conversation.user_name }}</span>
+                          <span class="conversation-handle">{{ '@' + conversation.username }}</span>
+                        </div>
+                        <div class="conversation-time-block">
+                          <span>{{ conversation.last_message_time | date:'shortTime' }}</span>
+                          <span *ngIf="conversation.unread_count > 0" class="unread-badge">{{ conversation.unread_count }}</span>
+                        </div>
+                      </div>
+
+                      <div class="channel-line">
+                        <span class="source-pill"><i [class]="getConversationSourceIcon(conversation)"></i>{{ getConversationSourceLabel(conversation) }}</span>
+                        <p-tag [value]="conversation.status" [severity]="getStatusSeverity(conversation.status)"></p-tag>
+                      </div>
+
+                      <p class="conversation-preview">{{ conversation.last_message }}</p>
+                    </button>
+
+                    <div *ngIf="!filteredConversations.length" class="empty-card">
+                      <i class="pi pi-inbox"></i>
+                      <h3>No conversations</h3>
+                      <p>Adjust queue or channel filters to find another thread.</p>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </aside>
+
+            <section class="thread-column" *ngIf="selectedConversation as conversation; else emptyConversationState">
+              <article class="flat-card thread-card-shell">
+                <div class="card-header thread-card-header">
+                  <div class="thread-header-main">
+                    <div class="thread-title-row">
+                      <h3 class="card-title">{{ conversation.user_name }}</h3>
+                      <span class="source-pill source-pill-inline"><i [class]="getConversationSourceIcon(conversation)"></i>{{ getConversationSourceLabel(conversation) }}</span>
+                      <p-tag [value]="conversation.status" [severity]="getStatusSeverity(conversation.status)"></p-tag>
+                    </div>
+                    <p class="card-subtitle">{{ '@' + conversation.username }} | {{ getConversationProductContext(conversation) }} | {{ getConversationStore(conversation) }}</p>
+                  </div>
+
+                  <div class="thread-tools">
+                    <button type="button" class="ghost-action" (click)="openInfoPanel('customer')">Customer info</button>
+                    <button type="button" class="ghost-action" (click)="openInfoPanel('context')">Context</button>
+                    <button type="button" class="ghost-action" (click)="openInfoPanel('channel')">Channel info</button>
+                  </div>
+                </div>
+
+                <div class="card-body thread-card-body">
+                  <div class="thread-highlight-row">
+                    <div class="mini-info-card">
+                      <span class="mini-label">Owner</span>
+                      <strong>{{ conversation.agent || 'Unassigned' }}</strong>
+                    </div>
+                    <div class="mini-info-card">
+                      <span class="mini-label">Priority</span>
+                      <strong>{{ conversation.priority }}</strong>
+                    </div>
+                    <div class="mini-info-card">
+                      <span class="mini-label">Unread</span>
+                      <strong>{{ conversation.unread_count }}</strong>
+                    </div>
+                    <div class="mini-info-card">
+                      <span class="mini-label">Tags</span>
+                      <strong>{{ conversation.tags?.length || 0 }}</strong>
+                    </div>
+                  </div>
+
+                  <div class="message-thread omni-message-thread">
+                    <div *ngFor="let message of conversation.messages" class="message-row" [class.is-agent]="message.sender !== 'user'">
+                      <div class="message-bubble">
+                        <div class="message-meta">
+                          <span>{{ message.sender_name }}</span>
+                          <span>|</span>
+                          <span>{{ message.message_type }}</span>
+                          <span>|</span>
+                          <span>{{ message.timestamp | date:'shortTime' }}</span>
+                        </div>
+                        <p>{{ message.content }}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="composer-card">
+                    <div class="composer-head">
+                      <div>
+                        <h4>Reply</h4>
+                        <p>Use one composer for every channel.</p>
+                      </div>
+                      <div class="quick-action-row">
+                        <button *ngFor="let action of quickActions" type="button" class="quick-action-btn">
+                          <i [class]="action.icon"></i>
+                          <span>{{ action.label }}</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <textarea class="form-input composer-input" rows="4" [(ngModel)]="draftReply" placeholder="Reply to the customer from the unified inbox"></textarea>
+
+                    <div class="composer-footer">
+                      <div class="composer-secondary-actions">
+                        <button type="button" class="inventory-cta">Ask store inventory</button>
+                        <button type="button" class="template-cta" (click)="openTemplateDialog()" [disabled]="!templates.length">Send template</button>
+                      </div>
+                      <button type="button" class="send-btn" (click)="sendReply()" [disabled]="!draftReply.trim() || sendingReply">{{ sendingReply ? 'Sending...' : 'Send reply' }}</button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </section>
+          </div>
+        </section>
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+<div class="info-overlay" *ngIf="infoPanel !== 'none'" (click)="closeInfoPanel()">
+  <aside class="info-drawer" (click)="$event.stopPropagation()" *ngIf="selectedConversation as conversation">
+    <div class="info-drawer-header">
+      <div>
+        <p class="panel-eyebrow">More details</p>
+        <h3 class="panel-title info-title-compact">
+          {{ infoPanel === 'customer' ? 'Customer Information' : infoPanel === 'context' ? 'Conversation Context' : 'Channel Information' }}
+        </h3>
+      </div>
+      <button type="button" class="close-btn" (click)="closeInfoPanel()"><i class="pi pi-times"></i></button>
+    </div>
+
+    <div class="info-drawer-body" *ngIf="infoPanel === 'customer'">
+      <div class="detail-card">
+        <span class="detail-label">Customer</span>
+        <strong>{{ conversation.user_name }}</strong>
+      </div>
+      <div class="detail-card">
+        <span class="detail-label">Handle</span>
+        <strong>{{ '@' + conversation.username }}</strong>
+      </div>
+      <div class="detail-card">
+        <span class="detail-label">Assigned agent</span>
+        <strong>{{ conversation.agent || 'Unassigned' }}</strong>
+      </div>
+      <div class="detail-card">
+        <span class="detail-label">Chat ID</span>
+        <strong>{{ conversation.chat_id }}</strong>
+      </div>
+    </div>
+
+    <div class="info-drawer-body" *ngIf="infoPanel === 'context'">
+      <div class="detail-card">
+        <span class="detail-label">Product context</span>
+        <strong>{{ getConversationProductContext(conversation) }}</strong>
+      </div>
+      <div class="detail-card">
+        <span class="detail-label">Journey note</span>
+        <strong>{{ conversation.category || 'Shared thread context from support intake.' }}</strong>
+      </div>
+      <div class="detail-stack">
+        <div *ngFor="let step of journeySteps" class="journey-item">
+          <div>
+            <strong>{{ step.label }}</strong>
+            <span>{{ step.value }}</span>
+          </div>
+          <p>{{ step.detail }}</p>
+        </div>
+      </div>
+      <div class="tag-stack">
+        <span *ngFor="let tag of conversation.tags" class="meta-pill">{{ tag }}</span>
+      </div>
+    </div>
+
+    <div class="info-drawer-body" *ngIf="infoPanel === 'channel'">
+      <div class="detail-card">
+        <span class="detail-label">Source</span>
+        <strong>{{ getConversationSourceLabel(conversation) }}</strong>
+      </div>
+      <div class="detail-card">
+        <span class="detail-label">Bot profile</span>
+        <strong>{{ (profile?.first_name || 'Bot') + ' / @' + (profile?.username || 'unknown') }}</strong>
+      </div>
+      <div class="detail-card">
+        <span class="detail-label">Shared history</span>
+        <strong>Kept across channels</strong>
+      </div>
+      <div class="detail-card">
+        <span class="detail-label">BOPIS support</span>
+        <strong>Enabled for {{ getConversationStore(conversation) }}</strong>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div class="info-overlay" *ngIf="templateDialogVisible" (click)="closeTemplateDialog()">
+  <section class="info-drawer template-drawer" (click)="$event.stopPropagation()">
+    <div class="info-drawer-header">
+      <div>
+        <p class="panel-eyebrow">Telegram template</p>
+        <h3 class="panel-title info-title-compact">Preview Before Send</h3>
+      </div>
+      <button type="button" class="close-btn" (click)="closeTemplateDialog()"><i class="pi pi-times"></i></button>
+    </div>
+
+    <div class="info-drawer-body">
+      <p-dropdown [options]="templates" [(ngModel)]="selectedTemplateId"
+                  optionLabel="label" optionValue="value" class="w-full"
+                  placeholder="Choose a template"
+                  (onChange)="onTemplateChange($event.value)"></p-dropdown>
+
+      <div *ngIf="getSelectedTemplate() as selectedTemplate" class="detail-card template-preview-shell">
+        <div class="template-meta-row">
+          <strong>{{ selectedTemplate.name }}</strong>
+          <span class="meta-pill">{{ selectedTemplate.category }}</span>
+        </div>
+        <p class="template-template-copy">{{ selectedTemplate.content }}</p>
+
+        <div *ngFor="let variable of selectedTemplate.variables" class="template-variable-field">
+          <label>{{ variable }}</label>
+          <input pInputText type="text" class="w-full"
+                 [(ngModel)]="templateVariableValues[variable]"
+                 [placeholder]="'Enter value for ' + variable" />
+        </div>
+
+        <div class="template-render-preview">
+          <span class="detail-label">Preview</span>
+          <p>{{ selectedTemplatePreview }}</p>
+        </div>
+      </div>
+
+      <div class="template-action-row">
+        <button type="button" class="ghost-action" (click)="closeTemplateDialog()">Cancel</button>
+        <button type="button" class="send-btn" (click)="sendTemplate()" [disabled]="!selectedTemplateId || sendingTemplate">{{ sendingTemplate ? 'Sending...' : 'Send template' }}</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<ng-template #emptyConversationState>
+  <article class="flat-card empty-thread-card">
+    <div class="empty-state">
+      <i class="pi pi-comments"></i>
+      <h3>No conversation selected</h3>
+      <p>Choose a thread from the inbox to open the shared omnichannel conversation view.</p>
+    </div>
+  </article>
+</ng-template>
+
+<p-toast></p-toast>

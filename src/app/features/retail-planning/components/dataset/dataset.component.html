@@ -1,15 +1,141 @@
-<div id="content-dataset" class="tab-content min-h-screen bg-gray-50">
-  <!-- Page Header -->
-  <app-page-header 
-    title="Stochastic Dataset" 
-    subtitle="Manage and analyze stochastic datasets for forecasting"
-    icon="📊">
-  </app-page-header>
+<div id="content-dataset" class="forecast-shell">
+  <div class="forecast-content-wrapper">
+    <div class="forecast-content-inner">
+      <div class="forecast-hero">
+        <div class="forecast-hero-copy">
+          <div class="forecast-hero-badge">
+            <i [class]="activeForecastModule.icon"></i>
+          </div>
+          <div>
+            <p class="forecast-eyebrow">Planning governance</p>
+            <h1 class="forecast-title">{{ pageTitle }}</h1>
+            <p class="forecast-subtitle">{{ pageSubtitle }}</p>
+          </div>
+        </div>
 
-  <!-- Main Layout -->
-  <div class="p-4">
+        <div class="forecast-hero-actions">
+          <button type="button" class="forecast-action-button forecast-action-button--secondary" (click)="loadDatasets()">
+            <i class="pi pi-refresh"></i>
+            <span>Refresh</span>
+          </button>
+          <button *ngIf="currentDatasetType === 'demand'" type="button" class="forecast-action-button" (click)="openSettingsModal()">
+            <i class="pi pi-sliders-h"></i>
+            <span>Configure Demand</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="forecast-overview-grid">
+        <article *ngFor="let card of forecastSummaryCards" class="forecast-summary-card" [attr.data-tone]="card.tone">
+          <div>
+            <p class="forecast-summary-label">{{ card.label }}</p>
+            <h3 class="forecast-summary-value">{{ card.value }}</h3>
+            <p class="forecast-summary-caption">{{ card.caption }}</p>
+          </div>
+          <div class="forecast-summary-icon">
+            <i [class]="card.icon"></i>
+          </div>
+        </article>
+      </div>
+
+      <div class="forecast-workspace">
+        <aside class="forecast-sidebar">
+          <div class="forecast-sidebar-panel forecast-sidebar-help">
+            <ng-container *ngIf="selectedDatasetId === 'demand'; else workflowHelp">
+              <div class="forecast-sidebar-help-header">
+                <div class="forecast-sidebar-help-icon">
+                  <i class="pi pi-info-circle"></i>
+                </div>
+                <div class="forecast-sidebar-help-copy">
+                  <div class="forecast-sidebar-help-title">Information</div>
+                  <p class="forecast-sidebar-help-text">Operational context for the current demand workspace.</p>
+                </div>
+                <button (click)="openSettingsModal()" class="forecast-sidebar-help-edit" title="Edit information">
+                  <i class="pi pi-pencil"></i>
+                </button>
+              </div>
+
+              <div class="forecast-sidebar-help-body">
+                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                  <table class="w-full text-sm">
+                    <tbody>
+                      <tr class="border-b border-gray-200">
+                        <td class="px-3 py-2.5 font-semibold text-gray-700 bg-gray-50 w-1/3">Time Range:</td>
+                        <td class="px-3 py-2.5 text-gray-900">
+                          <span *ngIf="demandStartDate && demandEndDate">
+                            {{ demandStartDate | date:'dd/MM/yyyy' }} - {{ demandEndDate | date:'dd/MM/yyyy' }}
+                          </span>
+                          <span *ngIf="!demandStartDate || !demandEndDate" class="text-gray-400">Not selected</span>
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-200">
+                        <td class="px-3 py-2.5 font-semibold text-gray-700 bg-gray-50 w-1/3">Region:</td>
+                        <td class="px-3 py-2.5 text-gray-900">
+                          <span *ngIf="warehouseRegionShortname">
+                            {{ warehouseRegionShortname }} - {{ getRegionName(warehouseRegionShortname) }}
+                          </span>
+                          <span *ngIf="!warehouseRegionShortname" class="text-gray-400">-</span>
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-200">
+                        <td class="px-3 py-2.5 font-semibold text-gray-700 bg-gray-50 w-1/3">Province:</td>
+                        <td class="px-3 py-2.5 text-gray-900">
+                          <span *ngIf="timelineWarehouses.length > 0 && timelineWarehouses[0].province_name">
+                            {{ timelineWarehouses[0].province_name }}
+                          </span>
+                          <span *ngIf="timelineWarehouses.length === 0 || !timelineWarehouses[0].province_name" class="text-gray-400">-</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="px-3 py-2.5 font-semibold text-gray-700 bg-gray-50 w-1/3">Shifts:</td>
+                        <td class="px-3 py-2.5 text-gray-900">
+                          <div *ngIf="shifts && shifts.length > 0" class="space-y-1">
+                            <div class="grid grid-cols-2 gap-3 pb-1 border-b border-gray-200 mb-1">
+                              <div class="text-xs font-semibold text-gray-600 uppercase">Shift Name</div>
+                              <div class="text-xs font-semibold text-gray-600 uppercase">Time Range</div>
+                            </div>
+                            <div *ngFor="let shift of shifts" class="grid grid-cols-2 gap-3 border-b border-gray-100 last:border-b-0 pb-1 last:pb-0">
+                              <div class="font-medium text-gray-700">{{ shift.name || 'Ca' }}</div>
+                              <div class="text-gray-600">{{ formatShiftTime(shift) }}</div>
+                            </div>
+                          </div>
+                          <span *ngIf="!shifts || shifts.length === 0" class="text-gray-400">-</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+              </div>
+            </ng-container>
+
+            <ng-template #workflowHelp>
+              <div class="forecast-sidebar-help-icon">
+                <i class="pi pi-info-circle"></i>
+              </div>
+              <div>
+                <div class="forecast-sidebar-help-title">Governed workflow</div>
+                <p class="forecast-sidebar-help-text">Each forecast route opens one governed workspace directly. Move between datasets from this rail and keep heavy analysis in the main panel.</p>
+              </div>
+            </ng-template>
+          </div>
+        </aside>
+
+        <div class="forecast-panel">
+          <div class="forecast-panel-header">
+            <div>
+              <p class="forecast-panel-eyebrow">Forecast workspace</p>
+              <h2 class="forecast-panel-title">{{ activeForecastModule.label }}</h2>
+            </div>
+            <div class="forecast-panel-chip">
+              <i [class]="activeForecastModule.icon"></i>
+              <span>{{ currentDatasetType | titlecase }}</span>
+            </div>
+          </div>
+
+          <div class="forecast-panel-content">
     <!-- Retail Domain Overview -->
-    <div class="mb-6 bg-white border border-gray-200 rounded-xl shadow-sm p-5" *ngIf="!selectedDatasetId">
+    <div class="mb-6 bg-white border border-gray-200 rounded-xl shadow-sm p-5" *ngIf="!selectedDatasetId && !isFocusedForecastView">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
         <div>
           <h2 class="text-lg font-bold text-gray-900">Retail Domain Overview</h2>
@@ -125,10 +251,10 @@
                    }">
               <div class="flex items-center gap-3 mb-4">
                 <div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-md flex-shrink-0"
-                     [style.background]="dataset.type === 'demand' ? 'linear-gradient(to bottom right, #fb923c, #ea580c)' : 
-                                        dataset.type === 'truck' ? 'linear-gradient(to bottom right, #60a5fa, #3b82f6)' : 
-                                        dataset.type === 'trip' ? 'linear-gradient(to bottom right, #4ade80, #22c55e)' : 
-                                        dataset.type === 'hub' ? 'linear-gradient(to bottom right, #a78bfa, #8b5cf6)' : 
+                     [style.background]="dataset.type === 'demand' ? 'linear-gradient(to bottom right, #fb923c, #ea580c)' :
+                                        dataset.type === 'truck' ? 'linear-gradient(to bottom right, #60a5fa, #3b82f6)' :
+                                        dataset.type === 'trip' ? 'linear-gradient(to bottom right, #4ade80, #22c55e)' :
+                                        dataset.type === 'hub' ? 'linear-gradient(to bottom right, #a78bfa, #8b5cf6)' :
                                         'linear-gradient(to bottom right, #6b7280, #374151)'">
                   <!-- Truck Icon -->
                   <svg *ngIf="dataset.type === 'truck'" class="w-6 h-6" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -189,7 +315,7 @@
             </svg>
             <h3 class="text-lg font-semibold text-gray-700 mb-2">No datasets yet</h3>
             <p class="text-sm text-gray-500 mb-4">Create a dataset to start analysis</p>
-            <button 
+            <button
               (click)="createDataset()"
               class="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-200">
               Create Dataset
@@ -200,185 +326,8 @@
       </div>
 
       <!-- Detail View: When dataset is selected - 2 Column Layout -->
-      <div *ngIf="selectedDatasetId" class="w-full h-full flex gap-4">
-        <!-- Left Column: Filters and Configuration -->
-        <div class="w-fit min-w-[320px] max-w-[400px] sticky top-4 self-start max-h-[calc(100vh-2rem)] overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-200 flex flex-col">
-          <!-- Header: Information -->
-          <div class="bg-gray-50 border-b border-gray-200 px-4 py-3 flex-shrink-0">
-            <div class="flex items-center justify-between">
-              <h2 class="text-base font-bold text-gray-900 flex items-center gap-2">
-                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span>Information</span>
-              </h2>
-              <button (click)="openSettingsModal()" class="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all" title="Edit">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <!-- Controls Section: Meta Data, Time Range, Select Stops -->
-          <div class="flex-1 overflow-y-auto p-4 space-y-4">
-            <!-- Meta Data Table -->
-            <div *ngIf="selectedDatasetId === 'demand'" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-              <table class="w-full text-sm">
-                <tbody>
-                  <tr class="border-b border-gray-200">
-                    <td class="px-3 py-2.5 font-semibold text-gray-700 bg-gray-50 w-1/3">Time Range:</td>
-                    <td class="px-3 py-2.5 text-gray-900">
-                      <span *ngIf="demandStartDate && demandEndDate">
-                        {{ demandStartDate | date:'dd/MM/yyyy' }} - {{ demandEndDate | date:'dd/MM/yyyy' }}
-                      </span>
-                      <span *ngIf="!demandStartDate || !demandEndDate" class="text-gray-400">Not selected</span>
-                    </td>
-                  </tr>
-                  <tr class="border-b border-gray-200">
-                    <td class="px-3 py-2.5 font-semibold text-gray-700 bg-gray-50 w-1/3">Region:</td>
-                    <td class="px-3 py-2.5 text-gray-900">
-                      <span *ngIf="warehouseRegionShortname">
-                        {{ warehouseRegionShortname }} - {{ getRegionName(warehouseRegionShortname) }}
-                      </span>
-                      <span *ngIf="!warehouseRegionShortname" class="text-gray-400">-</span>
-                    </td>
-                  </tr>
-                  <tr class="border-b border-gray-200">
-                    <td class="px-3 py-2.5 font-semibold text-gray-700 bg-gray-50 w-1/3">Province:</td>
-                    <td class="px-3 py-2.5 text-gray-900">
-                      <span *ngIf="timelineWarehouses.length > 0 && timelineWarehouses[0].province_name">
-                        {{ timelineWarehouses[0].province_name }}
-                      </span>
-                      <span *ngIf="timelineWarehouses.length === 0 || !timelineWarehouses[0].province_name" class="text-gray-400">-</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="px-3 py-2.5 font-semibold text-gray-700 bg-gray-50 w-1/3">Shifts:</td>
-                    <td class="px-3 py-2.5 text-gray-900">
-                      <div *ngIf="shifts && shifts.length > 0" class="space-y-1">
-                        <!-- Header for sub-columns -->
-                        <div class="grid grid-cols-2 gap-3 pb-1 border-b border-gray-200 mb-1">
-                          <div class="text-xs font-semibold text-gray-600 uppercase">Shift Name</div>
-                          <div class="text-xs font-semibold text-gray-600 uppercase">Time Range</div>
-                        </div>
-                        <!-- Shift rows -->
-                        <div *ngFor="let shift of shifts" class="grid grid-cols-2 gap-3 border-b border-gray-100 last:border-b-0 pb-1 last:pb-0">
-                          <div class="font-medium text-gray-700">{{ shift.name || 'Ca' }}</div>
-                          <div class="text-gray-600">{{ formatShiftTime(shift) }}</div>
-                        </div>
-                      </div>
-                      <span *ngIf="!shifts || shifts.length === 0" class="text-gray-400">-</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Warehouse List -->
-            <div *ngIf="selectedDatasetId === 'demand'" class="bg-gray-50 rounded-lg border border-gray-200 p-3 flex-1 flex flex-col min-h-0">
-              <div class="flex items-center justify-between mb-3 flex-shrink-0">
-                <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
-                  <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                  <span>Warehouse List</span>
-                  <span class="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold">{{ timelineWarehouses.length }}</span>
-                </h3>
-                <button *ngIf="timelineWarehouses.length > 0"
-                        (click)="clearAllPoints()"
-                        class="text-xs text-red-600 hover:text-red-700 font-medium">
-                  Clear all
-                </button>
-              </div>
-
-              <!-- Search Bar -->
-              <div class="mb-3 flex-shrink-0">
-                <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
-                  </div>
-                  <input 
-                    type="text" 
-                    [(ngModel)]="demandSearchQuery"
-                    (ngModelChange)="triggerChangeDetection()"
-                    placeholder="Search by warehouse name or ID..." 
-                    class="w-full pl-8 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-xs bg-white"
-                  />
-                  <button 
-                    *ngIf="demandSearchQuery"
-                    (click)="clearSearch()"
-                    class="absolute inset-y-0 right-0 pr-2 flex items-center text-gray-400 hover:text-gray-600"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Timeline List -->
-              <div *ngIf="timelineWarehouses.length > 0" class="flex-1 overflow-y-auto space-y-2 min-h-0">
-                <div *ngFor="let warehouse of paginatedTimelineWarehouses; let i = index"
-                     class="flex items-center gap-2 p-2 bg-white border border-orange-200 rounded-lg hover:shadow-sm transition-all group">
-                  <div class="flex items-center justify-center w-6 h-6 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full text-white text-xs font-bold flex-shrink-0 shadow-sm">
-                    {{ (timelineCurrentPage - 1) * timelinePageSize + i + 1 }}
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <div class="font-semibold text-gray-900 text-xs mb-0.5 truncate">{{ warehouse.warehouse_name }}</div>
-                    <div class="text-xs text-gray-600 truncate">{{ warehouse.district_name }}, {{ warehouse.province_name }}</div>
-                  </div>
-                  <button
-                    (click)="removeFromTimeline(warehouse)"
-                    class="flex-shrink-0 p-1 text-red-500 hover:bg-red-100 rounded transition-all opacity-0 group-hover:opacity-100"
-                    title="Delete">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Pagination -->
-              <div *ngIf="timelineWarehouses.length > timelinePageSize" class="flex items-center justify-between mt-3 pt-3 border-t border-gray-200 flex-shrink-0">
-                <div class="text-xs text-gray-600">
-                  Showing {{ getTimelinePageStart() }}-{{ getTimelinePageEnd() }} / {{ timelineWarehouses.length }}
-                </div>
-                <div class="flex items-center gap-2">
-                  <button
-                    (click)="goToTimelinePreviousPage()"
-                    [disabled]="timelineCurrentPage === 1"
-                    class="px-2 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-                    Previous
-                  </button>
-                  <span class="text-xs text-gray-700 font-medium">
-                    {{ timelineCurrentPage }} / {{ timelineTotalPages }}
-                  </span>
-                  <button
-                    (click)="goToTimelineNextPage()"
-                    [disabled]="timelineCurrentPage === timelineTotalPages"
-                    class="px-2 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-                    Next
-                  </button>
-                </div>
-              </div>
-
-              <!-- Empty Timeline State -->
-              <div *ngIf="timelineWarehouses.length === 0" class="text-center py-6 text-gray-400">
-                <svg class="w-10 h-10 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <p class="text-xs font-medium text-gray-500">No warehouse selected</p>
-                <p class="text-xs text-gray-400 mt-0.5">Select region and warehouse to add to the list</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-          <!-- Right Column: Content Area with all UI (default render even without data) -->
-        <div class="flex-1 min-w-0 h-full overflow-y-auto">
+      <div *ngIf="selectedDatasetId" class="w-full h-full">
+        <div class="w-full min-w-0 h-full overflow-y-auto">
           <!-- Content View - Default Display Demand, or selected dataset -->
           <div *ngIf="selectedDatasetId === 'demand'" class="w-full h-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col">
         <!-- Header: Volume Management -->
@@ -391,10 +340,126 @@
               <span>Volume Management</span>
             </h2>
           </div>
+          <div class="forecast-demand-tabs">
+            <button
+              *ngFor="let tab of demandWorkspaceTabs"
+              type="button"
+              (click)="setActiveDemandWorkspaceTab(tab.key)"
+              [class.active]="activeDemandWorkspaceTab === tab.key"
+              class="forecast-demand-tab">
+              {{ tab.label }}
+            </button>
+          </div>
         </div>
 
         <!-- Content Area: Dataset Demand View -->
         <div class="flex-1 overflow-y-auto bg-white">
+          <section class="forecast-demand-warehouse-card px-6 pt-6">
+            <div class="forecast-demand-warehouse-card__header">
+              <div>
+                <div class="forecast-demand-warehouse-card__eyebrow">Information</div>
+                <h3 class="forecast-demand-warehouse-card__title">
+                  <span>Warehouse List</span>
+                  <span class="forecast-demand-warehouse-card__badge">{{ timelineWarehouses.length }}</span>
+                </h3>
+                <p class="forecast-demand-warehouse-card__subtitle">Selected warehouses drive the demand dataset, timeline, and downstream charts.</p>
+              </div>
+              <button
+                *ngIf="timelineWarehouses.length > 0"
+                type="button"
+                (click)="clearAllPoints()"
+                class="forecast-demand-warehouse-card__clear">
+                Clear all
+              </button>
+            </div>
+
+            <div class="forecast-demand-warehouse-card__search">
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  [(ngModel)]="demandSearchQuery"
+                  (ngModelChange)="triggerChangeDetection()"
+                  placeholder="Search by warehouse name or ID..."
+                  class="forecast-demand-warehouse-card__input"
+                />
+                <button
+                  *ngIf="demandSearchQuery"
+                  type="button"
+                  (click)="clearSearch()"
+                  class="forecast-demand-warehouse-card__clear-search">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="timelineWarehouses.length > 0; else demandWarehouseEmpty" class="forecast-demand-warehouse-list">
+              <article
+                *ngFor="let warehouse of paginatedTimelineWarehouses; let i = index"
+                class="forecast-demand-warehouse-item">
+                <div class="forecast-demand-warehouse-item__index">
+                  {{ (timelineCurrentPage - 1) * timelinePageSize + i + 1 }}
+                </div>
+                <div class="forecast-demand-warehouse-item__copy">
+                  <div class="forecast-demand-warehouse-item__name">{{ warehouse.warehouse_name }}</div>
+                  <div class="forecast-demand-warehouse-item__meta">
+                    {{ warehouse.district_name }}, {{ warehouse.province_name }}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  (click)="removeFromTimeline(warehouse)"
+                  class="forecast-demand-warehouse-item__remove"
+                  title="Delete">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </article>
+            </div>
+
+            <div *ngIf="timelineWarehouses.length > timelinePageSize" class="forecast-demand-warehouse-card__footer">
+              <div class="forecast-demand-warehouse-card__footnote">
+                Showing {{ getTimelinePageStart() }}-{{ getTimelinePageEnd() }} / {{ timelineWarehouses.length }}
+              </div>
+              <div class="forecast-demand-warehouse-card__pagination">
+                <button
+                  type="button"
+                  (click)="goToTimelinePreviousPage()"
+                  [disabled]="timelineCurrentPage === 1"
+                  class="forecast-demand-warehouse-card__page-button">
+                  Previous
+                </button>
+                <span class="forecast-demand-warehouse-card__page-state">
+                  {{ timelineCurrentPage }} / {{ timelineTotalPages }}
+                </span>
+                <button
+                  type="button"
+                  (click)="goToTimelineNextPage()"
+                  [disabled]="timelineCurrentPage === timelineTotalPages"
+                  class="forecast-demand-warehouse-card__page-button">
+                  Next
+                </button>
+              </div>
+            </div>
+
+            <ng-template #demandWarehouseEmpty>
+              <div class="forecast-demand-warehouse-empty">
+                <svg class="w-10 h-10 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="forecast-demand-warehouse-empty__title">No warehouse selected</p>
+                <p class="forecast-demand-warehouse-empty__copy">Select region and warehouse to add to the demand workspace.</p>
+              </div>
+            </ng-template>
+          </section>
+
           <!-- Loading State for Demands -->
           <div *ngIf="loadingDemands" class="flex items-center justify-center py-20">
             <div class="text-center">
@@ -461,7 +526,7 @@
           </div>
 
           <!-- Timeline Area Chart Section - Always render -->
-          <div class="mb-6 px-6">
+          <div *ngIf="activeDemandWorkspaceTab === 'trend'" class="mb-6 px-6">
             <div>
               <!-- Header Section -->
               <div class="bg-gray-50 border-b border-gray-200 p-6">
@@ -497,14 +562,14 @@
                   <div class="flex items-center gap-4">
                     <label class="text-sm font-semibold text-gray-700">Chart Type:</label>
                     <div class="flex gap-2">
-                      <button 
-                        (click)="timelineChartType = 'column'; updateTimelineChart()" 
+                      <button
+                        (click)="timelineChartType = 'column'; updateTimelineChart()"
                         [ngClass]="{'bg-orange-600 text-white': timelineChartType === 'column', 'bg-gray-200 text-gray-700 hover:bg-gray-300': timelineChartType !== 'column'}"
                         class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                         Bar
                       </button>
-                      <button 
-                        (click)="timelineChartType = 'line'; updateTimelineChart()" 
+                      <button
+                        (click)="timelineChartType = 'line'; updateTimelineChart()"
                         [ngClass]="{'bg-orange-600 text-white': timelineChartType === 'line', 'bg-gray-200 text-gray-700 hover:bg-gray-300': timelineChartType !== 'line'}"
                         class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                         Line
@@ -514,10 +579,10 @@
 
                   <!-- Average Line Toggle -->
                   <div class="flex items-center gap-2">
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       id="showTimelineAverage"
-                      [(ngModel)]="showTimelineAverage" 
+                      [(ngModel)]="showTimelineAverage"
                       (change)="updateTimelineChart()"
                       class="w-4 h-4 text-orange-600 rounded focus:ring-2 focus:ring-orange-300">
                     <label for="showTimelineAverage" class="text-sm text-gray-700 cursor-pointer">
@@ -530,7 +595,7 @@
                 <!-- Chart Container - Always show when not loading and no error -->
                 <div *ngIf="!loadingTimelineData && !timelineDataError" class="bg-gradient-to-br from-white to-orange-50 border-2 border-orange-200 rounded-xl p-6 shadow-sm mb-4">
                   <div class="flex items-center justify-center" style="height: 400px; position: relative;">
-                    <canvas #demandTimelineAreaCanvas 
+                    <canvas #demandTimelineAreaCanvas
                             style="display: block !important; max-width: 100% !important; max-height: 100% !important; height: 400px !important; width: 100% !important;"></canvas>
                   </div>
                   <!-- Show message if no data -->
@@ -546,12 +611,12 @@
                       Select Warehouses ({{ selectedTimelineWarehouseIds.length === 0 ? 'All' : selectedTimelineWarehouseIds.length + ' selected' }})
                     </label>
                     <div class="flex gap-2">
-                      <button 
+                      <button
                         (click)="selectAllTimelineWarehouses()"
                         class="px-3 py-1 text-xs bg-orange-100 text-orange-700 rounded hover:bg-orange-200 transition-colors">
                         Select all
                       </button>
-                      <button 
+                      <button
                         (click)="deselectAllTimelineWarehouses()"
                         class="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors">
                         Clear selection
@@ -563,8 +628,8 @@
                       <thead class="bg-gray-50 border-b border-gray-200">
                         <tr>
                           <th class="px-4 py-2 text-left w-12">
-                            <input 
-                              type="checkbox" 
+                            <input
+                              type="checkbox"
                               [checked]="selectedTimelineWarehouseIds.length === availableTimelineWarehouses.length && availableTimelineWarehouses.length > 0"
                               (change)="selectedTimelineWarehouseIds.length === availableTimelineWarehouses.length ? deselectAllTimelineWarehouses() : selectAllTimelineWarehouses()"
                               class="w-4 h-4 text-orange-600 border-gray-400 rounded focus:ring-2 focus:ring-orange-500 cursor-pointer">
@@ -574,12 +639,12 @@
                         </tr>
                       </thead>
                       <tbody class="divide-y divide-gray-200">
-                        <tr *ngFor="let warehouse of paginatedAvailableTimelineWarehouses" 
+                        <tr *ngFor="let warehouse of paginatedAvailableTimelineWarehouses"
                             class="hover:bg-orange-50 transition-colors cursor-pointer"
                             (click)="toggleTimelineWarehouse(toString(warehouse.warehouse_id || warehouse.id))">
                           <td class="px-4 py-3" (click)="$event.stopPropagation()">
-                            <input 
-                              type="checkbox" 
+                            <input
+                              type="checkbox"
                               [checked]="selectedTimelineWarehouseIds.length === 0 || selectedTimelineWarehouseIds.includes(toString(warehouse.warehouse_id || warehouse.id))"
                               (change)="toggleTimelineWarehouse(toString(warehouse.warehouse_id || warehouse.id))"
                               class="w-4 h-4 text-orange-600 rounded focus:ring-2 focus:ring-orange-300 cursor-pointer">
@@ -590,15 +655,15 @@
                       </tbody>
                     </table>
                   </div>
-                  
+
                   <!-- Pagination Controls -->
                   <div *ngIf="timelineWarehouseTotalPages > 1" class="bg-gray-50 border-t border-gray-200 px-4 py-3 flex items-center justify-between">
                     <div class="text-sm text-gray-700">
-                      Showing <span class="font-semibold">{{ getTimelineWarehousePageStart() }}</span> to                       <span class="font-semibold">{{ getTimelineWarehousePageEnd() }}</span> in total 
+                      Showing <span class="font-semibold">{{ getTimelineWarehousePageStart() }}</span> to                       <span class="font-semibold">{{ getTimelineWarehousePageEnd() }}</span> in total
                       <span class="font-semibold">{{ availableTimelineWarehouses.length }}</span> warehouses
                     </div>
                     <div class="flex items-center gap-2">
-                      <button 
+                      <button
                         (click)="goToTimelineWarehousePreviousPage()"
                         [disabled]="timelineWarehouseCurrentPage === 1"
                         [ngClass]="{
@@ -609,10 +674,10 @@
                         Previous
                       </button>
                       <span class="text-sm text-gray-700">
-                        Page <span class="font-semibold">{{ timelineWarehouseCurrentPage }}</span> / 
+                        Page <span class="font-semibold">{{ timelineWarehouseCurrentPage }}</span> /
                         <span class="font-semibold">{{ timelineWarehouseTotalPages }}</span>
                       </span>
-                      <button 
+                      <button
                         (click)="goToTimelineWarehouseNextPage()"
                         [disabled]="timelineWarehouseCurrentPage === timelineWarehouseTotalPages"
                         [ngClass]="{
@@ -630,7 +695,7 @@
           </div>
 
           <!-- Region Analysis Section V2 - Moved outside "Volume Analysis" -->
-          <div *ngIf="!selectedDatasetId || selectedDatasetId === 'demand'" class="mb-6 px-6 pt-6">
+          <div *ngIf="activeDemandWorkspaceTab === 'shift' && (!selectedDatasetId || selectedDatasetId === 'demand')" class="mb-6 px-6 pt-6">
             <div>
               <!-- Header Section - Consistent with "Volume Chart by Warehouse" -->
               <div class="bg-gray-50 border-b border-gray-200 p-6">
@@ -744,7 +809,7 @@
                       </div>
                     </div>
                     <div class="flex items-center justify-center" style="height: 500px; position: relative;">
-                      <canvas #demandPickupTimeCanvas 
+                      <canvas #demandPickupTimeCanvas
                               [style.display]="(!shiftRatios || shiftRatios.length === 0) ? 'none' : 'block'"
                               style="display: block !important; max-width: 100% !important; max-height: 100% !important; height: 500px !important; width: 500px !important;"></canvas>
                     </div>
@@ -764,7 +829,7 @@
                       </div>
                     </div>
                     <div class="flex items-center justify-center" style="height: 500px; position: relative;">
-                      <canvas #demandDeliveryTimeCanvas 
+                      <canvas #demandDeliveryTimeCanvas
                               [style.display]="(!shiftRatios || shiftRatios.length === 0) ? 'none' : 'block'"
                               style="display: block !important; max-width: 100% !important; max-height: 100% !important; height: 500px !important; width: 500px !important;"></canvas>
                     </div>
@@ -775,7 +840,7 @@
           </div>
 
           <!-- Bar Chart Section - Always render -->
-          <div class="mb-6 px-6">
+          <div *ngIf="activeDemandWorkspaceTab === 'warehouse-chart'" class="mb-6 px-6">
             <div>
               <!-- Modern Header -->
               <div class="bg-gray-50 border-b border-gray-200 p-6">
@@ -793,8 +858,8 @@
                   </div>
                   <!-- Chart Type Selector -->
                   <div class="flex items-center gap-2 bg-gray-100 rounded-lg p-1 border border-gray-200">
-                    <button 
-                      (click)="chartType = 'bar'; triggerChangeDetection()" 
+                    <button
+                      (click)="chartType = 'bar'; triggerChangeDetection()"
                       [ngClass]="{'bg-orange-500 text-white shadow-sm': chartType === 'bar', 'text-gray-600 hover:bg-gray-200': chartType !== 'bar'}"
                       class="px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200">
                       <svg class="w-4 h-4 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -802,8 +867,8 @@
                       </svg>
                       Bar
                     </button>
-                    <button 
-                      (click)="chartType = 'line'; triggerChangeDetection()" 
+                    <button
+                      (click)="chartType = 'line'; triggerChangeDetection()"
                       [ngClass]="{'bg-orange-500 text-white shadow-sm': chartType === 'line', 'text-gray-600 hover:bg-gray-200': chartType !== 'line'}"
                       class="px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200">
                       <svg class="w-4 h-4 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -813,7 +878,7 @@
                     </button>
                   </div>
                 </div>
-                
+
                 <!-- Enhanced Chart Toggle Controls -->
                 <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
                   <div class="flex items-center gap-2 mb-3">
@@ -857,18 +922,18 @@
 
               <!-- Chart Container with Modern Design -->
               <div class="p-8 bg-gradient-to-br from-gray-50 via-white to-gray-50">
-                <div class="w-full rounded-2xl border-2 border-gray-200 bg-white shadow-inner" 
-                     [style.min-height.px]="getChartHeight()" 
-                     [style.height.px]="getChartHeight()" 
+                <div class="w-full rounded-2xl border-2 border-gray-200 bg-white shadow-inner"
+                     [style.min-height.px]="getChartHeight()"
+                     [style.height.px]="getChartHeight()"
                      style="position: relative; background: linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%); padding: 2rem;">
                   <!-- Scrollable chart container -->
-                  <div class="overflow-x-auto overflow-y-hidden" 
+                  <div class="overflow-x-auto overflow-y-hidden"
                        style="position: relative; padding-top: 1rem; height: 936px; width: 100%; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: rgba(156, 163, 175, 0.5) transparent;">
-                    <div [ngStyle]="{'min-width': getChartMinWidth() > 100 ? getChartMinWidth() + 'px' : '100%'}" 
+                    <div [ngStyle]="{'min-width': getChartMinWidth() > 100 ? getChartMinWidth() + 'px' : '100%'}"
                          style="height: 936px; position: relative;">
-                      <p-chart [type]="getChartType()" 
-                               [data]="getDemandsChartData('combined')" 
-                               [options]="chartOptions" 
+                      <p-chart [type]="getChartType()"
+                               [data]="getDemandsChartData('combined')"
+                               [options]="chartOptions"
                                style="display: block !important; width: 100% !important; height: 936px !important; min-height: 936px !important;"></p-chart>
                     </div>
                   </div>
@@ -878,7 +943,7 @@
           </div>
 
           <!-- Data Table Section - Always render -->
-          <div class="mb-6 px-6">
+          <div *ngIf="activeDemandWorkspaceTab === 'warehouse-details'" class="mb-6 px-6">
             <div>
               <!-- Header Section - Consistent with "Region Analysis V2" -->
               <div class="bg-white border-b-2 border-orange-200 p-6">
@@ -982,7 +1047,7 @@
                         </div>
                       </div>
                     </div>
-                    
+
                     <!-- Table Column (Right) -->
                     <div class="lg:col-span-1">
                       <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
@@ -1041,7 +1106,7 @@
                       </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-demand>
-                      <tr (click)="selectDemand(demand)" 
+                      <tr (click)="selectDemand(demand)"
                           [ngClass]="{
                             'bg-orange-50': isDemandSelected(demand),
                             'hover:bg-gray-50': !isDemandSelected(demand)
@@ -1078,7 +1143,7 @@
                               <span *ngIf="demandSearchQuery">No results for "{{ demandSearchQuery }}"</span>
                               <span *ngIf="!demandSearchQuery">No data</span>
                             </div>
-                            <button 
+                            <button
                               *ngIf="demandSearchQuery"
                               (click)="clearSearch()"
                               class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium"
@@ -1120,6 +1185,9 @@
           <app-dataset-detail [datasetIdInput]="selectedDatasetId" [embedded]="true"></app-dataset-detail>
         </div>
       </div>
+    </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1359,3 +1427,9 @@
   </div>
 
 </div>
+
+
+
+
+
+

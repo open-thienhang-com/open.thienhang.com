@@ -23,10 +23,9 @@
             <p-skeleton height="6rem"></p-skeleton>
           </article>
         </section>
-        <section class="chat-workspace">
-          <aside class="chat-sidebar"><div class="chat-sidebar-panel"><p-skeleton height="18rem"></p-skeleton></div></aside>
-          <div class="chat-panel"><div class="chat-panel-content"><p-skeleton height="30rem"></p-skeleton></div></div>
-        </section>
+        <div class="chat-panel">
+          <div class="chat-panel-content"><p-skeleton height="34rem"></p-skeleton></div>
+        </div>
       </ng-container>
 
       <ng-template #settingsContent>
@@ -41,106 +40,79 @@
           </article>
         </section>
 
-        <section class="chat-workspace">
-          <aside class="chat-sidebar">
-            <div class="chat-sidebar-panel">
-              <p class="sidebar-eyebrow">Chat modules</p>
-              <div class="sidebar-heading">Workspace navigation</div>
-              <nav class="nav-menu">
-                <a *ngFor="let link of workspaceLinks" [routerLink]="link.route" class="nav-item" [class.active]="isWorkspaceLinkActive(link.route)">
-                  <span class="nav-icon"><i [class]="link.icon"></i></span>
-                  <span class="nav-content">
-                    <span class="nav-label">{{ link.label }}</span>
-                    <span class="nav-description">{{ link.description }}</span>
-                  </span>
-                  <i class="pi pi-angle-right nav-chevron"></i>
-                </a>
-              </nav>
+        <div class="chat-panel">
+          <div class="chat-panel-header">
+            <div>
+              <p class="panel-eyebrow">Identity and routing</p>
+              <h2 class="panel-title">Bot Configuration</h2>
+              <p class="panel-subtitle">This page centralizes Telegram profile, language, escalation, and customer support links.</p>
             </div>
-
-            <div class="chat-sidebar-panel sidebar-help">
-              <div class="sidebar-help-icon"><i class="pi pi-link"></i></div>
-              <div>
-                <div class="sidebar-help-title">Support destination</div>
-                <p class="sidebar-help-text">{{ settings?.support_url || 'No support URL configured' }}</p>
-              </div>
+            <div class="panel-chip">
+              <i class="pi pi-telegram"></i>
+              <span>{{ settings?.bot_enabled ? 'Bot enabled' : 'Bot disabled' }}</span>
             </div>
-          </aside>
+          </div>
 
-          <div class="chat-panel">
-            <div class="chat-panel-header">
-              <div>
-                <p class="panel-eyebrow">Identity and routing</p>
-                <h2 class="panel-title">Bot Configuration</h2>
-                <p class="panel-subtitle">This page centralizes Telegram profile, language, escalation, and customer support links.</p>
-              </div>
-              <div class="panel-chip">
-                <i class="pi pi-telegram"></i>
-                <span>{{ settings?.bot_enabled ? 'Bot enabled' : 'Bot disabled' }}</span>
-              </div>
-            </div>
+          <div class="chat-panel-content">
+            <div class="stack-list">
+              <article class="flat-card">
+                <div class="card-header">
+                  <div class="card-icon icon-blue"><i class="pi pi-id-card"></i></div>
+                  <div class="card-title-group">
+                    <h3 class="card-title">Telegram Profile</h3>
+                    <p class="card-subtitle">Public-facing profile surfaced to Telegram users.</p>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="meta-grid">
+                    <div class="meta-item"><span class="meta-text">First name</span><strong>{{ profile?.first_name }}</strong></div>
+                    <div class="meta-item"><span class="meta-text">Username</span><strong>{{ profile?.username ? '@' + profile?.username : 'N/A' }}</strong></div>
+                    <div class="meta-item"><span class="meta-text">Can join groups</span><strong>{{ profile?.can_join_groups ? 'Yes' : 'No' }}</strong></div>
+                    <div class="meta-item"><span class="meta-text">Inline queries</span><strong>{{ profile?.supports_inline_queries ? 'Yes' : 'No' }}</strong></div>
+                  </div>
+                </div>
+              </article>
 
-            <div class="chat-panel-content">
-              <div class="stack-list">
-                <article class="flat-card">
-                  <div class="card-header">
-                    <div class="card-icon icon-blue"><i class="pi pi-id-card"></i></div>
+              <div class="card-grid">
+                <article class="info-card">
+                  <div class="info-card-header">
+                    <div class="card-icon icon-emerald"><i class="pi pi-share-alt"></i></div>
                     <div class="card-title-group">
-                      <h3 class="card-title">Telegram Profile</h3>
-                      <p class="card-subtitle">Public-facing profile surfaced to Telegram users.</p>
+                      <h3 class="info-title">Routing Defaults</h3>
+                      <p class="card-subtitle">Behavior that affects handoff and reply flows.</p>
                     </div>
                   </div>
-                  <div class="card-body">
+                  <div class="info-card-body">
                     <div class="meta-grid">
-                      <div class="meta-item"><span class="meta-text">First name</span><strong>{{ profile?.first_name }}</strong></div>
-                      <div class="meta-item"><span class="meta-text">Username</span><strong>{{ profile?.username ? '@' + profile?.username : 'N/A' }}</strong></div>
-                      <div class="meta-item"><span class="meta-text">Can join groups</span><strong>{{ profile?.can_join_groups ? 'Yes' : 'No' }}</strong></div>
-                      <div class="meta-item"><span class="meta-text">Inline queries</span><strong>{{ profile?.supports_inline_queries ? 'Yes' : 'No' }}</strong></div>
+                      <div class="meta-item"><span class="meta-text">Auto reply</span><strong>{{ settings?.enable_auto_reply ? 'Enabled' : 'Disabled' }}</strong></div>
+                      <div class="meta-item"><span class="meta-text">Human handoff</span><strong>{{ settings?.enable_human_handoff ? 'Enabled' : 'Disabled' }}</strong></div>
+                      <div class="meta-item"><span class="meta-text">Welcome template</span><strong>{{ settings?.welcome_template_id || 'Not set' }}</strong></div>
+                      <div class="meta-item"><span class="meta-text">Fallback template</span><strong>{{ settings?.fallback_template_id || 'Not set' }}</strong></div>
                     </div>
                   </div>
                 </article>
 
-                <div class="card-grid">
-                  <article class="info-card">
-                    <div class="info-card-header">
-                      <div class="card-icon icon-emerald"><i class="pi pi-share-alt"></i></div>
-                      <div class="card-title-group">
-                        <h3 class="info-title">Routing Defaults</h3>
-                        <p class="card-subtitle">Behavior that affects handoff and reply flows.</p>
-                      </div>
+                <article class="info-card">
+                  <div class="info-card-header">
+                    <div class="card-icon icon-orange"><i class="pi pi-link"></i></div>
+                    <div class="card-title-group">
+                      <h3 class="info-title">Support Links</h3>
+                      <p class="card-subtitle">Web and contact destinations used by the Telegram bot.</p>
                     </div>
-                    <div class="info-card-body">
-                      <div class="meta-grid">
-                        <div class="meta-item"><span class="meta-text">Auto reply</span><strong>{{ settings?.enable_auto_reply ? 'Enabled' : 'Disabled' }}</strong></div>
-                        <div class="meta-item"><span class="meta-text">Human handoff</span><strong>{{ settings?.enable_human_handoff ? 'Enabled' : 'Disabled' }}</strong></div>
-                        <div class="meta-item"><span class="meta-text">Welcome template</span><strong>{{ settings?.welcome_template_id || 'Not set' }}</strong></div>
-                        <div class="meta-item"><span class="meta-text">Fallback template</span><strong>{{ settings?.fallback_template_id || 'Not set' }}</strong></div>
-                      </div>
+                  </div>
+                  <div class="info-card-body">
+                    <div class="meta-grid">
+                      <div class="meta-item"><span class="meta-text">Web app URL</span><strong>{{ settings?.web_app_url || 'Not set' }}</strong></div>
+                      <div class="meta-item"><span class="meta-text">Support URL</span><strong>{{ settings?.support_url || 'Not set' }}</strong></div>
+                      <div class="meta-item"><span class="meta-text">Contact email</span><strong>{{ settings?.contact_email || 'Not set' }}</strong></div>
+                      <div class="meta-item"><span class="meta-text">Updated</span><strong>{{ settings?.updated_at | date:'short' }}</strong></div>
                     </div>
-                  </article>
-
-                  <article class="info-card">
-                    <div class="info-card-header">
-                      <div class="card-icon icon-orange"><i class="pi pi-link"></i></div>
-                      <div class="card-title-group">
-                        <h3 class="info-title">Support Links</h3>
-                        <p class="card-subtitle">Web and contact destinations used by the Telegram bot.</p>
-                      </div>
-                    </div>
-                    <div class="info-card-body">
-                      <div class="meta-grid">
-                        <div class="meta-item"><span class="meta-text">Web app URL</span><strong>{{ settings?.web_app_url || 'Not set' }}</strong></div>
-                        <div class="meta-item"><span class="meta-text">Support URL</span><strong>{{ settings?.support_url || 'Not set' }}</strong></div>
-                        <div class="meta-item"><span class="meta-text">Contact email</span><strong>{{ settings?.contact_email || 'Not set' }}</strong></div>
-                        <div class="meta-item"><span class="meta-text">Updated</span><strong>{{ settings?.updated_at | date:'short' }}</strong></div>
-                      </div>
-                    </div>
-                  </article>
-                </div>
+                  </div>
+                </article>
               </div>
             </div>
           </div>
-        </section>
+        </div>
       </ng-template>
     </div>
   </div>

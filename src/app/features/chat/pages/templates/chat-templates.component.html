@@ -23,10 +23,9 @@
             <p-skeleton height="6rem"></p-skeleton>
           </article>
         </section>
-        <section class="chat-workspace">
-          <aside class="chat-sidebar"><div class="chat-sidebar-panel"><p-skeleton height="18rem"></p-skeleton></div></aside>
-          <div class="chat-panel"><div class="chat-panel-content"><p-skeleton height="30rem"></p-skeleton></div></div>
-        </section>
+        <div class="chat-panel">
+          <div class="chat-panel-content"><p-skeleton height="34rem"></p-skeleton></div>
+        </div>
       </ng-container>
 
       <ng-template #templatesContent>
@@ -41,123 +40,96 @@
           </article>
         </section>
 
-        <section class="chat-workspace">
-          <aside class="chat-sidebar">
-            <div class="chat-sidebar-panel">
-              <p class="sidebar-eyebrow">Chat modules</p>
-              <div class="sidebar-heading">Workspace navigation</div>
-              <nav class="nav-menu">
-                <a *ngFor="let link of workspaceLinks" [routerLink]="link.route" class="nav-item" [class.active]="isWorkspaceLinkActive(link.route)">
-                  <span class="nav-icon"><i [class]="link.icon"></i></span>
-                  <span class="nav-content">
-                    <span class="nav-label">{{ link.label }}</span>
-                    <span class="nav-description">{{ link.description }}</span>
-                  </span>
-                  <i class="pi pi-angle-right nav-chevron"></i>
-                </a>
-              </nav>
+        <div class="chat-panel">
+          <div class="chat-panel-header">
+            <div>
+              <p class="panel-eyebrow">Reusable replies</p>
+              <h2 class="panel-title">Template Library</h2>
+              <p class="panel-subtitle">Separate reply design from live support operations. Agents use these outputs, but do not manage them from the inbox.</p>
             </div>
-
-            <div class="chat-sidebar-panel sidebar-help">
-              <div class="sidebar-help-icon"><i class="pi pi-info-circle"></i></div>
-              <div>
-                <div class="sidebar-help-title">Template governance</div>
-                <p class="sidebar-help-text">Fallback template: {{ settings?.fallback_template_id || 'Not configured' }}</p>
-              </div>
-            </div>
-          </aside>
-
-          <div class="chat-panel">
-            <div class="chat-panel-header">
-              <div>
-                <p class="panel-eyebrow">Reusable replies</p>
-                <h2 class="panel-title">Template Library</h2>
-                <p class="panel-subtitle">Separate reply design from live support operations. Agents use these outputs, but do not manage them from the inbox.</p>
-              </div>
-              <div class="panel-chip">
-                <i class="pi pi-file"></i>
-                <span>{{ templates.length }} templates</span>
-              </div>
-            </div>
-
-            <div class="chat-panel-content">
-              <div class="dual-grid">
-                <article class="flat-card">
-                  <div class="card-header">
-                    <div class="card-icon icon-blue"><i class="pi pi-book"></i></div>
-                    <div class="card-title-group">
-                      <h3 class="card-title">Current Templates</h3>
-                      <p class="card-subtitle">Review live template content, variables, and category coverage.</p>
-                    </div>
-                  </div>
-                  <div class="card-body">
-                    <div *ngIf="templates.length; else emptyTemplates" class="stack-list">
-                      <div *ngFor="let template of templates" class="list-item">
-                        <div class="list-item-top">
-                          <div class="list-item-copy">
-                            <h4 class="list-item-title">{{ template.name }}</h4>
-                            <span class="list-item-meta">{{ template.category }} · updated {{ template.updated_at | date:'short' }}</span>
-                          </div>
-                          <p-tag [value]="template.enabled ? 'Enabled' : 'Disabled'" [severity]="template.enabled ? 'success' : 'secondary'"></p-tag>
-                        </div>
-                        <p class="meta-text">{{ template.content }}</p>
-                        <div class="pill-row" *ngIf="template.variables.length">
-                          <span class="pill" *ngFor="let variable of template.variables">{{ variable }}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <ng-template #emptyTemplates>
-                      <div class="empty-state">
-                        <i class="pi pi-file"></i>
-                        <h3>No templates yet</h3>
-                        <p>Create the first reusable reply for Telegram support.</p>
-                      </div>
-                    </ng-template>
-                  </div>
-                </article>
-
-                <article class="flat-card">
-                  <div class="card-header">
-                    <div class="card-icon icon-emerald"><i class="pi pi-plus-circle"></i></div>
-                    <div class="card-title-group">
-                      <h3 class="card-title">Create Template</h3>
-                      <p class="card-subtitle">Add a new response block for onboarding, support handoff, or retail assistance.</p>
-                    </div>
-                  </div>
-                  <div class="card-body">
-                    <div class="form-stack">
-                      <div>
-                        <label class="form-label" for="template-name">Name</label>
-                        <input id="template-name" type="text" class="form-input" [(ngModel)]="form.name" placeholder="Support Handoff" />
-                      </div>
-                      <div class="form-grid">
-                        <div>
-                          <label class="form-label" for="template-category">Category</label>
-                          <input id="template-category" type="text" class="form-input" [(ngModel)]="form.category" placeholder="support" />
-                        </div>
-                        <div>
-                          <label class="form-label" for="template-variables">Variables</label>
-                          <input id="template-variables" type="text" class="form-input" [(ngModel)]="form.variablesText" placeholder="first_name, store_name" />
-                          <p class="form-hint">Comma-separated variable names.</p>
-                        </div>
-                      </div>
-                      <div>
-                        <label class="form-label" for="template-content">Content</label>
-                        <textarea id="template-content" class="form-input" rows="8" [(ngModel)]="form.content" placeholder="Yeu cau cua ban da duoc ghi nhan..."></textarea>
-                      </div>
-                      <label class="checkbox-row">
-                        <input type="checkbox" [(ngModel)]="form.enabled" />
-                        <span>Enable template immediately</span>
-                      </label>
-                      <button pButton type="button" label="Create Template" icon="pi pi-check" class="w-full"
-                              (click)="createTemplate()" [loading]="creating"></button>
-                    </div>
-                  </div>
-                </article>
-              </div>
+            <div class="panel-chip">
+              <i class="pi pi-file"></i>
+              <span>{{ templates.length }} templates</span>
             </div>
           </div>
-        </section>
+
+          <div class="chat-panel-content">
+            <div class="dual-grid">
+              <article class="flat-card">
+                <div class="card-header">
+                  <div class="card-icon icon-blue"><i class="pi pi-book"></i></div>
+                  <div class="card-title-group">
+                    <h3 class="card-title">Current Templates</h3>
+                    <p class="card-subtitle">Review live template content, variables, and category coverage.</p>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div *ngIf="templates.length; else emptyTemplates" class="stack-list">
+                    <div *ngFor="let template of templates" class="list-item">
+                      <div class="list-item-top">
+                        <div class="list-item-copy">
+                          <h4 class="list-item-title">{{ template.name }}</h4>
+                          <span class="list-item-meta">{{ template.category }} | updated {{ template.updated_at | date:'short' }}</span>
+                        </div>
+                        <p-tag [value]="template.enabled ? 'Enabled' : 'Disabled'" [severity]="template.enabled ? 'success' : 'secondary'"></p-tag>
+                      </div>
+                      <p class="meta-text">{{ template.content }}</p>
+                      <div class="pill-row" *ngIf="template.variables.length">
+                        <span class="pill" *ngFor="let variable of template.variables">{{ variable }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <ng-template #emptyTemplates>
+                    <div class="empty-state">
+                      <i class="pi pi-file"></i>
+                      <h3>No templates yet</h3>
+                      <p>Create the first reusable reply for Telegram support.</p>
+                    </div>
+                  </ng-template>
+                </div>
+              </article>
+
+              <article class="flat-card">
+                <div class="card-header">
+                  <div class="card-icon icon-emerald"><i class="pi pi-plus-circle"></i></div>
+                  <div class="card-title-group">
+                    <h3 class="card-title">Create Template</h3>
+                    <p class="card-subtitle">Add a new response block for onboarding, support handoff, or retail assistance.</p>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="form-stack">
+                    <div>
+                      <label class="form-label" for="template-name">Name</label>
+                      <input id="template-name" type="text" class="form-input" [(ngModel)]="form.name" placeholder="Support Handoff" />
+                    </div>
+                    <div class="form-grid">
+                      <div>
+                        <label class="form-label" for="template-category">Category</label>
+                        <input id="template-category" type="text" class="form-input" [(ngModel)]="form.category" placeholder="support" />
+                      </div>
+                      <div>
+                        <label class="form-label" for="template-variables">Variables</label>
+                        <input id="template-variables" type="text" class="form-input" [(ngModel)]="form.variablesText" placeholder="first_name, store_name" />
+                        <p class="form-hint">Comma-separated variable names.</p>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="form-label" for="template-content">Content</label>
+                      <textarea id="template-content" class="form-input" rows="8" [(ngModel)]="form.content" placeholder="Yeu cau cua ban da duoc ghi nhan..."></textarea>
+                    </div>
+                    <label class="checkbox-row">
+                      <input type="checkbox" [(ngModel)]="form.enabled" />
+                      <span>Enable template immediately</span>
+                    </label>
+                    <button pButton type="button" label="Create Template" icon="pi pi-check" class="w-full"
+                            (click)="createTemplate()" [loading]="creating"></button>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
       </ng-template>
     </div>
   </div>
