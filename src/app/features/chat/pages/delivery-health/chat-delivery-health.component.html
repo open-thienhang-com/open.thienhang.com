@@ -1,0 +1,153 @@
+<div class="chat-main">
+  <div class="chat-content-wrapper">
+    <div class="chat-content-inner">
+      <section class="chat-hero">
+        <div class="chat-hero-copy">
+          <div class="chat-hero-badge">
+            <i class="pi pi-shield"></i>
+          </div>
+          <div>
+            <p class="chat-eyebrow">Operational health</p>
+            <h1 class="chat-title">Delivery Health</h1>
+            <p class="chat-subtitle">Track webhook connectivity, queue pressure, and sync status in a separate operational view so the support inbox stays focused on conversation handling.</p>
+          </div>
+        </div>
+
+        <button pButton type="button" icon="pi pi-refresh" label="Refresh" class="p-button-sm p-button-outlined"
+                (click)="loadPage()" [loading]="loading"></button>
+      </section>
+
+      <ng-container *ngIf="loading; else healthContent">
+        <section class="chat-overview-grid">
+          <article *ngFor="let item of [1, 2, 3, 4]" class="summary-card">
+            <p-skeleton height="6rem"></p-skeleton>
+          </article>
+        </section>
+        <section class="chat-workspace">
+          <aside class="chat-sidebar"><div class="chat-sidebar-panel"><p-skeleton height="18rem"></p-skeleton></div></aside>
+          <div class="chat-panel"><div class="chat-panel-content"><p-skeleton height="30rem"></p-skeleton></div></div>
+        </section>
+      </ng-container>
+
+      <ng-template #healthContent>
+        <section class="chat-overview-grid">
+          <article *ngFor="let card of overviewCards" class="summary-card" [attr.data-tone]="card.tone">
+            <div>
+              <p class="summary-label">{{ card.label }}</p>
+              <h3 class="summary-value">{{ card.value }}</h3>
+              <p class="summary-caption">{{ card.caption }}</p>
+            </div>
+            <div class="summary-icon"><i [class]="card.icon"></i></div>
+          </article>
+        </section>
+
+        <section class="chat-workspace">
+          <aside class="chat-sidebar">
+            <div class="chat-sidebar-panel">
+              <p class="sidebar-eyebrow">Chat modules</p>
+              <div class="sidebar-heading">Workspace navigation</div>
+              <nav class="nav-menu">
+                <a *ngFor="let link of workspaceLinks" [routerLink]="link.route" class="nav-item" [class.active]="isWorkspaceLinkActive(link.route)">
+                  <span class="nav-icon"><i [class]="link.icon"></i></span>
+                  <span class="nav-content">
+                    <span class="nav-label">{{ link.label }}</span>
+                    <span class="nav-description">{{ link.description }}</span>
+                  </span>
+                  <i class="pi pi-angle-right nav-chevron"></i>
+                </a>
+              </nav>
+            </div>
+
+            <div class="chat-sidebar-panel sidebar-help">
+              <div class="sidebar-help-icon"><i class="pi pi-shield"></i></div>
+              <div>
+                <div class="sidebar-help-title">Operational scope</div>
+                <p class="sidebar-help-text">Health diagnostics stay here so agents do not have to parse system status while handling customers.</p>
+              </div>
+            </div>
+          </aside>
+
+          <div class="chat-panel">
+            <div class="chat-panel-header">
+              <div>
+                <p class="panel-eyebrow">Sync and delivery diagnostics</p>
+                <h2 class="panel-title">Webhook and Queue Health</h2>
+                <p class="panel-subtitle">Review webhook availability, pending updates, and inbox pressure from a single operational panel.</p>
+              </div>
+              <div class="panel-chip">
+                <i class="pi pi-heart"></i>
+                <span>{{ webhook?.enabled ? 'Webhook live' : 'Webhook offline' }}</span>
+              </div>
+            </div>
+
+            <div class="chat-panel-content">
+              <div class="stack-list">
+                <article class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon icon-orange"><i class="pi pi-shield"></i></div>
+                    <div class="card-title-group">
+                      <h3 class="card-title">Webhook Status</h3>
+                      <p class="card-subtitle">Core delivery state for Telegram updates and callback processing.</p>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="meta-grid">
+                      <div class="meta-item"><span class="meta-text">Enabled</span><strong>{{ webhook?.enabled ? 'Yes' : 'No' }}</strong></div>
+                      <div class="meta-item"><span class="meta-text">Secret token</span><strong>{{ webhook?.secret_token_configured ? 'Configured' : 'Missing' }}</strong></div>
+                      <div class="meta-item"><span class="meta-text">Pending updates</span><strong>{{ webhook?.pending_update_count ?? 0 }}</strong></div>
+                      <div class="meta-item"><span class="meta-text">Last sync</span><strong>{{ webhook?.last_sync_at ? (webhook?.last_sync_at | date:'short') : 'No sync yet' }}</strong></div>
+                    </div>
+                    <div class="error-box" *ngIf="webhook?.last_error_message">
+                      <strong>Last error</strong>
+                      <p>{{ webhook?.last_error_message }}</p>
+                    </div>
+                  </div>
+                </article>
+
+                <div class="card-grid">
+                  <article class="info-card">
+                    <div class="info-card-header">
+                      <div class="card-icon icon-blue"><i class="pi pi-chart-bar"></i></div>
+                      <div class="card-title-group">
+                        <h3 class="info-title">Queue Counters</h3>
+                        <p class="card-subtitle">Current support demand visible from dashboard counters.</p>
+                      </div>
+                    </div>
+                    <div class="info-card-body">
+                      <div class="kpi-grid">
+                        <div class="kpi-item"><span class="meta-text">Total conversations</span><div class="kpi-value">{{ dashboard?.counters.total_conversations ?? 0 }}</div></div>
+                        <div class="kpi-item"><span class="meta-text">Active conversations</span><div class="kpi-value">{{ dashboard?.counters.active_conversations ?? 0 }}</div></div>
+                        <div class="kpi-item"><span class="meta-text">Pending human</span><div class="kpi-value">{{ dashboard?.counters.pending_human ?? 0 }}</div></div>
+                        <div class="kpi-item"><span class="meta-text">Unread messages</span><div class="kpi-value">{{ dashboard?.counters.unread_messages ?? 0 }}</div></div>
+                      </div>
+                    </div>
+                  </article>
+
+                  <article class="info-card">
+                    <div class="info-card-header">
+                      <div class="card-icon icon-emerald"><i class="pi pi-check-square"></i></div>
+                      <div class="card-title-group">
+                        <h3 class="info-title">Bot Runtime</h3>
+                        <p class="card-subtitle">Operational toggles currently active in Telegram dashboard.</p>
+                      </div>
+                    </div>
+                    <div class="info-card-body">
+                      <div class="meta-grid">
+                        <div class="meta-item"><span class="meta-text">Bot enabled</span><strong>{{ dashboard?.bot.enabled ? 'Yes' : 'No' }}</strong></div>
+                        <div class="meta-item"><span class="meta-text">Auto reply</span><strong>{{ dashboard?.bot.auto_reply ? 'Yes' : 'No' }}</strong></div>
+                        <div class="meta-item"><span class="meta-text">Human handoff</span><strong>{{ dashboard?.bot.human_handoff ? 'Yes' : 'No' }}</strong></div>
+                        <div class="meta-item"><span class="meta-text">Updated at</span><strong>{{ dashboard?.updated_at | date:'short' }}</strong></div>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </ng-template>
+    </div>
+  </div>
+
+  <p-toast></p-toast>
+</div>

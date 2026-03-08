@@ -482,7 +482,11 @@ export class SidebarComponent implements OnInit, OnChanges {
       icon: 'pi pi-comments',
       expanded: false,
       items: [
-        { label: 'Dashboard', url: '/chat', icon: 'pi pi-home' },
+        { label: 'Telegram Workspace', url: '/chat', icon: 'pi pi-comments' },
+        { label: 'Templates', url: '/chat/templates', icon: 'pi pi-file-edit' },
+        { label: 'Automation', url: '/chat/automation', icon: 'pi pi-bolt' },
+        { label: 'Bot Settings', url: '/chat/bot-settings', icon: 'pi pi-cog' },
+        { label: 'Delivery Health', url: '/chat/delivery-health', icon: 'pi pi-shield' },
         { label: 'Conversations', url: '/chat/conversations', icon: 'pi pi-comments' },
         { label: 'Analytics', url: '/chat/analytics', icon: 'pi pi-chart-bar' }
       ]
