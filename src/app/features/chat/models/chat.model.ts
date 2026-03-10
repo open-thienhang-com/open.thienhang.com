@@ -183,6 +183,8 @@ export interface TelegramMessage {
     timestamp: string;
     message_type: string;
     delivery_status: string;
+    media_url?: string;
+    caption?: string;
 }
 
 export interface TelegramInternalNote {

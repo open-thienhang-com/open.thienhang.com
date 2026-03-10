@@ -56,16 +56,32 @@ export class FacebookWorkspaceComponent implements OnInit {
   ];
 
   readonly quickActions = [
-    { label: 'Product Card', icon: 'pi pi-box' },
-    { label: 'Pickup QR', icon: 'pi pi-qrcode' },
-    { label: 'Transfer', icon: 'pi pi-share-alt' }
+    { label: 'Text', icon: 'pi pi-pencil', mode: 'text' },
+    { label: 'Photo', icon: 'pi pi-image', mode: 'photo' },
+    { label: 'GIF', icon: 'pi pi-images', mode: 'gif' },
+    { label: 'Document', icon: 'pi pi-file', mode: 'document' },
+    { label: 'Template', icon: 'pi pi-file-export', mode: 'template' },
+    { label: 'Icon', icon: 'pi pi-face-smile', mode: 'icon' }
+  ];
+
+  readonly iconGroups = [
+    { label: 'Reactions', icons: ['👍', '👎', '👏', '🙌', '🙏', '🤝', '💪', '👌', '✌️', '🤞', '🫶', '👀'] },
+    { label: 'Mood', icons: ['😀', '😄', '😁', '😊', '😍', '😘', '😂', '🥳', '😎', '🤔', '😴', '😭'] },
+    { label: 'Status', icons: ['✅', '❌', '⚠️', '⏳', '🚀', '🔥', '⭐', '📌', '💡', '🔔', '🔒', '📣'] },
+    { label: 'Celebration', icons: ['🎉', '🎊', '🎁', '🏆', '🍀', '🌟', '💯', '🪄', '🎯', '🕺', '💃', '🥂'] },
+    { label: 'Objects', icons: ['📦', '📄', '📎', '🧾', '💳', '🛍️', '🏷️', '🖼️', '📱', '💻', '🧰', '🛠️'] },
+    { label: 'Travel', icons: ['🚗', '🛵', '🚚', '✈️', '🚆', '🗺️', '📍', '🏪', '🏬', '🏨', '🏝️', '⛽'] },
+    { label: 'Weather', icons: ['☀️', '🌤️', '⛅', '🌧️', '⛈️', '❄️', '🌈', '🌙', '⭐', '🌊', '🌴', '🍃'] },
+    { label: 'Hearts', icons: ['❤️', '🧡', '💛', '💚', '🩵', '💙', '💜', '🖤', '🤍', '🤎', '💓', '💞'] }
   ];
 
   loading = false;
   sendingReply = false;
   sendingTemplate = false;
   sendingMedia = false;
+  sendingIcon = false;
   templateDialogVisible = false;
+  actionPopupMode: 'none' | 'photo' | 'gif' | 'document' | 'template' | 'icon' = 'none';
 
   profile: TelegramBotProfile | null = null;
   dashboard: TelegramDashboard | null = null;
@@ -79,10 +95,11 @@ export class FacebookWorkspaceComponent implements OnInit {
   activeChannel = 'all';
   infoPanel: 'none' | 'customer' | 'context' | 'channel' = 'none';
   draftReply = '';
-  mediaType: 'photo' | 'document' = 'photo';
+  mediaType: 'photo' | 'gif' | 'document' = 'photo';
   mediaUrl = '';
   mediaCaption = '';
   protectMediaContent = false;
+  selectedIcon = '👍';
   disableNotification = false;
   selectedTemplateId = '';
   templateVariableValues: Record<string, string> = {};
@@ -204,6 +221,7 @@ export class FacebookWorkspaceComponent implements OnInit {
         this.resetMediaForm();
         this.disableNotification = false;
         this.closeTemplateDialog();
+        this.closeActionPopup();
       },
       error: (error) => {
         console.error('Error loading conversation detail', error);
@@ -227,6 +245,7 @@ export class FacebookWorkspaceComponent implements OnInit {
     }
 
     this.templateDialogVisible = true;
+    this.actionPopupMode = 'template';
     if (this.selectedTemplateId) {
       this.onTemplateChange(this.selectedTemplateId);
     }
@@ -234,6 +253,9 @@ export class FacebookWorkspaceComponent implements OnInit {
 
   closeTemplateDialog(): void {
     this.templateDialogVisible = false;
+    if (this.actionPopupMode === 'template') {
+      this.actionPopupMode = 'none';
+    }
   }
 
   onTemplateChange(templateId: string): void {
@@ -303,16 +325,18 @@ export class FacebookWorkspaceComponent implements OnInit {
     this.sendingMedia = true;
 
     const onSuccess = () => {
-      const label = this.mediaType === 'photo' ? 'Photo' : 'Document';
-      const content = caption ? `[${label}] ${caption} ${mediaUrl}` : `[${label}] ${mediaUrl}`;
+      const label = this.mediaType === 'photo' ? 'Photo' : this.mediaType === 'gif' ? 'GIF' : 'Document';
+      const content = caption || mediaUrl;
       const outboundMessage: TelegramMessage = {
         id: `media_${Date.now()}`,
         sender: 'agent',
         sender_name: conversation.agent || this.profile?.first_name || 'Agent',
         content,
         timestamp: new Date().toISOString(),
-        message_type: this.mediaType,
-        delivery_status: 'sent'
+        message_type: this.mediaType === 'gif' ? 'photo' : this.mediaType,
+        delivery_status: 'sent',
+        media_url: mediaUrl,
+        caption: caption || undefined
       };
 
       this.applyOutboundUpdate(conversation, outboundMessage, content);
@@ -412,6 +436,44 @@ export class FacebookWorkspaceComponent implements OnInit {
     });
   }
 
+  sendIcon(): void {
+    const conversation = this.selectedConversation;
+    const icon = this.selectedIcon.trim();
+
+    if (!conversation || !conversation.chat_id || !icon) {
+      return;
+    }
+
+    this.sendingIcon = true;
+    this.chatService.sendTelegramMessage({
+      chat_id: conversation.chat_id,
+      text: icon,
+      disable_notification: this.disableNotification
+    }).subscribe({
+      next: () => {
+        const outboundMessage: TelegramMessage = {
+          id: `icon_${Date.now()}`,
+          sender: 'agent',
+          sender_name: conversation.agent || this.profile?.first_name || 'Agent',
+          content: icon,
+          timestamp: new Date().toISOString(),
+          message_type: 'text',
+          delivery_status: 'sent'
+        };
+
+        this.applyOutboundUpdate(conversation, outboundMessage, icon);
+        this.sendingIcon = false;
+        this.closeActionPopup();
+        this.messageService.add({ severity: 'success', summary: 'Icon sent', detail: 'Quick icon reply sent successfully' });
+      },
+      error: (error) => {
+        console.error('Error sending icon', error);
+        this.sendingIcon = false;
+        this.messageService.add({ severity: 'error', summary: 'Send failed', detail: 'Unable to send icon reply' });
+      }
+    });
+  }
+
   getQueueCount(queue: string): number {
     switch (queue) {
       case 'pending_human':
@@ -485,6 +547,14 @@ export class FacebookWorkspaceComponent implements OnInit {
     }
   }
 
+  isGroupConversation(conversation: TelegramConversation): boolean {
+    return Number(conversation.chat_id) < 0;
+  }
+
+  getConversationAudienceLabel(conversation: TelegramConversation): string {
+    return this.isGroupConversation(conversation) ? 'Group chat' : 'Direct chat';
+  }
+
   getConversationStore(conversation: TelegramConversation): string {
     return conversation.tags?.find(tag => tag.toLowerCase().includes('store:'))?.split(':')[1]?.trim()
       || 'Primary support store';
@@ -513,6 +583,77 @@ export class FacebookWorkspaceComponent implements OnInit {
     return this.templates.find(item => item.value === this.selectedTemplateId)?.template || null;
   }
 
+  isImageMessage(message: TelegramMessage): boolean {
+    return this.getImageUrl(message) !== null;
+  }
+
+  getImageUrl(message: TelegramMessage): string | null {
+    const candidate = (message.media_url || this.extractUrl(message.content) || '').trim();
+    if (!candidate) {
+      return null;
+    }
+
+    const lowered = candidate.toLowerCase();
+    if (message.message_type === 'photo') {
+      return candidate;
+    }
+
+    if (/\.(png|jpe?g|gif|webp|bmp|svg)(\?|#|$)/.test(lowered)) {
+      return candidate;
+    }
+
+    if (lowered.includes('images.unsplash.com') || lowered.includes('imgur.com')) {
+      return candidate;
+    }
+
+    return null;
+  }
+
+  getDocumentUrl(message: TelegramMessage): string | null {
+    if (message.message_type !== 'document') {
+      return null;
+    }
+
+    return (message.media_url || this.extractUrl(message.content) || '').trim() || null;
+  }
+
+  getMessageBody(message: TelegramMessage): string {
+    if (message.caption?.trim()) {
+      return message.caption.trim();
+    }
+
+    if (message.message_type === 'photo' || message.message_type === 'document') {
+      const url = message.media_url || this.extractUrl(message.content);
+      if (url && message.content.trim() === url.trim()) {
+        return '';
+      }
+    }
+
+    return message.content;
+  }
+
+  activateQuickAction(mode: string): void {
+    if (mode === 'text') {
+      this.closeActionPopup();
+      return;
+    }
+
+    if (mode === 'template') {
+      this.openTemplateDialog();
+      return;
+    }
+
+    if (mode === 'photo' || mode === 'gif' || mode === 'document') {
+      this.mediaType = mode;
+      this.actionPopupMode = mode;
+      return;
+    }
+
+    if (mode === 'icon') {
+      this.actionPopupMode = 'icon';
+    }
+  }
+
   private applyOutboundUpdate(conversation: TelegramConversation, message: TelegramMessage, content: string): void {
     const updatedConversation: TelegramConversation = {
       ...conversation,
@@ -533,6 +674,21 @@ export class FacebookWorkspaceComponent implements OnInit {
     this.mediaUrl = '';
     this.mediaCaption = '';
     this.protectMediaContent = false;
+    this.selectedIcon = '👍';
+  }
+
+  closeActionPopup(): void {
+    this.actionPopupMode = 'none';
+    this.templateDialogVisible = false;
+  }
+
+  private extractUrl(value: string | null | undefined): string | null {
+    if (!value) {
+      return null;
+    }
+
+    const match = value.match(/https?:\/\/[^\s]+/i);
+    return match ? match[0] : null;
   }
 
   private matchesQueue(conversation: TelegramConversation): boolean {

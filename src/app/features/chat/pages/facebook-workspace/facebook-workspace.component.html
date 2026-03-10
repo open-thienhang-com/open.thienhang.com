@@ -19,12 +19,10 @@
           </article>
         </section>
 
-        <section class="chat-panel omni-panel">
-          <div class="chat-panel-content omni-layout">
-            <article class="flat-card compact-card"><div class="card-body"><p-skeleton height="34rem"></p-skeleton></div></article>
-            <article class="flat-card thread-card-shell"><div class="card-body"><p-skeleton height="34rem"></p-skeleton></div></article>
-          </div>
-        </section>
+        <div class="omni-layout">
+          <article class="flat-card compact-card"><div class="card-body"><p-skeleton height="34rem"></p-skeleton></div></article>
+          <article class="flat-card thread-card-shell"><div class="card-body"><p-skeleton height="34rem"></p-skeleton></div></article>
+        </div>
       </ng-container>
 
       <ng-container *ngIf="!loading && profile && dashboard && settings">
@@ -54,32 +52,16 @@
           </article>
         </section>
 
-        <section class="chat-panel omni-panel">
-          <div class="chat-panel-header">
-            <div>
-              <p class="panel-eyebrow">Single inbox UI</p>
-              <h2 class="panel-title">Omni Channel Workspace</h2>
-              <p class="panel-subtitle">The inbox stays simple even as new channels are added. Extra context is hidden in on-demand panels instead of living permanently in the main layout.</p>
-            </div>
-            <div class="panel-chip"><i class="pi pi-clone"></i><span>{{ selectedConversation ? getConversationSourceLabel(selectedConversation) : 'No thread selected' }}</span></div>
-          </div>
-
-          <div class="chat-panel-content omni-layout">
-            <aside class="queue-column">
+        <div class="omni-layout">
+          <aside class="queue-column">
               <article class="flat-card compact-card">
-                <div class="card-header compact-header">
-                  <div class="card-title-group">
-                    <h3 class="card-title">Inbox Filters</h3>
-                    <p class="card-subtitle">Minimal controls for queue and channel switching.</p>
-                  </div>
-                </div>
                 <div class="card-body compact-body">
                   <div class="queue-search-box">
                     <i class="pi pi-search"></i>
                     <input type="text" class="form-input queue-search-input" [(ngModel)]="searchTerm" placeholder="Search customer, category, or tag" />
                   </div>
 
-                  <div class="filter-group">
+                  <div class="filter-group compact-filter-group">
                     <div class="filter-chip-row compact">
                       <button *ngFor="let tab of queueTabs" type="button" class="queue-filter-btn" [class.active]="activeQueue === tab.value" (click)="setActiveQueue(tab.value)">
                         <span>{{ tab.label }}</span>
@@ -88,7 +70,7 @@
                     </div>
                   </div>
 
-                  <div class="filter-group">
+                  <div class="filter-group compact-filter-group">
                     <div class="filter-chip-row compact">
                       <button *ngFor="let filter of channelFilters" type="button" class="queue-filter-btn" [class.active]="activeChannel === filter.value" (click)="setActiveChannel(filter.value)">
                         <span>{{ filter.label }}</span>
@@ -103,7 +85,6 @@
                 <div class="card-header compact-header">
                   <div class="card-title-group">
                     <h3 class="card-title">Conversations</h3>
-                    <p class="card-subtitle">A single list across all connected channels.</p>
                   </div>
                   <span class="queue-total">{{ filteredConversations.length }}</span>
                 </div>
@@ -127,6 +108,7 @@
 
                       <div class="channel-line">
                         <span class="source-pill"><i [class]="getConversationSourceIcon(conversation)"></i>{{ getConversationSourceLabel(conversation) }}</span>
+                        <span class="audience-pill" [class.group]="isGroupConversation(conversation)">{{ getConversationAudienceLabel(conversation) }}</span>
                         <p-tag [value]="conversation.status" [severity]="getStatusSeverity(conversation.status)"></p-tag>
                       </div>
 
@@ -143,13 +125,14 @@
               </article>
             </aside>
 
-            <section class="thread-column" *ngIf="selectedConversation as conversation; else emptyConversationState">
+          <section class="thread-column" *ngIf="selectedConversation as conversation; else emptyConversationState">
               <article class="flat-card thread-card-shell">
                 <div class="card-header thread-card-header">
                   <div class="thread-header-main">
                     <div class="thread-title-row">
                       <h3 class="card-title">{{ conversation.user_name }}</h3>
                       <span class="source-pill source-pill-inline"><i [class]="getConversationSourceIcon(conversation)"></i>{{ getConversationSourceLabel(conversation) }}</span>
+                      <span class="audience-pill" [class.group]="isGroupConversation(conversation)">{{ getConversationAudienceLabel(conversation) }}</span>
                       <p-tag [value]="conversation.status" [severity]="getStatusSeverity(conversation.status)"></p-tag>
                     </div>
                     <p class="card-subtitle">{{ '@' + conversation.username }} | {{ getConversationProductContext(conversation) }} | {{ getConversationStore(conversation) }}</p>
@@ -192,69 +175,141 @@
                           <span>|</span>
                           <span>{{ message.timestamp | date:'shortTime' }}</span>
                         </div>
-                        <p>{{ message.content }}</p>
+                        <div *ngIf="isImageMessage(message)" class="message-media-shell">
+                          <img [src]="getImageUrl(message)!" alt="Shared image" class="message-image" />
+                        </div>
+                        <a *ngIf="getDocumentUrl(message) as documentUrl"
+                           [href]="documentUrl"
+                           target="_blank"
+                           rel="noreferrer"
+                           class="message-document-link">
+                          <i class="pi pi-file"></i>
+                          <span>Open document</span>
+                        </a>
+                        <p *ngIf="getMessageBody(message)">{{ getMessageBody(message) }}</p>
                       </div>
                     </div>
                   </div>
 
                   <div class="composer-card">
                     <div class="composer-head">
-                      <div>
-                        <h4>Reply</h4>
-                        <p>Use one composer for every channel, including text, photo, and document sends.</p>
-                      </div>
                       <div class="quick-action-row">
-                        <button *ngFor="let action of quickActions" type="button" class="quick-action-btn">
+                        <button *ngFor="let action of quickActions"
+                                type="button"
+                                class="quick-action-btn"
+                                [class.active]="action.mode === actionPopupMode"
+                                (click)="activateQuickAction(action.mode)">
                           <i [class]="action.icon"></i>
                           <span>{{ action.label }}</span>
                         </button>
                       </div>
                     </div>
 
-                    <textarea class="form-input composer-input" rows="4" [(ngModel)]="draftReply" placeholder="Reply to the customer from the unified inbox"></textarea>
-
-                    <div class="media-composer">
-                      <div class="media-mode-row">
-                        <button type="button" class="queue-filter-btn" [class.active]="mediaType === 'photo'" (click)="mediaType = 'photo'">Photo</button>
-                        <button type="button" class="queue-filter-btn" [class.active]="mediaType === 'document'" (click)="mediaType = 'document'">Document</button>
-                      </div>
-
-                      <div class="media-input-grid">
-                        <input type="text"
-                               class="form-input"
-                               [(ngModel)]="mediaUrl"
-                               [placeholder]="mediaType === 'photo' ? 'Paste photo URL' : 'Paste document URL'" />
-                        <input type="text"
-                               class="form-input"
-                               [(ngModel)]="mediaCaption"
-                               placeholder="Optional caption" />
-                      </div>
-
-                      <label class="media-toggle">
-                        <input type="checkbox" [(ngModel)]="protectMediaContent" />
-                        <span>Protect content</span>
-                      </label>
+                    <div class="composer-grid">
+                      <section class="composer-section">
+                        <textarea class="form-input composer-input" rows="4" [(ngModel)]="draftReply" placeholder="Reply to the customer from the unified inbox"></textarea>
+                      </section>
                     </div>
 
                     <div class="composer-footer">
                       <div class="composer-secondary-actions">
-                        <button type="button" class="inventory-cta">Ask store inventory</button>
-                        <button type="button" class="template-cta" (click)="openTemplateDialog()" [disabled]="!templates.length">Send template</button>
-                        <button type="button" class="template-cta" (click)="sendMedia()" [disabled]="!mediaUrl.trim() || sendingMedia">
-                          {{ sendingMedia ? 'Sending media...' : (mediaType === 'photo' ? 'Send photo' : 'Send document') }}
+                        <button type="button" class="inventory-cta">
+                          <i class="pi pi-box"></i>
+                          <span>Ask store inventory</span>
+                        </button>
+                        <button type="button" class="template-cta" (click)="openTemplateDialog()" [disabled]="!templates.length">
+                          <i class="pi pi-file-export"></i>
+                          <span>Send template</span>
+                        </button>
+                        <button type="button" class="template-cta media-send-btn" (click)="sendMedia()" [disabled]="!mediaUrl.trim() || sendingMedia">
+                          <i [class]="sendingMedia ? 'pi pi-spin pi-spinner' : (mediaType === 'photo' ? 'pi pi-image' : mediaType === 'gif' ? 'pi pi-images' : 'pi pi-file')"></i>
+                          <span>{{ sendingMedia ? 'Sending media...' : (mediaType === 'photo' ? 'Send photo' : mediaType === 'gif' ? 'Send GIF' : 'Send document') }}</span>
                         </button>
                       </div>
-                      <button type="button" class="send-btn" (click)="sendReply()" [disabled]="!draftReply.trim() || sendingReply">{{ sendingReply ? 'Sending...' : 'Send reply' }}</button>
+                      <button type="button" class="send-btn" (click)="sendReply()" [disabled]="!draftReply.trim() || sendingReply">
+                        <i [class]="sendingReply ? 'pi pi-spin pi-spinner' : 'pi pi-send'"></i>
+                        <span>{{ sendingReply ? 'Sending...' : 'Send reply' }}</span>
+                      </button>
                     </div>
                   </div>
                 </div>
               </article>
-            </section>
-          </div>
-        </section>
+          </section>
+        </div>
       </ng-container>
     </div>
   </div>
+</div>
+
+<div class="quick-popup-backdrop" *ngIf="actionPopupMode !== 'none'" (click)="closeActionPopup()">
+  <section class="quick-popup" (click)="$event.stopPropagation()">
+    <div class="quick-popup-header">
+      <div>
+        <p class="panel-eyebrow">Quick action</p>
+        <h3 class="panel-title info-title-compact">
+          {{ actionPopupMode === 'photo' ? 'Send Photo' : actionPopupMode === 'gif' ? 'Send GIF' : actionPopupMode === 'document' ? 'Send Document' : actionPopupMode === 'icon' ? 'Send Icon' : 'Send Template' }}
+        </h3>
+      </div>
+      <button type="button" class="close-btn" (click)="closeActionPopup()"><i class="pi pi-times"></i></button>
+    </div>
+
+    <div class="quick-popup-body" *ngIf="actionPopupMode === 'photo' || actionPopupMode === 'gif' || actionPopupMode === 'document'">
+      <div class="media-input-grid">
+        <input type="text"
+               class="form-input"
+               [(ngModel)]="mediaUrl"
+               [placeholder]="actionPopupMode === 'photo' ? 'Paste photo URL' : actionPopupMode === 'gif' ? 'Paste GIF URL' : 'Paste document URL'" />
+        <input type="text"
+               class="form-input"
+               [(ngModel)]="mediaCaption"
+               placeholder="Optional caption" />
+      </div>
+
+      <div class="media-preview" *ngIf="(actionPopupMode === 'photo' || actionPopupMode === 'gif') && mediaUrl.trim()">
+        <img [src]="mediaUrl.trim()" alt="Media preview" class="media-preview-image" />
+      </div>
+
+      <label class="media-toggle">
+        <input type="checkbox" [(ngModel)]="protectMediaContent" />
+        <span>Protect content</span>
+      </label>
+
+      <div class="template-action-row">
+        <button type="button" class="ghost-action" (click)="closeActionPopup()">Cancel</button>
+        <button type="button" class="send-btn" (click)="sendMedia()" [disabled]="!mediaUrl.trim() || sendingMedia">
+          <i [class]="sendingMedia ? 'pi pi-spin pi-spinner' : (actionPopupMode === 'photo' ? 'pi pi-image' : actionPopupMode === 'gif' ? 'pi pi-images' : 'pi pi-file')"></i>
+          <span>{{ sendingMedia ? 'Sending...' : (actionPopupMode === 'photo' ? 'Send photo' : actionPopupMode === 'gif' ? 'Send GIF' : 'Send document') }}</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="quick-popup-body" *ngIf="actionPopupMode === 'icon'">
+      <div class="icon-group-list">
+        <section *ngFor="let group of iconGroups" class="icon-group-card">
+          <div class="icon-group-title">{{ group.label }}</div>
+          <div class="icon-grid">
+            <button *ngFor="let icon of group.icons"
+                    type="button"
+                    class="icon-chip"
+                    [class.active]="selectedIcon === icon"
+                    (click)="selectedIcon = icon">
+              {{ icon }}
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <input type="text" class="form-input" [(ngModel)]="selectedIcon" maxlength="8" placeholder="Custom icon or emoji" />
+
+      <div class="template-action-row">
+        <button type="button" class="ghost-action" (click)="closeActionPopup()">Cancel</button>
+        <button type="button" class="send-btn" (click)="sendIcon()" [disabled]="!selectedIcon.trim() || sendingIcon">
+          <i [class]="sendingIcon ? 'pi pi-spin pi-spinner' : 'pi pi-face-smile'"></i>
+          <span>{{ sendingIcon ? 'Sending...' : 'Send icon' }}</span>
+        </button>
+      </div>
+    </div>
+  </section>
 </div>
 
 <div class="info-overlay" *ngIf="infoPanel !== 'none'" (click)="closeInfoPanel()">
