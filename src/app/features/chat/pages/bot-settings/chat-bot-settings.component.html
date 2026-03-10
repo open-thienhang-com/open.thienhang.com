@@ -18,8 +18,8 @@
       </section>
 
       <ng-container *ngIf="loading; else settingsContent">
-        <section class="chat-overview-grid">
-          <article *ngFor="let item of [1, 2, 3, 4]" class="summary-card">
+        <section class="chat-overview-grid overview-grid-five">
+          <article *ngFor="let item of [1, 2, 3, 4, 5]" class="summary-card">
             <p-skeleton height="6rem"></p-skeleton>
           </article>
         </section>
@@ -29,7 +29,7 @@
       </ng-container>
 
       <ng-template #settingsContent>
-        <section class="chat-overview-grid">
+        <section class="chat-overview-grid overview-grid-five">
           <article *ngFor="let card of overviewCards" class="summary-card" [attr.data-tone]="card.tone">
             <div>
               <p class="summary-label">{{ card.label }}</p>
@@ -110,6 +110,45 @@
                   </div>
                 </article>
               </div>
+
+              <article class="flat-card">
+                <div class="card-header">
+                  <div class="card-icon icon-sky"><i class="pi pi-send"></i></div>
+                  <div class="card-title-group">
+                    <h3 class="card-title">Native Media Endpoints</h3>
+                    <p class="card-subtitle">Reference payloads and Windows `curl` commands for the newly added Telegram photo and document APIs.</p>
+                  </div>
+                </div>
+
+                <div class="card-body">
+                  <div class="media-endpoint-list">
+                    <article *ngFor="let endpoint of nativeMediaEndpoints" class="media-endpoint-card">
+                      <div class="media-endpoint-header">
+                        <div>
+                          <div class="media-endpoint-title-row">
+                            <h4 class="media-endpoint-title">{{ endpoint.title }}</h4>
+                            <span class="endpoint-path">{{ endpoint.path }}</span>
+                          </div>
+                          <p class="summary-caption">{{ endpoint.summary }}</p>
+                        </div>
+                        <div class="summary-icon" [attr.data-tone]="endpoint.tone"><i class="pi pi-link"></i></div>
+                      </div>
+
+                      <div class="media-snippet-grid">
+                        <section class="snippet-block">
+                          <p class="snippet-label">Quick test requests</p>
+                          <pre *ngFor="let curl of endpoint.curls" class="code-snippet">{{ curl }}</pre>
+                        </section>
+
+                        <section class="snippet-block">
+                          <p class="snippet-label">JSON payload sample</p>
+                          <pre class="code-snippet">{{ endpoint.payloadExample }}</pre>
+                        </section>
+                      </div>
+                    </article>
+                  </div>
+                </div>
+              </article>
             </div>
           </div>
         </div>

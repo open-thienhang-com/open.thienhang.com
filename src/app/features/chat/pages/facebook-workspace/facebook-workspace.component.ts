@@ -64,6 +64,7 @@ export class FacebookWorkspaceComponent implements OnInit {
   loading = false;
   sendingReply = false;
   sendingTemplate = false;
+  sendingMedia = false;
   templateDialogVisible = false;
 
   profile: TelegramBotProfile | null = null;
@@ -78,6 +79,10 @@ export class FacebookWorkspaceComponent implements OnInit {
   activeChannel = 'all';
   infoPanel: 'none' | 'customer' | 'context' | 'channel' = 'none';
   draftReply = '';
+  mediaType: 'photo' | 'document' = 'photo';
+  mediaUrl = '';
+  mediaCaption = '';
+  protectMediaContent = false;
   disableNotification = false;
   selectedTemplateId = '';
   templateVariableValues: Record<string, string> = {};
@@ -196,6 +201,7 @@ export class FacebookWorkspaceComponent implements OnInit {
         this.selectedConversation = response.data;
         this.loading = false;
         this.draftReply = '';
+        this.resetMediaForm();
         this.disableNotification = false;
         this.closeTemplateDialog();
       },
@@ -282,6 +288,76 @@ export class FacebookWorkspaceComponent implements OnInit {
         this.sendingReply = false;
         this.messageService.add({ severity: 'error', summary: 'Send failed', detail: 'Unable to send reply' });
       }
+    });
+  }
+
+  sendMedia(): void {
+    const conversation = this.selectedConversation;
+    const mediaUrl = this.mediaUrl.trim();
+    const caption = this.mediaCaption.trim();
+
+    if (!conversation || !conversation.chat_id || !mediaUrl) {
+      return;
+    }
+
+    this.sendingMedia = true;
+
+    const onSuccess = () => {
+      const label = this.mediaType === 'photo' ? 'Photo' : 'Document';
+      const content = caption ? `[${label}] ${caption} ${mediaUrl}` : `[${label}] ${mediaUrl}`;
+      const outboundMessage: TelegramMessage = {
+        id: `media_${Date.now()}`,
+        sender: 'agent',
+        sender_name: conversation.agent || this.profile?.first_name || 'Agent',
+        content,
+        timestamp: new Date().toISOString(),
+        message_type: this.mediaType,
+        delivery_status: 'sent'
+      };
+
+      this.applyOutboundUpdate(conversation, outboundMessage, content);
+      this.resetMediaForm();
+      this.sendingMedia = false;
+      this.messageService.add({
+        severity: 'success',
+        summary: `${label} sent`,
+        detail: `${label} message sent successfully`
+      });
+    };
+
+    const onError = (error: unknown) => {
+      console.error(`Error sending ${this.mediaType}`, error);
+      this.sendingMedia = false;
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Send failed',
+        detail: `Unable to send ${this.mediaType}`
+      });
+    };
+
+    if (this.mediaType === 'photo') {
+      this.chatService.sendTelegramPhoto({
+        chat_id: conversation.chat_id,
+        photo: mediaUrl,
+        caption: caption || undefined,
+        disable_notification: this.disableNotification,
+        protect_content: this.protectMediaContent
+      }).subscribe({
+        next: onSuccess,
+        error: onError
+      });
+      return;
+    }
+
+    this.chatService.sendTelegramDocument({
+      chat_id: conversation.chat_id,
+      document: mediaUrl,
+      caption: caption || undefined,
+      disable_notification: this.disableNotification,
+      protect_content: this.protectMediaContent
+    }).subscribe({
+      next: onSuccess,
+      error: onError
     });
   }
 
@@ -450,6 +526,13 @@ export class FacebookWorkspaceComponent implements OnInit {
 
     this.selectedConversation = updatedConversation;
     this.conversations = this.conversations.map(item => item.id === updatedConversation.id ? updatedConversation : item);
+  }
+
+  private resetMediaForm(): void {
+    this.mediaType = 'photo';
+    this.mediaUrl = '';
+    this.mediaCaption = '';
+    this.protectMediaContent = false;
   }
 
   private matchesQueue(conversation: TelegramConversation): boolean {

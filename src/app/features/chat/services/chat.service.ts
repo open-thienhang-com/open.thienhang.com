@@ -17,7 +17,9 @@ import {
     TelegramCreateBroadcastPayload,
     TelegramCreateTemplatePayload,
     TelegramDashboard,
+    TelegramSendDocumentPayload,
     TelegramSendMessagePayload,
+    TelegramSendPhotoPayload,
     TelegramSendTemplatePayload,
     TelegramSettings,
     TelegramStatusPayload,
@@ -174,6 +176,14 @@ export class ChatService {
 
     sendTelegramMessage(payload: TelegramSendMessagePayload): Observable<ApiResponse<unknown>> {
         return this.http.post<ApiResponse<unknown>>(`${this.chatBaseUrl}/telegram/messages/send`, payload);
+    }
+
+    sendTelegramPhoto(payload: TelegramSendPhotoPayload): Observable<ApiResponse<unknown>> {
+        return this.http.post<ApiResponse<unknown>>(`${this.chatBaseUrl}/telegram/messages/send-photo`, payload);
+    }
+
+    sendTelegramDocument(payload: TelegramSendDocumentPayload): Observable<ApiResponse<unknown>> {
+        return this.http.post<ApiResponse<unknown>>(`${this.chatBaseUrl}/telegram/messages/send-document`, payload);
     }
 
     getTelegramSendTemplates(): Observable<ApiResponse<TelegramTemplate[]>> {

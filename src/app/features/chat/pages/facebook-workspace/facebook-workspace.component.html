@@ -201,7 +201,7 @@
                     <div class="composer-head">
                       <div>
                         <h4>Reply</h4>
-                        <p>Use one composer for every channel.</p>
+                        <p>Use one composer for every channel, including text, photo, and document sends.</p>
                       </div>
                       <div class="quick-action-row">
                         <button *ngFor="let action of quickActions" type="button" class="quick-action-btn">
@@ -213,10 +213,36 @@
 
                     <textarea class="form-input composer-input" rows="4" [(ngModel)]="draftReply" placeholder="Reply to the customer from the unified inbox"></textarea>
 
+                    <div class="media-composer">
+                      <div class="media-mode-row">
+                        <button type="button" class="queue-filter-btn" [class.active]="mediaType === 'photo'" (click)="mediaType = 'photo'">Photo</button>
+                        <button type="button" class="queue-filter-btn" [class.active]="mediaType === 'document'" (click)="mediaType = 'document'">Document</button>
+                      </div>
+
+                      <div class="media-input-grid">
+                        <input type="text"
+                               class="form-input"
+                               [(ngModel)]="mediaUrl"
+                               [placeholder]="mediaType === 'photo' ? 'Paste photo URL' : 'Paste document URL'" />
+                        <input type="text"
+                               class="form-input"
+                               [(ngModel)]="mediaCaption"
+                               placeholder="Optional caption" />
+                      </div>
+
+                      <label class="media-toggle">
+                        <input type="checkbox" [(ngModel)]="protectMediaContent" />
+                        <span>Protect content</span>
+                      </label>
+                    </div>
+
                     <div class="composer-footer">
                       <div class="composer-secondary-actions">
                         <button type="button" class="inventory-cta">Ask store inventory</button>
                         <button type="button" class="template-cta" (click)="openTemplateDialog()" [disabled]="!templates.length">Send template</button>
+                        <button type="button" class="template-cta" (click)="sendMedia()" [disabled]="!mediaUrl.trim() || sendingMedia">
+                          {{ sendingMedia ? 'Sending media...' : (mediaType === 'photo' ? 'Send photo' : 'Send document') }}
+                        </button>
                       </div>
                       <button type="button" class="send-btn" (click)="sendReply()" [disabled]="!draftReply.trim() || sendingReply">{{ sendingReply ? 'Sending...' : 'Send reply' }}</button>
                     </div>

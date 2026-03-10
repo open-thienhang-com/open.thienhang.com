@@ -245,6 +245,49 @@ export interface TelegramSendMessagePayload {
     disable_notification: boolean;
 }
 
+export interface TelegramReplyParameters {
+    message_id: number;
+}
+
+export interface TelegramInlineKeyboardButton {
+    text: string;
+    url?: string;
+}
+
+export interface TelegramInlineKeyboardMarkup {
+    inline_keyboard: TelegramInlineKeyboardButton[][];
+}
+
+export interface TelegramSendPhotoPayload {
+    chat_id: number;
+    photo: string;
+    caption?: string;
+    parse_mode?: string;
+    caption_entities?: unknown[];
+    reply_markup?: TelegramInlineKeyboardMarkup | null;
+    disable_notification?: boolean;
+    protect_content?: boolean;
+    has_spoiler?: boolean;
+    message_thread_id?: number;
+    reply_parameters?: TelegramReplyParameters;
+    native_payload?: Record<string, unknown>;
+}
+
+export interface TelegramSendDocumentPayload {
+    chat_id: number;
+    document: string;
+    caption?: string;
+    parse_mode?: string;
+    caption_entities?: unknown[];
+    disable_content_type_detection?: boolean;
+    reply_markup?: TelegramInlineKeyboardMarkup | null;
+    disable_notification?: boolean;
+    protect_content?: boolean;
+    message_thread_id?: number;
+    reply_parameters?: TelegramReplyParameters;
+    native_payload?: Record<string, unknown>;
+}
+
 export interface TelegramSendTemplatePayload {
     chat_id: number;
     template_id: string;
