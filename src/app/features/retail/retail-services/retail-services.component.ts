@@ -67,6 +67,13 @@ export class RetailServicesComponent implements OnInit {
 
   serviceCategories = [
     {
+      key: 'fresh-retail',
+      label: 'Fresh Retail',
+      icon: 'pi pi-shop',
+      description: 'Product introduction, platform overview, and key workflows',
+      submenus: []
+    },
+    {
       key: 'overview',
       label: 'Overview',
       icon: 'pi pi-home',
@@ -156,6 +163,7 @@ export class RetailServicesComponent implements OnInit {
 
   categoryOptions = [
     { label: 'All Categories', value: '' },
+    { label: 'Fresh Retail', value: 'fresh-retail' },
     { label: 'Payment Processing', value: 'payment' },
     { label: 'Inventory Management', value: 'inventory' },
     { label: 'Loyalty Programs', value: 'loyalty' },
@@ -318,6 +326,7 @@ export class RetailServicesComponent implements OnInit {
 
   getCategoryIcon(category: string): string {
     const icons = {
+      'fresh-retail': 'pi pi-shop',
       'payment': 'pi pi-credit-card',
       'inventory': 'pi pi-box',
       'analytics': 'pi pi-chart-bar',
@@ -330,6 +339,7 @@ export class RetailServicesComponent implements OnInit {
 
   getCategoryLabel(category: string): string {
     const labels = {
+      'fresh-retail': 'Fresh Retail',
       'payment': 'Payment Processing',
       'inventory': 'Inventory Management',
       'analytics': 'Customer Analytics',

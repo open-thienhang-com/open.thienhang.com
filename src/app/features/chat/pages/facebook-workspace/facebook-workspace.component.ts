@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { MessageService } from 'primeng/api';
@@ -39,6 +39,7 @@ import {
 export class FacebookWorkspaceComponent implements OnInit {
   private chatService = inject(ChatService);
   private messageService = inject(MessageService);
+  @ViewChild('messageThread') private messageThread?: ElementRef<HTMLDivElement>;
 
   readonly channelFilters = [
     { label: 'All', value: 'all' },
@@ -81,6 +82,8 @@ export class FacebookWorkspaceComponent implements OnInit {
   sendingMedia = false;
   sendingIcon = false;
   templateDialogVisible = false;
+  overviewDialogVisible = false;
+  filterDialogVisible = false;
   actionPopupMode: 'none' | 'photo' | 'gif' | 'document' | 'template' | 'icon' = 'none';
 
   profile: TelegramBotProfile | null = null;
@@ -222,6 +225,7 @@ export class FacebookWorkspaceComponent implements OnInit {
         this.disableNotification = false;
         this.closeTemplateDialog();
         this.closeActionPopup();
+        this.scheduleScrollToLatest();
       },
       error: (error) => {
         console.error('Error loading conversation detail', error);
@@ -237,6 +241,22 @@ export class FacebookWorkspaceComponent implements OnInit {
 
   closeInfoPanel(): void {
     this.infoPanel = 'none';
+  }
+
+  openOverviewDialog(): void {
+    this.overviewDialogVisible = true;
+  }
+
+  closeOverviewDialog(): void {
+    this.overviewDialogVisible = false;
+  }
+
+  openFilterDialog(): void {
+    this.filterDialogVisible = true;
+  }
+
+  closeFilterDialog(): void {
+    this.filterDialogVisible = false;
   }
 
   openTemplateDialog(): void {
@@ -495,6 +515,14 @@ export class FacebookWorkspaceComponent implements OnInit {
     return this.conversations.filter(item => this.getConversationChannel(item) === channel).length;
   }
 
+  getActiveQueueLabel(): string {
+    return this.queueTabs.find(tab => tab.value === this.activeQueue)?.label || 'All';
+  }
+
+  getActiveChannelLabel(): string {
+    return this.channelFilters.find(filter => filter.value === this.activeChannel)?.label || 'All';
+  }
+
   getStatusSeverity(status: string): 'success' | 'info' | 'warning' | 'secondary' {
     switch (status) {
       case 'active':
@@ -667,6 +695,7 @@ export class FacebookWorkspaceComponent implements OnInit {
 
     this.selectedConversation = updatedConversation;
     this.conversations = this.conversations.map(item => item.id === updatedConversation.id ? updatedConversation : item);
+    this.scheduleScrollToLatest();
   }
 
   private resetMediaForm(): void {
@@ -726,5 +755,18 @@ export class FacebookWorkspaceComponent implements OnInit {
       (message, [key, value]) => message.replace(new RegExp(`{{\\s*${key}\\s*}}`, 'g'), value),
       content
     );
+  }
+
+  private scheduleScrollToLatest(): void {
+    requestAnimationFrame(() => this.scrollMessagesToBottom());
+  }
+
+  private scrollMessagesToBottom(): void {
+    const container = this.messageThread?.nativeElement;
+    if (!container) {
+      return;
+    }
+
+    container.scrollTop = container.scrollHeight;
   }
 }

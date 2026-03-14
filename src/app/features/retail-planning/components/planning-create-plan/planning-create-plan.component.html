@@ -627,24 +627,66 @@
       <div class="planning-step-panel" [class.active]="currentStep === 3" id="create-plan-step-3">
         <div class="planning-step-header">
           <h3>🚛 Cấu hình Vehicles</h3>
-          <p>Import vehicles from CSV or configure them manually</p>
+          <p>Load vehicles from retail truck API and choose the fleet for this plan</p>
         </div>
 
         <div class="planning-step-body">
           <div class="planning-fleet-actions">
-            <span class="planning-hint-text">Import vehicles from CSV or configure them manually</span>
+            <span class="planning-hint-text">Data source: GET /data-mesh/domains/retail/trucks</span>
             <div class="planning-action-buttons">
-              <button type="button" class="planning-btn planning-btn-outline">Import CSV</button>
-              <button type="button" class="planning-btn planning-btn-outline">Import JSON</button>
-              <button type="button" class="planning-btn planning-btn-ghost">Clear all</button>
+              <button type="button" class="planning-btn planning-btn-outline" (click)="loadTrucks()">Refresh vehicles</button>
+              <button type="button" class="planning-btn planning-btn-ghost" (click)="clearSelectedTrucks()">Clear selection</button>
             </div>
           </div>
 
           <div class="planning-fleet-table">
-            <div id="cp_fleet_table" class="planning-empty-state">
+            <div *ngIf="loadingTrucks" class="planning-empty-state">
+              <svg class="w-12 h-12 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v4m0 8v4m8-8h-4M8 12H4m13.657-5.657l-2.828 2.828M9.172 14.828l-2.829 2.829m11.314 0l-2.828-2.829M9.172 9.172 6.343 6.343"/></svg>
+              <p>Loading vehicles...</p>
+            </div>
+            <div *ngIf="!loadingTrucks && trucksError" class="planning-empty-state">
+              <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <p>{{ trucksError }}</p>
+            </div>
+            <div *ngIf="!loadingTrucks && !trucksError && trucks.length === 0" id="cp_fleet_table" class="planning-empty-state">
               <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-              <p>No vehicles configured</p>
-              <span>Import CSV hoặc cấu hình thủ công</span>
+              <p>No vehicles returned</p>
+              <span>The truck API did not return any rows</span>
+            </div>
+            <div *ngIf="!loadingTrucks && !trucksError && trucks.length > 0" class="overflow-auto">
+              <table class="min-w-full text-sm">
+                <thead>
+                  <tr class="border-b border-gray-200">
+                    <th class="text-left py-3 px-3 w-12"></th>
+                    <th class="text-left py-3 px-3">Vehicle code</th>
+                    <th class="text-left py-3 px-3">License plate</th>
+                    <th class="text-left py-3 px-3">Type</th>
+                    <th class="text-left py-3 px-3">Warehouse</th>
+                    <th class="text-left py-3 px-3">Driver</th>
+                    <th class="text-left py-3 px-3">Status</th>
+                    <th class="text-right py-3 px-3">Max weight</th>
+                    <th class="text-right py-3 px-3">Max volume</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let truck of trucks" class="border-b border-gray-100 hover:bg-orange-50/40">
+                    <td class="py-3 px-3">
+                      <input type="checkbox" [checked]="isTruckSelected(truck)" (change)="toggleTruckSelection(truck)" />
+                    </td>
+                    <td class="py-3 px-3 font-semibold text-gray-900">{{ truck.vehicle_code }}</td>
+                    <td class="py-3 px-3">{{ truck.license_plate }}</td>
+                    <td class="py-3 px-3">{{ truck.vehicle_type }}</td>
+                    <td class="py-3 px-3">{{ truck.warehouse_id }}</td>
+                    <td class="py-3 px-3">
+                      <div>{{ truck.driver_name || '-' }}</div>
+                      <div class="text-xs text-gray-500">{{ truck.driver_phone || '-' }}</div>
+                    </td>
+                    <td class="py-3 px-3">{{ truck.is_active ? truck.status : 'inactive' }}</td>
+                    <td class="py-3 px-3 text-right">{{ truck.max_weight | number }}</td>
+                    <td class="py-3 px-3 text-right">{{ truck.max_volume | number }}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
@@ -652,15 +694,15 @@
           <div class="planning-fleet-stats">
             <div class="planning-stat-card orange">
               <div class="stat-title">Total vehicles</div>
-              <div class="stat-value">0</div>
+              <div class="stat-value">{{ trucks.length }}</div>
             </div>
             <div class="planning-stat-card orange-light">
               <div class="stat-title">Đã chọn</div>
-              <div class="stat-value">0</div>
+              <div class="stat-value">{{ selectedTruckCount }}</div>
             </div>
             <div class="planning-stat-card orange-dark">
               <div class="stat-title">Total capacity</div>
-              <div class="stat-value">0 kg</div>
+              <div class="stat-value">{{ totalTruckCapacity | number }} kg</div>
             </div>
           </div>
         </div>
@@ -766,8 +808,8 @@
                 <span>Vehicles</span>
                 <button type="button" class="planning-btn-icon small" (click)="goToCreatePlanStep(3)">✏️</button>
               </div>
-              <div class="summary-row"><span>Vehicles đã chọn</span><span>0</span></div>
-              <div class="summary-row"><span>Total capacity</span><span>0 kg</span></div>
+              <div class="summary-row"><span>Vehicles đã chọn</span><span>{{ selectedTruckCount }}</span></div>
+              <div class="summary-row"><span>Total capacity</span><span>{{ totalTruckCapacity | number }} kg</span></div>
             </div>
 
             <div class="planning-summary-estimate">

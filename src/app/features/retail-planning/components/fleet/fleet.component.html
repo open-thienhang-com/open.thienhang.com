@@ -1,116 +1,195 @@
-<div id="content-fleet" class="bg-gray-50 min-h-screen p-6">
-  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 bg-gradient-to-br from-sky-500 to-blue-700 rounded-lg flex items-center justify-center">
-          <i class="pi pi-truck text-white text-xl"></i>
-        </div>
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900">Fleet Management</h1>
-          <p class="text-gray-600">Configure available vehicle types, capacity, and operational fleet cost.</p>
-        </div>
-      </div>
-      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-        <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors">
-          <i class="pi pi-plus text-sm"></i>
-          Add Vehicle Type
-        </button>
-        <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-green-200 bg-green-50 hover:bg-green-100 text-green-700 font-medium transition-colors">
-          <i class="pi pi-upload text-sm"></i>
-          Import Fleet
-        </button>
-        <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium transition-colors">
-          <i class="pi pi-download text-sm"></i>
-          Export Fleet
-        </button>
-      </div>
+<div id="content-fleet" class="fleet-shell">
+  <section class="fleet-hero">
+    <div>
+      <p class="fleet-eyebrow">{{ isForecastRoute ? 'Forecast module' : 'Planning operations' }}</p>
+      <h1 class="fleet-title">{{ pageTitle }}</h1>
+      <p class="fleet-subtitle">{{ pageSubtitle }}</p>
     </div>
-  </div>
-
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-sm font-medium text-gray-600">Total Vehicles</p>
-          <p class="text-3xl font-bold text-gray-900" id="totalVehicles">0</p>
-          <p class="text-xs text-gray-500 mt-1">units configured</p>
-        </div>
-        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-          <i class="pi pi-truck text-blue-600 text-xl"></i>
-        </div>
-      </div>
+    <div class="fleet-actions">
+      <button type="button" class="fleet-button fleet-button--secondary" (click)="loadTrucks()">Refresh</button>
+      <button type="button" class="fleet-button" (click)="openCreateDialog()">Add Truck</button>
     </div>
+  </section>
 
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-sm font-medium text-gray-600">Total Capacity</p>
-          <p class="text-3xl font-bold text-green-600" id="totalCapacity">0 kg</p>
-          <p class="text-xs text-gray-500 mt-1">aggregate carrying capacity</p>
-        </div>
-        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-          <i class="pi pi-box text-green-600 text-xl"></i>
-        </div>
-      </div>
-    </div>
+  <section class="fleet-metrics">
+    <article class="fleet-metric-card">
+      <span class="fleet-metric-label">Total trucks</span>
+      <strong class="fleet-metric-value">{{ total }}</strong>
+      <span class="fleet-metric-meta">Rows returned from retail truck API</span>
+    </article>
+    <article class="fleet-metric-card">
+      <span class="fleet-metric-label">Active trucks</span>
+      <strong class="fleet-metric-value">{{ activeTruckCount }}</strong>
+      <span class="fleet-metric-meta">Vehicles currently enabled for planning</span>
+    </article>
+    <article class="fleet-metric-card">
+      <span class="fleet-metric-label">Total max weight</span>
+      <strong class="fleet-metric-value">{{ formatNumber(totalWeightCapacity) }}</strong>
+      <span class="fleet-metric-meta">Aggregate `max_weight` across loaded trucks</span>
+    </article>
+    <article class="fleet-metric-card">
+      <span class="fleet-metric-label">Total max volume</span>
+      <strong class="fleet-metric-value">{{ formatNumber(totalVolumeCapacity) }}</strong>
+      <span class="fleet-metric-meta">Aggregate `max_volume` across loaded trucks</span>
+    </article>
+  </section>
 
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-sm font-medium text-gray-600">Total Cost</p>
-          <p class="text-3xl font-bold text-amber-600" id="totalCost">0 VND</p>
-          <p class="text-xs text-gray-500 mt-1">fixed fleet baseline</p>
-        </div>
-        <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-          <i class="pi pi-wallet text-amber-600 text-xl"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+  <section class="fleet-panel">
+    <div class="fleet-panel-header">
       <div>
-        <h2 class="text-lg font-semibold text-gray-900">Fleet Configuration</h2>
-        <p class="text-sm text-gray-500 mt-1">Manage vehicle type definitions, quantity, cost, and capacity in one place.</p>
+        <h2>Truck registry</h2>
+        <p>Render trực tiếp từ `GET /data-mesh/domains/retail/trucks` và detail từ `GET /data-mesh/domains/retail/trucks/:id`.</p>
       </div>
-      <div class="flex items-center gap-2 text-xs text-gray-500">
-        <i class="pi pi-info-circle"></i>
-        <span>Changes affect planning capacity and cost assumptions.</span>
-      </div>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Search code, plate, driver, warehouse"
+        class="fleet-search"
+      />
     </div>
 
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+    <div *ngIf="error" class="fleet-alert">{{ error }}</div>
+
+    <div *ngIf="loading" class="fleet-empty">Loading trucks...</div>
+
+    <div *ngIf="!loading && filteredTrucks.length === 0" class="fleet-empty">
+      {{ searchTerm ? 'No trucks match the current search.' : 'No trucks returned by the API.' }}
+    </div>
+
+    <div *ngIf="!loading && filteredTrucks.length > 0" class="fleet-table-wrap">
+      <table class="fleet-table">
+        <thead>
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle Type</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Capacity</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fixed Cost</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            <th>Vehicle Code</th>
+            <th>License Plate</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Warehouse</th>
+            <th>Driver</th>
+            <th>Weight</th>
+            <th>Volume</th>
+            <th>Actions</th>
           </tr>
         </thead>
-        <tbody id="fleetTableBody" class="bg-white divide-y divide-gray-200">
-          <tr>
-            <td colspan="5" class="px-6 py-16 text-center text-gray-500">
-              <div class="flex flex-col items-center gap-4">
-                <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
-                  <i class="pi pi-truck text-blue-600 text-2xl"></i>
-                </div>
-                <div>
-                  <div class="text-lg font-medium text-gray-900">No fleet configured</div>
-                  <div class="text-sm text-gray-500 mt-1">Add vehicle types to start modeling fleet capacity and operating cost.</div>
-                </div>
-                <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors">
-                  <i class="pi pi-plus text-sm"></i>
-                  Add First Vehicle Type
-                </button>
-              </div>
+        <tbody>
+          <tr *ngFor="let truck of filteredTrucks">
+            <td>{{ truck.vehicle_code }}</td>
+            <td>{{ truck.license_plate }}</td>
+            <td>{{ truck.vehicle_type }}</td>
+            <td>
+              <span [class]="getStatusClass(truck.status, truck.is_active)">
+                {{ truck.is_active ? truck.status : 'inactive' }}
+              </span>
+            </td>
+            <td>{{ truck.warehouse_id }}</td>
+            <td>
+              <div>{{ truck.driver_name || '-' }}</div>
+              <div class="fleet-cell-sub">{{ truck.driver_phone || '-' }}</div>
+            </td>
+            <td>{{ formatNumber(truck.max_weight) }}</td>
+            <td>{{ formatNumber(truck.max_volume) }}</td>
+            <td>
+              <button type="button" class="fleet-link" (click)="openTruckDetail(truck)">View detail</button>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+  </section>
+</div>
+
+<div *ngIf="createDialogVisible" class="fleet-dialog-backdrop" (click)="closeCreateDialog()">
+  <div class="fleet-dialog" (click)="$event.stopPropagation()">
+    <div class="fleet-dialog-header">
+      <div>
+        <h3>Create truck</h3>
+        <p>Submit trực tiếp tới `POST /data-mesh/domains/retail/trucks`.</p>
+      </div>
+      <button type="button" class="fleet-link" (click)="closeCreateDialog()">Close</button>
+    </div>
+
+    <div class="fleet-form-grid">
+      <label>
+        <span>Vehicle code</span>
+        <input type="text" [(ngModel)]="form.vehicle_code" />
+      </label>
+      <label>
+        <span>License plate</span>
+        <input type="text" [(ngModel)]="form.license_plate" />
+      </label>
+      <label>
+        <span>Vehicle type</span>
+        <input type="text" [(ngModel)]="form.vehicle_type" />
+      </label>
+      <label>
+        <span>Status</span>
+        <select [(ngModel)]="form.status">
+          <option value="active">active</option>
+          <option value="inactive">inactive</option>
+          <option value="maintenance">maintenance</option>
+        </select>
+      </label>
+      <label>
+        <span>Warehouse ID</span>
+        <input type="text" [(ngModel)]="form.warehouse_id" />
+      </label>
+      <label>
+        <span>Driver name</span>
+        <input type="text" [(ngModel)]="form.driver_name" />
+      </label>
+      <label>
+        <span>Driver phone</span>
+        <input type="text" [(ngModel)]="form.driver_phone" />
+      </label>
+      <label>
+        <span>Max weight</span>
+        <input type="number" [(ngModel)]="form.max_weight" />
+      </label>
+      <label>
+        <span>Max volume</span>
+        <input type="number" [(ngModel)]="form.max_volume" />
+      </label>
+      <label class="fleet-checkbox">
+        <input type="checkbox" [(ngModel)]="form.is_active" />
+        <span>Is active</span>
+      </label>
+    </div>
+
+    <div class="fleet-dialog-actions">
+      <button type="button" class="fleet-button fleet-button--secondary" (click)="closeCreateDialog()">Cancel</button>
+      <button type="button" class="fleet-button" (click)="saveTruck()" [disabled]="saving">
+        {{ saving ? 'Saving...' : 'Create truck' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="detailDialogVisible" class="fleet-dialog-backdrop" (click)="closeTruckDetail()">
+  <div class="fleet-dialog fleet-dialog--detail" (click)="$event.stopPropagation()">
+    <div class="fleet-dialog-header">
+      <div>
+        <h3>Truck detail</h3>
+        <p>Render từ `GET /data-mesh/domains/retail/trucks/:id`.</p>
+      </div>
+      <button type="button" class="fleet-link" (click)="closeTruckDetail()">Close</button>
+    </div>
+
+    <div *ngIf="detailLoading" class="fleet-empty">Loading detail...</div>
+
+    <div *ngIf="!detailLoading && selectedTruck" class="fleet-detail-grid">
+      <div><span>ID</span><strong>{{ selectedTruck._id }}</strong></div>
+      <div><span>Vehicle code</span><strong>{{ selectedTruck.vehicle_code }}</strong></div>
+      <div><span>License plate</span><strong>{{ selectedTruck.license_plate }}</strong></div>
+      <div><span>Vehicle type</span><strong>{{ selectedTruck.vehicle_type }}</strong></div>
+      <div><span>Status</span><strong>{{ selectedTruck.status }}</strong></div>
+      <div><span>Warehouse ID</span><strong>{{ selectedTruck.warehouse_id }}</strong></div>
+      <div><span>Driver name</span><strong>{{ selectedTruck.driver_name || '-' }}</strong></div>
+      <div><span>Driver phone</span><strong>{{ selectedTruck.driver_phone || '-' }}</strong></div>
+      <div><span>Max weight</span><strong>{{ formatNumber(selectedTruck.max_weight) }}</strong></div>
+      <div><span>Max volume</span><strong>{{ formatNumber(selectedTruck.max_volume) }}</strong></div>
+      <div><span>Is active</span><strong>{{ selectedTruck.is_active ? 'true' : 'false' }}</strong></div>
+      <div><span>Created at</span><strong>{{ formatDate(selectedTruck.created_at) }}</strong></div>
+      <div><span>Updated at</span><strong>{{ formatDate(selectedTruck.updated_at) }}</strong></div>
     </div>
   </div>
 </div>

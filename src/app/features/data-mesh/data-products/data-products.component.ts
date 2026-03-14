@@ -24,6 +24,7 @@ import { DividerModule } from 'primeng/divider';
 import { SkeletonModule } from 'primeng/skeleton';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { ToolbarModule } from 'primeng/toolbar';
 
 @Component({
   selector: 'app-data-products',
@@ -46,7 +47,8 @@ import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
     DividerModule,
     SkeletonModule,
     InputGroupModule,
-    InputGroupAddonModule
+    InputGroupAddonModule,
+    ToolbarModule
   ],
   templateUrl: './data-products.component.html',
   styleUrls: ['./data-products.component.scss'],
@@ -129,7 +131,7 @@ export class DataProductsComponent implements OnInit {
   ngOnInit(): void {
     // Load domain options first
     this.loadDomainOptions();
-    
+
     // Check if domain parameter exists in route
     this.route.params.subscribe(params => {
       if (params['domain']) {
@@ -223,7 +225,7 @@ export class DataProductsComponent implements OnInit {
               value: domain
             }))
           ];
-          
+
           // If domain is selected from route, set it in filter
           if (this.selectedDomain) {
             const domainOption = this.domainOptions.find(opt => opt.value === this.selectedDomain);
@@ -301,6 +303,30 @@ export class DataProductsComponent implements OnInit {
     return this.isSearchActive || this.isFiltersActive;
   }
 
+  get activeProductsCount(): number {
+    return this.dataProducts.filter(product => (product.status || 'active').toLowerCase() === 'active').length;
+  }
+
+  get visibleProductsCount(): number {
+    return this.dataProducts.length;
+  }
+
+  get domainCount(): number {
+    const domains = new Set(
+      this.dataProducts
+        .map(product => product.domain)
+        .filter((domain): domain is string => !!domain)
+    );
+    return domains.size;
+  }
+
+  get activeFilterCount(): number {
+    return (this.searchTerm ? 1 : 0)
+      + (this.filters.domain ? 1 : 0)
+      + (this.filters.status ? 1 : 0)
+      + (this.filters.owner ? 1 : 0);
+  }
+
   clearFilters(): void {
     this.searchTerm = '';
     this.filters = {
@@ -331,6 +357,21 @@ export class DataProductsComponent implements OnInit {
     } else {
       this.router.navigate(['/data-mesh/data-products', product.id]);
     }
+  }
+
+  openProductApplication(product: DataProduct): void {
+    const routeMap: { [key: string]: string } = {
+      retail: '/retail/fresh-retail',
+      hotel: '/hotel',
+      blogger: '/blogger',
+      travel: '/travel',
+      logistics: '/planning/fleet',
+      finance: '/applications',
+      application: '/applications'
+    };
+
+    const targetRoute = routeMap[product.domain || ''] || '/applications';
+    this.router.navigateByUrl(targetRoute);
   }
 
   subscribeToProduct(product: DataProduct): void {
@@ -372,6 +413,42 @@ export class DataProductsComponent implements OnInit {
 
   getDomainDisplayName(domain: string): string {
     return this.formatDomainName(domain);
+  }
+
+  getDomainImagePath(domain: string): string {
+    const imageMap: { [key: string]: string } = {
+      application: 'assets/data-products/default.svg',
+      hotel: 'assets/data-products/hotel.svg',
+      device_detector: 'assets/data-products/default.svg',
+      finance: 'assets/data-products/finance.svg',
+      healthcare: 'assets/data-products/finance.svg',
+      education: 'assets/data-products/default.svg',
+      retail: 'assets/data-products/retail.svg',
+      logistics: 'assets/data-products/logistics.svg',
+      manufacturing: 'assets/data-products/logistics.svg',
+      energy: 'assets/data-products/finance.svg',
+      food: 'assets/data-products/retail.svg',
+      travel: 'assets/data-products/travel.svg',
+      sports: 'assets/data-products/default.svg',
+      music: 'assets/data-products/blogger.svg',
+      media: 'assets/data-products/blogger.svg',
+      gaming: 'assets/data-products/default.svg',
+      social: 'assets/data-products/blogger.svg',
+      analytics: 'assets/data-products/finance.svg',
+      security: 'assets/data-products/finance.svg',
+      iot: 'assets/data-products/logistics.svg',
+      ai: 'assets/data-products/default.svg',
+      ml: 'assets/data-products/default.svg',
+      blockchain: 'assets/data-products/finance.svg',
+      cloud: 'assets/data-products/default.svg',
+      mobile: 'assets/data-products/default.svg',
+      web: 'assets/data-products/default.svg',
+      api: 'assets/data-products/default.svg',
+      database: 'assets/data-products/default.svg',
+      blogger: 'assets/data-products/blogger.svg'
+    };
+
+    return imageMap[domain] || 'assets/data-products/default.svg';
   }
 
   getDomainImage(domain: string): string {

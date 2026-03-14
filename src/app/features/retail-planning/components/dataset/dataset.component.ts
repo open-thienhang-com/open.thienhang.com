@@ -1283,31 +1283,14 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
       search: this.warehouseSearchQuery || ''
     };
 
-    this.datasetService.getWarehouses(params).subscribe({
-      next: (response) => {
-        console.log('[Dataset] Warehouses API Response:', response);
-        if (response.ok && response.data) {
-          // Support both response shapes:
-          // 1) API returns raw array: response.data = [ { ... }, ... ]
-          // 2) API returns envelope: response.data = { data: [ ... ], meta: { total } }
-          const respAny: any = response as any;
-          const warehousesData = Array.isArray(respAny.data) ? respAny.data : (respAny.data?.data || []);
-          this.warehouses = warehousesData || [];
-          // Determine total: prefer meta.total when available, otherwise length
-          if (Array.isArray(respAny.data)) {
-            this.warehouseTotal = respAny.data.length;
-          } else {
-            this.warehouseTotal = respAny.data?.meta?.total || this.warehouses.length;
-          }
-          console.log('[Dataset] Loaded warehouses:', this.warehouses.length);
-          // Auto-select the first warehouse for the details card if none selected yet
-          const firstVisible = this.pagedWarehouses && this.pagedWarehouses.length > 0 ? this.pagedWarehouses[0] : (this.warehouses[0] || null);
-          if (!this.selectedWarehouse && firstVisible) {
-            this.selectedWarehouse = firstVisible;
-          }
-        } else {
-          this.warehousesError = 'Failed to load warehouses';
-          console.error('[Dataset] Invalid warehouses response:', response);
+    this.requestWarehouses(params).subscribe({
+      next: ({ items, total }) => {
+        this.warehouses = items;
+        this.warehouseTotal = total;
+        console.log('[Dataset] Loaded warehouses:', this.warehouses.length);
+        const firstVisible = this.pagedWarehouses && this.pagedWarehouses.length > 0 ? this.pagedWarehouses[0] : (this.warehouses[0] || null);
+        if (!this.selectedWarehouse && firstVisible) {
+          this.selectedWarehouse = firstVisible;
         }
         this.loadingWarehouses = false;
         this.cdr.markForCheck();
@@ -1319,6 +1302,168 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  private bootstrapDemandWarehouses(): void {
+    const params = {
+      region_shortname: this.warehouseRegionShortname,
+      size: 1000,
+      offset: 0,
+      search: ''
+    };
+
+    this.loadingWarehouses = true;
+    this.warehousesError = null;
+
+    this.requestWarehouses(params).subscribe({
+      next: ({ items, total }) => {
+        this.warehouses = items;
+        this.warehouseTotal = total;
+        this.timelineWarehouses = [...items];
+        this.selectedWarehouse = items[0] || null;
+        this.loadingWarehouses = false;
+        this.loadDemands();
+        this.loadShiftRatios();
+        this.loadDemandsByDays();
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        this.loadingWarehouses = false;
+        this.warehousesError = error?.message || 'Failed to initialize warehouses';
+        this.loadDemands();
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private requestWarehouses(params: { region_shortname: string; size?: number; offset?: number; search?: string; }) {
+    return this.datasetService.getWarehouses(params).pipe(
+      map((response: any) => {
+        const items = this.extractWarehousesFromResponse(response);
+        if (items.length > 0) {
+          return {
+            items,
+            total: this.extractWarehouseTotal(response, items.length)
+          };
+        }
+        return null;
+      }),
+      catchError((error) => {
+        console.warn('[Dataset] Planning warehouse API unavailable, falling back to retail warehouse domain', error);
+        return of(null);
+      }),
+      switchMap((result) => {
+        if (result) {
+          return of(result);
+        }
+        return this.fetchWarehousesFromRetailDomain(params);
+      })
+    );
+  }
+
+  private fetchWarehousesFromRetailDomain(params: { region_shortname: string; size?: number; offset?: number; search?: string; }) {
+    const requestedSize = Math.max(Number(params.size || 50), 50);
+    const fetchLimit = Math.max(requestedSize + Number(params.offset || 0), 1000);
+
+    return this.http.get<any>(`${this.retailBaseUrl}/warehouses?skip=0&limit=${fetchLimit}`).pipe(
+      map((response) => {
+        const rawItems = Array.isArray(response?.data) ? response.data : [];
+        let items = this.normalizeWarehouses(rawItems);
+
+        if (params.region_shortname) {
+          items = items.filter((warehouse) => (warehouse.region_shortname || '').toUpperCase() === params.region_shortname.toUpperCase());
+        }
+
+        if (params.search) {
+          const query = params.search.trim().toLowerCase();
+          items = items.filter((warehouse) => this.getWarehouseSearchText(warehouse).includes(query));
+        }
+
+        const total = items.length;
+        const offset = Number(params.offset || 0);
+        const size = Number(params.size || total || requestedSize);
+
+        return {
+          items: items.slice(offset, offset + size),
+          total
+        };
+      }),
+      catchError((error) => {
+        console.error('[Dataset] Retail warehouse domain fallback failed', error);
+        return of({ items: [], total: 0 });
+      })
+    );
+  }
+
+  private extractWarehousesFromResponse(response: any): Warehouse[] {
+    const rawItems = Array.isArray(response?.data) ? response.data : (response?.data?.data || []);
+    return this.normalizeWarehouses(rawItems);
+  }
+
+  private extractWarehouseTotal(response: any, fallbackTotal: number): number {
+    if (Array.isArray(response?.data)) {
+      return response.data.length;
+    }
+
+    return response?.data?.meta?.total || fallbackTotal;
+  }
+
+  private normalizeWarehouses(rawItems: any[]): Warehouse[] {
+    const seen = new Set<string>();
+    return (rawItems || [])
+      .map((raw) => this.normalizeWarehouse(raw))
+      .filter((warehouse) => {
+        const key = this.getWarehouseKey(warehouse);
+        if (!key || seen.has(key)) {
+          return false;
+        }
+        seen.add(key);
+        return true;
+      });
+  }
+
+  private normalizeWarehouse(raw: any): Warehouse {
+    const warehouseId = raw?.warehouse_id != null ? Number(raw.warehouse_id) : raw?.warehouseId != null ? Number(raw.warehouseId) : undefined;
+
+    return {
+      id: String(raw?._id || raw?.id || warehouseId || ''),
+      warehouse_id: Number.isFinite(warehouseId as number) ? warehouseId : undefined,
+      district_id: raw?.district_id != null ? Number(raw.district_id) : undefined,
+      district_name: String(raw?.district_name || ''),
+      is_enabled: raw?.is_enabled ?? raw?.is_active ?? true,
+      last_updated_time: raw?.last_updated_time || raw?.updated_at || raw?.created_at || '',
+      latitude: raw?.latitude != null ? Number(raw.latitude) : undefined,
+      longitude: raw?.longitude != null ? Number(raw.longitude) : undefined,
+      province_id: raw?.province_id != null ? Number(raw.province_id) : undefined,
+      province_name: String(raw?.province_name || raw?.city || ''),
+      region_fullname: String(raw?.region_fullname || raw?.country || ''),
+      region_shortname: String(raw?.region_shortname || raw?.location || ''),
+      ward_code: String(raw?.ward_code || ''),
+      warehouse_address: String(raw?.warehouse_address || raw?.address || ''),
+      warehouse_name: String(raw?.warehouse_name || raw?.name || ''),
+      warehouse_type: String(raw?.warehouse_type || raw?.type || '')
+    };
+  }
+
+  private getWarehouseKey(warehouse: Warehouse): string {
+    return String(warehouse.warehouse_id || warehouse.id || warehouse.warehouse_name || '').trim();
+  }
+
+  private getWarehouseSearchText(warehouse: Warehouse): string {
+    return [
+      warehouse.warehouse_name,
+      warehouse.warehouse_address,
+      warehouse.district_name,
+      warehouse.province_name,
+      warehouse.region_shortname,
+      warehouse.region_fullname,
+      warehouse.warehouse_type,
+      warehouse.warehouse_id,
+      warehouse.id
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
   }
 
   /**
@@ -1697,12 +1842,10 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
       search: ''
     } as any;
 
-    this.datasetService.getWarehouses(params).subscribe({
-      next: (response) => {
+    this.requestWarehouses(params).subscribe({
+      next: ({ items }) => {
         try {
-          const respAny: any = response as any;
-          const warehousesData = Array.isArray(respAny.data) ? respAny.data : (respAny.data?.data || []);
-          this.modalWarehouses = warehousesData || [];
+          this.modalWarehouses = items || [];
           
           // Pre-select warehouses that are already in timeline
           this.modalSelectedWarehouses.clear();
@@ -3187,9 +3330,13 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
       this.selectedDemand = null;
       this.chartsInitialized = false;
       this.destroyCharts();
-      this.loadDemands();
-      this.loadShiftRatios();
-      this.loadDemandsByDays();
+      if (this.timelineWarehouses.length === 0) {
+        this.bootstrapDemandWarehouses();
+      } else {
+        this.loadDemands();
+        this.loadShiftRatios();
+        this.loadDemandsByDays();
+      }
       return;
     }
 
@@ -3514,18 +3661,11 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
       search: ''
     } as any;
 
-    this.datasetService.getWarehouses(params).subscribe({
-      next: (response) => {
+    this.requestWarehouses(params).subscribe({
+      next: ({ items, total }) => {
         try {
-          const respAny: any = response as any;
-          const warehousesData = Array.isArray(respAny.data) ? respAny.data : (respAny.data?.data || []);
-          this.warehouses = warehousesData || [];
-          // determine total
-          if (Array.isArray(respAny.data)) {
-            this.warehouseTotal = respAny.data.length;
-          } else {
-            this.warehouseTotal = respAny.data?.meta?.total || this.warehouses.length;
-          }
+          this.warehouses = items;
+          this.warehouseTotal = total;
 
           // Auto-add all warehouses in this region to the timeline
           let addedCount = 0;

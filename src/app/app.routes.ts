@@ -12,6 +12,7 @@ import { hotelRoutes } from './features/hotel/hotel.routes';
 import { travelRoutes } from './features/travel/travel.routes';
 import { chatRoutes } from './features/chat/chat.routes';
 import { filesRoutes } from './features/files/files.routes';
+import { FRESH_RETAIL_FEATURE_CONFIG } from './features/retail/retail-services/feature-page/fresh-retail.config';
 
 
 export const routes: Routes = [
@@ -260,6 +261,13 @@ export const routes: Routes = [
             loadComponent: () => import('./features/retail/retail-services/payment/payment.component').then(m => m.PaymentComponent),
           },
           {
+            path: 'fresh-retail',
+            loadComponent: () => import('./features/retail/retail-services/feature-page/retail-feature-page.component').then(m => m.RetailFeaturePageComponent),
+            data: {
+              featureConfig: FRESH_RETAIL_FEATURE_CONFIG
+            }
+          },
+          {
             path: 'products',
             loadComponent: () => import('./features/retail/pages/product-catalog/product-catalog.component').then(m => m.ProductCatalogComponent),
           },
@@ -353,7 +361,7 @@ export const routes: Routes = [
           },
           {
             path: 'omni-channel',
-            loadComponent: () => import('./features/retail/retail-services/omni-channel/omni-channel.component').then(m => m.OmniChannelComponent),
+            loadComponent: () => import('./features/chat/pages/facebook-workspace/facebook-workspace.component').then(m => m.FacebookWorkspaceComponent),
           },
           {
             path: 'transactions',

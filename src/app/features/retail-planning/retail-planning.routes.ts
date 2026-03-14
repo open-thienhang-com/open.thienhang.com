@@ -6,7 +6,7 @@ export const retailPlanningRoutes: Routes = [
   { path: 'stochastic', redirectTo: 'forecast/demand', pathMatch: 'full' },
   { path: 'forecast', redirectTo: 'forecast/demand', pathMatch: 'full' },
   { path: 'forecast/demand', loadComponent: () => import('./components/dataset/dataset.component').then(m => m.DatasetComponent), data: { datasetType: 'demand' } },
-  { path: 'forecast/truck', loadComponent: () => import('./components/dataset/dataset.component').then(m => m.DatasetComponent), data: { datasetType: 'truck' } },
+  { path: 'forecast/truck', loadComponent: () => import('./components/fleet/fleet.component').then(m => m.FleetComponent) },
   { path: 'forecast/trip', loadComponent: () => import('./components/dataset/dataset.component').then(m => m.DatasetComponent), data: { datasetType: 'trip' } },
   { path: 'forecast/hub', loadComponent: () => import('./components/dataset/dataset.component').then(m => m.DatasetComponent), data: { datasetType: 'hub' } },
   { path: 'stochastic/:id', loadComponent: () => import('./components/dataset-detail/dataset-detail.component').then(m => m.DatasetDetailComponent) },

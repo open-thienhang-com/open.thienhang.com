@@ -7,6 +7,7 @@ import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { TableModule } from 'primeng/table';
 import { DatasetService, Warehouse } from '../../services/dataset.service';
+import { Truck, TruckService } from '../../services/truck.service';
 import { PageHeaderComponent } from '../page-header/page-header.component';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, map, catchError } from 'rxjs/operators';
@@ -91,10 +92,17 @@ export class PlanningCreatePlanComponent implements OnInit, OnDestroy, AfterView
   // Shift assignment for each demand (warehouse_id -> shift index)
   demandShiftAssignment: Map<string | number, number> = new Map();
 
+  // Step 3: Vehicles
+  trucks: Truck[] = [];
+  loadingTrucks: boolean = false;
+  trucksError: string | null = null;
+  selectedTruckIds: Set<string> = new Set();
+
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef,
-    private datasetService: DatasetService
+    private datasetService: DatasetService,
+    private truckService: TruckService
   ) {}
 
   ngOnInit(): void {
@@ -186,6 +194,10 @@ export class PlanningCreatePlanComponent implements OnInit, OnDestroy, AfterView
     // If moving to step 2, auto-load demands if points are selected
     if (step === 2 && this.timelineWarehouses.length > 0) {
       this.loadDemands();
+    }
+
+    if (step === 3) {
+      this.loadTrucks();
     }
     
     this.cdr.detectChanges();
@@ -1109,5 +1121,72 @@ export class PlanningCreatePlanComponent implements OnInit, OnDestroy, AfterView
     if (ratio === 0) return '0.00';
     if (ratio >= 999) return '∞';
     return ratio.toFixed(2);
+  }
+
+  loadTrucks(): void {
+    if (this.loadingTrucks) return;
+
+    this.loadingTrucks = true;
+    this.trucksError = null;
+    this.cdr.detectChanges();
+
+    this.truckService.listTrucks(0, 50).subscribe({
+      next: (response) => {
+        this.trucks = Array.isArray(response?.data) ? response.data : [];
+        if (this.selectedTruckIds.size === 0) {
+          for (const truck of this.trucks) {
+            if (truck?._id) {
+              this.selectedTruckIds.add(truck._id);
+            }
+          }
+        } else {
+          const validIds = new Set(this.trucks.map((truck) => truck._id));
+          this.selectedTruckIds = new Set(
+            Array.from(this.selectedTruckIds).filter((id) => validIds.has(id))
+          );
+        }
+        this.loadingTrucks = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.loadingTrucks = false;
+        this.trucks = [];
+        this.selectedTruckIds.clear();
+        this.trucksError = error?.error?.message || error?.message || 'Loi khi tai danh sach xe';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  toggleTruckSelection(truck: Truck): void {
+    if (!truck?._id) return;
+
+    if (this.selectedTruckIds.has(truck._id)) {
+      this.selectedTruckIds.delete(truck._id);
+    } else {
+      this.selectedTruckIds.add(truck._id);
+    }
+    this.cdr.detectChanges();
+  }
+
+  isTruckSelected(truck: Truck): boolean {
+    return !!truck?._id && this.selectedTruckIds.has(truck._id);
+  }
+
+  clearSelectedTrucks(): void {
+    this.selectedTruckIds.clear();
+    this.cdr.detectChanges();
+  }
+
+  get selectedTruckCount(): number {
+    return this.selectedTruckIds.size;
+  }
+
+  get selectedTrucks(): Truck[] {
+    return this.trucks.filter((truck) => this.selectedTruckIds.has(truck._id));
+  }
+
+  get totalTruckCapacity(): number {
+    return this.selectedTrucks.reduce((sum, truck) => sum + Number(truck.max_weight || 0), 0);
   }
 }

@@ -36,59 +36,41 @@
             </div>
           </div>
           <div class="hero-actions">
+            <button type="button" class="hero-utility-btn" (click)="openOverviewDialog()">
+              <i class="pi pi-chart-bar"></i>
+              <span>Overview</span>
+            </button>
             <button pButton type="button" icon="pi pi-refresh" label="Refresh" class="p-button-sm p-button-outlined" (click)="loadWorkspace()"></button>
             <div class="panel-chip omni-chip"><i class="pi pi-comments"></i><span>{{ filteredConversations.length }} visible threads</span></div>
           </div>
         </section>
 
-        <section class="chat-overview-grid">
-          <article *ngFor="let card of overviewCards" class="summary-card" [attr.data-tone]="card.tone">
-            <div>
-              <p class="summary-label">{{ card.label }}</p>
-              <h3 class="summary-value">{{ card.value }}</h3>
-              <p class="summary-caption">{{ card.caption }}</p>
-            </div>
-            <div class="summary-icon"><i [class]="card.icon"></i></div>
-          </article>
-        </section>
-
         <div class="omni-layout">
           <aside class="queue-column">
-              <article class="flat-card compact-card">
-                <div class="card-body compact-body">
-                  <div class="queue-search-box">
-                    <i class="pi pi-search"></i>
-                    <input type="text" class="form-input queue-search-input" [(ngModel)]="searchTerm" placeholder="Search customer, category, or tag" />
-                  </div>
-
-                  <div class="filter-group compact-filter-group">
-                    <div class="filter-chip-row compact">
-                      <button *ngFor="let tab of queueTabs" type="button" class="queue-filter-btn" [class.active]="activeQueue === tab.value" (click)="setActiveQueue(tab.value)">
-                        <span>{{ tab.label }}</span>
-                        <span class="pill count-pill">{{ getQueueCount(tab.value) }}</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="filter-group compact-filter-group">
-                    <div class="filter-chip-row compact">
-                      <button *ngFor="let filter of channelFilters" type="button" class="queue-filter-btn" [class.active]="activeChannel === filter.value" (click)="setActiveChannel(filter.value)">
-                        <span>{{ filter.label }}</span>
-                        <span class="pill count-pill">{{ getChannelCount(filter.value) }}</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </article>
-
               <article class="flat-card queue-card-shell">
                 <div class="card-header compact-header">
                   <div class="card-title-group">
                     <h3 class="card-title">Conversations</h3>
                   </div>
-                  <span class="queue-total">{{ filteredConversations.length }}</span>
+                  <div class="queue-header-actions">
+                    <button type="button" class="queue-toolbar-btn" (click)="openFilterDialog()">
+                      <i class="pi pi-sliders-h"></i>
+                      <span>Filters</span>
+                    </button>
+                    <span class="queue-total">{{ filteredConversations.length }}</span>
+                  </div>
                 </div>
                 <div class="card-body queue-body">
+                  <div class="queue-toolbar">
+                    <div class="queue-search-box">
+                      <i class="pi pi-search"></i>
+                      <input type="text" class="form-input queue-search-input" [(ngModel)]="searchTerm" placeholder="Search customer, category, or tag" />
+                    </div>
+                    <div class="queue-active-filters">
+                      <span class="queue-inline-pill">Queue: {{ getActiveQueueLabel() }}</span>
+                      <span class="queue-inline-pill">Channel: {{ getActiveChannelLabel() }}</span>
+                    </div>
+                  </div>
                   <div class="queue-list">
                     <button *ngFor="let conversation of filteredConversations"
                             type="button"
@@ -165,7 +147,7 @@
                     </div>
                   </div>
 
-                  <div class="message-thread omni-message-thread">
+                  <div #messageThread class="message-thread omni-message-thread">
                     <div *ngFor="let message of conversation.messages" class="message-row" [class.is-agent]="message.sender !== 'user'">
                       <div class="message-bubble">
                         <div class="message-meta">
@@ -239,6 +221,67 @@
       </ng-container>
     </div>
   </div>
+</div>
+
+<div class="quick-popup-backdrop" *ngIf="filterDialogVisible" (click)="closeFilterDialog()">
+  <section class="quick-popup filter-popup" (click)="$event.stopPropagation()">
+    <div class="quick-popup-header">
+      <div>
+        <p class="panel-eyebrow">Conversation filters</p>
+        <h3 class="panel-title info-title-compact">Filter Threads</h3>
+      </div>
+      <button type="button" class="close-btn" (click)="closeFilterDialog()"><i class="pi pi-times"></i></button>
+    </div>
+
+    <div class="quick-popup-body">
+      <div class="filter-popup-section">
+        <p class="filter-popup-title">Queue</p>
+        <div class="filter-chip-row compact">
+          <button *ngFor="let tab of queueTabs" type="button" class="queue-filter-btn" [class.active]="activeQueue === tab.value" (click)="setActiveQueue(tab.value)">
+            <span>{{ tab.label }}</span>
+            <span class="pill count-pill">{{ getQueueCount(tab.value) }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-popup-section">
+        <p class="filter-popup-title">Channel</p>
+        <div class="filter-chip-row compact">
+          <button *ngFor="let filter of channelFilters" type="button" class="queue-filter-btn" [class.active]="activeChannel === filter.value" (click)="setActiveChannel(filter.value)">
+            <span>{{ filter.label }}</span>
+            <span class="pill count-pill">{{ getChannelCount(filter.value) }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="template-action-row">
+        <button type="button" class="ghost-action" (click)="closeFilterDialog()">Close</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="quick-popup-backdrop" *ngIf="overviewDialogVisible" (click)="closeOverviewDialog()">
+  <section class="quick-popup overview-popup" (click)="$event.stopPropagation()">
+    <div class="quick-popup-header">
+      <div>
+        <p class="panel-eyebrow">Workspace overview</p>
+        <h3 class="panel-title info-title-compact">Queue Snapshot</h3>
+      </div>
+      <button type="button" class="close-btn" (click)="closeOverviewDialog()"><i class="pi pi-times"></i></button>
+    </div>
+
+    <div class="chat-overview-grid overview-grid-popup">
+      <article *ngFor="let card of overviewCards" class="summary-card" [attr.data-tone]="card.tone">
+        <div>
+          <p class="summary-label">{{ card.label }}</p>
+          <h3 class="summary-value">{{ card.value }}</h3>
+          <p class="summary-caption">{{ card.caption }}</p>
+        </div>
+        <div class="summary-icon"><i [class]="card.icon"></i></div>
+      </article>
+    </div>
+  </section>
 </div>
 
 <div class="quick-popup-backdrop" *ngIf="actionPopupMode !== 'none'" (click)="closeActionPopup()">

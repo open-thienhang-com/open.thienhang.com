@@ -3,7 +3,7 @@
 
 <div class="data-products-container">
   <div class="container-wrapper">
-    
+
     <!-- Header Section -->
     <div class="header-section">
       <div class="header-content">
@@ -16,9 +16,9 @@
             <p>Discover and manage data products across all domains</p>
           </div>
         </div>
-        
+
         <div class="header-actions">
-          <p-button 
+          <p-button
             icon="pi pi-filter"
             severity="secondary"
             [outlined]="!showFilters"
@@ -28,7 +28,7 @@
             size="small"
             class="action-btn">
           </p-button>
-          <p-button 
+          <p-button
             [icon]="'pi pi-th-large'"
             [severity]="viewMode === 'grid' ? 'primary' : 'secondary'"
             [outlined]="viewMode !== 'grid'"
@@ -38,9 +38,9 @@
             size="small"
             class="action-btn">
           </p-button>
-          <p-button 
+          <p-button
             [icon]="'pi pi-list'"
-            [severity]="viewMode === 'table' ? 'primary' : 'secondary'" 
+            [severity]="viewMode === 'table' ? 'primary' : 'secondary'"
             [outlined]="viewMode !== 'table'"
             (onClick)="setViewMode('table')"
             pTooltip="Table View"
@@ -76,7 +76,7 @@
               <i class="pi pi-filter"></i>
               Domain
             </label>
-            <p-dropdown 
+            <p-dropdown
               [(ngModel)]="filters.domain"
               [options]="domainOptions"
               optionLabel="label"
@@ -98,8 +98,8 @@
               <p-inputGroupAddon>
                 <i class="pi pi-search"></i>
               </p-inputGroupAddon>
-              <input 
-                pInputText 
+              <input
+                pInputText
                 [(ngModel)]="searchTerm"
                 placeholder="Search products by name, description..."
                 (input)="onSearch()"
@@ -118,7 +118,7 @@
             <i class="pi pi-filter"></i>
             Domain
           </label>
-          <p-dropdown 
+          <p-dropdown
             [(ngModel)]="filters.domain"
             [options]="domainOptions"
             optionLabel="label"
@@ -129,13 +129,13 @@
             styleClass="filter-dropdown">
           </p-dropdown>
         </div>
-        
+
         <div class="filter-item">
           <label class="filter-label">
             <i class="pi pi-tag"></i>
             Status
           </label>
-          <p-dropdown 
+          <p-dropdown
             [(ngModel)]="filters.status"
             [options]="statusOptions"
             optionLabel="label"
@@ -146,9 +146,9 @@
             styleClass="filter-dropdown">
           </p-dropdown>
         </div>
-        
+
         <div class="filter-actions">
-          <p-button 
+          <p-button
             label="Clear Filters"
             icon="pi pi-times"
             severity="secondary"
@@ -157,7 +157,7 @@
             [disabled]="!hasSearchOrFilters"
             class="clear-btn">
           </p-button>
-          <p-badge 
+          <p-badge
             *ngIf="hasSearchOrFilters"
             [value]="(isSearchActive ? 1 : 0) + (isFiltersActive ? 1 : 0)"
             severity="info"
@@ -180,76 +180,85 @@
 
     <!-- Grid View -->
     <div *ngIf="!loading && viewMode === 'grid'" class="grid-view-container">
-      
+
       <!-- Products Grid -->
       <div class="products-grid">
-        <div 
+        <div
           *ngFor="let product of dataProducts; trackBy: trackByProductId; let i = index"
           class="product-card"
           [style.animation-delay]="(i % 12) * 0.05 + 's'"
           (click)="viewProductDetails(product)">
-          
+
           <!-- Product Header with Gradient -->
           <div class="product-header" [style.background]="getProductGradient(product.domain)">
-            <div class="product-icon-wrapper">
-              <span class="product-icon">{{ getDomainImage(product.domain || '') }}</span>
-            </div>
+            <img
+              class="product-header-image"
+              [src]="getDomainImagePath(product.domain || '')"
+              [alt]="getDomainDisplayName(product.domain || '')"
+              (error)="$any($event.target).src='assets/images/room-placeholder.svg'">
+            <div class="product-header-overlay"></div>
             <div class="product-status">
-              <p-tag 
+              <p-tag
                 [value]="product.status || 'Active'"
                 [severity]="getStatusSeverity(product.status || 'active')"
                 class="status-tag">
               </p-tag>
             </div>
           </div>
-          
+
           <!-- Product Body -->
           <div class="product-body">
             <h3 class="product-title">{{ product.name }}</h3>
             <p class="product-description">
               {{ product.description || 'No description available' }}
             </p>
-            
+
             <div class="product-meta">
               <div class="meta-item">
                 <i class="pi pi-tag meta-icon"></i>
-                <p-chip 
+                <p-chip
                   [label]="getDomainDisplayName(product.domain || '')"
                   class="domain-chip">
                 </p-chip>
               </div>
-              
+
               <div class="meta-item" *ngIf="product.owner">
                 <i class="pi pi-user meta-icon"></i>
                 <span class="meta-text">{{ product.owner.email || product.owner.first_name || 'N/A' }}</span>
               </div>
             </div>
           </div>
-          
+
           <!-- Product Footer -->
           <div class="product-footer">
             <div class="product-actions">
-              <p-button 
+              <p-button
+                label="Open Application"
+                icon="pi pi-arrow-up-right"
+                size="small"
+                severity="primary"
+                (onClick)="openProductApplication(product); $event.stopPropagation()"
+                class="action-button action-button-primary">
+              </p-button>
+              <p-button
+                label="View Detail"
                 icon="pi pi-eye"
                 size="small"
                 [outlined]="true"
-                severity="info"
+                severity="contrast"
                 (onClick)="viewProductDetails(product); $event.stopPropagation()"
-                pTooltip="View Details"
-                tooltipPosition="top"
                 class="action-button">
               </p-button>
-              <p-button 
+              <p-button
+                label="Subscribe"
                 icon="pi pi-plus"
                 size="small"
                 severity="success"
                 (onClick)="subscribeToProduct(product); $event.stopPropagation()"
-                pTooltip="Subscribe"
-                tooltipPosition="top"
                 class="action-button">
               </p-button>
             </div>
-            
+
             <div class="product-date" *ngIf="product.created_at">
               <i class="pi pi-calendar"></i>
               <span>{{ formatDate(product.created_at) }}</span>
@@ -260,7 +269,7 @@
 
       <!-- Pagination -->
       <div class="pagination-wrapper">
-        <p-paginator 
+        <p-paginator
           [first]="first"
           [rows]="pageSize"
           [totalRecords]="totalRecords"
@@ -273,9 +282,9 @@
 
     <!-- Table View -->
     <div *ngIf="!loading && viewMode === 'table'" class="table-view-container">
-      
+
       <div class="table-wrapper">
-        <p-table 
+        <p-table
           [value]="dataProducts"
           [paginator]="true"
           [rows]="pageSize"
@@ -285,7 +294,7 @@
           [loading]="loading"
           [trackBy]="trackByProductId"
           styleClass="modern-table">
-          
+
           <ng-template pTemplate="header">
             <tr>
               <th style="width: 60px;">Icon</th>
@@ -294,22 +303,26 @@
               <th>Description</th>
               <th>Status</th>
               <th>Owner</th>
-              <th style="width: 140px;">Actions</th>
+              <th style="width: 320px;">Actions</th>
             </tr>
           </ng-template>
-          
+
           <ng-template pTemplate="body" let-product>
             <tr class="table-row" (click)="viewProductDetails(product)">
               <td>
                 <div class="table-icon-wrapper">
-                  <span class="table-icon">{{ getDomainImage(product.domain || '') }}</span>
+                  <img
+                    class="table-image"
+                    [src]="getDomainImagePath(product.domain || '')"
+                    [alt]="getDomainDisplayName(product.domain || '')"
+                    (error)="$any($event.target).src='assets/images/room-placeholder.svg'">
                 </div>
               </td>
               <td>
                 <div class="table-name">{{ product.name }}</div>
               </td>
               <td>
-                <p-chip 
+                <p-chip
                   [label]="getDomainDisplayName(product.domain || '')"
                   class="table-chip">
                 </p-chip>
@@ -320,7 +333,7 @@
                 </span>
               </td>
               <td>
-                <p-tag 
+                <p-tag
                   [value]="product.status || 'Active'"
                   [severity]="getStatusSeverity(product.status || 'active')"
                   class="table-tag">
@@ -333,28 +346,36 @@
               </td>
               <td>
                 <div class="table-actions">
-                  <p-button 
+                  <p-button
+                    label="Open App"
+                    icon="pi pi-arrow-up-right"
+                    size="small"
+                    severity="primary"
+                    (onClick)="openProductApplication(product); $event.stopPropagation()"
+                    class="table-action-btn">
+                  </p-button>
+                  <p-button
+                    label="Detail"
                     icon="pi pi-eye"
                     size="small"
                     [outlined]="true"
-                    severity="info"
+                    severity="contrast"
                     (onClick)="viewProductDetails(product); $event.stopPropagation()"
-                    pTooltip="View Details"
                     class="table-action-btn">
                   </p-button>
-                  <p-button 
+                  <p-button
+                    label="Subscribe"
                     icon="pi pi-plus"
                     size="small"
                     severity="success"
                     (onClick)="subscribeToProduct(product); $event.stopPropagation()"
-                    pTooltip="Subscribe"
                     class="table-action-btn">
                   </p-button>
                 </div>
               </td>
             </tr>
           </ng-template>
-          
+
           <ng-template pTemplate="emptymessage">
             <tr>
               <td colspan="7" class="empty-table-message">
@@ -378,7 +399,7 @@
         </div>
         <h3>No Data Products Found</h3>
         <p>There are no data products available at the moment.</p>
-        <p-button 
+        <p-button
           label="Clear Filters"
           icon="pi pi-refresh"
           (onClick)="clearFilters()"

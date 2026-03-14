@@ -76,6 +76,19 @@ export const menu: MenuItem[] = [
         ]
     },
     {
+        label: 'Fresh Retail',
+        icon: 'pi pi-shop',
+        type: 'item',
+        expanded: true,
+        children: [
+            { label: 'Product Overview', url: '/retail/fresh-retail', icon: 'pi pi-home' },
+            { label: 'Inventory Control', url: '/retail/inventory/products', icon: 'pi pi-box' },
+            { label: 'Demand Forecasting', url: '/planning/forecast/demand', icon: 'pi pi-chart-line' },
+            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-directions' },
+            { label: 'Omni Channel', url: '/retail/omni-channel', icon: 'pi pi-comments' }
+        ]
+    },
+    {
         label: 'Inventory',
         icon: 'pi pi-box',
         type: 'item',

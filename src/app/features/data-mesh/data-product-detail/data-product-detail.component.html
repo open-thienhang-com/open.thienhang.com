@@ -152,96 +152,257 @@
         <!-- Overview Tab -->
         <p-tabPanel header="Overview" leftIcon="pi pi-info-circle">
           <div class="tab-content">
-            <div class="overview-grid">
+            <ng-container *ngIf="shouldRenderFreshRetailWorkspace; else defaultOverviewGrid">
+              <section class="embedded-feature-section embedded-feature-section-prominent">
+                <div class="embedded-feature-header">
+                  <div>
+                    <p class="embedded-feature-eyebrow">Product experience</p>
+                    <h2>Fresh Retail Overview</h2>
+                    <p>Read the product story first, then review governance and operating details in the cards below.</p>
+                  </div>
+                </div>
+
+                <app-retail-feature-page
+                  [configInput]="freshRetailFeatureConfig"
+                  [embedded]="true">
+                </app-retail-feature-page>
+              </section>
+
+              <div class="overview-secondary-layout">
+                <aside class="overview-summary-rail">
+                  <article class="summary-rail-card">
+                    <p class="summary-rail-eyebrow">Quick context</p>
+                    <h3>Data product snapshot</h3>
+                    <div class="summary-rail-list">
+                      <div class="summary-rail-item">
+                        <span>Owner</span>
+                        <strong>{{ getOwnerDisplayName() }}</strong>
+                      </div>
+                      <div class="summary-rail-item" *ngIf="dataProduct.owner?.company">
+                        <span>Company</span>
+                        <strong>{{ getCompanyName() }}</strong>
+                      </div>
+                      <div class="summary-rail-item" *ngIf="dataProduct.discoverability">
+                        <span>Discoverability</span>
+                        <strong>{{ dataProduct.discoverability }}</strong>
+                      </div>
+                      <div class="summary-rail-item" *ngIf="dataProduct.purpose">
+                        <span>Purpose</span>
+                        <strong>{{ dataProduct.purpose }}</strong>
+                      </div>
+                    </div>
+                  </article>
+
+                  <article class="summary-rail-card" *ngIf="hasValue(dataProduct.quality_metrics)">
+                    <p class="summary-rail-eyebrow">Quality</p>
+                    <h3>Operational trust</h3>
+                    <div class="summary-rail-list">
+                      <div class="summary-rail-item" *ngIf="dataProduct.quality_metrics.accuracy">
+                        <span>Accuracy</span>
+                        <strong [style.color]="getQualityColor(dataProduct.quality_metrics.accuracy)">{{ dataProduct.quality_metrics.accuracy }}</strong>
+                      </div>
+                      <div class="summary-rail-item" *ngIf="dataProduct.quality_metrics.freshness">
+                        <span>Freshness</span>
+                        <strong>{{ dataProduct.quality_metrics.freshness }}</strong>
+                      </div>
+                      <div class="summary-rail-item" *ngIf="dataProduct.quality_metrics.completeness">
+                        <span>Completeness</span>
+                        <strong [style.color]="getQualityColor(dataProduct.quality_metrics.completeness)">{{ dataProduct.quality_metrics.completeness }}</strong>
+                      </div>
+                    </div>
+                  </article>
+
+                  <article class="summary-rail-card">
+                    <p class="summary-rail-eyebrow">Adoption surface</p>
+                    <h3>Usage signals</h3>
+                    <div class="summary-chip-groups">
+                      <div *ngIf="hasValue(dataProduct.consumers)">
+                        <span class="summary-chip-label">Consumers</span>
+                        <div class="summary-chip-list">
+                          <p-chip *ngFor="let consumer of dataProduct.consumers" [label]="consumer"></p-chip>
+                        </div>
+                      </div>
+                      <div *ngIf="hasValue(dataProduct.tags)">
+                        <span class="summary-chip-label">Tags</span>
+                        <div class="summary-chip-list">
+                          <p-chip *ngFor="let tag of dataProduct.tags" [label]="tag"></p-chip>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                </aside>
               
-              <!-- Purpose Card -->
-              <p-card header="Purpose" styleClass="overview-card" *ngIf="dataProduct.purpose">
-                <div class="card-icon">
-                  <i class="pi pi-flag"></i>
-                </div>
-                <div class="card-content">
-                  <p>{{ dataProduct.purpose }}</p>
-                </div>
-              </p-card>
+                <div class="overview-grid overview-grid-detailed">
+                  <p-card header="Purpose" styleClass="overview-card" *ngIf="dataProduct.purpose">
+                    <div class="card-icon">
+                      <i class="pi pi-flag"></i>
+                    </div>
+                    <div class="card-content">
+                      <p>{{ dataProduct.purpose }}</p>
+                    </div>
+                  </p-card>
 
-              <!-- Consumers Card -->
-              <p-card header="Consumers" styleClass="overview-card" *ngIf="hasValue(dataProduct.consumers)">
-                <div class="card-icon">
-                  <i class="pi pi-users"></i>
+                  <p-card header="Consumers" styleClass="overview-card" *ngIf="hasValue(dataProduct.consumers)">
+                    <div class="card-icon">
+                      <i class="pi pi-users"></i>
+                    </div>
+                    <div class="card-content">
+                      <div class="consumer-list">
+                        <p-chip *ngFor="let consumer of dataProduct.consumers" [label]="consumer"></p-chip>
+                      </div>
+                    </div>
+                  </p-card>
+
+                  <p-card header="Teams" styleClass="overview-card" *ngIf="hasValue(dataProduct.teams)">
+                    <div class="card-icon">
+                      <i class="pi pi-users"></i>
+                    </div>
+                    <div class="card-content">
+                      <div class="team-list">
+                        <p-chip *ngFor="let team of dataProduct.teams" [label]="team.name || team"></p-chip>
+                      </div>
+                    </div>
+                  </p-card>
+
+                  <p-card header="Tags" styleClass="overview-card" *ngIf="hasValue(dataProduct.tags)">
+                    <div class="card-icon">
+                      <i class="pi pi-tags"></i>
+                    </div>
+                    <div class="card-content">
+                      <div class="tag-list">
+                        <p-chip *ngFor="let tag of dataProduct.tags" [label]="tag"></p-chip>
+                      </div>
+                    </div>
+                  </p-card>
+
+                  <p-card header="Assets" styleClass="overview-card overview-card-wide" *ngIf="hasValue(dataProduct.assets)">
+                    <div class="card-icon">
+                      <i class="pi pi-database"></i>
+                    </div>
+                    <div class="card-content">
+                      <div class="asset-list">
+                        <div *ngFor="let asset of dataProduct.assets" class="asset-item">
+                          <i class="pi pi-file-o"></i>
+                          <span>{{ asset.name || asset }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </p-card>
+
+                  <p-card header="Quality Metrics" styleClass="overview-card" *ngIf="hasValue(dataProduct.quality_metrics)">
+                    <div class="card-icon">
+                      <i class="pi pi-chart-line"></i>
+                    </div>
+                    <div class="card-content">
+                      <div class="quality-metrics-list">
+                        <div class="quality-item" *ngIf="dataProduct.quality_metrics.accuracy">
+                          <span class="quality-label">Accuracy:</span>
+                          <span class="quality-value" [style.color]="getQualityColor(dataProduct.quality_metrics.accuracy)">
+                            {{ dataProduct.quality_metrics.accuracy }}
+                          </span>
+                        </div>
+                        <div class="quality-item" *ngIf="dataProduct.quality_metrics.freshness">
+                          <span class="quality-label">Freshness:</span>
+                          <span class="quality-value">{{ dataProduct.quality_metrics.freshness }}</span>
+                        </div>
+                        <div class="quality-item" *ngIf="dataProduct.quality_metrics.completeness">
+                          <span class="quality-label">Completeness:</span>
+                          <span class="quality-value" [style.color]="getQualityColor(dataProduct.quality_metrics.completeness)">
+                            {{ dataProduct.quality_metrics.completeness }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </p-card>
                 </div>
-                <div class="card-content">
-                  <div class="consumer-list">
-                    <p-chip *ngFor="let consumer of dataProduct.consumers" [label]="consumer"></p-chip>
+              </div>
+            </ng-container>
+
+            <ng-template #defaultOverviewGrid>
+              <div class="overview-grid">
+                <p-card header="Purpose" styleClass="overview-card" *ngIf="dataProduct.purpose">
+                  <div class="card-icon">
+                    <i class="pi pi-flag"></i>
                   </div>
-                </div>
-              </p-card>
-
-              <!-- Teams Card -->
-              <p-card header="Teams" styleClass="overview-card" *ngIf="hasValue(dataProduct.teams)">
-                <div class="card-icon">
-                  <i class="pi pi-users"></i>
-                </div>
-                <div class="card-content">
-                  <div class="team-list">
-                    <p-chip *ngFor="let team of dataProduct.teams" [label]="team.name || team"></p-chip>
+                  <div class="card-content">
+                    <p>{{ dataProduct.purpose }}</p>
                   </div>
-                </div>
-              </p-card>
+                </p-card>
 
-              <!-- Tags Card -->
-              <p-card header="Tags" styleClass="overview-card" *ngIf="hasValue(dataProduct.tags)">
-                <div class="card-icon">
-                  <i class="pi pi-tags"></i>
-                </div>
-                <div class="card-content">
-                  <div class="tag-list">
-                    <p-chip *ngFor="let tag of dataProduct.tags" [label]="tag"></p-chip>
+                <p-card header="Consumers" styleClass="overview-card" *ngIf="hasValue(dataProduct.consumers)">
+                  <div class="card-icon">
+                    <i class="pi pi-users"></i>
                   </div>
-                </div>
-              </p-card>
-
-              <!-- Assets Card -->
-              <p-card header="Assets" styleClass="overview-card" *ngIf="hasValue(dataProduct.assets)">
-                <div class="card-icon">
-                  <i class="pi pi-database"></i>
-                </div>
-                <div class="card-content">
-                  <div class="asset-list">
-                    <div *ngFor="let asset of dataProduct.assets" class="asset-item">
-                      <i class="pi pi-file-o"></i>
-                      <span>{{ asset.name || asset }}</span>
+                  <div class="card-content">
+                    <div class="consumer-list">
+                      <p-chip *ngFor="let consumer of dataProduct.consumers" [label]="consumer"></p-chip>
                     </div>
                   </div>
-                </div>
-              </p-card>
+                </p-card>
 
-              <!-- Quality Metrics Card -->
-              <p-card header="Quality Metrics" styleClass="overview-card" *ngIf="hasValue(dataProduct.quality_metrics)">
-                <div class="card-icon">
-                  <i class="pi pi-chart-line"></i>
-                </div>
-                <div class="card-content">
-                  <div class="quality-metrics-list">
-                    <div class="quality-item" *ngIf="dataProduct.quality_metrics.accuracy">
-                      <span class="quality-label">Accuracy:</span>
-                      <span class="quality-value" [style.color]="getQualityColor(dataProduct.quality_metrics.accuracy)">
-                        {{ dataProduct.quality_metrics.accuracy }}
-                      </span>
-                    </div>
-                    <div class="quality-item" *ngIf="dataProduct.quality_metrics.freshness">
-                      <span class="quality-label">Freshness:</span>
-                      <span class="quality-value">{{ dataProduct.quality_metrics.freshness }}</span>
-                    </div>
-                    <div class="quality-item" *ngIf="dataProduct.quality_metrics.completeness">
-                      <span class="quality-label">Completeness:</span>
-                      <span class="quality-value" [style.color]="getQualityColor(dataProduct.quality_metrics.completeness)">
-                        {{ dataProduct.quality_metrics.completeness }}
-                      </span>
+                <p-card header="Teams" styleClass="overview-card" *ngIf="hasValue(dataProduct.teams)">
+                  <div class="card-icon">
+                    <i class="pi pi-users"></i>
+                  </div>
+                  <div class="card-content">
+                    <div class="team-list">
+                      <p-chip *ngFor="let team of dataProduct.teams" [label]="team.name || team"></p-chip>
                     </div>
                   </div>
-                </div>
-              </p-card>
-            </div>
+                </p-card>
+
+                <p-card header="Tags" styleClass="overview-card" *ngIf="hasValue(dataProduct.tags)">
+                  <div class="card-icon">
+                    <i class="pi pi-tags"></i>
+                  </div>
+                  <div class="card-content">
+                    <div class="tag-list">
+                      <p-chip *ngFor="let tag of dataProduct.tags" [label]="tag"></p-chip>
+                    </div>
+                  </div>
+                </p-card>
+
+                <p-card header="Assets" styleClass="overview-card" *ngIf="hasValue(dataProduct.assets)">
+                  <div class="card-icon">
+                    <i class="pi pi-database"></i>
+                  </div>
+                  <div class="card-content">
+                    <div class="asset-list">
+                      <div *ngFor="let asset of dataProduct.assets" class="asset-item">
+                        <i class="pi pi-file-o"></i>
+                        <span>{{ asset.name || asset }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </p-card>
+
+                <p-card header="Quality Metrics" styleClass="overview-card" *ngIf="hasValue(dataProduct.quality_metrics)">
+                  <div class="card-icon">
+                    <i class="pi pi-chart-line"></i>
+                  </div>
+                  <div class="card-content">
+                    <div class="quality-metrics-list">
+                      <div class="quality-item" *ngIf="dataProduct.quality_metrics.accuracy">
+                        <span class="quality-label">Accuracy:</span>
+                        <span class="quality-value" [style.color]="getQualityColor(dataProduct.quality_metrics.accuracy)">
+                          {{ dataProduct.quality_metrics.accuracy }}
+                        </span>
+                      </div>
+                      <div class="quality-item" *ngIf="dataProduct.quality_metrics.freshness">
+                        <span class="quality-label">Freshness:</span>
+                        <span class="quality-value">{{ dataProduct.quality_metrics.freshness }}</span>
+                      </div>
+                      <div class="quality-item" *ngIf="dataProduct.quality_metrics.completeness">
+                        <span class="quality-label">Completeness:</span>
+                        <span class="quality-value" [style.color]="getQualityColor(dataProduct.quality_metrics.completeness)">
+                          {{ dataProduct.quality_metrics.completeness }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </p-card>
+              </div>
+            </ng-template>
           </div>
         </p-tabPanel>
 

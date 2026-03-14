@@ -326,6 +326,17 @@ export class SidebarComponent implements OnInit, OnChanges {
       expanded: false,
       items: [
         {
+          label: 'Fresh Retail',
+          icon: 'pi pi-shop',
+          children: [
+            { label: 'Product Overview', url: '/retail/fresh-retail', icon: 'pi pi-home' },
+            { label: 'Inventory Control', url: '/retail/inventory/products', icon: 'pi pi-box' },
+            { label: 'Demand Forecasting', url: '/planning/forecast/demand', icon: 'pi pi-chart-line' },
+            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-directions' },
+            { label: 'Omni Channel', url: '/retail/omni-channel', icon: 'pi pi-comments' }
+          ]
+        },
+        {
           label: 'Forecast',
           icon: 'pi pi-chart-line',
           children: [

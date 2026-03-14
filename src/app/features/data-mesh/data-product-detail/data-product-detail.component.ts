@@ -5,6 +5,8 @@ import { DataProductServices, DataProduct } from '../../../core/services/data.pr
 import { LoadingService } from '../../../core/services/loading.service';
 import { MessageService } from 'primeng/api';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { RetailFeaturePageComponent } from '../../retail/retail-services/feature-page/retail-feature-page.component';
+import { FRESH_RETAIL_FEATURE_CONFIG } from '../../retail/retail-services/feature-page/fresh-retail.config';
 
 // PrimeNG imports
 import { ButtonModule } from 'primeng/button';
@@ -40,13 +42,15 @@ import { SkeletonModule } from 'primeng/skeleton';
     PanelModule,
     AccordionModule,
     DividerModule,
-    SkeletonModule
+    SkeletonModule,
+    RetailFeaturePageComponent
   ],
   templateUrl: './data-product-detail.component.html',
   styleUrls: ['./data-product-detail.component.scss'],
   providers: [MessageService]
 })
 export class DataProductDetailComponent implements OnInit {
+  readonly freshRetailFeatureConfig = FRESH_RETAIL_FEATURE_CONFIG;
   dataProduct: DataProduct | null = null;
   loading = false;
   error: string | null = null;
@@ -404,5 +408,10 @@ export class DataProductDetailComponent implements OnInit {
       case 'draft': return 'info';
       default: return 'success';
     }
+  }
+
+  get shouldRenderFreshRetailWorkspace(): boolean {
+    const productId = this.dataProduct?.id || (this.dataProduct as any)?._id;
+    return this.dataProduct?.domain?.toLowerCase() === 'retail' && productId === '69060c9fe47fa727a06b6721';
   }
 }
