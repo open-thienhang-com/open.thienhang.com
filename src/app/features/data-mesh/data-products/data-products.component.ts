@@ -336,6 +336,14 @@ export class DataProductsComponent implements OnInit {
     };
     this.currentPage = 0;
     this.first = 0;
+    this.router.navigate(['/data-mesh/data-products']);
+  }
+
+  refreshProducts(): void {
+    if (this.selectedDomain) {
+      this.loadDataProductsByDomain(this.selectedDomain);
+      return;
+    }
     this.loadDataProducts();
   }
 

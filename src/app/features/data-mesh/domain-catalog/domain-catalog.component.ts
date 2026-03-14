@@ -4,30 +4,16 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { DataMeshServices, Domain } from '../../../core/services/data-mesh.services';
 import { LoadingService } from '../../../core/services/loading.service';
-import { I18nService } from '../../../core/services/i18n.service';
-import { MessageService, ConfirmationService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 
 // PrimeNG imports
 import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
-import { BadgeModule } from 'primeng/badge';
 import { SkeletonModule } from 'primeng/skeleton';
-import { TooltipModule } from 'primeng/tooltip';
-import { DividerModule } from 'primeng/divider';
 import { DialogModule } from 'primeng/dialog';
-import { TableModule } from 'primeng/table';
-import { ToolbarModule } from 'primeng/toolbar';
-import { SplitButtonModule } from 'primeng/splitbutton';
-import { PaginatorModule } from 'primeng/paginator';
-import { MenuModule } from 'primeng/menu';
-import { InputSwitchModule } from 'primeng/inputswitch';
-import { ChipModule } from 'primeng/chip';
-import { AccordionModule } from 'primeng/accordion';
-import { ProgressBarModule } from 'primeng/progressbar';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 interface DomainStats {
@@ -45,30 +31,17 @@ interface DomainStats {
     FormsModule,
     RouterModule,
     ButtonModule,
-    CardModule,
     TagModule,
     InputTextModule,
     DropdownModule,
     ToastModule,
-    BadgeModule,
     SkeletonModule,
-    TooltipModule,
-    DividerModule,
     DialogModule,
-    TableModule,
-    ToolbarModule,
-    SplitButtonModule,
-    PaginatorModule,
-    MenuModule,
-    InputSwitchModule,
-    ChipModule,
-    AccordionModule,
-    ProgressBarModule,
     ConfirmDialogModule
   ],
   templateUrl: './domain-catalog.component.html',
   styleUrls: ['./domain-catalog.component.scss'],
-  providers: [MessageService, ConfirmationService]
+  providers: [MessageService]
 })
 export class DomainCatalogComponent implements OnInit {
   domains: Domain[] = [];
@@ -100,22 +73,11 @@ export class DomainCatalogComponent implements OnInit {
   showDetailDialog = false;
   loadingDetail = false;
 
-  // APIs Dialog
-  showApisDialog = false;
-  loadingApis = false;
-  selectedDomainForApis: Domain | null = null;
-  domainApis: any[] = [];
-  filteredApis: any[] = [];
-  apiSearchTerm = '';
-  totalApiCount = 0;
-
   constructor(
     private dataMeshServices: DataMeshServices,
     private messageService: MessageService,
     private loadingService: LoadingService,
-    private i18nService: I18nService,
-    private router: Router,
-    private confirmationService: ConfirmationService
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -159,8 +121,7 @@ export class DomainCatalogComponent implements OnInit {
     this.stats.totalDomains = this.domains.length;
     this.stats.activeDomains = this.domains.filter(d => d.status === 'Active').length;
     this.stats.totalDataProducts = this.domains.reduce((acc, curr) => acc + (curr.data_products?.length || 0), 0);
-    // Note: Total APIs might need a separate call or be part of domain details, here we just sum up if available or set 0
-    this.stats.totalApis = 0; // Placeholder
+    this.stats.totalApis = this.domains.reduce((acc, curr) => acc + this.getDomainApiCount(curr), 0);
   }
 
   extractTeams(): void {
@@ -250,6 +211,14 @@ export class DomainCatalogComponent implements OnInit {
     this.viewMode = this.viewMode === 'list' ? 'card' : 'list';
   }
 
+  setViewMode(mode: 'list' | 'card'): void {
+    this.viewMode = mode;
+  }
+
+  refreshDomains(): void {
+    this.loadDomainsList();
+  }
+
   applyFilters(): void {
     this.filteredDomains = this.domains.filter(domain => {
       const searchLower = this.searchTerm.toLowerCase();
@@ -304,66 +273,56 @@ export class DomainCatalogComponent implements OnInit {
     }
   }
 
-  showDomainApis(domain: Domain): void {
-    this.selectedDomainForApis = domain;
-    this.loadApis(domain.domain_key);
+  getDomainDataProductsCount(domain: Domain): number {
+    return domain.data_products?.length || 0;
+  }
+
+  getDomainApiCount(domain: Domain): number {
+    return (domain.data_products || []).reduce((total, product) => total + (product.endpoints_count || 0), 0);
+  }
+
+  exportDomains(): void {
+    const rows = this.filteredDomains.map(domain => ({
+      domain_key: domain.domain_key,
+      display_name: domain.display_name,
+      status: domain.status,
+      owner: domain.owner,
+      team: domain.team,
+      data_products: this.getDomainDataProductsCount(domain),
+      apis: this.getDomainApiCount(domain)
+    }));
+
+    const headers = Object.keys(rows[0] || {
+      domain_key: '',
+      display_name: '',
+      status: '',
+      owner: '',
+      team: '',
+      data_products: '',
+      apis: ''
+    });
+
+    const csv = [
+      headers.join(','),
+      ...rows.map(row => headers.map(header => `"${String((row as any)[header] ?? '').replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'domain-catalog.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Export ready',
+      detail: `Exported ${this.filteredDomains.length} domains`
+    });
   }
 
   viewDomainDataProducts(domain: Domain): void {
     this.router.navigate(['/data-mesh/data-products', domain.domain_key]);
-  }
-
-  loadApis(domainKey: string): void {
-    this.loadingApis = true;
-    this.showApisDialog = true;
-
-    this.dataMeshServices.getApisByDomain(domainKey, { include_dynamic: true, size: 10, offset: 0 }).subscribe({
-      next: (response) => {
-        if (response.success && response.data && Array.isArray(response.data)) {
-          this.domainApis = response.data;
-          this.filteredApis = [...this.domainApis];
-          this.totalApiCount = this.domainApis.length;
-          this.loadingApis = false;
-        } else {
-          this.loadingApis = false;
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to load APIs'
-          });
-        }
-      },
-      error: (error) => {
-        console.error('Error loading APIs:', error);
-        this.loadingApis = false;
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load APIs'
-        });
-      }
-    });
-  }
-
-  filterApis(): void {
-    if (!this.apiSearchTerm) {
-      this.filteredApis = [...this.domainApis];
-    } else {
-      const term = this.apiSearchTerm.toLowerCase();
-      this.filteredApis = this.domainApis.filter(api =>
-        api.path.toLowerCase().includes(term) ||
-        api.description.toLowerCase().includes(term) ||
-        api.method.toLowerCase().includes(term) ||
-        api.data_product.toLowerCase().includes(term)
-      );
-    }
-  }
-
-  closeApisDialog(): void {
-    this.showApisDialog = false;
-    this.selectedDomainForApis = null;
-    this.domainApis = [];
-    this.filteredApis = [];
-    this.apiSearchTerm = '';
   }
 }
