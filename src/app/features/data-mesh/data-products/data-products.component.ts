@@ -25,6 +25,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { ToolbarModule } from 'primeng/toolbar';
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
   selector: 'app-data-products',
@@ -48,7 +49,8 @@ import { ToolbarModule } from 'primeng/toolbar';
     SkeletonModule,
     InputGroupModule,
     InputGroupAddonModule,
-    ToolbarModule
+    ToolbarModule,
+    DialogModule
   ],
   templateUrl: './data-products.component.html',
   styleUrls: ['./data-products.component.scss'],
@@ -59,15 +61,15 @@ export class DataProductsComponent implements OnInit {
   filteredProducts: DataProduct[] = [];
   loading = false;
   searchTerm = '';
+  viewMode: 'grid' | 'table' = 'grid';
+  showFilters: boolean = false;
+  isSimpleView: boolean = false;
 
   filters = {
     domain: '',
     status: '',
     owner: ''
   };
-
-  viewMode: 'grid' | 'table' = 'grid';
-  showFilters: boolean = false;
 
   // Pagination
   totalRecords = 0;
@@ -86,7 +88,7 @@ export class DataProductsComponent implements OnInit {
 
   // Domain images mapping
   domainImageMap: { [key: string]: string } = {
-    'application': '�',
+    'application': '📱',
     'hotel': '🏨',
     'device_detector': '📱',
     'finance': '💰',
@@ -114,10 +116,14 @@ export class DataProductsComponent implements OnInit {
     'web': '🌐',
     'api': '🔗',
     'database': '🗄️',
-    'default': '�'
+    'default': '📱'
   };
 
   selectedDomain: string | null = null;
+  
+  // Product Detail Dialog
+  showProductDetailsDialog = false;
+  selectedProductForDetails: DataProduct | null = null;
 
   constructor(
     private dataProductServices: DataProductServices,
@@ -245,19 +251,10 @@ export class DataProductsComponent implements OnInit {
   }
 
   formatDomainName(domainKey: string): string {
+    if (!domainKey) return '';
     return domainKey.split('_').map(word =>
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
-  }
-
-  toggleFilters(): void {
-    this.showFilters = !this.showFilters;
-  }
-
-  onSearch(): void {
-    this.currentPage = 0;
-    this.first = 0;
-    this.loadDataProducts();
   }
 
   onFilterChange(): void {
@@ -269,6 +266,20 @@ export class DataProductsComponent implements OnInit {
       // Navigate back to all data products
       this.router.navigate(['/data-mesh/data-products']);
     }
+  }
+
+  toggleFilters(): void {
+    this.showFilters = !this.showFilters;
+  }
+
+  toggleSimpleView(): void {
+    this.isSimpleView = !this.isSimpleView;
+  }
+
+  onSearch(): void {
+    this.currentPage = 0;
+    this.first = 0;
+    this.loadDataProducts();
   }
 
   applyFilters(): void {
@@ -365,6 +376,11 @@ export class DataProductsComponent implements OnInit {
     } else {
       this.router.navigate(['/data-mesh/data-products', product.id]);
     }
+  }
+
+  openProductQuickView(product: DataProduct): void {
+    this.selectedProductForDetails = product;
+    this.showProductDetailsDialog = true;
   }
 
   openProductApplication(product: DataProduct): void {
@@ -465,12 +481,13 @@ export class DataProductsComponent implements OnInit {
 
   getProductGradient(domain: string | undefined): string {
     const gradients: { [key: string]: string } = {
-      'hotel': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      'application': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      'finance': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      'retail': 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-      'healthcare': 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-      'logistics': 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+      'hotel': 'linear-gradient(135deg, #8965e0 0%, #bc61da 100%)',
+      'application': 'linear-gradient(135deg, #ff5f6d 0%, #ffc371 100%)',
+      'finance': 'linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%)',
+      'retail': 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+      'healthcare': 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)',
+      'logistics': 'linear-gradient(135deg, #00c6ff 0%, #0072ff 100%)',
+      'blogger': 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
       'default': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
     };
     return gradients[domain || 'default'] || gradients['default'];
@@ -478,14 +495,10 @@ export class DataProductsComponent implements OnInit {
 
   getStatusSeverity(status: string): 'success' | 'info' | 'warning' | 'danger' {
     switch (status?.toLowerCase()) {
-      case 'active':
-        return 'success';
-      case 'draft':
-        return 'info';
-      case 'archived':
-        return 'warning';
-      default:
-        return 'info';
+      case 'active': return 'success';
+      case 'draft': return 'info';
+      case 'archived': return 'warning';
+      default: return 'info';
     }
   }
 
@@ -504,7 +517,6 @@ export class DataProductsComponent implements OnInit {
   }
 
   viewProductApis(product: DataProduct): void {
-    // Navigate to the APIs page for this product
     if (product.domain && product.id) {
       this.router.navigate(['/data-mesh/data-products', product.domain, product.id, 'apis']);
     } else {

@@ -265,7 +265,23 @@ export class DomainCatalogComponent implements OnInit {
     return iconMap[domainKey.toLowerCase()] || 'pi-sitemap';
   }
 
-  getStatusSeverity(status: string): string {
+  getDomainGradient(domain: string | undefined): string {
+    const gradients: { [key: string]: string } = {
+      'hotel': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'application': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      'finance': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      'retail': 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      'healthcare': 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+      'logistics': 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+      'blogger': 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+      'files': 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)',
+      'default': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    };
+    return gradients[domain || 'default'] || gradients['default'];
+  }
+
+
+  getStatusSeverity(status: string): 'success' | 'secondary' | 'info' {
     switch (status?.toLowerCase()) {
       case 'active': return 'success';
       case 'inactive': return 'secondary';

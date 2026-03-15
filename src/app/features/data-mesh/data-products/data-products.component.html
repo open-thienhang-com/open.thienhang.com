@@ -35,10 +35,18 @@
             class="p-button-sm"
             (click)="toggleFilters()">
           </button>
+          <button
+            pButton
+            type="button"
+            [icon]="isSimpleView ? 'pi pi-eye' : 'pi pi-eye-slash'"
+            [label]="isSimpleView ? 'Full view' : 'Clean view'"
+            class="p-button-sm p-button-info p-button-outlined"
+            (click)="toggleSimpleView()">
+          </button>
         </div>
       </section>
 
-      <section class="products-overview-grid">
+      <section class="products-overview-grid" *ngIf="!isSimpleView">
         <article class="summary-card" data-tone="blue">
           <div>
             <p class="summary-label">Visible products</p>
@@ -150,7 +158,7 @@
             </div>
           </div>
 
-          <div class="products-sidebar-panel sidebar-help">
+          <div class="products-sidebar-panel sidebar-help" *ngIf="!isSimpleView">
             <div class="sidebar-help-icon">
               <i class="pi pi-compass"></i>
             </div>
@@ -262,20 +270,26 @@
 
             <div *ngIf="!loading && viewMode === 'grid' && dataProducts.length > 0" class="grid-view-container">
               <div class="products-grid">
-                <div
-                  *ngFor="let product of dataProducts; trackBy: trackByProductId; let i = index"
-                  class="product-card"
-                  [style.animation-delay]="(i % 12) * 0.05 + 's'"
-                  (click)="viewProductDetails(product)">
+                  <div
+                    *ngFor="let product of dataProducts; trackBy: trackByProductId; let i = index"
+                    class="product-card"
+                    [style.animation-delay]="(i % 12) * 0.05 + 's'"
+                    (click)="openProductQuickView(product)">
 
-                  <div class="product-header" [style.background]="getProductGradient(product.domain)">
-                    <img
-                      class="product-header-image"
-                      [src]="getDomainImagePath(product.domain || '')"
-                      [alt]="getDomainDisplayName(product.domain || '')"
-                      (error)="$any($event.target).src='assets/images/room-placeholder.svg'">
+                  <!-- circle glow header -->
+                  <div class="product-header">
+                    <div class="product-header-glow" [style.background]="getProductGradient(product.domain)"></div>
                     <div class="product-header-overlay"></div>
-                    <div class="product-status">
+                    
+                    <div class="product-domain-badge">
+                      <img
+                        class="product-domain-icon"
+                        [src]="getDomainImagePath(product.domain || '')"
+                        [alt]="getDomainDisplayName(product.domain || '')"
+                        (error)="$any($event.target).src='assets/images/room-placeholder.svg'">
+                    </div>
+
+                    <div class="product-status-pill">
                       <p-tag
                         [value]="product.status || 'Active'"
                         [severity]="getStatusSeverity(product.status || 'active')"
@@ -285,59 +299,45 @@
                   </div>
 
                   <div class="product-body">
+                    <div class="product-eyebrow-container">
+                      <span class="product-domain-label">{{ getDomainDisplayName(product.domain || '') }}</span>
+                    </div>
+                    
                     <h3 class="product-title">{{ product.name }}</h3>
-                    <p class="product-description">
-                      {{ product.description || 'No description available' }}
-                    </p>
-
-                    <div class="product-meta">
-                      <div class="meta-item">
-                        <i class="pi pi-tag meta-icon"></i>
-                        <p-chip
-                          [label]="getDomainDisplayName(product.domain || '')"
-                          class="domain-chip">
-                        </p-chip>
-                      </div>
-
-                      <div class="meta-item" *ngIf="product.owner">
-                        <i class="pi pi-user meta-icon"></i>
-                        <span class="meta-text">{{ product.owner.email || product.owner.first_name || 'N/A' }}</span>
-                      </div>
+                    
+                    <!-- Simplified card content: description and meta info hidden by default -->
+                    <div class="product-info-hint">
+                      <i class="pi pi-info-circle"></i>
+                      <span>Click for details</span>
                     </div>
                   </div>
 
                   <div class="product-footer">
                     <div class="product-actions">
-                      <p-button
-                        label="Open Application"
+                      <button
+                        pButton
+                        type="button"
                         icon="pi pi-arrow-up-right"
-                        size="small"
-                        severity="primary"
-                        (onClick)="openProductApplication(product); $event.stopPropagation()"
-                        class="action-button action-button-primary">
-                      </p-button>
-                      <p-button
-                        label="View Detail"
+                        label="Open"
+                        class="p-button-sm product-action-primary"
+                        (click)="openProductApplication(product); $event.stopPropagation()">
+                      </button>
+                      <button
+                        pButton
+                        type="button"
                         icon="pi pi-eye"
-                        size="small"
-                        [outlined]="true"
-                        severity="contrast"
-                        (onClick)="viewProductDetails(product); $event.stopPropagation()"
-                        class="action-button">
-                      </p-button>
-                      <p-button
-                        label="Subscribe"
+                        class="p-button-sm p-button-text p-button-secondary"
+                        (click)="viewProductDetails(product); $event.stopPropagation()"
+                        pTooltip="View details">
+                      </button>
+                      <button
+                        pButton
+                        type="button"
                         icon="pi pi-plus"
-                        size="small"
-                        severity="success"
-                        (onClick)="subscribeToProduct(product); $event.stopPropagation()"
-                        class="action-button">
-                      </p-button>
-                    </div>
-
-                    <div class="product-date" *ngIf="product.created_at">
-                      <i class="pi pi-calendar"></i>
-                      <span>{{ formatDate(product.created_at) }}</span>
+                        class="p-button-sm p-button-text p-button-success"
+                        (click)="subscribeToProduct(product); $event.stopPropagation()"
+                        pTooltip="Subscribe">
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -486,3 +486,91 @@
     </div>
   </div>
 </div>
+
+<!-- Product Quick View Dialog -->
+<p-dialog 
+  [(visible)]="showProductDetailsDialog" 
+  [header]="selectedProductForDetails?.name || 'Product Details'" 
+  [modal]="true" 
+  [style]="{width: '50vw', maxWidth: '600px'}"
+  [breakpoints]="{'960px': '75vw', '640px': '90vw'}"
+  [draggable]="false" 
+  [resizable]="false"
+  styleClass="product-details-dialog">
+  
+  <div class="quick-view-content" *ngIf="selectedProductForDetails">
+    <div class="quick-view-header" [style.background]="getProductGradient(selectedProductForDetails.domain)">
+      <div class="quick-view-badge">
+        <img 
+          [src]="getDomainImagePath(selectedProductForDetails.domain || '')" 
+          [alt]="selectedProductForDetails.domain">
+      </div>
+    </div>
+    
+    <div class="quick-view-body">
+      <div class="quick-view-info-row">
+        <div class="info-group">
+          <label>Domain</label>
+          <div class="info-value">
+            <p-chip [label]="getDomainDisplayName(selectedProductForDetails.domain || '')"></p-chip>
+          </div>
+        </div>
+        <div class="info-group">
+          <label>Status</label>
+          <div class="info-value">
+            <p-tag [value]="selectedProductForDetails.status || 'Active'" [severity]="getStatusSeverity(selectedProductForDetails.status || 'active')"></p-tag>
+          </div>
+        </div>
+      </div>
+      
+      <div class="info-group">
+        <label>Description</label>
+        <p class="info-description">{{ selectedProductForDetails.description || 'No description available for this data product.' }}</p>
+      </div>
+      
+      <div class="quick-view-meta">
+        <div class="meta-item" *ngIf="selectedProductForDetails.owner">
+          <i class="pi pi-user"></i>
+          <div>
+            <label>Owner</label>
+            <p>{{ selectedProductForDetails.owner.email || selectedProductForDetails.owner.first_name }}</p>
+          </div>
+        </div>
+        <div class="meta-item" *ngIf="selectedProductForDetails.created_at">
+          <i class="pi pi-calendar"></i>
+          <div>
+            <label>Created At</label>
+            <p>{{ formatDate(selectedProductForDetails.created_at) }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <ng-template pTemplate="footer">
+    <div class="quick-view-footer">
+      <button 
+        pButton 
+        type="button" 
+        label="Close" 
+        class="p-button-text p-button-secondary" 
+        (click)="showProductDetailsDialog = false">
+      </button>
+      <button 
+        pButton 
+        type="button" 
+        label="Full Details" 
+        icon="pi pi-external-link" 
+        class="p-button-outlined" 
+        (click)="viewProductDetails(selectedProductForDetails!); showProductDetailsDialog = false">
+      </button>
+      <button 
+        pButton 
+        type="button" 
+        label="Open Application" 
+        icon="pi pi-arrow-up-right" 
+        (click)="openProductApplication(selectedProductForDetails!); showProductDetailsDialog = false">
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

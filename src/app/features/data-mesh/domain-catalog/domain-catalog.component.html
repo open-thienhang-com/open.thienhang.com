@@ -286,37 +286,29 @@
 
             <div *ngIf="!loading && filteredDomains.length > 0 && viewMode === 'card'" class="domain-card-grid">
               <article *ngFor="let domain of filteredDomains; trackBy: trackByDomainKey" class="domain-card">
-                <div class="domain-card-header">
-                  <div class="domain-card-title">
-                    <div class="domain-icon-shell">
-                      <i [class]="'pi ' + getDomainIcon(domain.domain_key)"></i>
-                    </div>
-                    <div>
-                      <h3>{{ domain.display_name }}</h3>
-                      <p>{{ domain.domain_key }}</p>
-                    </div>
+                <div class="domain-card-header-premium">
+                  <div class="domain-card-header-glow" [style.background]="getDomainGradient(domain.domain_key)"></div>
+                  <div class="domain-card-header-overlay"></div>
+                  
+                  <div class="domain-card-badge">
+                    <i [class]="'pi ' + getDomainIcon(domain.domain_key)"></i>
                   </div>
-                  <p-tag [value]="domain.status" [severity]="getStatusSeverity(domain.status)"></p-tag>
+
+                  <div class="domain-status-pill">
+                    <p-tag [value]="domain.status" [severity]="getStatusSeverity(domain.status)"></p-tag>
+                  </div>
                 </div>
 
-                <p class="domain-card-description">{{ domain.description }}</p>
-
-                <div class="domain-card-metrics">
-                  <div class="metric-block">
-                    <span class="metric-label">Owner</span>
-                    <strong>{{ domain.owner || 'Unassigned' }}</strong>
+                <div class="domain-card-body">
+                  <div class="domain-card-title-group">
+                    <h3 class="domain-card-title">{{ domain.display_name }}</h3>
+                    <p class="domain-card-key">{{ domain.domain_key }}</p>
                   </div>
-                  <div class="metric-block">
-                    <span class="metric-label">Team</span>
-                    <strong>{{ domain.team || 'No team' }}</strong>
-                  </div>
-                  <div class="metric-block">
-                    <span class="metric-label">Products</span>
-                    <strong>{{ getDomainDataProductsCount(domain) }}</strong>
-                  </div>
-                  <div class="metric-block">
-                    <span class="metric-label">APIs</span>
-                    <strong>{{ getDomainApiCount(domain) }}</strong>
+                  
+                  <!-- Simplified card content: hide description and metrics by default -->
+                  <div class="product-info-hint">
+                    <i class="pi pi-info-circle"></i>
+                    <span>Click for details</span>
                   </div>
                 </div>
 
