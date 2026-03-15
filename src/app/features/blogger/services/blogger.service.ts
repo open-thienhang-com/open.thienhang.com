@@ -141,6 +141,29 @@ export interface BloggerOverviewResponse {
     total: number;
 }
 
+export interface Blog {
+    id: string;
+    name: string;
+    description: string;
+    url: string;
+    published: string;
+    updated: string;
+    posts_count: number;
+    pages_count: number;
+    locale: {
+        language: string;
+        country: string;
+        variant: string;
+    };
+    custom_meta_data: any;
+}
+
+export interface BlogsResponse {
+    message: string;
+    data: Blog[];
+    total: number;
+}
+
 export interface BloggerQuality {
     domain: string;
     overall_score: number;
@@ -252,6 +275,37 @@ export class BloggerService {
         return this.http.get<PostsResponse>(
             `${this.apiBase}/data-mesh/domains/blogger`,
             { params }
+        );
+    }
+
+    getBloggers(status: string = 'published', limit: number = 10, offset: number = 0): Observable<PostsResponse> {
+        const params = new HttpParams()
+            .set('status', status)
+            .set('limit', limit.toString())
+            .set('offset', offset.toString());
+
+        return this.http.get<PostsResponse>(
+            `${this.apiBase}/data-mesh/domains/bloggers`,
+            { params }
+        );
+    }
+
+    getBlogPosts(blogId: string = '4875950892035845487', status: string = 'published', limit: number = 10, offset: number = 0): Observable<PostsResponse> {
+        const params = new HttpParams()
+            .set('blog_id', blogId)
+            .set('status', status)
+            .set('limit', limit.toString())
+            .set('offset', offset.toString());
+
+        return this.http.get<PostsResponse>(
+            `${this.apiBase}/data-mesh/domains/blogger/posts`,
+            { params }
+        );
+    }
+
+    getBlogs(): Observable<BlogsResponse> {
+        return this.http.get<BlogsResponse>(
+            `${this.apiBase}/data-mesh/domains/blogger/blogs`
         );
     }
 

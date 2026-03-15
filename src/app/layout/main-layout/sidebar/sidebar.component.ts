@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, Input, Output, OnChanges, OnInit, computed, effect, inject, PLATFORM_ID, signal, ElementRef } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, OnInit, computed, effect, inject, PLATFORM_ID, signal, ElementRef } from '@angular/core';
 import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
@@ -297,6 +297,8 @@ export class SidebarComponent implements OnInit, OnChanges {
             { label: 'Catalogs', url: '/data-mesh/catalogs', icon: 'pi pi-book' }
           ]
         },
+        { label: 'Google Integrations', url: '/explore/google', icon: 'pi pi-google' },
+        { label: 'Data Warehouse', url: '/explore/data-warehouse', icon: 'pi pi-building-columns' },
         { label: 'Database Explorer', url: '/explore/database', icon: 'pi pi-database' },
         { label: 'Pipelines', url: '/explore/pipelines', icon: 'pi pi-sliders-h' },
         { label: 'Topics & Events', url: '/explore/topics', icon: 'pi pi-tags' },
@@ -363,109 +365,7 @@ export class SidebarComponent implements OnInit, OnChanges {
             { label: 'Online Store', url: '/retail/ecommerce', icon: 'pi pi-shopping-bag' },
             { label: 'Omni Channel', url: '/retail/omni-channel', icon: 'pi pi-comments' }
           ]
-        },
-        {
-          label: 'Order',
-          icon: 'pi pi-receipt',
-          children: [
-            { label: 'Orders', url: '/retail/orders', icon: 'pi pi-shopping-cart' },
-            { label: 'Transactions', url: '/retail/transactions', icon: 'pi pi-receipt' },
-            { label: 'Payment', url: '/retail/payment', icon: 'pi pi-credit-card' }
-          ]
-        },
-        {
-          label: 'Inventory',
-          icon: 'pi pi-box',
-          children: [
-            { label: 'Products', url: '/retail/inventory/products', icon: 'pi pi-shopping-cart' },
-            { label: 'Categories', url: '/retail/inventory/categories', icon: 'pi pi-tags' },
-            { label: 'Suppliers', url: '/retail/inventory/suppliers', icon: 'pi pi-truck' },
-            { label: 'Partners', url: '/retail/inventory/partners', icon: 'pi pi-briefcase' },
-            { label: 'Locations', url: '/retail/inventory/locations', icon: 'pi pi-map-marker' }
-          ]
-        },
-        {
-          label: 'Customer',
-          icon: 'pi pi-users',
-          children: [
-            { label: 'Customers', url: '/retail/customers', icon: 'pi pi-users' }
-          ]
-        },
-        {
-          label: 'Configuration',
-          icon: 'pi pi-cog',
-          children: [
-            { label: 'Settings', url: '/retail/inventory/settings', icon: 'pi pi-cog' }
-          ]
         }
-      ]
-    },
-    {
-      label: 'Hotel Management',
-      icon: 'pi pi-building',
-      expanded: false,
-      items: [
-        // 1. Dashboard - Overview
-        { label: 'Dashboard', url: '/hotel', icon: 'pi pi-home' },
-
-        // 2. Property Management - Quáº£n lÃ½ tÃ i sáº£n
-        {
-          label: 'Property Management',
-          icon: 'pi pi-building',
-          children: [
-            { label: 'Apartments', url: '/hotel/apartments', icon: 'pi pi-home' },
-            { label: 'Rooms', url: '/hotel/rooms', icon: 'pi pi-door-open' }
-          ]
-        },
-
-        // 3. Reservations & Bookings - Äáº·t phÃ²ng vÃ  lá»‹ch
-        {
-          label: 'Reservations & Bookings',
-          icon: 'pi pi-calendar',
-          children: [
-            { label: 'Bookings', url: '/hotel/bookings', icon: 'pi pi-calendar-check' },
-            { label: 'Calendar', url: '/hotel/calendar', icon: 'pi pi-calendar' },
-            { label: 'Check-in', url: '/hotel/checkin', icon: 'pi pi-sign-in' }
-          ]
-        },
-
-        // 4. Guest Services - Dá»‹ch vá»¥ khÃ¡ch hÃ ng
-        {
-          label: 'Guest Services',
-          icon: 'pi pi-users',
-          children: [
-            { label: 'Guests', url: '/hotel/guests', icon: 'pi pi-user' },
-            { label: 'Reviews', url: '/hotel/reviews', icon: 'pi pi-star' },
-            { label: 'Ratings', url: '/hotel/ratings', icon: 'pi pi-star-fill' },
-            { label: 'Support', url: '/hotel/support', icon: 'pi pi-comments' }
-          ]
-        },
-
-        // 5. Operations - Váº­n hÃ nh
-        {
-          label: 'Operations',
-          icon: 'pi pi-cog',
-          children: [
-            { label: 'Maintenance', url: '/hotel/maintenance', icon: 'pi pi-wrench' },
-            { label: 'Inventory', url: '/hotel/inventory', icon: 'pi pi-box' },
-            { label: 'Staff', url: '/hotel/staff', icon: 'pi pi-id-card' }
-          ]
-        },
-
-        // 6. Analytics & Reports - PhÃ¢n tÃ­ch vÃ  bÃ¡o cÃ¡o
-        {
-          label: 'Analytics & Reports',
-          icon: 'pi pi-chart-bar',
-          children: [
-            { label: 'Dashboard', url: '/hotel/analytics/dashboard', icon: 'pi pi-chart-pie' },
-            { label: 'Revenue', url: '/hotel/analytics/revenue', icon: 'pi pi-dollar' },
-            { label: 'Occupancy', url: '/hotel/analytics/occupancy', icon: 'pi pi-chart-line' },
-            { label: 'Customers', url: '/hotel/analytics/customers', icon: 'pi pi-users' }
-          ]
-        },
-
-        // 7. Settings - CÃ i Ä‘áº·t (cuá»‘i cÃ¹ng)
-        { label: 'Settings', url: '/hotel/settings', icon: 'pi pi-cog' }
       ]
     },
     {
@@ -473,21 +373,10 @@ export class SidebarComponent implements OnInit, OnChanges {
       icon: 'pi pi-pencil',
       expanded: false,
       items: [
-        // Authorization
-        { label: 'Authorize', url: '/blogger/login', icon: 'pi pi-sign-in', badge: 'NEW' },
-
-        // Dashboard & Overview
-        { label: 'Dashboard', url: '/blogger', icon: 'pi pi-home' },
-
-        // Content Management
-        {
-          label: 'Content Management',
-          icon: 'pi pi-book',
-          children: [
-            { label: 'Posts', url: '/blogger/posts', icon: 'pi pi-file-edit' },
-            { label: 'Authors', url: '/blogger/authors', icon: 'pi pi-users' }
-          ]
-        }
+        { label: 'Overview', url: '/blogger', icon: 'pi pi-home' },
+        { label: 'Blogs', url: '/blogger?section=blogs', icon: 'pi pi-book' },
+        { label: 'Posts', url: '/blogger/posts', icon: 'pi pi-file-edit' },
+        { label: 'Authors', url: '/blogger/authors', icon: 'pi pi-users' }
       ]
     },
     {

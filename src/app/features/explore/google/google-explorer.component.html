@@ -1,0 +1,281 @@
+<div class="warehouse-main google-theme">
+  <div class="warehouse-content-wrapper">
+    <div class="warehouse-content-inner">
+      <!-- Dashboard Hero -->
+      <section class="warehouse-hero">
+        <div class="warehouse-hero-copy">
+          <div class="warehouse-hero-badge">
+            <i class="pi pi-google"></i>
+          </div>
+          <div class="hero-text">
+            <p class="warehouse-eyebrow">Operational Surface</p>
+            <h1 class="warehouse-title">Google Integrations</h1>
+            <p class="warehouse-subtitle">Seamlessly manage OAuth credentials, Drive assets, and Gmail inventory from a centralized dashboard.</p>
+          </div>
+        </div>
+
+        <div class="warehouse-hero-actions">
+          <button pButton type="button" icon="pi pi-refresh" label="Refresh" class="p-button-rounded p-button-outlined" (click)="loadDashboard()" [loading]="globalLoading"></button>
+          <button pButton type="button" icon="pi pi-google" label="Connect Account" class="p-button-rounded" (click)="startGoogleConnect()"></button>
+        </div>
+      </section>
+
+      <!-- Key Metrics -->
+      <section class="warehouse-overview-grid">
+        <article *ngFor="let card of summaryCards" class="summary-card" [attr.data-tone]="card.tone">
+          <div class="summary-icon">
+            <i [class]="card.icon"></i>
+          </div>
+          <div class="summary-body">
+            <p class="summary-label">{{ card.label }}</p>
+            <h3 class="summary-value">{{ card.value }}</h3>
+            <p class="summary-caption">{{ card.caption }}</p>
+          </div>
+        </article>
+      </section>
+
+      <section class="warehouse-workspace">
+        <!-- Sidebar Navigation -->
+        <aside class="warehouse-sidebar">
+          <div class="warehouse-sidebar-panel">
+            <p class="sidebar-eyebrow">Navigation</p>
+            <div class="sidebar-heading">Google Core</div>
+            <nav class="nav-menu">
+              <button *ngFor="let section of sections" type="button" class="nav-item" (click)="switchSection(section.key)" [class.active]="activeSection === section.key">
+                <span class="nav-icon"><i [class]="section.icon"></i></span>
+                <span class="nav-content">
+                  <span class="nav-label">{{ section.label }}</span>
+                  <span class="nav-description">{{ section.description }}</span>
+                </span>
+                <i class="pi pi-chevron-right nav-chevron"></i>
+              </button>
+            </nav>
+          </div>
+        </aside>
+
+        <!-- Main Panel Content -->
+        <div class="warehouse-panel">
+          <header class="warehouse-panel-header">
+            <div class="header-left">
+              <p class="panel-eyebrow">Workspace Section</p>
+              <h2 class="panel-title">{{ activeSectionMeta.label }}</h2>
+              <p class="panel-subtitle">{{ activeSectionMeta.description }}</p>
+            </div>
+            <div class="panel-chip">
+              <i [class]="activeSectionMeta.icon"></i>
+              <span>{{ activeSectionMeta.label }}</span>
+            </div>
+          </header>
+
+          <div class="warehouse-panel-content">
+            <p-message *ngIf="oauthMessage" severity="info" [text]="oauthMessage" styleClass="w-full"></p-message>
+
+            <!-- Section: Connect -->
+            <ng-container *ngIf="activeSection === 'connect'">
+              <div class="grid-2">
+                <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon"><i class="pi pi-link"></i></div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">OAuth Connection</h2>
+                      <p class="card-subtitle">Current authorization state and linked account details</p>
+                    </div>
+                    <p-tag [value]="oauthState" [severity]="getSeverity(oauthState)" rounded="true"></p-tag>
+                  </div>
+                  <div class="card-body">
+                    <div class="kv-list">
+                      <div class="kv-item"><span>Status</span><strong>{{ oauthState }}</strong></div>
+                      <div class="kv-item"><span>Account</span><strong>{{ connectionState.data?.linked_account || 'Not linked' }}</strong></div>
+                      <div class="kv-item"><span>Credential ID</span><strong>{{ connectionState.data?.credential_id || 'N/A' }}</strong></div>
+                      <div class="kv-item"><span>Expiry</span><strong>{{ formatDate(connectionState.data?.expires_at) }}</strong></div>
+                    </div>
+                    <div class="action-row">
+                      <button pButton type="button" label="Inspect Request" icon="pi pi-code" class="p-button-outlined p-button-sm" (click)="createAuthUrl()"></button>
+                      <button pButton type="button" label="Connect Now" icon="pi pi-google" class="p-button-sm" (click)="startGoogleConnect()"></button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon"><i class="pi pi-shield"></i></div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">Consent Payload</h2>
+                      <p class="card-subtitle">Detailed OAuth request data returned from the secure domain</p>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div *ngIf="authConfigState.loading" class="flex justify-center p-4">
+                      <p-progressSpinner strokeWidth="3" [style]="{width: '40px', height: '40px'}"></p-progressSpinner>
+                    </div>
+
+                    <p-message *ngIf="authConfigState.error" severity="error" [text]="authConfigState.error" styleClass="w-full mb-3"></p-message>
+
+                    <ng-container *ngIf="authConfigState.data as auth">
+                      <div class="data-block mb-3">
+                        <label class="sidebar-eyebrow">Redirect URI</label>
+                        <div class="mono-block mb-2">{{ auth.redirect_uri }}</div>
+                      </div>
+
+                      <div class="data-block mb-3">
+                        <label class="sidebar-eyebrow">Authorization URL</label>
+                        <div class="mono-block mb-2" style="max-height: 100px; overflow-y: auto; font-size: 0.75rem;">{{ auth.authorization_url }}</div>
+                      </div>
+
+                      <div class="data-block mb-4">
+                        <label class="sidebar-eyebrow">Requested Scopes</label>
+                        <div class="pill-list">
+                          <span class="info-pill" *ngFor="let scope of auth.scopes">{{ scope }}</span>
+                        </div>
+                      </div>
+
+                      <div class="action-row pt-2 border-top-1 border-gray-100">
+                        <button pButton type="button" label="Authorize & Redirect" icon="pi pi-external-link" class="p-button-sm w-full" (click)="startGoogleConnect()"></button>
+                      </div>
+                    </ng-container>
+
+                    <div *ngIf="!authConfigState.loading && !authConfigState.data && !authConfigState.error" class="empty-state p-4">
+                      <button pButton type="button" label="Generate Auth Config" icon="pi pi-cog" class="p-button-outlined p-button-sm" (click)="createAuthUrl()"></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Section: Credentials -->
+            <ng-container *ngIf="activeSection === 'credentials'">
+              <div class="flat-card">
+                <div class="card-header">
+                  <div class="card-icon"><i class="pi pi-id-card"></i></div>
+                  <div class="card-title-group">
+                    <h2 class="card-title">Active Credentials</h2>
+                    <p class="card-subtitle">Manage tokens and service permissions for connected accounts</p>
+                  </div>
+                  <p-tag [value]="(credentialsState.data?.total || 0) + ' Accounts'" severity="info"></p-tag>
+                </div>
+                <div class="card-body">
+                  <p-message *ngIf="credentialsState.error" severity="error" [text]="credentialsState.error"></p-message>
+                  <p-table [value]="credentialsState.data?.data || []" responsiveLayout="scroll" styleClass="p-datatable-sm">
+                    <ng-template pTemplate="header">
+                      <tr>
+                        <th>Account</th>
+                        <th>Status</th>
+                        <th>Expires</th>
+                        <th>Methods</th>
+                        <th>Actions</th>
+                      </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-credential>
+                      <tr>
+                        <td>
+                          <div class="table-title">{{ credential.google_account_email }}</div>
+                          <div class="table-subtitle">{{ credential.credential_id }}</div>
+                        </td>
+                        <td><p-tag [value]="credential.status" [severity]="getSeverity(credential.status)"></p-tag></td>
+                        <td>{{ formatDate(credential.expires_at) }}</td>
+                        <td>
+                          <div class="pill-list compact-pills">
+                            <span class="info-pill" *ngIf="credential.has_refresh_token">Refresh</span>
+                            <span class="info-pill" *ngFor="let scope of credential.scopes.slice(0, 2)">{{ scope }}</span>
+                            <span class="info-pill" *ngIf="credential.scopes.length > 2">+{{ credential.scopes.length - 2 }}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="action-row">
+                            <button pButton type="button" icon="pi pi-refresh" class="p-button-text p-button-sm" (click)="refreshCredential(credential.credential_id)" pTooltip="Refresh Token"></button>
+                            <button pButton type="button" icon="pi pi-folder-open" class="p-button-text p-button-sm" (click)="openDriveForCredential(credential.credential_id)" pTooltip="Explore Drive"></button>
+                            <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-sm p-button-danger" (click)="disconnectCredential(credential.credential_id)" pTooltip="Disconnect"></button>
+                          </div>
+                        </td>
+                      </tr>
+                    </ng-template>
+                  </p-table>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Section: Services -->
+            <ng-container *ngIf="activeSection === 'services'">
+              <div class="flat-card">
+                <div class="card-header">
+                  <div class="card-icon"><i class="pi pi-cloud"></i></div>
+                  <div class="card-title-group">
+                    <h2 class="card-title">Service Explorer</h2>
+                    <p class="card-subtitle">Directly query Drive and Gmail APIs using chosen credentials</p>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="action-row align-items-center mb-3">
+                    <p-dropdown [options]="credentialOptions" [(ngModel)]="selectedCredentialId" placeholder="Select Account" [style]="{'min-width': '250px'}"></p-dropdown>
+                    <div class="flex gap-2">
+                      <button pButton type="button" label="Drive" icon="pi pi-file" class="p-button-sm p-button-rounded" [outlined]="selectedServiceView !== 'drive'" (click)="reloadServices('drive')"></button>
+                      <button pButton type="button" label="Gmail" icon="pi pi-envelope" class="p-button-sm p-button-rounded" [outlined]="selectedServiceView !== 'gmail'" (click)="reloadServices('gmail')"></button>
+                    </div>
+                  </div>
+
+                  <p-message *ngIf="!selectedCredentialId" severity="warn" text="Please select a valid credential to begin exploration."></p-message>
+
+                  <div *ngIf="selectedServiceView === 'drive'" class="mt-4">
+                    <p-table [value]="driveState.data?.data?.files || []" [paginator]="true" [rows]="5" styleClass="p-datatable-sm">
+                      <ng-template pTemplate="header">
+                        <tr>
+                          <th>File Name</th>
+                          <th>Type</th>
+                          <th>Modified</th>
+                        </tr>
+                      </ng-template>
+                      <ng-template pTemplate="body" let-file>
+                        <tr>
+                          <td><span class="font-semibold text-sm">{{ file.name }}</span></td>
+                          <td><span class="text-xs text-secondary">{{ file.mimeType }}</span></td>
+                          <td><span class="text-xs">{{ formatDate(file.modifiedTime) }}</span></td>
+                        </tr>
+                      </ng-template>
+                    </p-table>
+                  </div>
+
+                  <div *ngIf="selectedServiceView === 'gmail'" class="mt-4">
+                    <div *ngIf="gmailState.data as gmail" class="kv-list">
+                      <div class="kv-item"><span>Primary Email</span><strong>{{ gmail.data.emailAddress }}</strong></div>
+                      <div class="kv-item"><span>Messages Count</span><strong>{{ gmail.data.messagesTotal | number }}</strong></div>
+                      <div class="kv-item"><span>Threads Count</span><strong>{{ gmail.data.threadsTotal | number }}</strong></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Section: Governance & Inventory etc (Simplified for layout brevity) -->
+            <ng-container *ngIf="activeSection === 'inventory'">
+              <!-- Inventory components would follow similar card patterns -->
+              <div class="flat-card">
+                 <div class="card-header">
+                   <div class="card-icon"><i class="pi pi-search"></i></div>
+                   <div class="card-title-group">
+                     <h2 class="card-title">Inventory Management</h2>
+                     <p class="card-subtitle">Filter and inspect integrated Google resources</p>
+                   </div>
+                 </div>
+                 <div class="card-body">
+                   <!-- Content for inventory -->
+                   <div class="empty-state">
+                     <i class="pi pi-database mb-3"></i>
+                     <p>Inventory management interface</p>
+                   </div>
+                 </div>
+              </div>
+            </ng-container>
+
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<ng-template #authLoading>
+  <div class="flex justify-center p-8">
+    <p-progressSpinner strokeWidth="4"></p-progressSpinner>
+  </div>
+</ng-template>
+

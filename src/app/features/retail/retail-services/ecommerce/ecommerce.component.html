@@ -1,1 +1,275 @@
-<p>ecommerce works!</p>
+<div class="ec-wrapper">
+
+  <!-- ── Hero Banner ── -->
+  <div class="ec-hero">
+    <div class="ec-hero__text">
+      <span class="ec-hero__eyebrow">RETAIL ECOMMERCE</span>
+      <h1 class="ec-hero__title">Storefront</h1>
+      <p class="ec-hero__sub">Tìm kiếm, lọc, giỏ hàng và checkout demo đầy đủ</p>
+    </div>
+    <div class="ec-hero__stats">
+      <div class="ec-hero__stat">
+        <span class="ec-hero__stat-val">{{ getCartItemCount() }}</span>
+        <span class="ec-hero__stat-lbl">Cart Items</span>
+      </div>
+      <div class="ec-hero__stat ec-hero__stat--accent">
+        <span class="ec-hero__stat-val">{{ getTotal() | currency }}</span>
+        <span class="ec-hero__stat-lbl">Cart Total</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── KPI Cards ── -->
+  <div class="ec-kpi-row">
+    <div class="ec-kpi">
+      <div class="ec-kpi__icon ec-kpi__icon--blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.6 8H19M9 21a1 1 0 1 0 2 0 1 1 0 0 0-2 0M18 21a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/></svg>
+      </div>
+      <div class="ec-kpi__body">
+        <span class="ec-kpi__val">{{ totalProducts }}</span>
+        <span class="ec-kpi__lbl">Products</span>
+      </div>
+    </div>
+    <div class="ec-kpi">
+      <div class="ec-kpi__icon ec-kpi__icon--green">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h10M7 12h10M7 17h6"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+      </div>
+      <div class="ec-kpi__body">
+        <span class="ec-kpi__val ec-kpi__val--green">{{ discountDeals }}</span>
+        <span class="ec-kpi__lbl">Discount Deals</span>
+      </div>
+    </div>
+    <div class="ec-kpi">
+      <div class="ec-kpi__icon ec-kpi__icon--purple">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77 5.82 21.02 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <div class="ec-kpi__body">
+        <span class="ec-kpi__val">{{ totalCategories }}</span>
+        <span class="ec-kpi__lbl">Categories</span>
+      </div>
+    </div>
+    <div class="ec-kpi">
+      <div class="ec-kpi__icon ec-kpi__icon--orange">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5C7.6 5 6 6.6 6 8.5S7.6 12 9.5 12H15c1.9 0 3.5 1.6 3.5 3.5S16.9 19 15 19H6"/></svg>
+      </div>
+      <div class="ec-kpi__body">
+        <span class="ec-kpi__val">{{ averagePrice | currency:'USD':'symbol':'1.0-0' }}</span>
+        <span class="ec-kpi__lbl">Avg Price</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Main Layout ── -->
+  <div class="ec-layout">
+
+    <!-- Left: Products -->
+    <div class="ec-products-area">
+
+      <!-- Filter Bar -->
+      <div class="ec-filterbar">
+        <div class="ec-filterbar__search">
+          <svg class="ec-filterbar__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input
+            class="ec-filterbar__input"
+            type="text"
+            placeholder="Search product, SKU, barcode..."
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="applyFilters()"
+          />
+        </div>
+        <select class="ec-filterbar__select" [(ngModel)]="selectedCategory" (ngModelChange)="applyFilters()">
+          <option value="">All categories</option>
+          @for (cat of categories; track cat) {
+            <option [value]="cat">{{ cat }}</option>
+          }
+        </select>
+        <select class="ec-filterbar__select" [(ngModel)]="sortBy" (ngModelChange)="applyFilters()">
+          @for (opt of sortOptions; track opt.value) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+        <button class="ec-btn ec-btn--ghost" (click)="clearFilters()">Clear</button>
+        <button class="ec-btn ec-btn--primary" (click)="loadProducts()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+          Reload
+        </button>
+      </div>
+
+      <!-- Results info -->
+      <div class="ec-results-meta">
+        <span>Showing <strong>{{ filteredProducts.length }}</strong> of {{ totalProducts }} products</span>
+      </div>
+
+      <!-- Loading Skeleton -->
+      @if (isLoading) {
+        <div class="ec-grid">
+          @for (n of [1,2,3,4,5,6,7,8]; track n) {
+            <div class="ec-card ec-card--skeleton">
+              <div class="ec-card__img-wrap skeleton-box"></div>
+              <div class="ec-card__body">
+                <div class="skeleton-line skeleton-line--short"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line skeleton-line--med"></div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Product Grid -->
+      @if (!isLoading) {
+        @if (filteredProducts.length === 0) {
+          <div class="ec-empty">
+            <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="32" cy="32" r="30"/><path d="M21 21l22 22M43 21L21 43"/></svg>
+            <p>No products found</p>
+            <button class="ec-btn ec-btn--primary" (click)="clearFilters()">Clear filters</button>
+          </div>
+        } @else {
+          <div class="ec-grid">
+            @for (product of filteredProducts; track product.id) {
+              <div class="ec-card" [class.ec-card--in-cart]="isInCart(product.id)">
+                <!-- Badge -->
+                @if (hasDiscount(product)) {
+                  <span class="ec-badge ec-badge--discount">-{{ getDiscountPercent(product) }}%</span>
+                }
+                @if (!product.is_active) {
+                  <span class="ec-badge ec-badge--inactive">Inactive</span>
+                }
+
+                <!-- Product Image -->
+                <div class="ec-card__img-wrap">
+                  @if (getProductImage(product)) {
+                    <img [src]="getProductImage(product)" [alt]="product.name" class="ec-card__img" />
+                  } @else {
+                    <div class="ec-card__img-placeholder" [style.background]="getCategoryColor(product.category) + '18'">
+                      <span [style.color]="getCategoryColor(product.category)">{{ product.name.charAt(0).toUpperCase() }}</span>
+                    </div>
+                  }
+                </div>
+
+                <!-- Card Body -->
+                <div class="ec-card__body">
+                  <span class="ec-card__cat" [style.color]="getCategoryColor(product.category)" [style.background]="getCategoryColor(product.category) + '18'">
+                    {{ product.category || 'Uncategorized' }}
+                  </span>
+                  <h3 class="ec-card__name">{{ product.name }}</h3>
+                  <p class="ec-card__desc">{{ product.description || 'No description available.' }}</p>
+                  <p class="ec-card__sku">SKU: {{ product.sku }}</p>
+
+                  <div class="ec-card__price-row">
+                    <span class="ec-card__price">{{ getEffectivePrice(product) | currency }}</span>
+                    @if (hasDiscount(product)) {
+                      <span class="ec-card__price-orig">{{ getProductPrice(product) | currency }}</span>
+                    }
+                  </div>
+
+                  <!-- Cart controls -->
+                  @if (isInCart(product.id)) {
+                    <div class="ec-qty-ctrl">
+                      <button class="ec-qty-btn" (click)="updateQuantity(product.id, getCartQuantity(product.id) - 1)">−</button>
+                      <span class="ec-qty-val">{{ getCartQuantity(product.id) }}</span>
+                      <button class="ec-qty-btn" (click)="updateQuantity(product.id, getCartQuantity(product.id) + 1)">+</button>
+                      <button class="ec-remove-btn" (click)="removeFromCart(product.id)" title="Remove">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+                      </button>
+                    </div>
+                  } @else {
+                    <button class="ec-btn ec-btn--cart" (click)="addToCart(product)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.6 8H19M9 21a1 1 0 1 0 2 0M18 21a1 1 0 1 0 2 0"/></svg>
+                      Add to cart
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+
+    <!-- Right: Cart Panel -->
+    <aside class="ec-cart">
+      <div class="ec-cart__header">
+        <h2>Shopping Cart</h2>
+        <span class="ec-cart__badge">{{ getCartItemCount() }}</span>
+      </div>
+
+      @if (cart.length === 0) {
+        <div class="ec-cart__empty">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="25" cy="54" r="4"/><circle cx="50" cy="54" r="4"/><path d="M0 4h10l8 30h28l8-20H14"/></svg>
+          <p>Your cart is empty</p>
+        </div>
+      } @else {
+        <div class="ec-cart__items">
+          @for (item of cart; track item.product.id) {
+            <div class="ec-cart__item">
+              <div class="ec-cart__item-img" [style.background]="getCategoryColor(item.product.category) + '18'">
+                <span [style.color]="getCategoryColor(item.product.category)">{{ item.product.name.charAt(0) }}</span>
+              </div>
+              <div class="ec-cart__item-info">
+                <p class="ec-cart__item-name">{{ item.product.name }}</p>
+                <p class="ec-cart__item-price">{{ getEffectivePrice(item.product) | currency }}</p>
+              </div>
+              <div class="ec-cart__item-qty">
+                <button (click)="updateQuantity(item.product.id, item.quantity - 1)">−</button>
+                <span>{{ item.quantity }}</span>
+                <button (click)="updateQuantity(item.product.id, item.quantity + 1)">+</button>
+              </div>
+              <button class="ec-cart__item-remove" (click)="removeFromCart(item.product.id)">×</button>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Voucher -->
+      <div class="ec-voucher">
+        @if (!voucherApplied) {
+          <input class="ec-voucher__input" type="text" placeholder="Voucher code..." [(ngModel)]="voucherCode" />
+          <button class="ec-btn ec-btn--voucher" (click)="applyVoucher()">Apply</button>
+        } @else {
+          <div class="ec-voucher__applied">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            8% discount applied
+            <button class="ec-voucher__remove" (click)="clearVoucher()">Remove</button>
+          </div>
+        }
+      </div>
+
+      <!-- Order Summary -->
+      <div class="ec-summary">
+        <h3 class="ec-summary__title">Order Summary</h3>
+        <div class="ec-summary__row">
+          <span>Subtotal</span>
+          <span>{{ getSubtotal() | currency }}</span>
+        </div>
+        @if (discountRate > 0) {
+          <div class="ec-summary__row ec-summary__row--discount">
+            <span>Discount</span>
+            <span>-{{ getDiscount() | currency }}</span>
+          </div>
+        }
+        <div class="ec-summary__row">
+          <span>Tax (10%)</span>
+          <span>{{ getTax() | currency }}</span>
+        </div>
+        <div class="ec-summary__row">
+          <span>Shipping</span>
+          <span class="ec-summary__free">Free</span>
+        </div>
+        <div class="ec-summary__divider"></div>
+        <div class="ec-summary__row ec-summary__row--total">
+          <span>Total</span>
+          <strong>{{ getTotal() | currency }}</strong>
+        </div>
+        <button class="ec-btn ec-btn--checkout" [disabled]="cart.length === 0" (click)="checkout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+          Checkout (Demo)
+        </button>
+        @if (cart.length > 0) {
+          <button class="ec-btn ec-btn--ghost ec-btn--full" (click)="clearCart()">Clear Cart</button>
+        }
+      </div>
+    </aside>
+
+  </div>
+</div>

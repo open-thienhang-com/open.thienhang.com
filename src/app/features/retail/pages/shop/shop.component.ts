@@ -28,7 +28,8 @@ interface CartItem {
   selector: 'app-retail-shop',
   standalone: true,
   imports: [CommonModule, FormsModule, ButtonModule, InputTextModule, DropdownModule],
-  templateUrl: './shop.component.html'
+  templateUrl: './shop.component.html',
+  styleUrl: './shop.component.scss'
 })
 export class RetailShopComponent implements OnInit {
   loading = false;
@@ -234,6 +235,10 @@ export class RetailShopComponent implements OnInit {
     const discount = this.cartSubtotal * 0.08;
     this.voucherAmount = Number(discount.toFixed(2));
     this.voucherApplied = true;
+  }
+
+  isInCart(productId: string): boolean {
+    return this.cart.some((item) => item.product.id === productId);
   }
 
   checkoutDemo(): void {

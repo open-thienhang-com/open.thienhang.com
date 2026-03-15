@@ -1,0 +1,504 @@
+<div class="blogger-main">
+  <p-toast position="top-right"></p-toast>
+
+  <div class="blogger-content-wrapper">
+    <div class="blogger-content-inner">
+
+      <!-- Hero Section -->
+      <section class="blogger-hero">
+        <div class="blogger-hero-copy">
+          <div class="blogger-hero-badge"><i class="pi pi-pencil"></i></div>
+          <div>
+            <p class="blogger-eyebrow">Content domain</p>
+            <h1 class="blogger-title">Blogger Overview</h1>
+            <p class="blogger-subtitle">
+              {{ fallbackText(overview?.description, 'Manage your Blogger domain quality, feature registry, operating costs, and version posture in one place.') }}
+            </p>
+          </div>
+        </div>
+        <div class="blogger-hero-actions">
+          <button pButton type="button" icon="pi pi-refresh" label="Refresh Data"
+            class="p-button-sm p-button-outlined" (click)="loadAllData()" [loading]="loadingOverview"></button>
+        </div>
+      </section>
+
+      <!-- Metrics Grid -->
+      <section class="blogger-overview-grid">
+        <article class="summary-card" data-tone="orange">
+          <div class="summary-header">
+            <span class="summary-label">Authors</span>
+            <div class="summary-icon"><i class="pi pi-users"></i></div>
+          </div>
+          <div class="summary-content">
+            <h3 class="summary-value">
+              <ng-container *ngIf="!loadingOverview; else skeletonText">{{ overview?.total_authors ?? '--' }}</ng-container>
+            </h3>
+            <p class="summary-caption">Active profiles connected to domain</p>
+          </div>
+        </article>
+
+        <article class="summary-card" data-tone="pink">
+          <div class="summary-header">
+            <span class="summary-label">Total Posts</span>
+            <div class="summary-icon"><i class="pi pi-file-edit"></i></div>
+          </div>
+          <div class="summary-content">
+            <h3 class="summary-value">
+              <ng-container *ngIf="!loadingQuality; else skeletonText">{{ quality?.metrics?.total_posts ?? '--' }}</ng-container>
+            </h3>
+            <p class="summary-caption">Tracked posts in assessment set</p>
+          </div>
+        </article>
+
+        <article class="summary-card" data-tone="amber">
+          <div class="summary-header">
+            <span class="summary-label">Quality Score</span>
+            <div class="summary-icon"><i class="pi pi-star-fill"></i></div>
+          </div>
+          <div class="summary-content">
+            <h3 class="summary-value">
+              <ng-container *ngIf="!loadingQuality; else skeletonText">{{ quality?.overall_score ?? '--' }}%</ng-container>
+            </h3>
+            <p class="summary-caption">Content and operational health</p>
+          </div>
+        </article>
+
+        <article class="summary-card" data-tone="red">
+          <div class="summary-header">
+            <span class="summary-label">Monthly Cost</span>
+            <div class="summary-icon"><i class="pi pi-wallet"></i></div>
+          </div>
+          <div class="summary-content">
+            <h3 class="summary-value">
+              <ng-container *ngIf="!loadingCost; else skeletonText">{{ cost?.total_monthly_cost | currency:cost?.currency:'symbol':'1.0-0' }}</ng-container>
+            </h3>
+            <p class="summary-caption">Estimated delivery and storage cost</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- Main Operational Area (Workspace with Sidebar) -->
+      <section class="warehouse-workspace">
+        <aside class="warehouse-sidebar">
+          <div class="warehouse-sidebar-panel">
+            <p class="sidebar-eyebrow">Domain Navigation</p>
+            <div class="sidebar-heading">Blogger Core</div>
+            <nav class="nav-menu">
+              <button *ngFor="let section of sections" type="button" class="nav-item" (click)="switchSection(section.key)" [class.active]="activeSection === section.key">
+                <span class="nav-icon"><i [class]="section.icon"></i></span>
+                <span class="nav-content">
+                  <span class="nav-label">{{ section.label }}</span>
+                  <span class="nav-description">{{ section.description }}</span>
+                </span>
+                <i class="pi pi-chevron-right nav-chevron"></i>
+              </button>
+            </nav>
+          </div>
+        </aside>
+
+        <div class="warehouse-panel">
+          <header class="warehouse-panel-header">
+            <div class="header-left">
+              <p class="panel-eyebrow">Blogger Explorer</p>
+              <h2 class="panel-title">{{ activeSectionMeta.label }}</h2>
+              <p class="panel-subtitle">{{ activeSectionMeta.description }}</p>
+            </div>
+            <div class="panel-chip">
+              <i [class]="activeSectionMeta.icon"></i>
+              <span>{{ activeSectionMeta.label }}</span>
+            </div>
+          </header>
+
+          <div class="warehouse-panel-content">
+            <!-- Section: Blog Feed -->
+            <ng-container *ngIf="activeSection === 'blog'">
+              <div *ngIf="loadingBlog" class="flex justify-center p-8">
+                <p-progressSpinner strokeWidth="3"></p-progressSpinner>
+              </div>
+
+              <div *ngIf="blogError" class="p-4 bg-red-50 border-round mb-4">
+                <p class="text-red-700 m-0"><i class="pi pi-exclamation-circle mr-2"></i>{{ blogError }}</p>
+              </div>
+
+              <div *ngIf="!loadingBlog && blogPosts.length === 0" class="empty-state p-8 text-center bg-gray-50 border-round">
+                <i class="pi pi-inbox text-4xl text-gray-400 mb-3"></i>
+                <p class="text-gray-600 m-0">No blog posts found for this domain.</p>
+              </div>
+
+              <div *ngIf="!loadingBlog && blogPosts.length > 0" class="blog-grid">
+                <div *ngFor="let post of blogPosts" class="flat-card blog-card">
+                  <div class="blog-card-img" *ngIf="post.images && post.images.length > 0">
+                    <img [src]="post.images[0]" [alt]="post.title">
+                  </div>
+                  <div class="blog-card-meta">
+                    <p-tag [value]="post.published | date:'mediumDate'" rounded="true" severity="info" class="mb-2"></p-tag>
+                    <h3 class="blog-title">{{ post.title }}</h3>
+                    <div class="blog-excerpt" [innerHTML]="post.excerpt"></div>
+                    
+                    <div class="flex align-items-center gap-3 mt-auto pt-3 border-top-1 border-gray-100">
+                      <div class="flex align-items-center gap-2">
+                        <p-avatar [image]="post.author.image" shape="circle" size="normal" *ngIf="post.author.image"></p-avatar>
+                        <span class="text-sm font-semibold text-gray-700">{{ post.author.display_name }}</span>
+                      </div>
+                      <div class="flex align-items-center gap-1 text-gray-500 text-xs ml-auto">
+                        <i class="pi pi-comment"></i>
+                        <span>{{ post.replies?.total_items || 0 }}</span>
+                      </div>
+                    </div>
+
+                    <div class="action-row mt-3">
+                      <a [href]="post.url" target="_blank" class="no-underline">
+                        <button pButton type="button" label="Read Original" icon="pi pi-external-link" class="p-button-text p-button-sm"></button>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Section: Blogs Management (Modern Explorer Layout) -->
+            <ng-container *ngIf="activeSection === 'blogs'">
+              <div class="explorer-container">
+                <!-- Sidebar Filters -->
+                <aside class="explorer-sidebar">
+                  <div class="explorer-sidebar-panel">
+                    <p class="sidebar-eyebrow">Marketplace Controls</p>
+                    <div class="sidebar-heading">Refine Results</div>
+
+                    <div class="filter-stack">
+                      <!-- Search Field -->
+                      <div class="filter-field">
+                        <label>Search Blogs</label>
+                        <div class="p-inputgroup">
+                          <span class="p-inputgroup-addon"><i class="pi pi-search"></i></span>
+                          <input pInputText type="text" [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Search by name, URL...">
+                        </div>
+                      </div>
+
+                      <!-- Language Filter -->
+                      <div class="filter-field">
+                        <label>Language</label>
+                        <p-dropdown [options]="languageOptions" [(ngModel)]="filters.language" (onChange)="onFilterChange()" [showClear]="true" placeholder="All Languages" styleClass="w-full"></p-dropdown>
+                      </div>
+                    </div>
+
+                    <div class="sidebar-actions mt-4">
+                      <button pButton label="Clear Filters" icon="pi pi-refresh" class="p-button-sm p-button-outlined w-full" (click)="clearFilters()" [disabled]="!hasSearchOrFilters"></button>
+                    </div>
+                  </div>
+                </aside>
+
+                <!-- Explorer Content -->
+                <div class="explorer-main">
+                  <div class="explorer-toolbar">
+                    <div class="toolbar-left">
+                      <h3>Available Blogs</h3>
+                      <p>{{ filteredBlogs.length }} blogs found in this domain.</p>
+                    </div>
+                    <div class="toolbar-right">
+                      <div class="view-toggles">
+                        <button pButton icon="pi pi-th-large" [class.p-button-outlined]="viewMode !== 'grid'" (click)="setViewMode('grid')" pTooltip="Grid View"></button>
+                        <button pButton icon="pi pi-list" [class.p-button-outlined]="viewMode !== 'table'" (click)="setViewMode('table')" pTooltip="Table View"></button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div *ngIf="loadingBlogs" class="flex justify-center p-8">
+                    <p-progressSpinner strokeWidth="3"></p-progressSpinner>
+                  </div>
+
+                  <div *ngIf="blogsError" class="p-4 bg-red-50 border-round mb-4">
+                    <p class="text-red-700 m-0"><i class="pi pi-exclamation-circle mr-2"></i>{{ blogsError }}</p>
+                    <button pButton label="Retry" icon="pi pi-refresh" (click)="loadBlogs()" class="p-button-text p-button-sm mt-2"></button>
+                  </div>
+
+                  <div *ngIf="!loadingBlogs && filteredBlogs.length === 0" class="empty-state p-8 text-center bg-gray-50 border-round">
+                    <i class="pi pi-inbox text-4xl text-gray-400 mb-3"></i>
+                    <p class="text-gray-600 m-0">No blogs match your current search/filters.</p>
+                  </div>
+
+                  <!-- Grid View -->
+                  <div *ngIf="!loadingBlogs && viewMode === 'grid' && filteredBlogs.length > 0" class="blog-grid explorer-grid">
+                    <div *ngFor="let blog of filteredBlogs" class="flat-card blog-card fade-in">
+                      <div class="card-header">
+                        <div class="card-icon icon-blue">
+                          <i class="pi pi-globe"></i>
+                        </div>
+                        <div class="card-title-group">
+                          <h3 class="card-title">{{ blog.name }}</h3>
+                          <a [href]="blog.url" target="_blank" class="card-subtitle no-underline text-xs opacity-70 hover:opacity-100">{{ blog.url }}</a>
+                        </div>
+                      </div>
+
+                      <div class="detail-stack">
+                        <div class="detail-item" *ngIf="blog.description">
+                          <label>Description</label>
+                          <p class="text-sm text-gray-600 line-clamp-2">{{ blog.description }}</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3 mt-3">
+                          <div class="p-2 bg-gray-50 border-round text-center">
+                            <label class="text-xs uppercase font-bold text-gray-400 block mb-1">Posts</label>
+                            <span class="text-xl font-black">{{ blog.posts_count }}</span>
+                          </div>
+                          <div class="p-2 bg-gray-50 border-round text-center">
+                            <label class="text-xs uppercase font-bold text-gray-400 block mb-1">Pages</label>
+                            <span class="text-xl font-black">{{ blog.pages_count }}</span>
+                          </div>
+                        </div>
+
+                        <div class="divider h-px bg-gray-100 my-3"></div>
+
+                        <div class="flex justify-between items-center">
+                          <p-tag [value]="blog.locale?.language | uppercase" severity="info" [rounded]="true"></p-tag>
+                          <span class="text-xs text-gray-400 font-mono">{{ blog.updated | date:'shortDate' }}</span>
+                        </div>
+
+                        <div class="card-actions flex gap-2 mt-4">
+                          <button pButton label="Manage" icon="pi pi-cog" class="p-button-sm p-button-primary flex-1" [routerLink]="['/blogger/posts']" [queryParams]="{ blog_id: blog.id }"></button>
+                          <a [href]="blog.url" target="_blank">
+                            <button pButton icon="pi pi-external-link" class="p-button-sm p-button-outlined"></button>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Table View -->
+                  <div *ngIf="!loadingBlogs && viewMode === 'table' && filteredBlogs.length > 0" class="explorer-table-container">
+                    <p-table [value]="filteredBlogs" styleClass="p-datatable-sm modern-table" responsiveLayout="scroll">
+                      <ng-template pTemplate="header">
+                        <tr>
+                          <th>Blog Name</th>
+                          <th>URL</th>
+                          <th>Language</th>
+                          <th>Posts</th>
+                          <th>Pages</th>
+                          <th>Last Updated</th>
+                          <th style="width: 150px">Actions</th>
+                        </tr>
+                      </ng-template>
+                      <ng-template pTemplate="body" let-blog>
+                        <tr>
+                          <td class="font-bold">{{ blog.name }}</td>
+                          <td><a [href]="blog.url" target="_blank" class="text-primary no-underline text-xs">{{ blog.url }}</a></td>
+                          <td><p-tag [value]="blog.locale?.language | uppercase" severity="info" [rounded]="true"></p-tag></td>
+                          <td>{{ blog.posts_count }}</td>
+                          <td>{{ blog.pages_count }}</td>
+                          <td class="text-xs text-gray-500">{{ blog.updated | date:'mediumDate' }}</td>
+                          <td>
+                            <div class="flex gap-2">
+                              <button pButton icon="pi pi-cog" class="p-button-sm p-button-text" [routerLink]="['/blogger/posts']" [queryParams]="{ blog_id: blog.id }" pTooltip="Manage Posts"></button>
+                              <a [href]="blog.url" target="_blank">
+                                <button pButton icon="pi pi-external-link" class="p-button-sm p-button-text" pTooltip="Open Blog"></button>
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                      </ng-template>
+                    </p-table>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Section: Narrative/Overview -->
+            <ng-container *ngIf="activeSection === 'narrative'">
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon icon-blue"><i class="pi pi-info-circle"></i></div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">Domain Identity</h2>
+                      <p class="card-subtitle">Strategic purpose and operating narrative</p>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="detail-stack">
+                      <div class="detail-item">
+                        <label>Display Name</label>
+                        <strong>{{ overview?.display_name }}</strong>
+                      </div>
+                      <div class="detail-item">
+                        <label>Business Purpose</label>
+                        <p>{{ overview?.purpose }}</p>
+                      </div>
+                      <div class="detail-item">
+                        <label>Strategic Tags</label>
+                        <div class="tag-row flex flex-wrap gap-2">
+                          <p-tag *ngFor="let tag of overview?.tags" [value]="tag" rounded="true" severity="info"></p-tag>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon icon-emerald"><i class="pi pi-check-circle"></i></div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">Capabilities</h2>
+                      <p class="card-subtitle">Supported data products and operations</p>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="detail-stack">
+                      <div class="detail-item" *ngIf="overview?.capabilities">
+                        <label>Domain Strength</label>
+                        <p-progressBar [value]="92" [showValue]="true" [style]="{ height: '10px' }"></p-progressBar>
+                      </div>
+                      <div class="detail-item">
+                        <label>Available Capabilities</label>
+                        <div class="capability-list flex flex-wrap gap-2">
+                          <div *ngFor="let cap of overview?.capabilities" class="info-pill flex align-items-center gap-2">
+                            <i class="pi pi-bolt"></i>
+                            <span>{{ cap }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Section: Quality -->
+            <ng-container *ngIf="activeSection === 'quality'">
+              <div class="flat-card mb-4">
+                <div class="card-header">
+                  <div class="card-icon icon-purple"><i class="pi pi-shield"></i></div>
+                  <div class="card-title-group">
+                    <h2 class="card-title">Quality Posture</h2>
+                    <p class="card-subtitle">Real-time assessment of content and metadata integrity</p>
+                  </div>
+                  <p-tag [value]="(quality?.overall_score || 0) + '% Score'" severity="success"></p-tag>
+                </div>
+                <div class="card-body">
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="kpi-item p-3 border-round bg-gray-50">
+                      <label class="text-xs text-secondary font-bold uppercase mb-2 block">Freshness</label>
+                      <div class="text-2xl font-black mb-2">{{ quality?.data_freshness }}%</div>
+                      <p-progressBar [value]="quality?.data_freshness || 0" [showValue]="false" [style]="{height: '6px'}"></p-progressBar>
+                    </div>
+                    <div class="kpi-item p-3 border-round bg-gray-50">
+                      <label class="text-xs text-secondary font-bold uppercase mb-2 block">Accuracy</label>
+                      <div class="text-2xl font-black mb-2">{{ quality?.data_accuracy }}%</div>
+                      <p-progressBar [value]="quality?.data_accuracy || 0" [showValue]="false" [style]="{height: '6px'}"></p-progressBar>
+                    </div>
+                    <div class="kpi-item p-3 border-round bg-gray-50">
+                      <label class="text-xs text-secondary font-bold uppercase mb-2 block">Consistency</label>
+                      <div class="text-2xl font-black mb-2">{{ quality?.data_consistency }}%</div>
+                      <p-progressBar [value]="quality?.data_consistency || 0" [showValue]="false" [style]="{height: '6px'}"></p-progressBar>
+                    </div>
+                    <div class="kpi-item p-3 border-round bg-gray-50">
+                      <label class="text-xs text-secondary font-bold uppercase mb-2 block">Compliance</label>
+                      <div class="text-2xl font-black mb-2">{{ quality?.schema_compliance }}%</div>
+                      <p-progressBar [value]="quality?.schema_compliance || 0" [showValue]="false" [style]="{height: '6px'}"></p-progressBar>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Section: Features -->
+            <ng-container *ngIf="activeSection === 'features'">
+              <div class="flat-card">
+                <div class="card-header">
+                  <div class="card-icon icon-sky"><i class="pi pi-list"></i></div>
+                  <div class="card-title-group">
+                    <h2 class="card-title">Feature Inventory</h2>
+                    <p class="card-subtitle">Full list of exposed Blogger capabilities and service endpoints</p>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <p-table [value]="features?.features || []" styleClass="p-datatable-sm" responsiveLayout="scroll">
+                    <ng-template pTemplate="header">
+                      <tr>
+                        <th>Feature</th>
+                        <th>Status</th>
+                        <th>Endpoints</th>
+                      </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-feature>
+                      <tr>
+                        <td>
+                          <div class="font-bold">{{ feature.name }}</div>
+                          <div class="text-xs text-gray-500">{{ feature.description }}</div>
+                        </td>
+                        <td><p-tag [value]="feature.status" [severity]="feature.status === 'Active' ? 'success' : 'warn'"></p-tag></td>
+                        <td>
+                          <div class="flex gap-2 flex-wrap">
+                            <span class="mono-pill" *ngFor="let ep of feature.endpoints">{{ ep }}</span>
+                          </div>
+                        </td>
+                      </tr>
+                    </ng-template>
+                  </p-table>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Section: Governance -->
+            <ng-container *ngIf="activeSection === 'governance'">
+               <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon icon-orange"><i class="pi pi-lock"></i></div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">Governance & Economics</h2>
+                      <p class="card-subtitle">Data sovereignty, cost breakdown, and versioning lifecycle</p>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <!-- Cost Section -->
+                      <div>
+                        <h3 class="text-lg font-bold mb-4">Cost Distribution</h3>
+                        <div class="flex justify-center mb-6">
+                          <p-chart type="doughnut" [data]="costChartData" [options]="costChartOptions" width="200" height="200"></p-chart>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                          <div class="data-block bg-gray-50 p-3 border-round">
+                            <label class="text-xs text-secondary font-bold uppercase block mb-1">Total Monthly</label>
+                            <div class="text-xl font-black">{{ cost?.total_monthly_cost | currency:cost?.currency:'symbol':'1.0-0' }}</div>
+                          </div>
+                          <div class="data-block bg-gray-50 p-3 border-round">
+                            <label class="text-xs text-secondary font-bold uppercase block mb-1">Projection</label>
+                            <div class="text-xl font-black text-rose-500">{{ cost?.cost_trends?.projection_next_month | currency:cost?.currency:'symbol':'1.0-0' }}</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Version Section -->
+                      <div>
+                        <h3 class="text-lg font-bold mb-4">Lifecycle Status</h3>
+                        <div class="detail-stack">
+                          <div class="detail-item flex justify-content-between align-items-center p-3 border-bottom-1 border-gray-100">
+                            <span class="text-secondary">Domain Version</span>
+                            <span class="font-bold">{{ version?.version }}</span>
+                          </div>
+                          <div class="detail-item flex justify-content-between align-items-center p-3 border-bottom-1 border-gray-100">
+                            <span class="text-secondary">API Version</span>
+                            <span class="font-bold">{{ version?.api_version }}</span>
+                          </div>
+                          <div class="detail-item flex justify-content-between align-items-center p-3 border-bottom-1 border-gray-100">
+                            <span class="text-secondary">Status</span>
+                            <p-tag [value]="version?.status || 'Active'" [severity]="version?.status === 'stable' ? 'success' : 'info'"></p-tag>
+                          </div>
+                          <div class="detail-item flex justify-content-between align-items-center p-3">
+                            <span class="text-secondary">Last Build</span>
+                            <span class="text-sm">{{ version?.build_date | date:'medium' }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+               </div>
+            </ng-container>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <ng-template #skeletonText><p-skeleton width="4rem" height="1.8rem"></p-skeleton></ng-template>
+</div>

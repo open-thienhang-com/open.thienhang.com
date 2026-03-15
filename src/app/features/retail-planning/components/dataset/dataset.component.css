@@ -17,8 +17,6 @@
 }
 
 .forecast-content-inner {
-    max-width: 1520px;
-    margin: 0 auto;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;

@@ -1,0 +1,451 @@
+<div class="warehouse-main">
+  <div class="warehouse-content-wrapper">
+    <div class="warehouse-content-inner">
+      <section class="warehouse-hero">
+        <div class="warehouse-hero-copy">
+          <div class="warehouse-hero-badge">
+            <i class="pi pi-database"></i>
+          </div>
+          <div>
+            <p class="warehouse-eyebrow">Explore application</p>
+            <h1 class="warehouse-title">Data Warehouse</h1>
+            <p class="warehouse-subtitle">Inspect Databricks workspaces, SQL warehouses, jobs, and ML inventory from one operational surface.</p>
+          </div>
+        </div>
+
+        <div class="warehouse-hero-actions">
+          <button pButton type="button" icon="pi pi-refresh" label="Refresh" class="p-button-sm p-button-outlined" (click)="loadDashboard()" [loading]="globalLoading"></button>
+          <button pButton type="button" icon="pi pi-building" label="Workspaces" class="p-button-sm" (click)="switchSection('workspaces')"></button>
+        </div>
+      </section>
+
+      <section class="warehouse-overview-grid">
+        <article *ngFor="let card of summaryCards" class="summary-card" [attr.data-tone]="card.tone">
+          <div>
+            <p class="summary-label">{{ card.label }}</p>
+            <h3 class="summary-value">{{ card.value }}</h3>
+            <p class="summary-caption">{{ card.caption }}</p>
+          </div>
+          <div class="summary-icon">
+            <i [class]="card.icon"></i>
+          </div>
+        </article>
+      </section>
+
+      <section class="warehouse-workspace">
+        <aside class="warehouse-sidebar">
+          <div class="warehouse-sidebar-panel">
+            <p class="sidebar-eyebrow">Databricks sections</p>
+            <div class="sidebar-heading">Warehouse controls</div>
+            <nav class="nav-menu">
+              <button *ngFor="let section of sections" type="button" class="nav-item" (click)="switchSection(section.key)" [class.active]="activeSection === section.key">
+                <span class="nav-icon"><i [class]="section.icon"></i></span>
+                <span class="nav-content">
+                  <span class="nav-label">{{ section.label }}</span>
+                  <span class="nav-description">{{ section.description }}</span>
+                </span>
+                <i class="pi pi-angle-right nav-chevron"></i>
+              </button>
+            </nav>
+          </div>
+
+        </aside>
+
+        <div class="warehouse-panel">
+          <div class="warehouse-panel-header">
+            <div>
+              <p class="panel-eyebrow">Databricks domain</p>
+              <h2 class="panel-title">{{ activeSectionMeta.label }}</h2>
+              <p class="panel-subtitle">{{ activeSectionMeta.description }}</p>
+            </div>
+            <div class="panel-chip">
+              <i [class]="activeSectionMeta.icon"></i>
+              <span>{{ activeSectionMeta.label }}</span>
+            </div>
+          </div>
+
+          <div class="warehouse-panel-content">
+            <div *ngIf="allErrors.length" class="alert-stack">
+              <p-message severity="warn" *ngFor="let error of allErrors" [text]="error"></p-message>
+            </div>
+
+            <ng-container *ngIf="activeSection === 'overview'">
+              <div class="warehouse-section">
+                <div class="flat-card" *ngIf="overviewState.data as overview">
+                  <div class="card-header">
+                    <div class="card-icon overview-icon"><i class="pi pi-home"></i></div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">{{ overview.display_name }}</h2>
+                      <p class="card-subtitle">{{ overview.purpose }}</p>
+                    </div>
+                    <p-tag [value]="overview.live_mode_enabled ? 'Live mode enabled' : 'Live mode disabled'" [severity]="overview.live_mode_enabled ? 'success' : 'warn'"></p-tag>
+                  </div>
+                  <div class="card-body">
+                    <div class="stats-grid">
+                      <div class="metric-card"><span class="metric-label">Configured</span><strong>{{ healthState.data?.configured ? 'Yes' : 'No' }}</strong></div>
+                      <div class="metric-card"><span class="metric-label">Health status</span><p-tag [value]="healthState.data?.status || '-'" [severity]="getSeverity(healthState.data?.status)"></p-tag></div>
+                      <div class="metric-card"><span class="metric-label">Coverage</span><strong>{{ coveragePercent }}</strong></div>
+                      <div class="metric-card"><span class="metric-label">Estimated monthly cost</span><strong>{{ monthlyCostLabel }}</strong></div>
+                    </div>
+
+                    <div class="list-block">
+                      <div class="list-title">Capabilities</div>
+                      <div class="pill-list">
+                        <span class="info-pill" *ngFor="let capability of overview.capabilities">{{ capability }}</span>
+                      </div>
+                    </div>
+
+                    <div class="list-block" *ngIf="cloudBreakdown.length">
+                      <div class="list-title">Cloud breakdown</div>
+                      <div class="pill-list">
+                        <span class="info-pill" *ngFor="let cloud of cloudBreakdown">{{ cloud.key }}: {{ cloud.value }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid-2">
+                  <div class="flat-card">
+                    <div class="card-header">
+                      <div class="card-icon health-icon"><i class="pi pi-heart"></i></div>
+                      <div class="card-title-group">
+                        <h2 class="card-title">Summary</h2>
+                        <p class="card-subtitle">Workspace and inventory totals from the Databricks domain</p>
+                      </div>
+                    </div>
+                    <div class="card-body" *ngIf="summaryState.data as summary; else summaryLoading">
+                      <div class="kv-list">
+                        <div class="kv-item"><span>Total workspaces</span><strong>{{ summary.total_workspaces }}</strong></div>
+                        <div class="kv-item"><span>Connected workspaces</span><strong>{{ summary.connected_workspaces }}</strong></div>
+                        <div class="kv-item"><span>SQL assets</span><strong>{{ summary.sql_assets }}</strong></div>
+                        <div class="kv-item"><span>Jobs</span><strong>{{ summary.jobs }}</strong></div>
+                        <div class="kv-item"><span>Models</span><strong>{{ summary.models }}</strong></div>
+                        <div class="kv-item"><span>Source</span><p-tag [value]="summary.source" [severity]="getSeverity(summary.source)"></p-tag></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flat-card">
+                    <div class="card-header">
+                      <div class="card-icon feature-icon"><i class="pi pi-bolt"></i></div>
+                      <div class="card-title-group">
+                        <h2 class="card-title">Features</h2>
+                        <p class="card-subtitle">Platform capabilities exposed by this integration</p>
+                      </div>
+                    </div>
+                    <div class="card-body" *ngIf="featuresState.data as features; else featureLoading">
+                      <ul class="feature-list">
+                        <li *ngFor="let feature of features.features">{{ feature }}</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="activeSection === 'workspaces'">
+              <div class="warehouse-section">
+                <div class="grid-2">
+                  <div class="flat-card">
+                    <div class="card-header">
+                      <div class="card-icon workspace-icon"><i class="pi pi-building"></i></div>
+                      <div class="card-title-group">
+                        <h2 class="card-title">Workspace inventory</h2>
+                        <p class="card-subtitle">Select a workspace to inspect detailed metadata</p>
+                      </div>
+                    </div>
+                    <div class="card-body">
+                      <div *ngIf="workspacesState.data?.data?.length; else workspaceEmpty" class="select-list">
+                        <button *ngFor="let workspace of workspacesState.data?.data; trackBy: trackById" type="button" class="select-card" [class.active]="selectedWorkspaceId === workspace.id" (click)="selectWorkspace(workspace.id)">
+                          <div>
+                            <div class="select-title">{{ workspace.workspace_name }}</div>
+                            <div class="select-subtitle">{{ workspace.workspace_url_masked }}</div>
+                          </div>
+                          <p-tag [value]="workspace.status" [severity]="getSeverity(workspace.status)"></p-tag>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flat-card">
+                    <div class="card-header">
+                      <div class="card-icon detail-icon"><i class="pi pi-id-card"></i></div>
+                      <div class="card-title-group">
+                        <h2 class="card-title">Workspace detail</h2>
+                        <p class="card-subtitle">Detail endpoint: `/workspaces/:id`</p>
+                      </div>
+                    </div>
+                    <div class="card-body" *ngIf="workspaceDetailState.data as detail; else detailLoading">
+                      <div class="kv-list">
+                        <div class="kv-item"><span>ID</span><strong>{{ detail.id }}</strong></div>
+                        <div class="kv-item"><span>Workspace name</span><strong>{{ detail.workspace_name }}</strong></div>
+                        <div class="kv-item"><span>Cloud</span><strong>{{ detail.cloud }}</strong></div>
+                        <div class="kv-item"><span>Region</span><strong>{{ detail.region }}</strong></div>
+                        <div class="kv-item"><span>Owner</span><strong>{{ detail.owner }}</strong></div>
+                        <div class="kv-item"><span>Catalog enabled</span><strong>{{ detail.catalog_enabled ? 'Yes' : 'No' }}</strong></div>
+                        <div class="kv-item"><span>Last sync</span><strong>{{ formatDate(detail.last_sync_at) }}</strong></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon compare-icon"><i class="pi pi-clone"></i></div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">Root vs workspace endpoint</h2>
+                      <p class="card-subtitle">Compare `/databricks/` and `/databricks/workspaces` payloads</p>
+                    </div>
+                  </div>
+                  <div class="card-body endpoint-compare">
+                    <div class="compare-column">
+                      <div class="compare-title">Root endpoint</div>
+                      <div class="compare-value">{{ workspacesRootState.data?.total || 0 }} records</div>
+                      <p-tag [value]="workspacesRootState.data?.source || '-'" [severity]="getSeverity(workspacesRootState.data?.source)"></p-tag>
+                    </div>
+                    <div class="compare-column">
+                      <div class="compare-title">Workspace endpoint</div>
+                      <div class="compare-value">{{ workspacesState.data?.total || 0 }} records</div>
+                      <p-tag [value]="workspacesState.data?.source || '-'" [severity]="getSeverity(workspacesState.data?.source)"></p-tag>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="activeSection === 'sql-assets'">
+              <div class="warehouse-section">
+                <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon sql-icon"><i class="pi pi-database"></i></div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">SQL warehouse inventory</h2>
+                      <p class="card-subtitle">Databricks SQL assets from the live workspace catalog</p>
+                    </div>
+                    <p-tag [value]="sqlAssetsState.data?.source || '-'" [severity]="getSeverity(sqlAssetsState.data?.source)"></p-tag>
+                  </div>
+                  <div class="card-body">
+                    <p-table [value]="sqlAssetsState.data?.data || []" responsiveLayout="scroll">
+                      <ng-template pTemplate="header">
+                        <tr>
+                          <th>Warehouse</th>
+                          <th>Type</th>
+                          <th>Catalog</th>
+                          <th>Object</th>
+                          <th>Owner</th>
+                          <th>Status</th>
+                        </tr>
+                      </ng-template>
+                      <ng-template pTemplate="body" let-asset>
+                        <tr>
+                          <td>{{ asset.warehouse_name }}</td>
+                          <td>{{ asset.asset_type }}</td>
+                          <td>{{ asset.catalog || '-' }}</td>
+                          <td>{{ asset.object_name }}</td>
+                          <td>{{ asset.owner }}</td>
+                          <td><p-tag [value]="asset.status" [severity]="getSeverity(asset.status)"></p-tag></td>
+                        </tr>
+                      </ng-template>
+                    </p-table>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="activeSection === 'jobs'">
+              <div class="warehouse-section">
+                <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon jobs-icon"><i class="pi pi-sliders-h"></i></div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">Job monitoring</h2>
+                      <p class="card-subtitle">Workflow metadata, schedule cadence, and task count</p>
+                    </div>
+                    <p-tag [value]="jobsState.data?.source || '-'" [severity]="getSeverity(jobsState.data?.source)"></p-tag>
+                  </div>
+                  <div class="card-body">
+                    <p-table [value]="jobsState.data?.data || []" responsiveLayout="scroll">
+                      <ng-template pTemplate="header">
+                        <tr>
+                          <th>Job</th>
+                          <th>Owner</th>
+                          <th>Schedule</th>
+                          <th>State</th>
+                          <th>Tasks</th>
+                          <th>Last run</th>
+                        </tr>
+                      </ng-template>
+                      <ng-template pTemplate="body" let-job>
+                        <tr>
+                          <td>{{ job.name }}</td>
+                          <td>{{ job.owner }}</td>
+                          <td>{{ job.schedule }}</td>
+                          <td><p-tag [value]="job.state" [severity]="getSeverity(job.state)"></p-tag></td>
+                          <td>{{ job.task_count }}</td>
+                          <td>{{ formatDate(job.last_run_at) }}</td>
+                        </tr>
+                      </ng-template>
+                    </p-table>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="activeSection === 'models'">
+              <div class="warehouse-section">
+                <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon model-icon"><i class="pi pi-sparkles"></i></div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">Model registry inventory</h2>
+                      <p class="card-subtitle">MLflow models returned by the Databricks domain API</p>
+                    </div>
+                    <p-tag [value]="modelsState.data?.source || '-'" [severity]="getSeverity(modelsState.data?.source)"></p-tag>
+                  </div>
+                  <div class="card-body">
+                    <p-message *ngIf="modelsState.data?.source === 'sample'" severity="warn" text="Models are currently served from sample data because the MLflow registry endpoint returned 403."></p-message>
+                    <p-table [value]="modelsState.data?.data || []" responsiveLayout="scroll">
+                      <ng-template pTemplate="header">
+                        <tr>
+                          <th>Model</th>
+                          <th>Stage</th>
+                          <th>Version</th>
+                          <th>Owner</th>
+                          <th>Registry</th>
+                          <th>Updated</th>
+                        </tr>
+                      </ng-template>
+                      <ng-template pTemplate="body" let-model>
+                        <tr>
+                          <td>{{ model.name }}</td>
+                          <td><p-tag [value]="model.stage" [severity]="getSeverity(model.stage)"></p-tag></td>
+                          <td>{{ model.version }}</td>
+                          <td>{{ model.owner }}</td>
+                          <td>{{ model.registry }}</td>
+                          <td>{{ formatDate(model.updated_at) }}</td>
+                        </tr>
+                      </ng-template>
+                    </p-table>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="activeSection === 'governance'">
+              <div class="warehouse-section">
+                <div class="grid-2">
+                  <div class="flat-card">
+                    <div class="card-header">
+                      <div class="card-icon quality-icon"><i class="pi pi-verified"></i></div>
+                      <div class="card-title-group">
+                        <h2 class="card-title">Quality posture</h2>
+                        <p class="card-subtitle">Coverage, score, and review recency</p>
+                      </div>
+                    </div>
+                    <div class="card-body" *ngIf="qualityState.data as quality; else qualityLoading">
+                      <div class="kv-list">
+                        <div class="kv-item"><span>Score</span><strong>{{ quality.score }}</strong></div>
+                        <div class="kv-item"><span>Coverage</span><strong>{{ coveragePercent }}</strong></div>
+                        <div class="kv-item"><span>Issues</span><strong>{{ quality.issues }}</strong></div>
+                        <div class="kv-item"><span>Last reviewed</span><strong>{{ formatDate(quality.last_reviewed_at) }}</strong></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flat-card">
+                    <div class="card-header">
+                      <div class="card-icon cost-icon"><i class="pi pi-dollar"></i></div>
+                      <div class="card-title-group">
+                        <h2 class="card-title">Cost estimate</h2>
+                        <p class="card-subtitle">Monthly Databricks spend estimate and notes</p>
+                      </div>
+                    </div>
+                    <div class="card-body" *ngIf="costState.data as cost; else costLoading">
+                      <div class="cost-amount">{{ monthlyCostLabel }}</div>
+                      <ul class="feature-list">
+                        <li *ngFor="let note of cost.notes">{{ note }}</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid-2">
+                  <div class="flat-card">
+                    <div class="card-header">
+                      <div class="card-icon feature-icon"><i class="pi pi-list"></i></div>
+                      <div class="card-title-group">
+                        <h2 class="card-title">Feature registry</h2>
+                        <p class="card-subtitle">Enumerated domain capabilities from `/features`</p>
+                      </div>
+                    </div>
+                    <div class="card-body" *ngIf="featuresState.data as features; else featureLoading">
+                      <ul class="feature-list">
+                        <li *ngFor="let feature of features.features">{{ feature }}</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div class="flat-card">
+                    <div class="card-header">
+                      <div class="card-icon version-icon"><i class="pi pi-code"></i></div>
+                      <div class="card-title-group">
+                        <h2 class="card-title">Version metadata</h2>
+                        <p class="card-subtitle">Current draft and API build details</p>
+                      </div>
+                    </div>
+                    <div class="card-body" *ngIf="versionState.data as version; else versionLoading">
+                      <div class="kv-list">
+                        <div class="kv-item"><span>Domain</span><strong>{{ version.domain }}</strong></div>
+                        <div class="kv-item"><span>Version</span><strong>{{ version.version }}</strong></div>
+                        <div class="kv-item"><span>API version</span><strong>{{ version.api_version }}</strong></div>
+                        <div class="kv-item"><span>Status</span><p-tag [value]="version.status" [severity]="getSeverity(version.status)"></p-tag></div>
+                        <div class="kv-item"><span>Build date</span><strong>{{ formatDate(version.build_date) }}</strong></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-template #summaryLoading>
+              <div class="loading-state" *ngIf="summaryState.loading"><p-progressSpinner strokeWidth="4"></p-progressSpinner></div>
+              <p-message *ngIf="summaryState.error" severity="error" [text]="summaryState.error"></p-message>
+            </ng-template>
+
+            <ng-template #featureLoading>
+              <div class="loading-state" *ngIf="featuresState.loading"><p-progressSpinner strokeWidth="4"></p-progressSpinner></div>
+              <p-message *ngIf="featuresState.error" severity="error" [text]="featuresState.error"></p-message>
+            </ng-template>
+
+            <ng-template #workspaceEmpty>
+              <div class="empty-state">
+                <i class="pi pi-building"></i>
+                <p>No workspaces found.</p>
+              </div>
+            </ng-template>
+
+            <ng-template #detailLoading>
+              <div class="loading-state" *ngIf="workspaceDetailState.loading"><p-progressSpinner strokeWidth="4"></p-progressSpinner></div>
+              <p-message *ngIf="workspaceDetailState.error" severity="error" [text]="workspaceDetailState.error"></p-message>
+            </ng-template>
+
+            <ng-template #qualityLoading>
+              <div class="loading-state" *ngIf="qualityState.loading"><p-progressSpinner strokeWidth="4"></p-progressSpinner></div>
+              <p-message *ngIf="qualityState.error" severity="error" [text]="qualityState.error"></p-message>
+            </ng-template>
+
+            <ng-template #costLoading>
+              <div class="loading-state" *ngIf="costState.loading"><p-progressSpinner strokeWidth="4"></p-progressSpinner></div>
+              <p-message *ngIf="costState.error" severity="error" [text]="costState.error"></p-message>
+            </ng-template>
+
+            <ng-template #versionLoading>
+              <div class="loading-state" *ngIf="versionState.loading"><p-progressSpinner strokeWidth="4"></p-progressSpinner></div>
+              <p-message *ngIf="versionState.error" severity="error" [text]="versionState.error"></p-message>
+            </ng-template>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>

@@ -352,13 +352,7 @@
   </div>
   <ul class="blogger-menu-list">
     <li>
-      <a [routerLink]="'/blogger/login'" class="blogger-menu-link" routerLinkActive="active">
-        <i class="pi pi-sign-in"></i>
-        <span>Authorize <span class="blogger-badge">OAuth</span></span>
-      </a>
-    </li>
-    <li>
-      <a [routerLink]="'/blogger'" class="blogger-menu-link" routerLinkActive="active">
+      <a [routerLink]="'/blogger'" class="blogger-menu-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
         <i class="pi pi-home"></i>
         <span>Dashboard</span>
       </a>
@@ -373,6 +367,12 @@
       <a [routerLink]="'/blogger/authors'" class="blogger-menu-link" routerLinkActive="active">
         <i class="pi pi-users"></i>
         <span>Authors</span>
+      </a>
+    </li>
+    <li>
+      <a [routerLink]="'/blogger'" [queryParams]="{section: 'blogs'}" class="blogger-menu-link" routerLinkActive="active">
+        <i class="pi pi-briefcase"></i>
+        <span>Blogs</span>
       </a>
     </li>
   </ul>

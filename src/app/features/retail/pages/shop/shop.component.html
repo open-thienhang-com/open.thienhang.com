@@ -1,227 +1,283 @@
-<div class="min-h-screen bg-gradient-to-b from-amber-50 via-white to-slate-100">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-    <section class="rounded-2xl border border-orange-100 bg-gradient-to-r from-orange-600 via-amber-500 to-rose-500 p-6 sm:p-8 text-white shadow-sm">
-      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-        <div>
-          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-orange-100">Retail Ecommerce</p>
-          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold mt-2">Storefront Dashboard</h1>
-          <p class="mt-2 text-orange-100 max-w-2xl">Nang cap trang Online Store thanh giao dien ban hang day du: tim kiem, loc, gio hang va checkout demo.</p>
+<div class="shop-page">
+  <div class="shop-inner">
+
+    <!-- ── Hero Banner ── -->
+    <section class="shop-hero">
+      <div class="shop-hero__text">
+        <p class="shop-hero__eyebrow">Retail Ecommerce</p>
+        <h1 class="shop-hero__title">Storefront Dashboard</h1>
+        <p class="shop-hero__sub">Nang cap trang Online Store thanh giao dien ban hang day du: tim kiem, loc, gio hang va checkout demo.</p>
+      </div>
+      <div class="shop-hero__badges">
+        <div class="shop-hero__badge">
+          <p class="shop-hero__badge-lbl">Cart Items</p>
+          <p class="shop-hero__badge-val">{{ totalCartItems }}</p>
         </div>
-        <div class="grid grid-cols-2 gap-3 w-full lg:w-auto">
-          <div class="rounded-xl bg-white/15 backdrop-blur px-4 py-3 border border-white/25">
-            <p class="text-xs text-orange-100">Cart Items</p>
-            <p class="text-2xl font-semibold">{{ totalCartItems }}</p>
+        <div class="shop-hero__badge shop-hero__badge--accent">
+          <p class="shop-hero__badge-lbl">Cart Total</p>
+          <p class="shop-hero__badge-val">{{ formatCurrency(cartTotal) }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── KPI Cards ── -->
+    <section class="shop-kpi">
+      <article class="shop-kpi__card">
+        <div class="shop-kpi__icon shop-kpi__icon--blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.6 8H19M9 21a1 1 0 1 0 2 0M18 21a1 1 0 1 0 2 0"/></svg>
+        </div>
+        <div>
+          <p class="shop-kpi__lbl">Products</p>
+          <p class="shop-kpi__val">{{ totalProducts }}</p>
+        </div>
+      </article>
+      <article class="shop-kpi__card">
+        <div class="shop-kpi__icon shop-kpi__icon--green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <div>
+          <p class="shop-kpi__lbl">Discount Deals</p>
+          <p class="shop-kpi__val shop-kpi__val--green">{{ discountedProducts }}</p>
+        </div>
+      </article>
+      <article class="shop-kpi__card">
+        <div class="shop-kpi__icon shop-kpi__icon--purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </div>
+        <div>
+          <p class="shop-kpi__lbl">Categories</p>
+          <p class="shop-kpi__val">{{ categoryCount }}</p>
+        </div>
+      </article>
+      <article class="shop-kpi__card">
+        <div class="shop-kpi__icon shop-kpi__icon--orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5C7.6 5 6 6.6 6 8.5S7.6 12 9.5 12H15c1.9 0 3.5 1.6 3.5 3.5S16.9 19 15 19H6"/></svg>
+        </div>
+        <div>
+          <p class="shop-kpi__lbl">Average Price</p>
+          <p class="shop-kpi__val">{{ formatCurrency(averageTicket) }}</p>
+        </div>
+      </article>
+    </section>
+
+    <!-- ── Error Banner ── -->
+    @if (error) {
+      <div class="shop-alert">{{ error }}</div>
+    }
+
+    <!-- ── Filter Bar ── -->
+    <section class="shop-filters">
+      <div class="shop-filters__search">
+        <svg class="shop-filters__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input
+          type="text"
+          class="shop-filters__input"
+          [(ngModel)]="searchTerm"
+          placeholder="Search product, SKU, barcode..."
+        />
+      </div>
+      <div class="shop-filters__group">
+        <label class="shop-filters__label">Category</label>
+        <p-dropdown
+          [options]="categories"
+          [(ngModel)]="selectedCategory"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="shop-dropdown">
+        </p-dropdown>
+      </div>
+      <div class="shop-filters__group">
+        <label class="shop-filters__label">Sort</label>
+        <p-dropdown
+          [options]="sortOptions"
+          [(ngModel)]="selectedSort"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="shop-dropdown">
+        </p-dropdown>
+      </div>
+      <div class="shop-filters__actions">
+        <button class="shop-btn shop-btn--ghost" (click)="clearFilters()">Clear</button>
+        <button class="shop-btn shop-btn--primary" (click)="loadProducts()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+          Reload
+        </button>
+      </div>
+    </section>
+
+    <!-- ── Main Layout: Products + Cart ── -->
+    <section class="shop-body">
+
+      <!-- Products Column -->
+      <div class="shop-products">
+        <p class="shop-products__meta">
+          Showing <strong>{{ filteredProducts.length }}</strong> of {{ totalProducts }} products
+        </p>
+
+        @if (loading) {
+          <div class="shop-grid">
+            @for (n of [1,2,3,4,5,6,7,8]; track n) {
+              <div class="shop-card shop-card--skeleton">
+                <div class="shop-card__img shop-skeleton"></div>
+                <div class="shop-card__body">
+                  <div class="shop-skeleton shop-skeleton--sm"></div>
+                  <div class="shop-skeleton shop-skeleton--md"></div>
+                  <div class="shop-skeleton shop-skeleton--lg"></div>
+                </div>
+              </div>
+            }
           </div>
-          <div class="rounded-xl bg-white/15 backdrop-blur px-4 py-3 border border-white/25">
-            <p class="text-xs text-orange-100">Cart Total</p>
-            <p class="text-2xl font-semibold">{{ formatCurrency(cartTotal) }}</p>
+        }
+
+        @if (!loading && filteredProducts.length === 0) {
+          <div class="shop-empty">
+            <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" width="56" height="56"><circle cx="32" cy="32" r="28"/><path d="M20 20l24 24M44 20L20 44"/></svg>
+            <p>No products match your filters.</p>
+            <button class="shop-btn shop-btn--primary" (click)="clearFilters()">Clear filters</button>
           </div>
-        </div>
-      </div>
-    </section>
+        }
 
-    <section class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-      <article class="rounded-xl bg-white border border-slate-200 p-4">
-        <p class="text-xs text-slate-500 uppercase tracking-wide">Products</p>
-        <p class="text-2xl font-bold text-slate-900 mt-1">{{ totalProducts }}</p>
-      </article>
-      <article class="rounded-xl bg-white border border-slate-200 p-4">
-        <p class="text-xs text-slate-500 uppercase tracking-wide">Discount Deals</p>
-        <p class="text-2xl font-bold text-emerald-600 mt-1">{{ discountedProducts }}</p>
-      </article>
-      <article class="rounded-xl bg-white border border-slate-200 p-4">
-        <p class="text-xs text-slate-500 uppercase tracking-wide">Categories</p>
-        <p class="text-2xl font-bold text-slate-900 mt-1">{{ categoryCount }}</p>
-      </article>
-      <article class="rounded-xl bg-white border border-slate-200 p-4">
-        <p class="text-xs text-slate-500 uppercase tracking-wide">Average Price</p>
-        <p class="text-2xl font-bold text-slate-900 mt-1">{{ formatCurrency(averageTicket) }}</p>
-      </article>
-    </section>
+        @if (!loading && filteredProducts.length > 0) {
+          <div class="shop-grid">
+            @for (product of filteredProducts; track product.id) {
+              <article class="shop-card" [class.shop-card--in-cart]="isInCart(product.id)">
+                <!-- Discount Badge -->
+                @if (hasDiscount(product)) {
+                  <span class="shop-badge">-{{ getDiscountPercent(product) }}%</span>
+                }
 
-    <div *ngIf="error" class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-      {{ error }}
-    </div>
+                <!-- Image -->
+                <div class="shop-card__img" [style.background]="'#fff7ed'">
+                  <span class="shop-card__initial">{{ product.name.charAt(0).toUpperCase() }}</span>
+                </div>
 
-    <section class="rounded-xl bg-white border border-slate-200 p-4 sm:p-5">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-        <div>
-          <label class="text-xs text-slate-500 mb-1 block">Search</label>
-          <input
-            pInputText
-            [(ngModel)]="searchTerm"
-            placeholder="Search product, SKU, barcode..."
-            class="w-full" />
-        </div>
-        <div>
-          <label class="text-xs text-slate-500 mb-1 block">Category</label>
-          <p-dropdown
-            [options]="categories"
-            [(ngModel)]="selectedCategory"
-            optionLabel="label"
-            optionValue="value"
-            class="w-full">
-          </p-dropdown>
-        </div>
-        <div>
-          <label class="text-xs text-slate-500 mb-1 block">Sort</label>
-          <p-dropdown
-            [options]="sortOptions"
-            [(ngModel)]="selectedSort"
-            optionLabel="label"
-            optionValue="value"
-            class="w-full">
-          </p-dropdown>
-        </div>
-        <div class="flex items-end gap-2">
-          <p-button label="Clear" severity="secondary" [outlined]="true" (onClick)="clearFilters()"></p-button>
-          <p-button label="Reload" icon="pi pi-refresh" (onClick)="loadProducts()"></p-button>
-        </div>
-      </div>
-    </section>
-
-    <section class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-      <div class="xl:col-span-8">
-        <div *ngIf="loading" class="rounded-xl border border-slate-200 bg-white p-12 text-center text-slate-500">
-          Loading products...
-        </div>
-
-        <div *ngIf="!loading && filteredProducts.length === 0" class="rounded-xl border border-slate-200 bg-white p-12 text-center text-slate-500">
-          No products found.
-        </div>
-
-        <div *ngIf="!loading && filteredProducts.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <article *ngFor="let product of filteredProducts" class="rounded-xl border border-slate-200 bg-white p-4 flex flex-col shadow-sm hover:shadow-md transition-shadow">
-            <div class="h-36 rounded-lg bg-gradient-to-br from-orange-100 via-amber-100 to-yellow-50 flex items-center justify-center mb-3 text-orange-700 font-bold text-3xl">
-              {{ product.name.charAt(0) }}
-            </div>
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-600">{{ product.category }}</span>
-              <span *ngIf="hasDiscount(product)" class="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">-{{ getDiscountPercent(product) }}%</span>
-            </div>
-            <h3 class="text-base font-semibold text-slate-900 mt-3">{{ product.name }}</h3>
-            <p class="text-sm text-slate-600 mt-2 min-h-[2.5rem]">{{ product.description || 'No description available.' }}</p>
-            <p class="text-xs text-slate-400 mt-2">SKU: {{ product.sku || 'N/A' }}</p>
-
-            <div class="mt-3 flex items-end gap-2">
-              <span class="text-xl font-bold text-slate-900">{{ formatCurrency(getDisplayPrice(product)) }}</span>
-              <span *ngIf="hasDiscount(product)" class="text-sm text-slate-400 line-through">{{ formatCurrency(product.price) }}</span>
-            </div>
-
-            <div class="mt-4">
-              <p-button
-                label="Add to cart"
-                icon="pi pi-shopping-cart"
-                styleClass="w-full"
-                (onClick)="addToCart(product)">
-              </p-button>
-            </div>
-          </article>
-        </div>
-      </div>
-
-      <aside class="xl:col-span-4">
-        <div class="sticky top-4 space-y-4">
-          <div class="rounded-xl border border-slate-200 bg-white p-4">
-            <div class="flex items-center justify-between mb-3">
-              <h2 class="font-semibold text-slate-900">Shopping Cart</h2>
-              <span class="text-xs text-slate-500">{{ totalCartItems }} items</span>
-            </div>
-
-            <div *ngIf="cart.length === 0" class="py-8 text-sm text-slate-500 text-center">
-              Cart is empty.
-            </div>
-
-            <div *ngIf="cart.length > 0" class="space-y-3 max-h-80 overflow-auto pr-1">
-              <div *ngFor="let item of cart" class="rounded-lg border border-slate-200 p-3">
-                <div class="flex items-start justify-between gap-2">
-                  <div>
-                    <p class="text-sm font-medium text-slate-900">{{ item.product.name }}</p>
-                    <p class="text-xs text-slate-500">{{ formatCurrency(getDisplayPrice(item.product)) }}</p>
+                <!-- Body -->
+                <div class="shop-card__body">
+                  <div class="shop-card__meta">
+                    <span class="shop-card__cat">{{ product.category }}</span>
+                    @if (hasDiscount(product)) {
+                      <span class="shop-card__deal">Deal</span>
+                    }
                   </div>
-                  <button type="button" class="text-slate-400 hover:text-red-500" (click)="removeItem(item)">
-                    <i class="pi pi-trash"></i>
+                  <h3 class="shop-card__name">{{ product.name }}</h3>
+                  <p class="shop-card__desc">{{ product.description || 'No description available.' }}</p>
+                  <p class="shop-card__sku">SKU: {{ product.sku || 'N/A' }}</p>
+
+                  <div class="shop-card__price-row">
+                    <span class="shop-card__price">{{ formatCurrency(getDisplayPrice(product)) }}</span>
+                    @if (hasDiscount(product)) {
+                      <span class="shop-card__price-orig">{{ formatCurrency(product.price) }}</span>
+                    }
+                  </div>
+
+                  <button class="shop-btn shop-btn--cart" (click)="addToCart(product)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.6 8H19M9 21a1 1 0 1 0 2 0M18 21a1 1 0 1 0 2 0"/></svg>
+                    Add to cart
                   </button>
                 </div>
-                <div class="mt-2 flex items-center justify-between">
-                  <div class="flex items-center gap-2">
-                    <button type="button" class="w-7 h-7 rounded border border-slate-300 hover:bg-slate-100" (click)="decreaseQty(item)">-</button>
-                    <span class="text-sm font-medium w-6 text-center">{{ item.quantity }}</span>
-                    <button type="button" class="w-7 h-7 rounded border border-slate-300 hover:bg-slate-100" (click)="increaseQty(item)">+</button>
+              </article>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Cart Sidebar -->
+      <aside class="shop-cart">
+
+        <!-- Cart Items -->
+        <div class="shop-cart__section">
+          <div class="shop-cart__header">
+            <h2>Shopping Cart</h2>
+            <span class="shop-cart__count">{{ totalCartItems }}</span>
+          </div>
+
+          @if (cart.length === 0) {
+            <div class="shop-cart__empty">
+              <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" width="44" height="44"><circle cx="25" cy="54" r="4"/><circle cx="50" cy="54" r="4"/><path d="M0 4h10l8 30h28l8-20H14"/></svg>
+              <p>Cart is empty.</p>
+            </div>
+          }
+
+          @if (cart.length > 0) {
+            <div class="shop-cart__items">
+              @for (item of cart; track item.product.id) {
+                <div class="shop-cart__item">
+                  <div class="shop-cart__item-thumb">{{ item.product.name.charAt(0) }}</div>
+                  <div class="shop-cart__item-info">
+                    <p class="shop-cart__item-name">{{ item.product.name }}</p>
+                    <p class="shop-cart__item-price">{{ formatCurrency(getDisplayPrice(item.product)) }}</p>
                   </div>
-                  <p class="text-sm font-semibold text-slate-900">{{ formatCurrency(getDisplayPrice(item.product) * item.quantity) }}</p>
+                  <div class="shop-cart__item-qty">
+                    <button (click)="decreaseQty(item)">−</button>
+                    <span>{{ item.quantity }}</span>
+                    <button (click)="increaseQty(item)">+</button>
+                  </div>
+                  <button class="shop-cart__remove" (click)="removeItem(item)">×</button>
                 </div>
-              </div>
+              }
             </div>
 
-            <div class="flex items-center gap-2 mt-4">
-              <p-button
-                label="Apply 8% Voucher"
-                [disabled]="cart.length === 0 || voucherApplied"
-                severity="success"
-                [outlined]="true"
-                styleClass="flex-1"
-                (onClick)="applyVoucher()">
-              </p-button>
-              <p-button
-                label="Clear"
-                [disabled]="cart.length === 0"
-                severity="secondary"
-                [outlined]="true"
-                styleClass="flex-1"
-                (onClick)="clearCart()">
-              </p-button>
+            <div class="shop-cart__actions">
+              <button class="shop-btn shop-btn--voucher" [disabled]="voucherApplied" (click)="applyVoucher()">
+                {{ voucherApplied ? '✓ 8% Applied' : 'Apply 8% Voucher' }}
+              </button>
+              <button class="shop-btn shop-btn--ghost-sm" (click)="clearCart()">Clear</button>
             </div>
-          </div>
-
-          <div class="rounded-xl border border-slate-200 bg-white p-4">
-            <h3 class="font-semibold text-slate-900 mb-3">Order Summary</h3>
-
-            <div *ngIf="cart.length > 0 && shippingLeft > 0" class="mb-3 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-700">
-              Add {{ formatCurrency(shippingLeft) }} more for free shipping.
-            </div>
-            <div *ngIf="cart.length > 0 && shippingLeft === 0" class="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
-              You unlocked free shipping.
-            </div>
-
-            <div class="space-y-2 text-sm">
-              <div class="flex justify-between text-slate-600">
-                <span>Subtotal</span>
-                <span>{{ formatCurrency(cartSubtotal) }}</span>
-              </div>
-              <div class="flex justify-between text-slate-600">
-                <span>Tax (10%)</span>
-                <span>{{ formatCurrency(cartTax) }}</span>
-              </div>
-              <div class="flex justify-between text-slate-600">
-                <span>Shipping</span>
-                <span>{{ cartShipping === 0 ? 'Free' : formatCurrency(cartShipping) }}</span>
-              </div>
-              <div class="flex justify-between text-emerald-700" *ngIf="voucherAmount > 0">
-                <span>Voucher</span>
-                <span>-{{ formatCurrency(voucherAmount) }}</span>
-              </div>
-              <div class="flex justify-between text-emerald-700" *ngIf="totalSavings > 0">
-                <span>Total savings</span>
-                <span>{{ formatCurrency(totalSavings) }}</span>
-              </div>
-            </div>
-
-            <div class="flex justify-between items-center text-base font-bold text-slate-900 border-t border-slate-200 mt-3 pt-3">
-              <span>Total</span>
-              <span>{{ formatCurrency(cartTotal) }}</span>
-            </div>
-
-            <p-button
-              label="Checkout (Demo)"
-              icon="pi pi-credit-card"
-              styleClass="w-full mt-4"
-              [disabled]="cart.length === 0"
-              (onClick)="checkoutDemo()">
-            </p-button>
-          </div>
+          }
         </div>
+
+        <!-- Order Summary -->
+        <div class="shop-cart__section">
+          <h3 class="shop-summary__title">Order Summary</h3>
+
+          @if (cart.length > 0 && shippingLeft > 0) {
+            <div class="shop-shipping-nudge">
+              Add {{ formatCurrency(shippingLeft) }} more for free shipping!
+            </div>
+          }
+          @if (cart.length > 0 && shippingLeft === 0) {
+            <div class="shop-shipping-ok">
+              🎉 Free shipping unlocked!
+            </div>
+          }
+
+          <div class="shop-summary">
+            <div class="shop-summary__row">
+              <span>Subtotal</span><span>{{ formatCurrency(cartSubtotal) }}</span>
+            </div>
+            <div class="shop-summary__row">
+              <span>Tax (10%)</span><span>{{ formatCurrency(cartTax) }}</span>
+            </div>
+            <div class="shop-summary__row">
+              <span>Shipping</span>
+              <span [class.shop-summary__free]="cartShipping === 0">
+                {{ cartShipping === 0 ? 'Free' : formatCurrency(cartShipping) }}
+              </span>
+            </div>
+            @if (voucherAmount > 0) {
+              <div class="shop-summary__row shop-summary__row--discount">
+                <span>Voucher</span><span>-{{ formatCurrency(voucherAmount) }}</span>
+              </div>
+            }
+            @if (totalSavings > 0) {
+              <div class="shop-summary__row shop-summary__row--savings">
+                <span>Total savings</span><span>{{ formatCurrency(totalSavings) }}</span>
+              </div>
+            }
+            <div class="shop-summary__divider"></div>
+            <div class="shop-summary__row shop-summary__row--total">
+              <span>Total</span><strong>{{ formatCurrency(cartTotal) }}</strong>
+            </div>
+          </div>
+
+          <button class="shop-btn shop-btn--checkout" [disabled]="cart.length === 0" (click)="checkoutDemo()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+            Checkout (Demo)
+          </button>
+        </div>
+
       </aside>
     </section>
+
   </div>
 </div>

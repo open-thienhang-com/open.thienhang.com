@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
@@ -22,6 +22,15 @@ import {
   BloggerFeaturesResponse
 } from './services/blogger.service';
 
+export type BloggerSection = 'blog' | 'narrative' | 'quality' | 'features' | 'governance' | 'blogs';
+
+export interface SidebarSection {
+  key: BloggerSection;
+  label: string;
+  icon: string;
+  description: string;
+}
+
 @Component({
   selector: 'app-blogger-overview',
   standalone: true,
@@ -40,220 +49,32 @@ import {
     SkeletonModule
   ],
   providers: [MessageService],
-  template: `
-    <div class="blogger-overview-container p-4 md:p-6">
-      <p-toast position="top-right"></p-toast>
-
-      <!-- Header -->
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold text-color">Blogger Domain Overview</h1>
-        <p class="text-color-secondary">A comprehensive look at the Blogger domain</p>
-      </div>
-
-      <!-- Quick Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <p-card styleClass="stat-card">
-            <p class="text-sm text-color-secondary">Total Authors</p>
-            <p class="text-3xl font-bold text-primary-500 mt-2">
-                <ng-container *ngIf="!loadingOverview; else skeletonText">{{ overview?.total_authors ?? '--' }}</ng-container>
-            </p>
-        </p-card>
-        <p-card styleClass="stat-card">
-            <p class="text-sm text-color-secondary">Total Posts</p>
-            <p class="text-3xl font-bold text-primary-500 mt-2">
-                <ng-container *ngIf="!loadingQuality; else skeletonText">{{ quality?.metrics.total_posts ?? '--' }}</ng-container>
-            </p>
-        </p-card>
-        <p-card styleClass="stat-card">
-            <p class="text-sm text-color-secondary">Quality Score</p>
-            <p class="text-3xl font-bold text-primary-500 mt-2">
-                <ng-container *ngIf="!loadingQuality; else skeletonText">{{ quality?.overall_score ?? '--' }}%</ng-container>
-            </p>
-        </p-card>
-        <p-card styleClass="stat-card">
-            <p class="text-sm text-color-secondary">Monthly Cost</p>
-            <p class="text-3xl font-bold text-primary-500 mt-2">
-                <ng-container *ngIf="!loadingCost; else skeletonText">{{ cost?.total_monthly_cost | currency:cost?.currency:'symbol':'1.0-0' ?? '--' }}</ng-container>
-            </p>
-        </p-card>
-      </div>
-
-      <!-- Main Content Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Left Column -->
-        <div class="lg:col-span-2 space-y-6">
-            <p-card styleClass="ui-card">
-                <ng-template pTemplate="title">Domain Overview</ng-template>
-                <ng-template pTemplate="content">
-                    <div *ngIf="loadingOverview" class="p-4"><p-skeleton width="100%" height="100px"></p-skeleton></div>
-                    <div *ngIf="overviewError" class="error-box">{{ overviewError }}</div>
-                    <div *ngIf="overview && !loadingOverview" class="space-y-4">
-                        <p class="text-color-secondary">{{ overview.description }}</p>
-                        <div>
-                            <h4 class="font-semibold mb-2">Capabilities</h4>
-                            <div class="flex flex-wrap gap-2">
-                                <p-tag *ngFor="let cap of overview.capabilities" [value]="cap" severity="info"></p-tag>
-                            </div>
-                        </div>
-                    </div>
-                </ng-template>
-            </p-card>
-
-            <p-card styleClass="ui-card">
-                <ng-template pTemplate="title">Domain Features</ng-template>
-                <ng-template pTemplate="content">
-                    <div *ngIf="loadingFeatures" class="p-4"><p-skeleton width="100%" height="150px"></p-skeleton></div>
-                    <div *ngIf="featuresError" class="error-box">{{ featuresError }}</div>
-                    <div *ngIf="features && !loadingFeatures">
-                        <p-table [value]="features.features" responsiveLayout="scroll" styleClass="p-datatable-sm">
-                            <ng-template pTemplate="header">
-                                <tr>
-                                    <th>Feature</th>
-                                    <th>Description</th>
-                                    <th class="text-center">Status</th>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="body" let-feature>
-                                <tr>
-                                    <td class="font-semibold">{{ feature.name }}</td>
-                                    <td>{{ feature.description }}</td>
-                                    <td class="text-center">
-                                        <p-tag [value]="feature.status" [severity]="feature.status === 'active' ? 'success' : 'warning'"></p-tag>
-                                    </td>
-                                </tr>
-                            </ng-template>
-                        </p-table>
-                    </div>
-                </ng-template>
-            </p-card>
-        </div>
-
-        <!-- Right Column -->
-        <div class="space-y-6">
-            <p-card styleClass="ui-card">
-                <ng-template pTemplate="title">Quality Metrics</ng-template>
-                <ng-template pTemplate="content">
-                    <div *ngIf="loadingQuality" class="p-4"><p-skeleton width="100%" height="120px"></p-skeleton></div>
-                    <div *ngIf="qualityError" class="error-box">{{ qualityError }}</div>
-                    <div *ngIf="quality && !loadingQuality" class="space-y-3">
-                        <div>
-                            <div class="flex justify-between mb-1">
-                                <span class="text-sm font-medium">Overall Score</span>
-                                <span class="text-sm font-bold">{{ quality.overall_score }}%</span>
-                            </div>
-                            <p-progressBar [value]="quality.overall_score" [showValue]="false"></p-progressBar>
-                        </div>
-                        <div>
-                            <div class="flex justify-between mb-1">
-                                <span class="text-sm font-medium">Freshness</span>
-                                <span class="text-sm font-bold">{{ quality.data_freshness }}%</span>
-                            </div>
-                            <p-progressBar [value]="quality.data_freshness" [showValue]="false"></p-progressBar>
-                        </div>
-                        <div>
-                            <div class="flex justify-between mb-1">
-                                <span class="text-sm font-medium">Completeness</span>
-                                <span class="text-sm font-bold">{{ quality.data_completeness }}%</span>
-                            </div>
-                            <p-progressBar [value]="quality.data_completeness" [showValue]="false"></p-progressBar>
-                        </div>
-                    </div>
-                </ng-template>
-            </p-card>
-
-            <p-card styleClass="ui-card">
-                <ng-template pTemplate="title">Cost Breakdown</ng-template>
-                <ng-template pTemplate="content">
-                    <div *ngIf="loadingCost" class="p-4"><p-skeleton width="100%" height="180px"></p-skeleton></div>
-                    <div *ngIf="costError" class="error-box">{{ costError }}</div>
-                    <div *ngIf="cost && !loadingCost">
-                        <p-chart type="doughnut" [data]="costChartData" [options]="costChartOptions"></p-chart>
-                    </div>
-                </ng-template>
-            </p-card>
-
-            <p-card styleClass="ui-card">
-                <ng-template pTemplate="title">Version Info</ng-template>
-                <ng-template pTemplate="content">
-                    <div *ngIf="loadingVersion" class="p-4"><p-skeleton width="100%" height="80px"></p-skeleton></div>
-                    <div *ngIf="versionError" class="error-box">{{ versionError }}</div>
-                    <div *ngIf="version && !loadingVersion" class="space-y-2 text-sm">
-                        <div class="flex justify-between">
-                            <span class="font-semibold">Version:</span>
-                            <span>{{ version.version }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="font-semibold">API Version:</span>
-                            <span>{{ version.api_version }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="font-semibold">Status:</span>
-                            <p-tag [value]="version.status" [severity]="version.status === 'stable' ? 'success' : 'info'"></p-tag>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="font-semibold">Build Date:</span>
-                            <span>{{ version.build_date | date:'short' }}</span>
-                        </div>
-                    </div>
-                </ng-template>
-            </p-card>
-        </div>
-      </div>
-    </div>
-    <ng-template #skeletonText><p-skeleton width="4rem" height="1.5rem"></p-skeleton></ng-template>
-  `,
-  styles: [`
-    :host {
-        display: block;
-        background-color: var(--surface-ground);
-        min-height: 100%;
-    }
-    .blogger-overview-container {
-        max-width: 1600px;
-        margin: 0 auto;
-    }
-    .stat-card {
-        border: 1px solid var(--surface-border);
-        box-shadow: none;
-    }
-    .stat-card:hover {
-        border-color: var(--primary-color);
-        box-shadow: var(--card-shadow);
-    }
-    .ui-card {
-        border: 1px solid var(--surface-border);
-        box-shadow: var(--card-shadow);
-        border-radius: var(--border-radius);
-    }
-    .error-box {
-        text-align: center;
-        padding: 1rem;
-        background-color: var(--red-50);
-        color: var(--red-700);
-        border: 1px solid var(--red-200);
-        border-radius: var(--border-radius);
-    }
-    :host ::ng-deep {
-        .p-card-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-        }
-        .p-card-content {
-            padding-top: 0;
-        }
-        .p-progressbar {
-            height: 0.5rem;
-        }
-    }
-  `]
+  templateUrl: './blogger-overview.component.html',
+  styleUrls: ['./blogger-overview.component.scss']
 })
 export class BloggerOverviewComponent implements OnInit {
   private bloggerService = inject(BloggerService);
   private messageService = inject(MessageService);
+  private route = inject(ActivatedRoute);
 
   overview: BloggerOverview | null = null;
   loadingOverview = false;
   overviewError: string | null = null;
+
+  activeSection: BloggerSection = 'blog';
+  sections: SidebarSection[] = [
+    { key: 'blog', label: 'Blog Feed', icon: 'pi pi-megaphone', description: 'Real-time blog insights and published content' },
+    { key: 'blogs', label: 'Blogs Management', icon: 'pi pi-briefcase', description: 'Manage blog properties and metadata' },
+    { key: 'narrative', label: 'Overview', icon: 'pi pi-info-circle', description: 'Domain identity and purpose narrative' },
+    { key: 'quality', label: 'Quality Assessment', icon: 'pi pi-shield', description: 'Data freshness and accuracy metrics' },
+    { key: 'features', label: 'Feature Registry', icon: 'pi pi-list', description: 'Available endpoints and capabilities' },
+    { key: 'governance', label: 'Governance', icon: 'pi pi-lock', description: 'Compliance and data sovereignty' }
+  ];
+
+  blogPosts: any[] = [];
+  loadingBlog = false;
+  blogError: string | null = null;
+  totalBlogPosts = 0;
 
   version: BloggerVersion | null = null;
   loadingVersion = false;
@@ -271,12 +92,36 @@ export class BloggerOverviewComponent implements OnInit {
   loadingFeatures = false;
   featuresError: string | null = null;
 
+  blogs: any[] = [];
+  filteredBlogs: any[] = [];
+  loadingBlogs = false;
+  blogsError: string | null = null;
+  totalBlogs = 0;
+
+  // Modern UI properties
+  viewMode: 'grid' | 'table' = 'grid';
+  searchTerm = '';
+  filters = {
+    language: ''
+  };
+  languageOptions: any[] = [];
+
   costChartData: any;
   costChartOptions: any;
 
   ngOnInit() {
     this.loadAllData();
     this.initChartOptions();
+
+    // Listen to query params for section switching
+    this.route.queryParams.subscribe(params => {
+      if (params['section']) {
+        const section = params['section'] as BloggerSection;
+        if (this.sections.some(s => s.key === section)) {
+          this.activeSection = section;
+        }
+      }
+    });
   }
 
   loadAllData() {
@@ -285,6 +130,105 @@ export class BloggerOverviewComponent implements OnInit {
     this.loadQuality();
     this.loadCost();
     this.loadFeatures();
+    this.loadBlogPosts();
+    this.loadBlogs();
+  }
+
+  get activeSectionMeta(): SidebarSection {
+    return this.sections.find(s => s.key === this.activeSection) || this.sections[0];
+  }
+
+  switchSection(key: BloggerSection) {
+    this.activeSection = key;
+  }
+
+  loadBlogPosts() {
+    this.loadingBlog = true;
+    this.blogError = null;
+    this.bloggerService.getBloggers('published', 10, 0).subscribe({
+      next: (res) => {
+        this.blogPosts = res.data;
+        this.totalBlogPosts = res.total;
+        this.loadingBlog = false;
+      },
+      error: (err) => {
+        this.blogError = 'Failed to load blog posts.';
+        this.loadingBlog = false;
+      }
+    });
+  }
+
+  loadBlogs() {
+    this.loadingBlogs = true;
+    this.blogsError = null;
+    this.bloggerService.getBlogs().subscribe({
+      next: (res) => {
+        this.blogs = res.data;
+        this.totalBlogs = res.total;
+        this.extractLanguageOptions(res.data);
+        this.applyFilters();
+        this.loadingBlogs = false;
+      },
+      error: (err) => {
+        this.blogsError = 'Failed to load blogs list.';
+        this.loadingBlogs = false;
+      }
+    });
+  }
+
+  extractLanguageOptions(blogs: any[]) {
+    const langs = new Set<string>();
+    blogs.forEach(blog => {
+      if (blog.locale?.language) {
+        langs.add(blog.locale.language);
+      }
+    });
+    this.languageOptions = [
+      { label: 'All Languages', value: '' },
+      ...Array.from(langs).map(lang => ({
+        label: lang.toUpperCase(),
+        value: lang
+      }))
+    ];
+  }
+
+  applyFilters() {
+    this.filteredBlogs = this.blogs.filter(blog => {
+      const matchesSearch = !this.searchTerm ||
+        blog.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        (blog.description && blog.description.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
+        blog.url.toLowerCase().includes(this.searchTerm.toLowerCase());
+
+      const matchesLang = !this.filters.language || blog.locale?.language === this.filters.language;
+
+      return matchesSearch && matchesLang;
+    });
+  }
+
+  onFilterChange() {
+    this.applyFilters();
+  }
+
+  onSearch() {
+    this.applyFilters();
+  }
+
+  clearFilters() {
+    this.searchTerm = '';
+    this.filters.language = '';
+    this.applyFilters();
+  }
+
+  setViewMode(mode: 'grid' | 'table') {
+    this.viewMode = mode;
+  }
+
+  get activeFilterCount(): number {
+    return (this.searchTerm ? 1 : 0) + (this.filters.language ? 1 : 0);
+  }
+
+  get hasSearchOrFilters(): boolean {
+    return !!this.searchTerm || !!this.filters.language;
   }
 
   loadOverview() {
@@ -363,6 +307,14 @@ export class BloggerOverviewComponent implements OnInit {
             ]
         }]
     };
+  }
+
+  fallbackText(value?: string | null, fallback = '-'): string {
+    return value || fallback;
+  }
+
+  numberOrFallback(value?: number | null): number | string {
+    return typeof value === 'number' ? value : '-';
   }
 
   initChartOptions() {
