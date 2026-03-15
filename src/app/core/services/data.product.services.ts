@@ -151,76 +151,114 @@ export class DataProductServices {
       );
   }
 
-  createDataProduct(data: DataProduct): Observable<ApiResponse<DataProduct>> {
-    const url = `${this.baseUrl}/data-product`;
-    return this.http.post<DataProduct>(url, data)
-      .pipe(map(response => this.wrapResponse(response)));
+  createDataProduct(domain: string, data: any): Observable<ApiResponse<DataProduct>> {
+    const url = `${this.baseUrl}/data-mesh/data-products/${domain}`;
+    return this.http.post<any>(url, data)
+      .pipe(
+        map(response => {
+          if (response && response.data) {
+            return {
+              data: response.data,
+              success: true,
+              message: response.message || 'Data Product created successfully'
+            };
+          }
+          return {
+            data: response,
+            success: true,
+            message: 'Data Product created'
+          };
+        })
+      );
   }
 
   updateDataProduct(id: string, data: Partial<DataProduct>): Observable<ApiResponse<DataProduct>> {
-    const url = `${this.baseUrl}/data-product/${id}`;
-    return this.http.put<DataProduct>(url, data)
-      .pipe(map(response => this.wrapResponse(response)));
+    const url = `${this.baseUrl}/data-mesh/data-products/${id}`;
+    return this.http.put<any>(url, data)
+      .pipe(
+        map(response => {
+          if (response && response.data) {
+            return {
+              data: response.data,
+              success: true,
+              message: response.message || 'Data Product updated successfully'
+            };
+          }
+          return {
+            data: response,
+            success: true,
+            message: 'Data Product updated'
+          };
+        })
+      );
   }
 
   deleteDataProduct(id: string): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/data-product/${id}`;
+    const url = `${this.baseUrl}/data-mesh/data-products/${id}`;
     return this.http.delete<any>(url)
-      .pipe(map(response => this.wrapResponse(response)));
+      .pipe(
+        map(response => {
+          return {
+            data: response?.data || response,
+            success: true,
+            message: response?.message || 'Data Product deleted successfully'
+          };
+        })
+      );
   }
 
   subscribeToProduct(productId: string): Observable<ApiResponse<DataProductSubscription>> {
-    const url = `${this.baseUrl}/data-product/${productId}/subscribe`;
-    return this.http.post<DataProductSubscription>(url, {})
-      .pipe(map(response => this.wrapResponse(response)));
+    const url = `${this.baseUrl}/data-mesh/data-products/${productId}/subscribe`;
+    return this.http.post<any>(url, {})
+      .pipe(map(response => this.wrapResponse(response.data || response)));
   }
 
   unsubscribeFromProduct(productId: string): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/data-product/${productId}/unsubscribe`;
+    const url = `${this.baseUrl}/data-mesh/data-products/${productId}/unsubscribe`;
     return this.http.delete<any>(url)
-      .pipe(map(response => this.wrapResponse(response)));
+      .pipe(map(response => this.wrapResponse(response.data || response)));
   }
 
   getProductSubscribers(productId: string): Observable<ApiResponse<any[]>> {
-    const url = `${this.baseUrl}/data-product/${productId}/subscribers`;
+    const url = `${this.baseUrl}/data-mesh/data-products/${productId}/subscribers`;
     return this.http.get<any[]>(url)
-      .pipe(map(response => this.wrapArrayResponse(response)));
+      .pipe(map(response => this.wrapArrayResponse((response as any).data || response)));
   }
 
   getProductMetrics(productId: string): Observable<ApiResponse<DataProductMetrics>> {
-    const url = `${this.baseUrl}/data-product/${productId}/metrics`;
-    return this.http.get<DataProductMetrics>(url)
-      .pipe(map(response => this.wrapResponse(response)));
+    const url = `${this.baseUrl}/data-mesh/data-products/${productId}/metrics`;
+    return this.http.get<any>(url)
+      .pipe(map(response => this.wrapResponse(response.data || response)));
   }
 
   getProductSchema(productId: string): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/data-product/${productId}/schema`;
+    const url = `${this.baseUrl}/data-mesh/data-products/${productId}/schema`;
     return this.http.get<any>(url)
-      .pipe(map(response => this.wrapResponse(response)));
+      .pipe(map(response => this.wrapResponse(response.data || response)));
   }
 
   getProductAPI(productId: string): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/data-product/${productId}/api`;
+    const url = `${this.baseUrl}/data-mesh/data-products/${productId}/api`;
     return this.http.get<any>(url)
-      .pipe(map(response => this.wrapResponse(response)));
+      .pipe(map(response => this.wrapResponse(response.data || response)));
   }
 
   validateProductSchema(productId: string, schema: any): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/data-product/${productId}/validate-schema`;
+    const url = `${this.baseUrl}/data-mesh/data-products/${productId}/validate-schema`;
     return this.http.post<any>(url, schema)
-      .pipe(map(response => this.wrapResponse(response)));
+      .pipe(map(response => this.wrapResponse(response.data || response)));
   }
 
   publishProduct(productId: string): Observable<ApiResponse<DataProduct>> {
-    const url = `${this.baseUrl}/data-product/${productId}/publish`;
-    return this.http.post<DataProduct>(url, {})
-      .pipe(map(response => this.wrapResponse(response)));
+    const url = `${this.baseUrl}/data-mesh/data-products/${productId}/publish`;
+    return this.http.post<any>(url, {})
+      .pipe(map(response => this.wrapResponse(response.data || response)));
   }
 
   archiveProduct(productId: string): Observable<ApiResponse<DataProduct>> {
-    const url = `${this.baseUrl}/data-product/${productId}/archive`;
-    return this.http.post<DataProduct>(url, {})
-      .pipe(map(response => this.wrapResponse(response)));
+    const url = `${this.baseUrl}/data-mesh/data-products/${productId}/archive`;
+    return this.http.post<any>(url, {})
+      .pipe(map(response => this.wrapResponse(response.data || response)));
   }
 
   // Helper method to build HttpParams from object

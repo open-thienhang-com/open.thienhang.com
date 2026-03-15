@@ -40,7 +40,8 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        loadComponent: () => import('./features/data-mesh/data-products/data-products.component').then(m => m.DataProductsComponent),
+        loadComponent: () => import('./features/applications/applications.component').then(m => m.ApplicationsComponent),
+        pathMatch: 'full'
       },
       {
         path: 'planning',
@@ -49,6 +50,10 @@ export const routes: Routes = [
       {
         path: 'travel',
         children: travelRoutes
+      },
+      {
+        path: 'applications',
+        loadComponent: () => import('./features/applications/applications.component').then(m => m.ApplicationsComponent),
       }
     ]
   },
@@ -155,10 +160,6 @@ export const routes: Routes = [
       {
         path: 'settings',
         loadComponent: () => import('./features/settings/setting.component').then(m => m.SettingsComponent),
-      },
-      {
-        path: 'applications',
-        loadComponent: () => import('./features/applications/applications.component').then(m => m.ApplicationsComponent),
       },
 
       {

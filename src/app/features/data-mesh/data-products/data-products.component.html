@@ -270,10 +270,23 @@
 
             <div *ngIf="!loading && viewMode === 'grid' && dataProducts.length > 0" class="grid-view-container">
               <div class="products-grid">
+                  <!-- Register New Product Card -->
+                  <div class="product-card register-card" (click)="openRegisterDialog()">
+                    <div class="register-card-content">
+                      <div class="register-icon-wrapper">
+                        <i class="pi pi-plus"></i>
+                      </div>
+                      <div class="register-text">
+                        <h3>Register New</h3>
+                        <p>List a new data product</p>
+                      </div>
+                    </div>
+                  </div>
+
                   <div
                     *ngFor="let product of dataProducts; trackBy: trackByProductId; let i = index"
                     class="product-card"
-                    [style.animation-delay]="(i % 12) * 0.05 + 's'"
+                    [style.animation-delay]="(i % 12) * 0.05 + 0.1 + 's'"
                     (click)="openProductQuickView(product)">
 
                   <!-- circle glow header -->
@@ -570,6 +583,176 @@
         label="Open Application" 
         icon="pi pi-arrow-up-right" 
         (click)="openProductApplication(selectedProductForDetails!); showProductDetailsDialog = false">
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Product Registration Dialog -->
+<p-dialog 
+  [(visible)]="showRegisterDialog" 
+  header="Register New Data Product" 
+  [modal]="true" 
+  [style]="{width: '70vw', maxWidth: '1000px'}"
+  [breakpoints]="{'960px': '85vw', '640px': '95vw'}"
+  [draggable]="false" 
+  [resizable]="false"
+  styleClass="register-product-dialog">
+  
+  <div class="registration-form-content" *ngIf="newProduct">
+    <div class="form-scroll-area">
+      <div class="form-section">
+        <div class="section-header">
+          <i class="pi pi-info-circle"></i>
+          <span>Basic Information</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-field full-width">
+            <label for="reg-name">Product Name *</label>
+            <input id="reg-name" type="text" pInputText [(ngModel)]="newProduct.name" placeholder="e.g. Sales Data Product" />
+          </div>
+          <div class="form-field full-width">
+            <label for="reg-description">Description</label>
+            <textarea id="reg-description" pInputTextarea [(ngModel)]="newProduct.description" rows="3" placeholder="Describe the purpose and contents of this data product"></textarea>
+          </div>
+          <div class="form-field">
+            <label for="reg-domain">Domain *</label>
+            <p-dropdown id="reg-domain" [options]="domainOptions" [(ngModel)]="newProduct.domain" optionLabel="label" optionValue="value" placeholder="Select domain" styleClass="w-full"></p-dropdown>
+          </div>
+          <div class="form-field">
+            <label for="reg-owner">Owner</label>
+            <input id="reg-owner" type="text" pInputText [(ngModel)]="newProduct.owner" class="w-full" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-header">
+          <i class="pi pi-users"></i>
+          <span>Teams & Consumers</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Teams</label>
+            <p-chips [(ngModel)]="newProduct.teams" placeholder="Add teams..." styleClass="w-full"></p-chips>
+          </div>
+          <div class="form-field">
+            <label>Consumers</label>
+            <p-chips [(ngModel)]="newProduct.consumers" placeholder="Add consumers..." styleClass="w-full"></p-chips>
+          </div>
+          <div class="form-field full-width">
+            <label for="reg-purpose">Purpose</label>
+            <input id="reg-purpose" type="text" pInputText [(ngModel)]="newProduct.purpose" class="w-full" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-header">
+          <i class="pi pi-directions"></i>
+          <span>Ports & Assets</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Input Ports</label>
+            <p-chips [(ngModel)]="newProduct.input_ports" placeholder="Add ports..." styleClass="w-full"></p-chips>
+          </div>
+          <div class="form-field">
+            <label>Output Ports</label>
+            <p-chips [(ngModel)]="newProduct.output_ports" placeholder="Add ports..." styleClass="w-full"></p-chips>
+          </div>
+          <div class="form-field full-width">
+            <label>Assets</label>
+            <p-chips [(ngModel)]="newProduct.assets" placeholder="Add assets..." styleClass="w-full"></p-chips>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-header">
+          <i class="pi pi-shield"></i>
+          <span>Governance & Policies</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Policies</label>
+            <p-chips [(ngModel)]="newProduct.policies" placeholder="Add policies..." styleClass="w-full"></p-chips>
+          </div>
+          <div class="form-field">
+            <label>Permissions</label>
+            <p-chips [(ngModel)]="newProduct.permissions" placeholder="Add permissions..." styleClass="w-full"></p-chips>
+          </div>
+          <div class="form-field full-width">
+            <label>Tags</label>
+            <p-chips [(ngModel)]="newProduct.tags" placeholder="Add tags..." styleClass="w-full"></p-chips>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-header">
+          <i class="pi pi-chart-line"></i>
+          <span>Operational Details</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="reg-lifecycle">Lifecycle</label>
+            <input id="reg-lifecycle" type="text" pInputText [(ngModel)]="newProduct.lifecycle" class="w-full" />
+          </div>
+          <div class="form-field">
+            <label for="reg-cost">Cost</label>
+            <input id="reg-cost" type="text" pInputText [(ngModel)]="newProduct.cost" class="w-full" />
+          </div>
+          <div class="form-field">
+            <label for="reg-discoverability">Discoverability</label>
+            <input id="reg-discoverability" type="text" pInputText [(ngModel)]="newProduct.discoverability" class="w-full" />
+          </div>
+          <div class="form-field">
+            <label for="reg-documentation">Documentation URL</label>
+            <input id="reg-documentation" type="text" pInputText [(ngModel)]="newProduct.documentation" class="w-full" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-header">
+          <i class="pi pi-check-circle"></i>
+          <span>Quality Metrics</span>
+        </div>
+        <div class="form-grid" *ngIf="newProduct.quality_metrics">
+          <div class="form-field">
+            <label for="reg-freshness">Freshness</label>
+            <input id="reg-freshness" type="text" pInputText [(ngModel)]="newProduct.quality_metrics.freshness" class="w-full" />
+          </div>
+          <div class="form-field">
+            <label for="reg-accuracy">Accuracy</label>
+            <input id="reg-accuracy" type="text" pInputText [(ngModel)]="newProduct.quality_metrics.accuracy" class="w-full" />
+          </div>
+          <div class="form-field">
+            <label for="reg-completeness">Completeness</label>
+            <input id="reg-completeness" type="text" pInputText [(ngModel)]="newProduct.quality_metrics.completeness" class="w-full" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="registration-footer">
+      <button 
+        pButton 
+        type="button" 
+        label="Cancel" 
+        class="p-button-text p-button-secondary" 
+        (click)="showRegisterDialog = false">
+      </button>
+      <button 
+        pButton 
+        type="button" 
+        label="Register Data Product" 
+        icon="pi pi-check" 
+        [loading]="isRegistering"
+        (click)="registerProduct()">
       </button>
     </div>
   </ng-template>

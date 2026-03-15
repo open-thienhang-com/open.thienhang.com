@@ -26,6 +26,8 @@ import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { ToolbarModule } from 'primeng/toolbar';
 import { DialogModule } from 'primeng/dialog';
+import { Chips } from 'primeng/chips';
+import { InputTextarea } from 'primeng/inputtextarea';
 
 @Component({
   selector: 'app-data-products',
@@ -50,7 +52,9 @@ import { DialogModule } from 'primeng/dialog';
     InputGroupModule,
     InputGroupAddonModule,
     ToolbarModule,
-    DialogModule
+    DialogModule,
+    Chips,
+    InputTextarea
   ],
   templateUrl: './data-products.component.html',
   styleUrls: ['./data-products.component.scss'],
@@ -124,6 +128,11 @@ export class DataProductsComponent implements OnInit {
   // Product Detail Dialog
   showProductDetailsDialog = false;
   selectedProductForDetails: DataProduct | null = null;
+
+  // Registration Dialog
+  showRegisterDialog = false;
+  isRegistering = false;
+  newProduct: any = {};
 
   constructor(
     private dataProductServices: DataProductServices,
@@ -522,5 +531,77 @@ export class DataProductsComponent implements OnInit {
     } else {
       this.router.navigate(['/data-mesh/data-products', product.id, 'apis']);
     }
+  }
+
+  // Registration logic
+  getDefaultProduct(): any {
+    return {
+      name: 'Sales Data Product',
+      description: 'Contains sales data',
+      domain: 'sales',
+      owner: 'thienhang@example.com',
+      teams: ['Data Engineering', 'Sales Analytics'],
+      purpose: 'Business Intelligence and Sales Reporting',
+      consumers: ['Marketing', 'Finance'],
+      input_ports: ['CRM API', 'ERP DB'],
+      output_ports: ['Sales Rest API', 'Sales S3 Bucket'],
+      assets: ['sales_orders', 'customers', 'products'],
+      policies: ['GDPR', 'Internal Data Retention'],
+      permissions: ['Read Only', 'Manager Access'],
+      tags: ['sales', 'revenue', 'quarterly'],
+      quality_metrics: {
+        freshness: 'Daily',
+        accuracy: '99.9%',
+        completeness: 'Mandatory fields checked'
+      },
+      lifecycle: 'Production',
+      cost: 'Standard',
+      discoverability: 'Public',
+      documentation: 'https://docs.example.com/sales-data',
+      apis: []
+    };
+  }
+
+  openRegisterDialog(): void {
+    this.newProduct = this.getDefaultProduct();
+    this.showRegisterDialog = true;
+  }
+
+  registerProduct(): void {
+    if (!this.newProduct.name || !this.newProduct.domain) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Validation Error',
+        detail: 'Name and Domain are required'
+      });
+      return;
+    }
+
+    this.isRegistering = true;
+    this.loadingService.showPageLoading('Registering data product...', 'data-flow');
+
+    this.dataProductServices.createDataProduct(this.newProduct.domain, this.newProduct).subscribe({
+      next: (response) => {
+        this.isRegistering = false;
+        this.loadingService.hide();
+        if (response.success || response.message === 'Data Product registered') {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: response.message || 'Data Product registered successfully'
+          });
+          this.showRegisterDialog = false;
+          this.refreshProducts();
+        } else {
+          this.handleError(response.message || 'Failed to register data product');
+        }
+      },
+      error: (error) => {
+        this.isRegistering = false;
+        this.loadingService.hide();
+        console.error('Error registering product:', error);
+        this.handleError('Failed to register data product');
+      }
+    });
   }
 }

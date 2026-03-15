@@ -1063,7 +1063,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (!url) return null;
     const p = url.split('?')[0].toLowerCase();
     // Treat root path as the 'all' application so the unified sidebar is shown
-    if (p === '/' || p === '') return 'all';
+    if (p === '/' || p === '' || p === '/applications') return 'all';
     if (p.startsWith('/governance')) return 'governance';
     if (p.startsWith('/retail/loyalty') || p.startsWith('/retail/rewards') || p.startsWith('/retail/campaigns')) return 'loyalty';
     if (p.startsWith('/retail')) return 'retail';
