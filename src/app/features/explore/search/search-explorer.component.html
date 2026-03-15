@@ -1,6 +1,261 @@
-<!-- Search Explorer: sử dụng template asset grid -->
-<ng-container *ngTemplateOutlet="explorerAssetGrid"></ng-container>
+<div class="search-main">
+  <div class="search-content-wrapper">
+    <div class="search-content-inner">
+      <section class="search-hero">
+        <div class="search-hero-copy">
+          <div class="search-hero-badge">
+            <i class="pi pi-filter"></i>
+          </div>
+          <div>
+            <p class="search-eyebrow">Search Infrastructure</p>
+            <h1 class="search-title">Search Explorer</h1>
+            <p class="search-subtitle">
+              Manage and monitor governed search indexes across Elasticsearch clusters. Track query performance, indexing throughput, and shard distribution across the mesh.
+            </p>
+          </div>
+        </div>
 
-<ng-template #explorerAssetGrid>
-  <!-- ...template giống database-explorer.component.html... -->
-</ng-template>
+        <div class="search-hero-actions">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-plus"
+            label="Create Index"
+            class="p-button-sm">
+          </button>
+        </div>
+      </section>
+
+      <div class="search-workspace">
+        <aside class="search-sidebar">
+          <div class="search-sidebar-panel">
+            <p class="sidebar-eyebrow">Refine search</p>
+            <div class="sidebar-heading">Filter indexes</div>
+
+            <div class="filter-stack">
+              <div class="filter-field">
+                <label for="index-search">Search</label>
+                <span class="p-input-icon-left w-full">
+                  <i class="pi pi-search"></i>
+                  <input
+                    id="index-search"
+                    type="text"
+                    pInputText
+                    class="w-full"
+                    placeholder="Index name..."
+                    [(ngModel)]="searchQuery"
+                    (input)="applyFilters()">
+                </span>
+              </div>
+
+              <div class="filter-field">
+                <label for="index-cluster">Cluster</label>
+                <p-dropdown
+                  id="index-cluster"
+                  [options]="clusterOptions"
+                  [(ngModel)]="selectedCluster"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select cluster"
+                  (onChange)="applyFilters()"
+                  [showClear]="true">
+                </p-dropdown>
+              </div>
+
+              <div class="filter-field">
+                <label for="index-status">Status</label>
+                <p-dropdown
+                  id="index-status"
+                  [options]="statusOptions"
+                  [(ngModel)]="selectedStatus"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select status"
+                  (onChange)="applyFilters()"
+                  [showClear]="true">
+                </p-dropdown>
+              </div>
+            </div>
+          </div>
+
+          <div class="search-sidebar-panel sidebar-help">
+            <div class="sidebar-help-icon">
+              <i class="pi pi-share-alt"></i>
+            </div>
+            <div>
+              <div class="sidebar-help-title">Replication</div>
+              <p class="sidebar-help-text">
+                Production indexes require a minimum of 1 replica per shard for high availability across availability zones.
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        <main class="search-panel">
+          <div class="search-panel-header">
+            <div>
+              <p class="panel-eyebrow">Index surface</p>
+              <h2 class="panel-title">Active search inventory</h2>
+              <p class="panel-subtitle">
+                Showing {{ filteredIndexes.length }} indexes across {{ getClusters().length }} active Elasticsearch clusters.
+              </p>
+            </div>
+
+            <div class="panel-chip">
+              <i class="pi pi-chart-bar"></i>
+              <span>Cluster view</span>
+            </div>
+          </div>
+
+          <div class="search-panel-content">
+            <!-- Global Performance -->
+            <div class="performance-overview">
+              <div class="perf-stats-grid">
+                <div class="stat-item">
+                  <span class="label">Total Documents</span>
+                  <span class="value">{{ getTotalDocuments() | number }}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="label">Total Size</span>
+                  <span class="value">{{ getTotalSize() }}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="label">Aggregate QPS</span>
+                  <span class="value text-blue-500">{{ getTotalQPS() | number:'1.0-0' }}</span>
+                </div>
+              </div>
+              <div class="h-60">
+                <p-chart type="line" [data]="performanceChartData" [options]="performanceChartOptions"></p-chart>
+              </div>
+            </div>
+
+            <div class="type-grid">
+              <div *ngFor="let cluster of getClusters()" class="cluster-card">
+                <div class="cluster-card-header">
+                  <h3>{{ cluster }}</h3>
+                  <p-tag [severity]="getClusterHealthSeverity(cluster)"
+                         [value]="getClusterHealth(cluster) | uppercase"
+                         [rounded]="true"></p-tag>
+                </div>
+                <div class="cluster-metrics">
+                  <div class="metric-mini">
+                    <span class="mlabel">Indexes</span>
+                    <span class="mvalue">{{ getIndexesInCluster(cluster).length }}</span>
+                  </div>
+                  <div class="metric-mini">
+                    <span class="mlabel">Documents</span>
+                    <span class="mvalue">{{ getDocumentsInCluster(cluster) | number }}</span>
+                  </div>
+                  <div class="metric-mini">
+                    <span class="mlabel">Shards</span>
+                    <span class="mvalue">{{ getTotalShardsInCluster(cluster) }}</span>
+                  </div>
+                  <div class="metric-mini">
+                    <span class="mlabel">Avg Replicas</span>
+                    <span class="mvalue">{{ getAvgReplicasInCluster(cluster) }}</span>
+                  </div>
+                </div>
+                <div class="load-meter">
+                  <div class="flex">
+                    <span>Cluster Load</span>
+                    <span>{{ getClusterLoad(cluster) }}%</span>
+                  </div>
+                  <p-progressBar [value]="getClusterLoad(cluster)" [showValue]="false"
+                                 [ngClass]="{
+                                   'bg-green-500': getClusterLoad(cluster) < 70,
+                                   'bg-yellow-500': getClusterLoad(cluster) >= 70 && getClusterLoad(cluster) < 90,
+                                   'bg-red-500': getClusterLoad(cluster) >= 90
+                                 }"
+                                 [style]="{'height': '4px'}"></p-progressBar>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-wrapper">
+              <p-table [value]="filteredIndexes" [paginator]="true" [rows]="10" styleClass="p-datatable-sm"
+                      [rowsPerPageOptions]="[5,10,25]" [showCurrentPageReport]="true" responsiveLayout="stack"
+                      currentPageReportTemplate="Showing {first} to {last} of {totalRecords}">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th>Name</th>
+                    <th>Cluster</th>
+                    <th>Status</th>
+                    <th>Documents</th>
+                    <th>Size</th>
+                    <th>Performance</th>
+                    <th>Configuration</th>
+                    <th>Last Updated</th>
+                    <th style="width: 120px">Actions</th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-index>
+                  <tr>
+                    <td>
+                      <div class="flex items-center gap-2">
+                        <i class="pi pi-filter text-lg text-red-500"></i>
+                        <div>
+                          <div class="font-bold text-sm">{{ index.name }}</div>
+                          <div class="text-xs text-gray-400 font-medium">v{{ index.version }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="text-xs font-bold text-gray-400">{{ index.cluster }}</span></td>
+                    <td>
+                      <p-tag [severity]="getStatusSeverity(index.status)" [value]="index.status" [rounded]="true"></p-tag>
+                    </td>
+                    <td><span class="text-sm font-medium">{{ index.documents | number }}</span></td>
+                    <td><span class="text-sm">{{ index.size }}</span></td>
+                    <td>
+                      <div class="flex flex-col gap-1">
+                        <div class="flex items-center justify-between text-[10px] font-bold text-gray-400 uppercase">
+                          <span>QPS</span>
+                          <span class="text-blue-500">{{ index.queryPerSecond | number:'1.0-1' }}</span>
+                        </div>
+                        <div class="flex items-center justify-between text-[10px] font-bold text-gray-400 uppercase">
+                          <span>Lat</span>
+                          <span class="text-gray-900">{{ index.avgResponseTime | number:'1.0-0' }}ms</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="flex flex-col gap-1">
+                        <div class="flex items-center justify-between text-[10px] font-bold text-gray-400 uppercase">
+                          <span>Shards</span>
+                          <span class="text-gray-900">{{ index.shards }}</span>
+                        </div>
+                        <div class="flex items-center justify-between text-[10px] font-bold text-gray-400 uppercase">
+                          <span>Repl</span>
+                          <span class="text-gray-900">{{ index.replicas }}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="text-xs font-medium">{{ index.lastUpdated | date:'shortDate' }}</span></td>
+                    <td>
+                      <div class="flex gap-1">
+                        <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm"></button>
+                        <button pButton icon="pi pi-refresh" class="p-button-rounded p-button-text p-button-sm"></button>
+                        <button pButton icon="pi pi-cog" class="p-button-rounded p-button-text p-button-sm"></button>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                  <tr>
+                    <td colspan="9" class="text-center p-8">
+                      <div class="flex flex-col items-center py-6">
+                        <i class="pi pi-filter text-5xl text-gray-200 mb-4"></i>
+                        <p class="text-gray-400">No search indexes found matching your criteria</p>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-toast></p-toast>

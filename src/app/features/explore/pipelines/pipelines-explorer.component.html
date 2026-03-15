@@ -1,6 +1,195 @@
-<!-- Pipelines Explorer: sử dụng template asset grid -->
-<ng-container *ngTemplateOutlet="explorerAssetGrid"></ng-container>
+<div class="pipelines-main">
+  <div class="pipelines-content-wrapper">
+    <div class="pipelines-content-inner">
+      <section class="pipelines-hero">
+        <div class="pipelines-hero-copy">
+          <div class="pipelines-hero-badge">
+            <i class="pi pi-directions"></i>
+          </div>
+          <div>
+            <p class="pipelines-eyebrow">Data Orchestration</p>
+            <h1 class="pipelines-title">Pipeline Explorer</h1>
+            <p class="pipelines-subtitle">
+              Monitor and manage your data pipelines across Airflow, NiFi, and Prefect. Track success rates, average durations, and schedules from a single surface.
+            </p>
+          </div>
+        </div>
 
-<ng-template #explorerAssetGrid>
-  <!-- ...template giống database-explorer.component.html... -->
-</ng-template>
+        <div class="pipelines-hero-actions">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-plus"
+            label="Add Pipeline"
+            class="p-button-sm">
+          </button>
+        </div>
+      </section>
+
+      <div class="pipelines-workspace">
+        <aside class="pipelines-sidebar">
+          <div class="pipelines-sidebar-panel">
+            <p class="sidebar-eyebrow">Refine search</p>
+            <div class="sidebar-heading">Filter pipelines</div>
+
+            <div class="filter-stack">
+              <div class="filter-field">
+                <label for="pipeline-search">Search</label>
+                <span class="p-input-icon-left w-full">
+                  <i class="pi pi-search"></i>
+                  <input
+                    id="pipeline-search"
+                    type="text"
+                    pInputText
+                    class="w-full"
+                    placeholder="Pipeline name..."
+                    [(ngModel)]="searchQuery"
+                    (input)="applyFilters()">
+                </span>
+              </div>
+
+              <div class="filter-field">
+                <label for="pipeline-status">Status</label>
+                <p-dropdown
+                  id="pipeline-status"
+                  [options]="statusOptions"
+                  [(ngModel)]="selectedStatus"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select status"
+                  (onChange)="applyFilters()"
+                  [showClear]="true">
+                </p-dropdown>
+              </div>
+            </div>
+          </div>
+
+          <div class="pipelines-sidebar-panel sidebar-help">
+            <div class="sidebar-help-icon">
+              <i class="pi pi-chart-line"></i>
+            </div>
+            <div>
+              <div class="sidebar-help-title">Operational Health</div>
+              <p class="sidebar-help-text">
+                Monitor your success rates. Pipelines below 70% success rate should be prioritized for debugging.
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        <main class="pipelines-panel">
+          <div class="pipelines-panel-header">
+            <div>
+              <p class="panel-eyebrow">Orchestration surface</p>
+              <h2 class="panel-title">Active data pipelines</h2>
+              <p class="panel-subtitle">
+                Showing {{ filteredPipelines.length }} pipelines in your current workspace scope.
+              </p>
+            </div>
+
+            <div class="panel-chip">
+              <i class="pi pi-list"></i>
+              <span>List view</span>
+            </div>
+          </div>
+
+          <div class="pipelines-panel-content">
+            <div class="type-grid">
+              <div class="type-card" [class.active]="selectedPipelineType === 'airflow'" (click)="filterByType('airflow')">
+                <i class="pi pi-directions text-blue-500"></i>
+                <span>Airflow</span>
+                <span class="type-count" *ngIf="getCountByType('airflow') > 0">{{ getCountByType('airflow') }}</span>
+              </div>
+              <div class="type-card" [class.active]="selectedPipelineType === 'nifi'" (click)="filterByType('nifi')">
+                <i class="pi pi-directions text-orange-500"></i>
+                <span>NiFi</span>
+                <span class="type-count" *ngIf="getCountByType('nifi') > 0">{{ getCountByType('nifi') }}</span>
+              </div>
+              <div class="type-card" [class.active]="selectedPipelineType === 'prefect'" (click)="filterByType('prefect')">
+                <i class="pi pi-directions text-green-500"></i>
+                <span>Prefect</span>
+                <span class="type-count" *ngIf="getCountByType('prefect') > 0">{{ getCountByType('prefect') }}</span>
+              </div>
+            </div>
+
+            <div class="table-wrapper">
+              <p-table [value]="filteredPipelines" [paginator]="true" [rows]="10" styleClass="p-datatable-sm"
+                      [rowsPerPageOptions]="[5,10,25]" [showCurrentPageReport]="true" responsiveLayout="stack"
+                      currentPageReportTemplate="Showing {first} to {last} of {totalRecords}">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Schedule</th>
+                    <th>Last Run</th>
+                    <th>Next Run</th>
+                    <th>Avg Duration</th>
+                    <th>Success Rate</th>
+                    <th style="width: 120px">Actions</th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-pipeline>
+                  <tr>
+                    <td>
+                      <div class="flex items-center gap-2">
+                        <i [class]="getIconClass(pipeline.type)" class="text-lg"></i>
+                        <span class="font-bold text-sm">{{ pipeline.name }}</span>
+                      </div>
+                    </td>
+                    <td><span class="text-sm font-medium">{{ pipeline.type | titlecase }}</span></td>
+                    <td>
+                      <p-tag [severity]="getStatusSeverity(pipeline.status)" [value]="pipeline.status" [rounded]="true"></p-tag>
+                    </td>
+                    <td><span class="text-sm">{{ pipeline.scheduleType }}</span></td>
+                    <td><span class="text-xs text-gray-400">{{ pipeline.lastRun | date:'short' }}</span></td>
+                    <td><span class="text-xs text-gray-400">{{ pipeline.nextRun ? (pipeline.nextRun | date:'short') : 'Not scheduled' }}</span></td>
+                    <td><span class="text-xs font-medium">{{ pipeline.avgDuration }}</span></td>
+                    <td>
+                      <div class="flex items-center gap-2">
+                        <span [ngClass]="getSuccessRateClass(pipeline.successRate)" class="font-bold text-xs">
+                          {{ pipeline.successRate }}%
+                        </span>
+                        <div class="w-12 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                          <div [style.width.%]="pipeline.successRate"
+                               [ngClass]="{
+                                 'bg-green-500': pipeline.successRate >= 90,
+                                 'bg-yellow-500': pipeline.successRate >= 70 && pipeline.successRate < 90,
+                                 'bg-orange-500': pipeline.successRate > 0 && pipeline.successRate < 70,
+                                 'bg-red-500': pipeline.successRate === 0
+                               }"
+                               class="h-full">
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="flex gap-1">
+                        <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm"></button>
+                        <button pButton icon="pi pi-play" class="p-button-rounded p-button-text p-button-sm"
+                                *ngIf="pipeline.status !== 'active'"></button>
+                        <button pButton icon="pi pi-pause" class="p-button-rounded p-button-text p-button-sm"
+                                *ngIf="pipeline.status === 'active'"></button>
+                        <button pButton icon="pi pi-cog" class="p-button-rounded p-button-text p-button-sm"></button>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                  <tr>
+                    <td colspan="9" class="text-center p-8">
+                      <div class="flex flex-col items-center py-6">
+                        <i class="pi pi-directions text-5xl text-gray-200 mb-4"></i>
+                        <p class="text-gray-400">No pipelines found matching your criteria</p>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+</div>

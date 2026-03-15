@@ -198,6 +198,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/explore/data-warehouse/data-warehouse-explorer.component').then(m => m.DataWarehouseExplorerComponent),
       },
       {
+        path: 'data-mesh/domains/dockerhub',
+        loadComponent: () => import('./features/explore/docker-hub/docker-hub-explorer.component').then(m => m.DockerHubExplorerComponent)
+      },
+      {
         path: 'explore/google',
         loadComponent: () => import('./features/explore/google/google-explorer.component').then(m => m.GoogleExplorerComponent),
       },

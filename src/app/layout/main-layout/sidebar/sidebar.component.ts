@@ -299,6 +299,7 @@ export class SidebarComponent implements OnInit, OnChanges {
         },
         { label: 'Google Integrations', url: '/explore/google', icon: 'pi pi-google' },
         { label: 'Data Warehouse', url: '/explore/data-warehouse', icon: 'pi pi-building-columns' },
+        { label: 'Docker Hub', url: '/data-mesh/domains/dockerhub', icon: 'pi pi-box' },
         { label: 'Database Explorer', url: '/explore/database', icon: 'pi pi-database' },
         { label: 'Pipelines', url: '/explore/pipelines', icon: 'pi pi-sliders-h' },
         { label: 'Topics & Events', url: '/explore/topics', icon: 'pi pi-tags' },

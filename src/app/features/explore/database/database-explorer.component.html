@@ -1,89 +1,190 @@
-<!-- Database Explorer: sử dụng template asset grid -->
-<ng-container *ngTemplateOutlet="explorerAssetGrid"></ng-container>
+<div class="database-main">
+  <div class="database-content-wrapper">
+    <div class="database-content-inner">
+      <section class="database-hero">
+        <div class="database-hero-copy">
+          <div class="database-hero-badge">
+            <i class="pi pi-database"></i>
+          </div>
+          <div>
+            <p class="database-eyebrow">Internal Infrastructure</p>
+            <h1 class="database-title">Database Explorer</h1>
+            <p class="database-subtitle">
+              Browse and manage governed database connections, monitor schema inventory, and synchronize metadata targets across the mesh.
+            </p>
+          </div>
+        </div>
 
-<ng-template #explorerAssetGrid>
-  <div class="flex flex-col gap-4">
-    <!-- Asset Filters & Bulk Actions -->
-    <div class="flex flex-wrap gap-2 mb-4 items-center">
-      <input type="text" pInputText class="w-48" placeholder="Search asset..." [(ngModel)]="searchQuery">
-      <p-dropdown [options]="ownerOptions" [(ngModel)]="selectedOwner" optionLabel="label" optionValue="value" placeholder="Owner"></p-dropdown>
-      <p-dropdown [options]="statusOptions" [(ngModel)]="selectedStatus" optionLabel="label" optionValue="value" placeholder="Status"></p-dropdown>
-      <input type="number" pInputText class="w-32" placeholder="Min health" [(ngModel)]="minHealth">
-      <button pButton class="p-button-sm p-button-outlined" icon="pi pi-sync" label="Bulk Sync" (click)="bulkSync()"></button>
-      <button pButton class="p-button-sm p-button-outlined" icon="pi pi-trash" label="Bulk Delete" (click)="bulkDelete()"></button>
-    </div>
-    <!-- Asset Type Selector -->
-    <div class="flex flex-wrap gap-2 mb-2 items-center justify-end">
-      <span class="font-semibold text-xs mr-2">Asset Type:</span>
-      <p-dropdown [options]="assetTypeOptions" [(ngModel)]="selectedAssetType" (onChange)="onAssetTypeChange($event.value)" placeholder="Select type" class="w-40"></p-dropdown>
-    </div>
-    <!-- Loading/Error -->
-    <div *ngIf="loadingAssets" class="text-center text-blue-500 mb-2"><i class="pi pi-spin pi-spinner"></i> Loading assets...</div>
-    <div *ngIf="errorAssets" class="text-center text-red-500 mb-2">{{ errorAssets }}</div>
-    <!-- Asset Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-      <div *ngFor="let asset of assets" class="explorer-card flex flex-col items-center text-center p-4 rounded-lg shadow-md bg-white dark:bg-gray-900 hover:shadow-lg transition">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="font-bold text-lg text-blue-700 dark:text-blue-300">{{ asset.name }}</span>
-          <span class="metadata-tag bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-2 py-1 rounded">{{ asset.type }}</span>
+        <div class="database-hero-actions">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-plus"
+            label="Add Connection"
+            class="p-button-sm">
+          </button>
         </div>
-        <div class="flex flex-wrap gap-2 justify-center text-xs mb-2">
-          <span class="metadata-tag" aria-label="Owner"><i class="pi pi-user mr-1"></i>{{ asset.owner }}</span>
-          <span class="metadata-tag" aria-label="Assets"><i class="pi pi-database mr-1"></i>{{ asset.assets }}</span>
-          <span class="metadata-tag"
-            [ngClass]="{
-              'status-online': asset.status==='online',
-              'status-warning': asset.status==='warning',
-              'status-offline': asset.status==='offline'
-            }"
-            aria-label="Status">
-            <i class="pi pi-circle-on text-xs"
-              [ngStyle]="{
-                color: asset.status==='online' ? '#22c55e' : asset.status==='warning' ? '#f59e42' : '#ef4444'
-              }"></i>
-            {{ asset.status }}
-          </span>
-          <span class="metadata-tag" aria-label="Last Synced"><i class="pi pi-calendar mr-1"></i>{{ formatDate(asset.lastSynced) }}</span>
-          <span [ngClass]="getHealthClass(asset.health)" aria-label="Health"><i class="pi pi-heart mr-1"></i>{{ asset.health }}%</span>
-        </div>
-        <div class="flex flex-wrap gap-1 justify-center mb-2">
-          <span *ngFor="let tag of asset.tags" class="metadata-tag bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-1 rounded" aria-label="Tag">#{{ tag }}</span>
-        </div>
-        <span class="text-xs text-gray-500 dark:text-gray-400 mb-2" aria-label="Description">{{ asset.description }}</span>
-        <div class="flex gap-2 mt-2 justify-center">
-          <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm" pTooltip="View details" (click)="openDetailModal(asset)"></button>
-          <button pButton icon="pi pi-sync" class="p-button-rounded p-button-text p-button-sm" pTooltip="Sync now"></button>
-          <button pButton icon="pi pi-cog" class="p-button-rounded p-button-text p-button-sm" pTooltip="Settings"></button>
-        </div>
+      </section>
+
+      <div class="database-workspace">
+        <aside class="database-sidebar">
+          <div class="database-sidebar-panel">
+            <p class="sidebar-eyebrow">Refine search</p>
+            <div class="sidebar-heading">Filter connections</div>
+
+            <div class="filter-stack">
+              <div class="filter-field">
+                <label for="db-search">Search</label>
+                <span class="p-input-icon-left w-full">
+                  <i class="pi pi-search"></i>
+                  <input
+                    id="db-search"
+                    type="text"
+                    pInputText
+                    class="w-full"
+                    placeholder="Connection name, host..."
+                    [(ngModel)]="searchQuery"
+                    (input)="applyFilters()">
+                </span>
+              </div>
+
+              <div class="filter-field">
+                <label for="db-status">Status</label>
+                <p-dropdown
+                  id="db-status"
+                  [options]="statusOptions"
+                  [(ngModel)]="selectedStatus"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select status"
+                  (onChange)="applyFilters()"
+                  [showClear]="true">
+                </p-dropdown>
+              </div>
+            </div>
+          </div>
+
+          <div class="database-sidebar-panel sidebar-help">
+            <div class="sidebar-help-icon">
+              <i class="pi pi-info-circle"></i>
+            </div>
+            <div>
+              <div class="sidebar-help-title">Mesh Connections</div>
+              <p class="sidebar-help-text">
+                Manage your physical data endpoints. All metadata discovered here can be published as data products.
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        <main class="database-panel">
+          <div class="database-panel-header">
+            <div>
+              <p class="panel-eyebrow">Connection surface</p>
+              <h2 class="panel-title">Active database instances</h2>
+              <p class="panel-subtitle">
+                Showing {{ filteredDatabases.length }} connections across your mesh domains.
+              </p>
+            </div>
+
+            <div class="panel-chip">
+              <i class="pi pi-table"></i>
+              <span>Grid view</span>
+            </div>
+          </div>
+
+          <div class="database-panel-content">
+            <div class="type-grid">
+              <div *ngFor="let dbType of databaseTypes"
+                   class="type-card"
+                   [class.active]="dbType.value === selectedDatabaseType"
+                   (click)="filterByType(dbType.value)">
+                <i [class]="dbType.icon + ' ' + dbType.color"></i>
+                <span>{{ dbType.label }}</span>
+                <span class="type-count" *ngIf="getCountByType(dbType.value) > 0">
+                  {{ getCountByType(dbType.value) }}
+                </span>
+              </div>
+            </div>
+
+            <div class="table-wrapper">
+              <p-table [value]="filteredDatabases" [paginator]="true" [rows]="10"
+                      styleClass="p-datatable-sm"
+                      [rowsPerPageOptions]="[5,10,25]" [showCurrentPageReport]="true"
+                      responsiveLayout="stack"
+                      currentPageReportTemplate="Showing {first} to {last} of {totalRecords}">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Connection</th>
+                    <th>Owner</th>
+                    <th>Inventory</th>
+                    <th>Size</th>
+                    <th>Last Synced</th>
+                    <th style="width: 120px">Actions</th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-db>
+                  <tr>
+                    <td>
+                      <div class="flex items-center gap-2">
+                        <i [class]="getIconClass(db.type)" class="text-lg"></i>
+                        <div>
+                          <div class="font-bold text-sm">{{ db.name }}</div>
+                          <div class="text-xs text-gray-400">{{ db.description | slice:0:30 }}{{ db.description.length > 30 ? '...' : '' }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="flex flex-col">
+                        <span class="capitalize font-medium">{{ db.type }}</span>
+                        <span class="text-xs text-gray-400">v{{ db.version }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <p-tag [severity]="getStatusSeverity(db.status)" [value]="db.status" [rounded]="true"></p-tag>
+                    </td>
+                    <td>
+                      <div class="flex flex-col">
+                        <span class="text-sm">{{ db.host }}</span>
+                        <span class="text-xs text-gray-400">Port: {{ db.port }}</span>
+                      </div>
+                    </td>
+                    <td><span class="text-sm">{{ db.owner }}</span></td>
+                    <td>
+                      <div class="flex flex-col">
+                        <span class="text-sm font-medium">{{ db.tables }} tables</span>
+                        <span class="text-xs text-gray-400">{{ db.schemas }} schemas</span>
+                      </div>
+                    </td>
+                    <td><span class="text-sm">{{ db.size }}</span></td>
+                    <td><span class="text-xs text-gray-400">{{ db.lastSynced | date:'short' }}</span></td>
+                    <td>
+                      <div class="flex gap-1">
+                        <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm"></button>
+                        <button pButton icon="pi pi-sync" class="p-button-rounded p-button-text p-button-sm"></button>
+                        <button pButton icon="pi pi-cog" class="p-button-rounded p-button-text p-button-sm"></button>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                  <tr>
+                    <td colspan="9" class="text-center p-8">
+                      <div class="flex flex-col items-center py-6">
+                        <i class="pi pi-database text-5xl text-gray-200 mb-4"></i>
+                        <p class="text-gray-400">No database connections found matching your criteria</p>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </div>
+        </main>
       </div>
-      <div *ngIf="assets.length === 0" class="col-span-full text-center p-8 flex flex-col items-center justify-center">
-        <i class="pi pi-search text-5xl text-gray-300 mb-4 animate-bounce"></i>
-        <p class="text-gray-500 mb-2">No assets found matching your criteria</p>
-        <button pButton class="p-button-sm p-button-outlined" (click)="resetFilters()">Reset Filters</button>
-      </div>
     </div>
-    <div class="flex justify-center mt-4">
-      <p-paginator [rows]="10" [totalRecords]="assets.length" (onPageChange)="onPageChange($event)"></p-paginator>
-    </div>
-    <!-- Modal chi tiết asset -->
-    <p-dialog header="Asset Details" [(visible)]="detailModalVisible" [modal]="true" [style]="{width: '400px'}" [baseZIndex]="10000" *ngIf="selectedAsset">
-      <div class="flex flex-col gap-3 items-center text-center">
-        <span class="font-bold text-lg">{{ selectedAsset.name }}</span>
-        <div class="flex flex-wrap gap-2 justify-center text-xs mb-2">
-          <span class="metadata-tag bg-blue-50 text-blue-700">Type: {{ selectedAsset.type }}</span>
-          <span class="metadata-tag">Owner: {{ selectedAsset.owner }}</span>
-          <span class="metadata-tag">Assets: {{ selectedAsset.assets }}</span>
-          <span class="metadata-tag"
-            [ngClass]="{
-              'status-online': selectedAsset.status==='online',
-              'status-warning': selectedAsset.status==='warning',
-              'status-offline': selectedAsset.status==='offline'
-            }">Status: {{ selectedAsset.status }}</span>
-          <span class="metadata-tag">Last Synced: {{ formatDate(selectedAsset.lastSynced) }}</span>
-          <span [ngClass]="getHealthClass(selectedAsset.health)">Health: {{ selectedAsset.health }}%</span>
-        </div>
-        <div class="mt-2 text-sm text-gray-600">(Thêm các thông tin metadata, mô tả, lịch sử, v.v. tại đây nếu cần)</div>
-      </div>
-    </p-dialog>
   </div>
-</ng-template>
+</div>

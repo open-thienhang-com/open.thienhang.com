@@ -1,6 +1,256 @@
-<!-- Container Explorer: sử dụng template asset grid -->
-<ng-container *ngTemplateOutlet="explorerAssetGrid"></ng-container>
+<div class="container-main">
+  <div class="container-content-wrapper">
+    <div class="container-content-inner">
+      <section class="container-hero">
+        <div class="container-hero-copy">
+          <div class="container-hero-badge">
+            <i class="pi pi-cloud"></i>
+          </div>
+          <div>
+            <p class="container-eyebrow">Object Storage</p>
+            <h1 class="container-title">Container Explorer</h1>
+            <p class="container-subtitle">
+              Browse and manage governed storage containers across S3 and GCS. Monitor regional distribution, storage capacity, and object lifecycle across the infrastructure.
+            </p>
+          </div>
+        </div>
 
-<ng-template #explorerAssetGrid>
-  <!-- ...template giống database-explorer.component.html... -->
-</ng-template>
+        <div class="container-hero-actions">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-plus"
+            label="Create Container"
+            class="p-button-sm">
+          </button>
+        </div>
+      </section>
+
+      <div class="container-workspace">
+        <aside class="container-sidebar">
+          <div class="container-sidebar-panel">
+            <p class="sidebar-eyebrow">Refine search</p>
+            <div class="sidebar-heading">Filter containers</div>
+
+            <div class="filter-stack">
+              <div class="filter-field">
+                <label for="container-search">Search</label>
+                <span class="p-input-icon-left w-full">
+                  <i class="pi pi-search"></i>
+                  <input
+                    id="container-search"
+                    type="text"
+                    pInputText
+                    class="w-full"
+                    placeholder="Bucket name..."
+                    [(ngModel)]="searchQuery"
+                    (input)="applyFilters()">
+                </span>
+              </div>
+
+              <div class="filter-field">
+                <label for="container-region">Region</label>
+                <p-dropdown
+                  id="container-region"
+                  [options]="regionOptions"
+                  [(ngModel)]="selectedRegion"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select region"
+                  (onChange)="applyFilters()"
+                  [showClear]="true">
+                </p-dropdown>
+              </div>
+
+              <div class="filter-field">
+                <label for="container-status">Status</label>
+                <p-dropdown
+                  id="container-status"
+                  [options]="statusOptions"
+                  [(ngModel)]="selectedStatus"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select status"
+                  (onChange)="applyFilters()"
+                  [showClear]="true">
+                </p-dropdown>
+              </div>
+            </div>
+          </div>
+
+          <div class="container-sidebar-panel sidebar-help">
+            <div class="sidebar-help-icon">
+              <i class="pi pi-lock"></i>
+            </div>
+            <div>
+              <div class="sidebar-help-title">Governance</div>
+              <p class="sidebar-help-text">
+                All containers must follow domain naming conventions and tag requirements for automated cost allocation.
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        <main class="container-panel">
+          <div class="container-panel-header">
+            <div>
+              <p class="panel-eyebrow">Capacity surface</p>
+              <h2 class="panel-title">Active storage containers</h2>
+              <p class="panel-subtitle">
+                Showing {{ filteredContainers.length }} storage resources across the distributed cloud environment.
+              </p>
+            </div>
+
+            <div class="panel-chip">
+              <i class="pi pi-database"></i>
+              <span>Storage view</span>
+            </div>
+          </div>
+
+          <div class="container-panel-content">
+            <!-- Usage Analytics -->
+            <div class="analytics-full-width">
+              <h3>Storage Usage by Region</h3>
+              <div class="h-60">
+                <p-chart type="bar" [data]="chartData" [options]="chartOptions"></p-chart>
+              </div>
+            </div>
+
+            <div class="type-grid">
+              <!-- S3 Card -->
+              <div class="type-info-card" [class.active]="selectedContainerType === 's3'" (click)="filterByType('s3')">
+                <div class="type-card-header">
+                  <div class="type-meta">
+                    <div class="icon-box bg-orange-100 dark:bg-orange-900/20 text-orange-500">
+                      <i class="pi pi-cloud"></i>
+                    </div>
+                    <div>
+                      <h3>Amazon S3</h3>
+                      <p>{{ getCountByType('s3') }} buckets</p>
+                    </div>
+                  </div>
+                  <div class="storage-summary">
+                    <span class="value">{{ getTotalStorageByType('s3').split(' / ')[1] }}</span>
+                    <span class="label">Total Limit</span>
+                  </div>
+                </div>
+                <div class="capacity-meter">
+                  <div class="flex">
+                    <span>Used: {{ getTotalStorageByType('s3').split(' / ')[0] }}</span>
+                    <span>{{ getCapacityPercentByType('s3') }}%</span>
+                  </div>
+                  <p-progressBar [value]="getCapacityPercentByType('s3')" [showValue]="false"
+                                 [styleClass]="getCapacityClass(getCapacityPercentByType('s3'))"></p-progressBar>
+                </div>
+              </div>
+
+              <!-- GCS Card -->
+              <div class="type-info-card" [class.active]="selectedContainerType === 'gcs'" (click)="filterByType('gcs')">
+                <div class="type-card-header">
+                  <div class="type-meta">
+                    <div class="icon-box bg-blue-100 dark:bg-blue-900/20 text-blue-500">
+                      <i class="pi pi-cloud"></i>
+                    </div>
+                    <div>
+                      <h3>Google GCS</h3>
+                      <p>{{ getCountByType('gcs') }} buckets</p>
+                    </div>
+                  </div>
+                  <div class="storage-summary">
+                    <span class="value">{{ getTotalStorageByType('gcs').split(' / ')[1] }}</span>
+                    <span class="label">Total Limit</span>
+                  </div>
+                </div>
+                <div class="capacity-meter">
+                  <div class="flex">
+                    <span>Used: {{ getTotalStorageByType('gcs').split(' / ')[0] }}</span>
+                    <span>{{ getCapacityPercentByType('gcs') }}%</span>
+                  </div>
+                  <p-progressBar [value]="getCapacityPercentByType('gcs')" [showValue]="false"
+                                 [styleClass]="getCapacityClass(getCapacityPercentByType('gcs'))"></p-progressBar>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-wrapper">
+              <p-table [value]="filteredContainers" [paginator]="true" [rows]="10" styleClass="p-datatable-sm"
+                      [rowsPerPageOptions]="[5,10,25]" [showCurrentPageReport]="true" responsiveLayout="stack"
+                      currentPageReportTemplate="Showing {first} to {last} of {totalRecords}">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Region</th>
+                    <th>Status</th>
+                    <th>Storage</th>
+                    <th>Objects</th>
+                    <th>Last Accessed</th>
+                    <th>Access</th>
+                    <th style="width: 120px">Actions</th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-container>
+                  <tr>
+                    <td>
+                      <div class="flex items-center gap-2">
+                        <i [class]="getIconClass(container.type)" class="text-lg"></i>
+                        <span class="font-bold text-sm">{{ container.name }}</span>
+                      </div>
+                    </td>
+                    <td><span class="text-xs font-bold uppercase">{{ container.type }}</span></td>
+                    <td><span class="text-sm font-medium">{{ container.region }}</span></td>
+                    <td>
+                      <p-tag [severity]="getStatusSeverity(container.status)" [value]="container.status" [rounded]="true"></p-tag>
+                    </td>
+                    <td>
+                      <div class="flex flex-col gap-1.5" style="min-width: 120px">
+                        <div class="flex items-center justify-between text-[10px] uppercase font-bold text-gray-400">
+                          <span>{{ container.usedSpace | number:'1.0-1' }}G / {{ container.totalSpace }}G</span>
+                          <span [ngClass]="(container.usedSpace / container.totalSpace * 100) >= 90 ? 'text-red-500' : 'text-blue-500'">
+                            {{ (container.usedSpace / container.totalSpace * 100) | number:'1.0-0' }}%
+                          </span>
+                        </div>
+                        <p-progressBar [value]="container.usedSpace / container.totalSpace * 100" [showValue]="false"
+                                       [styleClass]="getCapacityClass(container.usedSpace / container.totalSpace * 100)"
+                                       [style]="{'height': '4px'}"></p-progressBar>
+                      </div>
+                    </td>
+                    <td><span class="text-xs font-bold text-gray-400">{{ container.files | number }} files</span></td>
+                    <td><span class="text-xs font-medium">{{ container.lastAccessed | date:'shortDate' }}</span></td>
+                    <td>
+                      <div class="flex items-center gap-2">
+                        <p-tag [severity]="container.public ? 'danger' : 'success'"
+                              [value]="container.public ? 'Public' : 'Private'"
+                              [rounded]="true"></p-tag>
+                        <span class="text-[10px] uppercase font-bold text-gray-400">{{ container.permissions }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="flex gap-1">
+                        <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm"></button>
+                        <button pButton icon="pi pi-cloud-upload" class="p-button-rounded p-button-text p-button-sm"></button>
+                        <button pButton icon="pi pi-cog" class="p-button-rounded p-button-text p-button-sm"></button>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                  <tr>
+                    <td colspan="9" class="text-center p-8">
+                      <div class="flex flex-col items-center py-6">
+                        <i class="pi pi-cloud text-5xl text-gray-200 mb-4"></i>
+                        <p class="text-gray-400">No storage containers found matching your criteria</p>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-toast></p-toast>

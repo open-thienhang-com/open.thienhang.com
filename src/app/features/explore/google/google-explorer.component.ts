@@ -31,7 +31,7 @@ import {
   GoogleVersion
 } from '../../../core/services/google-domain.service';
 
-type GoogleSection = 'connect' | 'credentials' | 'services' | 'inventory' | 'governance';
+type GoogleSection = 'connect' | 'credentials' | 'services' | 'inventory' | 'governance' | 'scripts';
 type OAuthUiState = 'idle' | 'creating_auth_url' | 'redirecting_to_google' | 'processing_callback' | 'connected' | 'error';
 
 interface SidebarSection {
@@ -70,8 +70,26 @@ export class GoogleExplorerComponent implements OnInit {
     { key: 'credentials', label: 'Credentials', icon: 'pi pi-id-card', description: 'Connected Google accounts and token status' },
     { key: 'services', label: 'Drive + Gmail', icon: 'pi pi-envelope', description: 'Inspect Drive files and Gmail profile by credential' },
     { key: 'inventory', label: 'Inventory', icon: 'pi pi-table', description: 'Read-only Google integrations inventory and detail' },
-    { key: 'governance', label: 'Governance', icon: 'pi pi-shield', description: 'Quality, cost, features, and service rollup' }
+    { key: 'governance', label: 'Governance', icon: 'pi pi-shield', description: 'Quality, cost, features, and service rollup' },
+    { key: 'scripts', label: 'Developer Tools', icon: 'pi pi-code', description: 'CLI snippets and automation scripts' }
   ];
+
+  readonly cliSnippets = [
+    { label: 'List Integrations', desc: 'Fetch all Google integrations', command: 'curl "http://localhost:8080/data-mesh/domains/google/integrations?skip=0&limit=20"' },
+    { label: 'Summary', desc: 'Get Google domain health and totals', command: 'curl "http://localhost:8080/data-mesh/domains/google/summary"' },
+    { label: 'Quality Score', desc: 'Get data quality metrics', command: 'curl "http://localhost:8080/data-mesh/domains/google/quality"' },
+    { label: 'OAuth Credentials', desc: 'List connected Google accounts', command: 'curl "http://localhost:8080/data-mesh/domains/google/credentials"' }
+  ];
+
+  readonly automationScript = `#!/bin/bash
+# Sync Google Cloud Projects
+PROJECTS=("project-a" "project-b")
+API_BASE="http://localhost:8080/data-mesh/domains/google"
+
+for PRJ in "\${PROJECTS[@]}"; do
+  echo "Syncing project $PRJ..."
+  curl -X GET "$API_BASE/integrations?project_id=$PRJ"
+done`;
 
   activeSection: GoogleSection = 'connect';
   globalLoading = true;
@@ -398,6 +416,13 @@ export class GoogleExplorerComponent implements OnInit {
 
   trackByIntegration(index: number, item: GoogleIntegration): string {
     return item.id || `${index}`;
+  }
+
+  copyToClipboard(text: string): void {
+    navigator.clipboard.writeText(text).then(() => {
+      // In a real app, we'd show a toast here.
+      console.log('Copied to clipboard');
+    });
   }
 
   reloadServices(view: 'drive' | 'gmail'): void {

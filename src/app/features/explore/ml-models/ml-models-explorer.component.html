@@ -1,6 +1,232 @@
-<!-- ML Models Explorer: sử dụng template asset grid -->
-<ng-container *ngTemplateOutlet="explorerAssetGrid"></ng-container>
+<div class="ml-models-main">
+  <div class="ml-models-content-wrapper">
+    <div class="ml-models-content-inner">
+      <section class="ml-models-hero">
+        <div class="ml-models-hero-copy">
+          <div class="ml-models-hero-badge">
+            <i class="pi pi-chart-line"></i>
+          </div>
+          <div>
+            <p class="ml-models-eyebrow">Machine Learning</p>
+            <h1 class="ml-models-title">ML Models Explorer</h1>
+            <p class="ml-models-subtitle">
+              Browse and manage governed machine learning models. Monitor performance metrics, tracking accuracy and F1 scores across production, staging, and development.
+            </p>
+          </div>
+        </div>
 
-<ng-template #explorerAssetGrid>
-  <!-- ...template giống database-explorer.component.html... -->
-</ng-template>
+        <div class="ml-models-hero-actions">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-plus"
+            label="Register Model"
+            class="p-button-sm">
+          </button>
+        </div>
+      </section>
+
+      <div class="ml-models-workspace">
+        <aside class="ml-models-sidebar">
+          <div class="ml-models-sidebar-panel">
+            <p class="sidebar-eyebrow">Refine search</p>
+            <div class="sidebar-heading">Filter models</div>
+
+            <div class="filter-stack">
+              <div class="filter-field">
+                <label for="model-search">Search</label>
+                <span class="p-input-icon-left w-full">
+                  <i class="pi pi-search"></i>
+                  <input
+                    id="model-search"
+                    type="text"
+                    pInputText
+                    class="w-full"
+                    placeholder="Model name..."
+                    [(ngModel)]="searchQuery"
+                    (input)="applyFilters()">
+                </span>
+              </div>
+
+              <div class="filter-field">
+                <label for="model-framework">Framework</label>
+                <p-dropdown
+                  id="model-framework"
+                  [options]="frameworkOptions"
+                  [(ngModel)]="selectedFramework"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select framework"
+                  (onChange)="applyFilters()"
+                  [showClear]="true">
+                </p-dropdown>
+              </div>
+
+              <div class="filter-field">
+                <label for="model-status">Status</label>
+                <p-dropdown
+                  id="model-status"
+                  [options]="statusOptions"
+                  [(ngModel)]="selectedStatus"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select status"
+                  (onChange)="applyFilters()"
+                  [showClear]="true">
+                </p-dropdown>
+              </div>
+            </div>
+          </div>
+
+          <div class="ml-models-sidebar-panel sidebar-help">
+            <div class="sidebar-help-icon">
+              <i class="pi pi-bolt"></i>
+            </div>
+            <div>
+              <div class="sidebar-help-title">Operational AI</div>
+              <p class="sidebar-help-text">
+                Models in production are monitored for drift. Staging models require validation before deployment.
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        <main class="ml-models-panel">
+          <div class="ml-models-panel-header">
+            <div>
+              <p class="panel-eyebrow">Intelligence surface</p>
+              <h2 class="panel-title">Active model inventory</h2>
+              <p class="panel-subtitle">
+                Showing {{ filteredModels.length }} models across your current mesh domains.
+              </p>
+            </div>
+
+            <div class="panel-chip">
+              <i class="pi pi-th-large"></i>
+              <span>Analytics view</span>
+            </div>
+          </div>
+
+          <div class="ml-models-panel-content">
+            <!-- Summary Stats -->
+            <div class="analytics-row">
+              <div class="analytics-card">
+                <h3>Framework Distribution</h3>
+                <div class="h-60">
+                  <p-chart type="bar" [data]="chartData" [options]="chartOptions"></p-chart>
+                </div>
+              </div>
+              <div class="analytics-card">
+                <h3>Lifecycle Status</h3>
+                <div class="h-60">
+                  <p-chart type="pie" [data]="pieData" [options]="pieOptions"></p-chart>
+                </div>
+              </div>
+            </div>
+
+            <div class="type-grid">
+              <div class="type-card" [class.active]="selectedModelType === 'classification'" (click)="filterByType('classification')">
+                <i class="pi pi-chart-line text-blue-500"></i>
+                <span>Classification</span>
+                <span class="type-count" *ngIf="getCountByType('classification') > 0">{{ getCountByType('classification') }}</span>
+              </div>
+              <div class="type-card" [class.active]="selectedModelType === 'regression'" (click)="filterByType('regression')">
+                <i class="pi pi-chart-line text-green-500"></i>
+                <span>Regression</span>
+                <span class="type-count" *ngIf="getCountByType('regression') > 0">{{ getCountByType('regression') }}</span>
+              </div>
+              <div class="type-card" [class.active]="selectedModelType === 'clustering'" (click)="filterByType('clustering')">
+                <i class="pi pi-chart-line text-purple-500"></i>
+                <span>Clustering</span>
+                <span class="type-count" *ngIf="getCountByType('clustering') > 0">{{ getCountByType('clustering') }}</span>
+              </div>
+              <div class="type-card" [class.active]="selectedModelType === 'nlp'" (click)="filterByType('nlp')">
+                <i class="pi pi-chart-line text-red-500"></i>
+                <span>NLP</span>
+                <span class="type-count" *ngIf="getCountByType('nlp') > 0">{{ getCountByType('nlp') }}</span>
+              </div>
+            </div>
+
+            <div class="table-wrapper">
+              <p-table [value]="filteredModels" [paginator]="true" [rows]="10" styleClass="p-datatable-sm"
+                      [rowsPerPageOptions]="[5,10,25]" [showCurrentPageReport]="true" responsiveLayout="stack"
+                      currentPageReportTemplate="Showing {first} to {last} of {totalRecords}">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Framework</th>
+                    <th>Status</th>
+                    <th>Performance</th>
+                    <th>Last Trained</th>
+                    <th>Owner</th>
+                    <th>Size</th>
+                    <th style="width: 120px">Actions</th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-model>
+                  <tr>
+                    <td>
+                      <div class="flex items-center gap-2">
+                        <i [class]="getIconClass(model.type)" class="text-lg"></i>
+                        <div>
+                          <div class="font-bold text-sm">{{ model.name }}</div>
+                          <div class="text-xs text-gray-400 font-medium">v{{ model.version }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="text-sm font-medium">{{ model.type | titlecase }}</span></td>
+                    <td><span class="text-sm">{{ model.framework }}</span></td>
+                    <td>
+                      <p-tag [severity]="getStatusSeverity(model.status)" [value]="model.status" [rounded]="true"></p-tag>
+                    </td>
+                    <td>
+                      <div class="flex flex-col gap-1.5" style="min-width: 120px">
+                        <div class="flex items-center justify-between text-[10px] uppercase font-bold text-gray-400">
+                          <span>Accuracy</span>
+                          <span [ngClass]="model.accuracy >= 90 ? 'text-green-500' : 'text-blue-500'">{{ model.accuracy }}%</span>
+                        </div>
+                        <p-progressBar [value]="model.accuracy" [showValue]="false" [style]="{'height': '4px'}"></p-progressBar>
+                        <div class="flex items-center justify-between text-[10px] uppercase font-bold text-gray-400">
+                          <span>F1 Score</span>
+                          <span class="text-gray-900">{{ model.f1Score }}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="flex flex-col">
+                        <span class="text-xs font-medium">{{ model.lastTrained | date:'shortDate' }}</span>
+                        <span class="text-[10px] text-gray-400" *ngIf="model.lastDeployed">Dep: {{ model.lastDeployed | date:'shortDate' }}</span>
+                      </div>
+                    </td>
+                    <td><span class="text-sm">{{ model.owner }}</span></td>
+                    <td><span class="text-xs font-bold text-gray-400">{{ model.size }}</span></td>
+                    <td>
+                      <div class="flex gap-1">
+                        <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm"></button>
+                        <button pButton icon="pi pi-bolt" class="p-button-rounded p-button-text p-button-sm"></button>
+                        <button pButton icon="pi pi-cog" class="p-button-rounded p-button-text p-button-sm"></button>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                  <tr>
+                    <td colspan="9" class="text-center p-8">
+                      <div class="flex flex-col items-center py-6">
+                        <i class="pi pi-chart-line text-5xl text-gray-200 mb-4"></i>
+                        <p class="text-gray-400">No ML models found matching your criteria</p>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-toast></p-toast>

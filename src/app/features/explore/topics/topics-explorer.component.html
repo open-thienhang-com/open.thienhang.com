@@ -1,6 +1,226 @@
-<!-- Topics Explorer: sử dụng template asset grid -->
-<ng-container *ngTemplateOutlet="explorerAssetGrid"></ng-container>
+<div class="topics-main">
+  <div class="topics-content-wrapper">
+    <div class="topics-content-inner">
+      <section class="topics-hero">
+        <div class="topics-hero-copy">
+          <div class="topics-hero-badge">
+            <i class="pi pi-telegram"></i>
+          </div>
+          <div>
+            <p class="topics-eyebrow">Event Streaming</p>
+            <h1 class="topics-title">Topics Explorer</h1>
+            <p class="topics-subtitle">
+              Monitor and manage message topics across Kafka and Pulsar. Track throughput, retention policies, and partition inventory across the mesh.
+            </p>
+          </div>
+        </div>
 
-<ng-template #explorerAssetGrid>
-  <!-- ...template giống database-explorer.component.html... -->
-</ng-template>
+        <div class="topics-hero-actions">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-plus"
+            label="Add Topic"
+            class="p-button-sm">
+          </button>
+        </div>
+      </section>
+
+      <div class="topics-workspace">
+        <aside class="topics-sidebar">
+          <div class="topics-sidebar-panel">
+            <p class="sidebar-eyebrow">Refine search</p>
+            <div class="sidebar-heading">Filter topics</div>
+
+            <div class="filter-stack">
+              <div class="filter-field">
+                <label for="topic-search">Search</label>
+                <span class="p-input-icon-left w-full">
+                  <i class="pi pi-search"></i>
+                  <input
+                    id="topic-search"
+                    type="text"
+                    pInputText
+                    class="w-full"
+                    placeholder="Topic name..."
+                    [(ngModel)]="searchQuery"
+                    (input)="applyFilters()">
+                </span>
+              </div>
+
+              <div class="filter-field">
+                <label for="topic-status">Status</label>
+                <p-dropdown
+                  id="topic-status"
+                  [options]="statusOptions"
+                  [(ngModel)]="selectedStatus"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select status"
+                  (onChange)="applyFilters()"
+                  [showClear]="true">
+                </p-dropdown>
+              </div>
+            </div>
+          </div>
+
+          <div class="topics-sidebar-panel sidebar-help">
+            <div class="sidebar-help-icon">
+              <i class="pi pi-info-circle"></i>
+            </div>
+            <div>
+              <div class="sidebar-help-title">Mesh Topics</div>
+              <p class="sidebar-help-text">
+                Publishing metadata from topics allows other domains to consume your streams as governed data products.
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        <main class="topics-panel">
+          <div class="topics-panel-header">
+            <div>
+              <p class="panel-eyebrow">Streaming surface</p>
+              <h2 class="panel-title">Active message topics</h2>
+              <p class="panel-subtitle">
+                Showing {{ filteredTopics.length }} topics available in the current mesh context.
+              </p>
+            </div>
+
+            <div class="panel-chip">
+              <i class="pi pi-list"></i>
+              <span>Stream view</span>
+            </div>
+          </div>
+
+          <div class="topics-panel-content">
+            <div class="type-grid">
+              <!-- Kafka Card -->
+              <div class="type-info-card" [class.active]="selectedTopicType === 'kafka'" (click)="filterByType('kafka')">
+                <div class="type-header">
+                  <i class="pi pi-telegram text-orange-500"></i>
+                  <div>
+                    <h3>Apache Kafka</h3>
+                    <p>{{ getCountByType('kafka') }} topics</p>
+                  </div>
+                </div>
+                <div class="health-stat">
+                  <div class="flex">
+                    <span>Cluster Health</span>
+                    <span [ngClass]="{'text-green-500': getHealthByType('kafka') >= 90, 'text-yellow-500': getHealthByType('kafka') < 90}">
+                      {{ getHealthByType('kafka') }}%
+                    </span>
+                  </div>
+                  <div class="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                    <div [style.width.%]="getHealthByType('kafka')"
+                         [ngClass]="getHealthByType('kafka') >= 90 ? 'bg-green-500' : 'bg-yellow-500'"
+                         class="h-full">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pulsar Card -->
+              <div class="type-info-card" [class.active]="selectedTopicType === 'pulsar'" (click)="filterByType('pulsar')">
+                <div class="type-header">
+                  <i class="pi pi-telegram text-blue-500"></i>
+                  <div>
+                    <h3>Apache Pulsar</h3>
+                    <p>{{ getCountByType('pulsar') }} topics</p>
+                  </div>
+                </div>
+                <div class="health-stat">
+                  <div class="flex">
+                    <span>Cluster Health</span>
+                    <span [ngClass]="{'text-green-500': getHealthByType('pulsar') >= 90, 'text-yellow-500': getHealthByType('pulsar') < 90}">
+                      {{ getHealthByType('pulsar') }}%
+                    </span>
+                  </div>
+                  <div class="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                    <div [style.width.%]="getHealthByType('pulsar')"
+                         [ngClass]="getHealthByType('pulsar') >= 90 ? 'bg-green-500' : 'bg-yellow-500'"
+                         class="h-full">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-wrapper">
+              <p-table [value]="filteredTopics" [paginator]="true" [rows]="10" styleClass="p-datatable-sm"
+                      [rowsPerPageOptions]="[5,10,25]" [showCurrentPageReport]="true" responsiveLayout="stack"
+                      currentPageReportTemplate="Showing {first} to {last} of {totalRecords}">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Throughput</th>
+                    <th>Retention</th>
+                    <th>Partitions</th>
+                    <th>Size</th>
+                    <th>Consumers</th>
+                    <th style="width: 120px">Actions</th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-topic>
+                  <tr>
+                    <td>
+                      <div class="flex items-center gap-2">
+                        <i [class]="getIconClass(topic.type)" class="text-lg"></i>
+                        <span class="font-bold text-sm">{{ topic.name }}</span>
+                      </div>
+                    </td>
+                    <td><span class="text-sm font-medium">{{ topic.type | titlecase }}</span></td>
+                    <td>
+                      <p-tag [severity]="getStatusSeverity(topic.status)" [value]="topic.status" [rounded]="true"></p-tag>
+                    </td>
+                    <td>
+                      <div class="flex flex-col">
+                        <span class="text-sm font-bold">{{ topic.messagesPerSec }}</span>
+                        <span class="text-xs text-gray-400">msg/s</span>
+                      </div>
+                    </td>
+                    <td><span class="text-xs font-medium">{{ topic.retention }}</span></td>
+                    <td>
+                      <div class="flex flex-col">
+                        <span class="text-sm">{{ topic.partitions }} p</span>
+                        <span class="text-xs text-gray-400">RF: {{ topic.replicationFactor }}</span>
+                      </div>
+                    </td>
+                    <td><span class="text-sm">{{ topic.size }}</span></td>
+                    <td>
+                      <div class="flex flex-col">
+                        <span class="text-sm font-medium">{{ topic.consumerGroups }} groups</span>
+                        <span class="text-xs text-gray-400">Active</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="flex gap-1">
+                        <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm"></button>
+                        <button pButton icon="pi pi-chart-line" class="p-button-rounded p-button-text p-button-sm"></button>
+                        <button pButton icon="pi pi-cog" class="p-button-rounded p-button-text p-button-sm"></button>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                  <tr>
+                    <td colspan="9" class="text-center p-8">
+                      <div class="flex flex-col items-center py-6">
+                        <i class="pi pi-telegram text-5xl text-gray-200 mb-4"></i>
+                        <p class="text-gray-400">No topics found matching your criteria</p>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-toast></p-toast>
