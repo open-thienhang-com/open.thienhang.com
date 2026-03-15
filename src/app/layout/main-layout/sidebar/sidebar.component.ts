@@ -339,6 +339,37 @@ export class SidebarComponent implements OnInit, OnChanges {
           ]
         },
         {
+          label: 'Inventory Mgmt',
+          icon: 'pi pi-box',
+          children: [
+            { label: 'Products', url: '/retail/inventory/products', icon: 'pi pi-tag' },
+            { label: 'Categories', url: '/retail/inventory/categories', icon: 'pi pi-list' },
+            { label: 'Locations', url: '/retail/inventory/locations', icon: 'pi pi-map-marker' },
+            { label: 'Suppliers', url: '/retail/inventory/suppliers', icon: 'pi pi-truck' },
+            { label: 'Partners', url: '/retail/inventory/partners', icon: 'pi pi-briefcase' }
+          ]
+        },
+        {
+          label: 'Order fulfillment',
+          icon: 'pi pi-shopping-cart',
+          children: [
+            { label: 'Sales Orders', url: '/retail/orders', icon: 'pi pi-receipt' },
+            { label: 'Transactions', url: '/retail/transactions', icon: 'pi pi-dollar' },
+            { label: 'POS Terminal', url: '/retail/pos', icon: 'pi pi-desktop' },
+            { label: 'Payments', url: '/retail/payment', icon: 'pi pi-credit-card' }
+          ]
+        },
+        {
+          label: 'Customer & Loyalty',
+          icon: 'pi pi-users',
+          children: [
+            { label: 'Customers', url: '/retail/customers', icon: 'pi pi-user' },
+            { label: 'Loyalty Program', url: '/retail/loyalty', icon: 'pi pi-star' },
+            { label: 'Rewards Catalog', url: '/retail/rewards', icon: 'pi pi-gift' },
+            { label: 'Loyalty Campaigns', url: '/retail/campaigns', icon: 'pi pi-megaphone' }
+          ]
+        },
+        {
           label: 'Forecast',
           icon: 'pi pi-chart-line',
           children: [
@@ -730,6 +761,7 @@ export class SidebarComponent implements OnInit, OnChanges {
 
       if (retailGroup) {
         const businessOrder = [
+          'fresh retail',
           'forecast',
           'planning',
           'sales channels',
@@ -738,6 +770,7 @@ export class SidebarComponent implements OnInit, OnChanges {
           'customer',
           'operations'
         ];
+
 
         businessOrder.forEach(keyPart => {
           const section = (retailGroup.items || []).find((it: any) => (it.label || '').toLowerCase().includes(keyPart));
@@ -753,10 +786,16 @@ export class SidebarComponent implements OnInit, OnChanges {
       }
 
       this.visibleGroups = this.orderGroupsForApp(groups, key);
-      // Close all groups by default
+      // Close all groups by default, but auto-expand the active one
+      const currentUrl = this.router.url;
       this.visibleGroups.forEach(g => {
         g.expanded = false;
         (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
+        
+        // Auto-expand if current route is within this group
+        if ((g as any)._flattened && (g as any)._flattened.some((item: any) => this.getPath(item.url) === this.getPath(currentUrl))) {
+          g.expanded = true;
+        }
       });
       return;
     }
