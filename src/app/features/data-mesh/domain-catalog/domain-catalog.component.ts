@@ -267,15 +267,15 @@ export class DomainCatalogComponent implements OnInit {
 
   getDomainGradient(domain: string | undefined): string {
     const gradients: { [key: string]: string } = {
-      'hotel': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      'application': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      'finance': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      'retail': 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-      'healthcare': 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-      'logistics': 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
-      'blogger': 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
-      'files': 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)',
-      'default': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+      'hotel': 'radial-gradient(circle at top left, #4f46e5, #818cf8)',
+      'application': 'radial-gradient(circle at top left, #0ea5e9, #38bdf8)',
+      'finance': 'radial-gradient(circle at top left, #059669, #34d399)',
+      'retail': 'radial-gradient(circle at top left, #d946ef, #f0abfc)',
+      'healthcare': 'radial-gradient(circle at top left, #f43f5e, #fb7185)',
+      'logistics': 'radial-gradient(circle at top left, #f59e0b, #fbbf24)',
+      'blogger': 'radial-gradient(circle at top left, #ec4899, #f472b6)',
+      'files': 'radial-gradient(circle at top left, #6366f1, #818cf8)',
+      'default': 'radial-gradient(circle at top left, #475569, #94a3b8)'
     };
     return gradients[domain || 'default'] || gradients['default'];
   }

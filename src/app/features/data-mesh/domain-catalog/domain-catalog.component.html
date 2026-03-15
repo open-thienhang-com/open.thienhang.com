@@ -285,7 +285,10 @@
             </div>
 
             <div *ngIf="!loading && filteredDomains.length > 0 && viewMode === 'card'" class="domain-card-grid">
-              <article *ngFor="let domain of filteredDomains; trackBy: trackByDomainKey" class="domain-card">
+              <article 
+                *ngFor="let domain of filteredDomains; trackBy: trackByDomainKey" 
+                class="domain-card"
+                (click)="showDomainDetails(domain)">
                 <div class="domain-card-header-premium">
                   <div class="domain-card-header-glow" [style.background]="getDomainGradient(domain.domain_key)"></div>
                   <div class="domain-card-header-overlay"></div>
@@ -312,30 +315,7 @@
                   </div>
                 </div>
 
-                <div class="card-products">
-                  <div class="card-products-header">
-                    <span>Published products</span>
-                    <strong>{{ getDomainDataProductsCount(domain) }}</strong>
-                  </div>
-
-                  <div *ngIf="domain.data_products?.length; else emptyProducts" class="product-stack">
-                    <div *ngFor="let product of domain.data_products.slice(0, 3)" class="product-item">
-                      <div>
-                        <h4>{{ product.name }}</h4>
-                        <p>{{ product.description }}</p>
-                      </div>
-                      <span>{{ product.endpoints_count || 0 }} APIs</span>
-                    </div>
-                  </div>
-
-                  <ng-template #emptyProducts>
-                    <div class="product-empty">No data products published yet.</div>
-                  </ng-template>
-                </div>
-
-                <div class="domain-tags">
-                  <p-tag *ngFor="let tag of domain.tags || []" [value]="tag" severity="secondary"></p-tag>
-                </div>
+                <!-- card-products and domain-tags hidden in simplified card view -->
 
                 <div class="domain-actions">
                   <button
@@ -373,12 +353,15 @@
   [style]="{ width: 'min(980px, 96vw)' }"
   (onHide)="closeDomainDetails()">
   <ng-container *ngIf="selectedDomain as domain">
+    <div class="quick-view-header" [style.background]="getDomainGradient(domain.domain_key)">
+      <div class="quick-view-badge">
+        <i [class]="'pi ' + getDomainIcon(domain.domain_key)"></i>
+      </div>
+    </div>
+
     <div class="dialog-layout">
       <div class="dialog-main">
         <div class="dialog-hero">
-          <div class="domain-icon-shell large">
-            <i [class]="'pi ' + getDomainIcon(domain.domain_key)"></i>
-          </div>
           <div>
             <h3>{{ domain.display_name }}</h3>
             <p>{{ domain.domain_key }}</p>
