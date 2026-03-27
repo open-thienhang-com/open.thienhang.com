@@ -88,6 +88,13 @@ export class ApplicationsComponent implements OnInit {
       icon: 'pi pi-cog',
       gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
       description: ''
+    },
+    {
+      key: 'notification',
+      label: 'Notification Service',
+      icon: 'pi pi-bell',
+      gradient: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)',
+      description: 'Unified notification management system'
     }
   ];
 
@@ -120,7 +127,8 @@ export class ApplicationsComponent implements OnInit {
       chat: '/chat',
       files: '/files',
       travel: '/travel',
-      settings: '/settings'
+      settings: '/settings',
+      notification: '/notification'
     };
 
     const target = routeForApp[key] || '/';

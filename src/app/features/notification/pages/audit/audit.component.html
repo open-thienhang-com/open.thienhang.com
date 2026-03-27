@@ -1,0 +1,150 @@
+<p-toast></p-toast>
+
+<p-toast></p-toast>
+
+<div class="bg-gray-50 min-h-screen p-6">
+  <!-- Header Section -->
+  <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+    <div class="flex items-center justify-between flex-wrap gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100">
+          <i class="pi pi-history text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">Audit Trail</h1>
+          <p class="text-gray-500 text-sm">Monitor notification delivery status and troubleshoot failures in real-time</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <button pButton icon="pi pi-refresh" [outlined]="true" [rounded]="true" severity="secondary" (click)="loadLogs()" pTooltip="Refresh Data"></button>
+        <button pButton icon="pi pi-download" [outlined]="true" [rounded]="true" severity="secondary" pTooltip="Export Logs"></button>
+        <button pButton label="Filter Logs" icon="pi pi-filter" [rounded]="true" severity="info" [outlined]="true" class="px-4"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-bold text-gray-400 mb-1 uppercase tracking-tighter">Total Events</p>
+          <p class="text-3xl font-bold text-gray-900">{{ stats.total }}</p>
+        </div>
+        <div class="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center">
+          <i class="pi pi-database text-gray-400 text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-theme-white rounded-2xl shadow-sm p-6 border-l-4 border-emerald-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-bold text-emerald-600 mb-1 uppercase tracking-tighter">Delivered</p>
+          <p class="text-3xl font-bold text-gray-900">{{ stats.success }}</p>
+        </div>
+        <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
+          <i class="pi pi-check-circle text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-theme-white rounded-2xl shadow-sm p-6 border-l-4 border-rose-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-bold text-rose-600 mb-1 uppercase tracking-tighter">Failures</p>
+          <p class="text-3xl font-bold text-gray-900">{{ stats.failed }}</p>
+        </div>
+        <div class="w-12 h-12 bg-rose-50 rounded-xl flex items-center justify-center text-rose-600">
+          <i class="pi pi-exclamation-circle text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl shadow-lg p-6 text-white">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-bold opacity-80 mb-1 uppercase tracking-tighter">Delivery Rate</p>
+          <p class="text-3xl font-bold">{{ stats.rate }}%</p>
+        </div>
+        <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+          <i class="pi pi-chart-line text-white text-xl"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Container -->
+  <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+    <p-table 
+      [value]="logs" 
+      [lazy]="true" 
+      (onLazyLoad)="loadLogs($event)" 
+      [paginator]="true" 
+      [rows]="rows" 
+      [totalRecords]="totalRecords" 
+      [loading]="loading"
+      [showCurrentPageReport]="true"
+      styleClass="p-datatable-sm no-border"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} logs"
+    >
+      <ng-template pTemplate="header">
+        <tr class="bg-gray-50/30">
+          <th class="px-6 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Channel</th>
+          <th class="px-6 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Recipient</th>
+          <th class="px-6 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Status & Event</th>
+          <th class="px-6 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Internal ID</th>
+          <th class="px-6 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Timestamp</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-log>
+        <tr class="hover:bg-indigo-50/20 transition-all duration-200 group border-b border-gray-50 last:border-0">
+          <td class="px-6 py-5">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-white group-hover:shadow-sm transition-all shadow-inner">
+                <i [class]="getChannelIcon(log.channel) + ' text-lg'"></i>
+              </div>
+              <span class="text-sm font-black text-gray-700 tracking-tight">{{log.channel | uppercase}}</span>
+            </div>
+          </td>
+          <td class="px-6 py-5">
+            <span class="text-sm font-semibold text-gray-600 font-mono">{{log.recipient}}</span>
+          </td>
+          <td class="px-6 py-5">
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center gap-2">
+                <p-tag [value]="log.status" [severity]="getStatusSeverity(log.status)" class="rounded-lg px-2 text-[10px] font-bold uppercase"></p-tag>
+                <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest">{{log.event_type}}</span>
+              </div>
+              <p *ngIf="log.message" class="text-[11px] text-gray-400 line-clamp-1 italic max-w-[250px] font-medium" [pTooltip]="log.message">{{log.message}}</p>
+            </div>
+          </td>
+          <td class="px-6 py-5">
+            <code class="text-[10px] bg-slate-50 text-slate-500 px-3 py-1.5 rounded-lg border border-slate-100 font-mono tracking-tighter">{{log.notification_id}}</code>
+          </td>
+          <td class="px-6 py-5 text-right">
+            <div class="flex flex-col items-end gap-1">
+              <span class="text-xs font-bold text-gray-800">{{log.created_at | date:'MMM d, HH:mm'}}</span>
+              <span class="text-[10px] font-medium text-gray-300">{{log.created_at | date:'yyyy'}} • {{log.created_at | date:'ss'}}s</span>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="py-24 text-center">
+            <div class="flex flex-col items-center">
+              <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                <i class="pi pi-history text-4xl text-gray-200"></i>
+              </div>
+              <h3 class="text-gray-900 text-xl font-bold mb-2">No activity recorded yet</h3>
+              <p class="text-gray-500 text-sm max-w-xs mx-auto">Dispatched notifications will appear in this audit trail in real-time as they are processed by the gateway.</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

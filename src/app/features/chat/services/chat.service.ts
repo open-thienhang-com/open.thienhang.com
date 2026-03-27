@@ -41,10 +41,15 @@ export class ChatService {
         return this.http.get<ApiResponse<ChatDataProducts>>(`${this.chatBaseUrl}/`);
     }
 
-    getConversations(limit: number = 10, offset: number = 0): Observable<ApiResponse<Conversation[]>> {
-        const params = new HttpParams()
+    getConversations(limit: number = 10, offset: number = 0, platform?: string): Observable<ApiResponse<Conversation[]>> {
+        let params = new HttpParams()
             .set('limit', limit.toString())
             .set('offset', offset.toString());
+        
+        if (platform) {
+            params = params.set('platform', platform);
+        }
+            
         return this.http.get<ApiResponse<Conversation[]>>(`${this.chatBaseUrl}/conversations`, { params });
     }
 

@@ -1,0 +1,96 @@
+<div class="bg-gray-50 min-h-screen p-6 space-y-8">
+  <!-- Header Section -->
+  <header class="bg-white rounded-2xl shadow-sm p-6 mb-6 flex justify-between items-center gap-6">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-100">
+        <i class="pi pi-clock text-white text-xl"></i>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Scheduling & Rate Limiting</h1>
+        <p class="text-gray-500 text-sm">Real-time monitoring of message buffers and throughput control</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="bg-gray-900 text-white px-4 py-2 rounded-2xl flex items-center gap-3 text-[10px] font-black tracking-widest border border-white/10 shadow-xl shadow-gray-200">
+        <div class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </div>
+        LIVE MONITORING: 3s
+      </div>
+    </div>
+  </header>
+
+  <!-- Metrics Grid -->
+  <div class="grid grid-cols-12 gap-6">
+    <div *ngFor="let m of metrics" class="col-span-12 md:col-span-6 lg:col-span-3 bg-white p-7 rounded-[2rem] shadow-sm border border-gray-50 relative overflow-hidden group hover:shadow-xl transition-all duration-500">
+      <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">{{m.name}}</h4>
+      <div class="flex items-end gap-2 mb-6">
+        <span class="text-3xl font-black text-gray-900 leading-none">{{m.value | number:'1.0-0'}}</span>
+        <span class="text-xs font-bold text-gray-400 pb-1 uppercase">{{m.unit}}</span>
+      </div>
+      <p-progressBar [value]="(m.value / m.max) * 100" [showValue]="false" [style]="{height: '8px', borderRadius: '100px'}" [color]="m.color"></p-progressBar>
+      
+      <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity duration-500 scale-150 group-hover:scale-[2]">
+        <i class="pi pi-chart-bar text-8xl"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Throughput Analysis Section -->
+  <div class="bg-gray-900 rounded-[2.5rem] shadow-2xl border border-white/5 overflow-hidden flex flex-col lg:flex-row">
+    <div class="flex-1 p-10 flex flex-col h-[350px]">
+      <div class="flex justify-between items-center mb-10">
+        <div>
+          <h3 class="text-white text-xl font-bold mb-1">Throughput Analysis</h3>
+          <p class="text-white/30 text-[10px] font-black uppercase tracking-[0.2em]">Real-time system load & delivery velocity</p>
+        </div>
+        <div class="flex gap-4">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
+            <span class="text-[10px] font-bold text-white/40 uppercase">System Load</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex-1 min-h-0">
+        <p-chart type="line" [data]="chartData" [options]="chartOptions" height="100%"></p-chart>
+      </div>
+    </div>
+    
+    <div class="w-full lg:w-80 bg-white/5 border-l border-white/5 p-10 flex flex-col justify-between">
+      <div>
+        <h4 class="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-6">Peak Performance</h4>
+        <div class="space-y-6">
+          <div>
+            <span class="text-3xl font-black text-white block">1.2k</span>
+            <span class="text-[10px] font-bold text-white/40 uppercase">Max Req/sec</span>
+          </div>
+          <div>
+            <span class="text-3xl font-black text-indigo-400 block">45ms</span>
+            <span class="text-[10px] font-bold text-white/40 uppercase">Avg Latency</span>
+          </div>
+        </div>
+      </div>
+      <div class="pt-10">
+        <button pButton label="Optimise Buffers" [outlined]="true" [rounded]="true" severity="info" class="w-full text-xs font-bold py-3"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Raw Metrics Card -->
+  <div class="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
+    <div class="flex items-center justify-between px-8 py-6 border-b border-gray-50 bg-gray-50/20">
+      <div>
+        <h3 class="text-xl font-bold text-gray-900 mb-1">Metrics Analysis</h3>
+        <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Prometheus V1.0 Internal Endpoint</p>
+      </div>
+      <button pButton label="Refresh Metrics" icon="pi pi-refresh" (click)="refreshNow()" [outlined]="true" [rounded]="true" severity="secondary" size="small"></button>
+    </div>
+
+    <div class="p-8">
+      <div class="bg-gray-900 rounded-3xl p-8 font-mono text-xs text-emerald-400/90 leading-relaxed max-h-[450px] overflow-auto border border-white/5 shadow-inner">
+        <pre class="whitespace-pre-wrap">{{rawMetrics}}</pre>
+      </div>
+    </div>
+  </div>
+</div>

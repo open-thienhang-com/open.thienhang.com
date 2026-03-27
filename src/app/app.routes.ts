@@ -12,6 +12,7 @@ import { hotelRoutes } from './features/hotel/hotel.routes';
 import { travelRoutes } from './features/travel/travel.routes';
 import { chatRoutes } from './features/chat/chat.routes';
 import { filesRoutes } from './features/files/files.routes';
+import { notificationRoutes } from './features/notification/notification.routes';
 import { FRESH_RETAIL_FEATURE_CONFIG } from './features/retail/retail-services/feature-page/fresh-retail.config';
 
 
@@ -151,6 +152,10 @@ export const routes: Routes = [
       {
         path: 'files',
         children: filesRoutes
+      },
+      {
+        path: 'notification',
+        children: notificationRoutes
       },
       {
         path: 'profile',

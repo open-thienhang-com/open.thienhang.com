@@ -271,6 +271,13 @@ export class SidebarComponent implements OnInit, OnChanges {
       icon: 'pi pi-cog',
       gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
       description: ''
+    },
+    {
+      key: 'notification',
+      label: 'Notification Service',
+      icon: 'pi pi-bell',
+      gradient: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)',
+      description: 'Unified notification management system'
     }
   ];
 
@@ -452,6 +459,39 @@ export class SidebarComponent implements OnInit, OnChanges {
             { label: 'My Trips', url: '/travel', icon: 'pi pi-briefcase' },
             { label: 'Create Trip', url: '/travel/new', icon: 'pi pi-plus-circle' }
         ]
+    },
+    {
+      label: 'Notification Service',
+      icon: 'pi pi-bell',
+      expanded: true,
+      items: [
+        { label: 'Overview', url: '/notification', icon: 'pi pi-home' },
+        {
+          label: 'Templates',
+          icon: 'pi pi-copy',
+          children: [
+            { label: 'Explorer', url: '/notification/explorer', icon: 'pi pi-list' },
+            { label: 'Composer', url: '/notification/composer', icon: 'pi pi-send' },
+            { label: 'Create Template', url: '/notification/templates/create', icon: 'pi pi-plus' }
+          ]
+        },
+        {
+          label: 'Monitoring',
+          icon: 'pi pi-chart-line',
+          children: [
+            { label: 'Audit Log', url: '/notification/audit', icon: 'pi pi-history' },
+            { label: 'Reliability', url: '/notification/reliability', icon: 'pi pi-shield' },
+            { label: 'Performance', url: '/notification/scheduling', icon: 'pi pi-clock' },
+          ]
+        },
+        {
+          label: 'Development',
+          icon: 'pi pi-code',
+          children: [
+            { label: 'API Playground', url: '/notification/api', icon: 'pi pi-terminal' },
+          ]
+        }
+      ]
     }
   ];
 
@@ -1015,6 +1055,49 @@ export class SidebarComponent implements OnInit, OnChanges {
       return;
     }
 
+    // Special-case: for Notification app - render submodules as distinct groups (Retail-style)
+    if (key === 'notification') {
+      const notificationGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('notification'));
+      const groups: any[] = [];
+
+      if (notificationGroup) {
+        (notificationGroup.items || []).forEach((item: any) => {
+          if (item.children && item.children.length > 0) {
+            groups.push({
+              label: item.label,
+              icon: item.icon || this.getIconForMenuItem(item),
+              expanded: false,
+              items: item.children
+            });
+          } else {
+            // Standalone item (e.g. Overview)
+            groups.push({
+              label: '',
+              icon: '',
+              expanded: true,
+              _noHeader: true,
+              _isStandalone: true,
+              items: [item],
+              _flattened: [item]
+            });
+          }
+        });
+      }
+
+      this.visibleGroups = groups;
+      const currentUrl = this.router.url;
+      this.visibleGroups.forEach(g => {
+        g.expanded = g.expanded || false;
+        (g as any)._flattened = (g as any)._flattened || this.getFlattenedItems((g as any).items || []);
+        
+        // Auto-expand if current route is within this group
+        if ((g as any)._flattened && (g as any)._flattened.some((sub: any) => this.getPath(sub.url) === this.getPath(currentUrl))) {
+          g.expanded = true;
+        }
+      });
+      return;
+    }
+
     // Special-case: for Governance app - render its child menu items directly (no parent header)
     if (key === 'governance') {
       const governanceGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('governance'));
@@ -1075,6 +1158,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (p.startsWith('/files')) return 'files';
     if (p.startsWith('/travel')) return 'travel';
     if (p.startsWith('/settings')) return 'settings';
+    if (p.startsWith('/notification')) return 'notification';
     // Marketplace removed - routes to root now
     // default: nothing to force
     return null;
@@ -1096,6 +1180,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       governance: ['governance'],
       travel: ['travel'],
       settings: [],
+      notification: ['notification'],
       all: []
     };
 
@@ -1260,7 +1345,8 @@ export class SidebarComponent implements OnInit, OnChanges {
       chat: '/chat',
       files: '/files',
       travel: '/travel',
-      settings: '/settings'
+      settings: '/settings',
+      notification: '/notification'
     };
 
     const target = routeForApp[key] || '/';

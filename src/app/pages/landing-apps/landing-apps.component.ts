@@ -84,6 +84,14 @@ export class LandingAppsComponent {
       route: '/settings',
       gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
     },
+    {
+      key: 'notification',
+      label: 'Notification Service',
+      description: 'Quản lý mẫu, gửi tin đa kênh và giám sát hiệu năng.',
+      icon: 'pi pi-bell',
+      route: '/notification',
+      gradient: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)',
+    },
   ];
 }
 

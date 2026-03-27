@@ -106,5 +106,43 @@ export const menu: MenuItem[] = [
         type: 'item',
         url: '/travel'
     },
+    {
+        label: 'Notification Center',
+        icon: 'pi pi-bell',
+        type: 'item',
+        url: '/notification',
+        expanded: true,
+        children: [
+            { label: 'Overview', url: '/notification', icon: 'pi pi-home' },
+            {
+                label: 'Templates',
+                icon: 'pi pi-copy',
+                expanded: true,
+                children: [
+                    { label: 'Explorer', url: '/notification/explorer', icon: 'pi pi-list' },
+                    { label: 'Composer', url: '/notification/composer', icon: 'pi pi-send' },
+                    { label: 'Create Template', url: '/notification/templates/create', icon: 'pi pi-plus' }
+                ]
+            },
+            {
+                label: 'Monitoring',
+                icon: 'pi pi-chart-line',
+                expanded: false,
+                children: [
+                    { label: 'Audit Log', url: '/notification/audit', icon: 'pi pi-history' },
+                    { label: 'Reliability', url: '/notification/reliability', icon: 'pi pi-shield' },
+                    { label: 'Performance', url: '/notification/scheduling', icon: 'pi pi-clock' },
+                ]
+            },
+            {
+                label: 'Development',
+                icon: 'pi pi-code',
+                expanded: false,
+                children: [
+                    { label: 'API Playground', url: '/notification/api', icon: 'pi pi-terminal' },
+                ]
+            }
+        ]
+    },
     // Settings intentionally removed from sidebar menu config; Settings is a standalone app
 ];
