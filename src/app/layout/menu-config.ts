@@ -257,13 +257,29 @@ export const menu: MenuItem[] = [
         ]
     },
     {
+        label: 'Warehouse',
+        icon: 'pi pi-building',
+        type: 'item',
+        expanded: false,
+        children: [
+            { label: 'Delivery Points', url: '/planning/delivery-points', icon: 'pi pi-map-marker' },
+        ]
+    },
+    {
         label: 'Retail Planning',
         icon: 'pi pi-directions',
         type: 'item',
         expanded: false,
         children: [
-            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-directions' },
-            { label: 'Delivery Points', url: '/planning/delivery-points', icon: 'pi pi-map-marker' },
+            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-directions' }
+        ]
+    },
+    {
+        label: 'Fleet',
+        icon: 'pi pi-truck',
+        type: 'item',
+        expanded: false,
+        children: [
             { label: 'Fleet Management', url: '/planning/fleet', icon: 'pi pi-truck' }
         ]
     },

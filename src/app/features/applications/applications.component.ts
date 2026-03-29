@@ -115,6 +115,22 @@ export class ApplicationsComponent implements OnInit {
       category: 'Retail & Supply Chain'
     },
     {
+      key: 'fleet' as AppKey,
+      label: 'Fleet',
+      icon: 'pi pi-truck',
+      gradient: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)',
+      description: 'Fleet tracking and vehicle management',
+      category: 'Retail & Supply Chain'
+    },
+    {
+      key: 'warehouse' as AppKey,
+      label: 'Warehouse',
+      icon: 'pi pi-building',
+      gradient: 'linear-gradient(135deg, #f87171 0%, #dc2626 100%)',
+      description: 'Warehouse locations and delivery points management',
+      category: 'Retail & Supply Chain'
+    },
+    {
       key: 'retail-sales' as AppKey,
       label: 'Sales & Orders',
       icon: 'pi pi-send',
@@ -167,12 +183,17 @@ export class ApplicationsComponent implements OnInit {
   selectedApp: AppKey = 'all';
 
   get categories(): string[] {
-    const cats = this.apps.map(app => app.category || 'Platform Core');
-    return Array.from(new Set(cats));
+    return ['Retail & Supply Chain', 'Others', 'Data Governance'];
   }
 
   getAppsByCategory(category: string) {
-    return this.apps.filter(app => (app.category || 'Platform Core') === category);
+    if (category === 'Retail & Supply Chain') {
+      return this.apps.filter(app => app.category === 'Retail & Supply Chain');
+    }
+    if (category === 'Data Governance') {
+      return this.apps.filter(app => ['explore', 'governance', 'settings'].includes(app.key));
+    }
+    return this.apps.filter(app => app.category !== 'Retail & Supply Chain' && !['explore', 'governance', 'settings'].includes(app.key));
   }
 
   constructor(
@@ -206,6 +227,7 @@ export class ApplicationsComponent implements OnInit {
       settings: '/settings',
       notification: '/notification',
       'auto-planning': '/planning/auto-planning',
+      'warehouse': '/planning/delivery-points',
       'delivery-points': '/planning/delivery-points',
       fleet: '/planning/fleet',
       demand: '/planning/forecast/demand',

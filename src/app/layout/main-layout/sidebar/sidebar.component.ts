@@ -651,6 +651,42 @@ export class SidebarComponent implements OnInit, OnChanges {
       return;
     }
 
+    if (key === 'fleet') {
+      const fleetGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('fleet'));
+      if (fleetGroup) {
+        const sourceItems = (fleetGroup as any).children || (fleetGroup as any).items || [];
+        const flattened = this.getFlattenedItems(sourceItems);
+        const groups = [{
+          label: '',
+          icon: '',
+          items: sourceItems,
+          expanded: false,
+          _noHeader: true,
+          _flattened: flattened
+        } as any];
+        this.visibleGroups = groups;
+        return;
+      }
+    }
+
+    if (key === 'warehouse') {
+      const warehouseGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('warehouse'));
+      if (warehouseGroup) {
+        const sourceItems = (warehouseGroup as any).children || (warehouseGroup as any).items || [];
+        const flattened = this.getFlattenedItems(sourceItems);
+        const groups = [{
+          label: '',
+          icon: '',
+          items: sourceItems,
+          expanded: false,
+          _noHeader: true,
+          _flattened: flattened
+        } as any];
+        this.visibleGroups = groups;
+        return;
+      }
+    }
+
     if (key === 'planning') {
       const planningGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('retail planning'));
       if (planningGroup) {
@@ -1012,6 +1048,8 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (p.startsWith('/settings')) return 'settings';
     if (p.startsWith('/notification')) return 'notification';
     if (p.startsWith('/planning/forecast')) return 'forecast';
+    if (p.startsWith('/planning/delivery-points')) return 'warehouse';
+    if (p.startsWith('/planning/fleet')) return 'fleet';
     if (p.startsWith('/planning')) return 'planning';
     if (p.startsWith('/chat')) return 'chat';
     // Marketplace removed - routes to root now
@@ -1028,6 +1066,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       catalog: [],
       explore: ['explore', 'data mesh'],
       chat: [],
+      warehouse: ['warehouse'],
       planning: ['planning'],
       blogger: ['blog', 'blogger', 'posts'],
       hotel: ['hotel', 'rooms', 'bookings', 'management'],
@@ -1040,7 +1079,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       all: [],
       'auto-planning': ['planning'],
       'delivery-points': ['planning'],
-      fleet: ['planning'],
+      fleet: ['fleet'],
       demand: ['forecast'],
       truck: ['forecast'],
       trip: ['forecast'],
@@ -1221,6 +1260,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       settings: '/settings',
       notification: '/notification',
       'auto-planning': '/planning/auto-planning',
+      'warehouse': '/planning/delivery-points',
       'delivery-points': '/planning/delivery-points',
       fleet: '/planning/fleet',
       demand: '/planning/forecast/demand',
