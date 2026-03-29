@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
-export type AppKey = 'retail' | 'inventory' | 'loyalty' | 'catalog' | 'governance' | 'planning' | 'settings' | 'blogger' | 'hotel' | 'admanager' | 'travel' | 'chat' | 'files' | 'explore' | 'notification' | 'all';
+export type AppKey = 'retail' | 'inventory' | 'loyalty' | 'catalog' | 'governance' | 'planning' | 'settings' | 'blogger' | 'hotel' | 'admanager' | 'travel' | 'chat' | 'files' | 'explore' | 'notification' | 'all' | 'auto-planning' | 'delivery-points' | 'fleet' | 'demand' | 'truck' | 'trip' | 'hub' | 'forecast' | 'orders' | 'transactions' | 'retail-sales' | 'retail-products' | 'retail-customers' | 'retail-omni' | 'retail-pos' | 'retail-analytics';
 
 @Injectable({ providedIn: 'root' })
 export class AppSwitcherService {

@@ -109,19 +109,56 @@ export const menu: MenuItem[] = [
         type: 'item',
         expanded: false,
         children: [
-            { label: 'Store Analytics', url: '/retail/analytics', icon: 'pi pi-chart-line' },
-            { label: 'Order Management', url: '/retail/orders', icon: 'pi pi-send' },
             {
-                label: 'Point of Sale (POS)',
-                icon: 'pi pi-desktop',
+                label: 'Sales & Orders',
+                icon: 'pi pi-send',
                 children: [
-                    { label: 'Register', url: '/retail/pos/register', icon: 'pi pi-calculator' },
-                    { label: 'Transactions', url: '/retail/pos/transactions', icon: 'pi pi-receipt' },
-                    { label: 'Session History', url: '/retail/pos/sessions', icon: 'pi pi-history' },
-                    { label: 'Terminal Settings', url: '/retail/pos/settings', icon: 'pi pi-cog' }
+                    { label: 'Order List', url: '/retail/orders', icon: 'pi pi-list' },
+                    { label: 'Transactions', url: '/retail/transactions', icon: 'pi pi-receipt' },
+                    { label: 'Payment', url: '/retail/payment', icon: 'pi pi-credit-card' },
                 ]
             },
-            { label: 'Retail Settings', url: '/retail/settings', icon: 'pi pi-cog' },
+            {
+                label: 'Products & Catalog',
+                icon: 'pi pi-tag',
+                children: [
+                    { label: 'Product List', url: '/retail/products', icon: 'pi pi-tags' },
+                    { label: 'Ecommerce Store', url: '/retail/ecommerce', icon: 'pi pi-shopping-cart' },
+                ]
+            },
+            {
+                label: 'Customer Management',
+                icon: 'pi pi-users',
+                children: [
+                    { label: 'Customers', url: '/retail/customers', icon: 'pi pi-users' },
+                    { label: 'Loyalty Members', url: '/loyalty/members', icon: 'pi pi-heart' },
+                    { label: 'Campaigns', url: '/loyalty/campaigns', icon: 'pi pi-megaphone' },
+                ]
+            },
+            {
+                label: 'Omni-channel',
+                icon: 'pi pi-comments',
+                children: [
+                    { label: 'Channels Overview', url: '/retail/omni-channel', icon: 'pi pi-share-alt' },
+                    { label: 'Chat & Messaging', url: '/chat/channels', icon: 'pi pi-hashtag' },
+                ]
+            },
+            {
+                label: 'Point of Sale',
+                icon: 'pi pi-desktop',
+                children: [
+                    { label: 'POS Dashboard', url: '/retail/pos', icon: 'pi pi-home' },
+                    { label: 'Fresh Retail', url: '/retail/fresh-retail', icon: 'pi pi-shopping-bag' },
+                ]
+            },
+            {
+                label: 'Store Analytics',
+                icon: 'pi pi-chart-line',
+                children: [
+                    { label: 'Sales Analytics', url: '/retail/analytics', icon: 'pi pi-chart-bar' },
+                    { label: 'Retail Settings', url: '/retail/settings', icon: 'pi pi-cog' },
+                ]
+            },
         ]
     },
     {
@@ -134,6 +171,7 @@ export const menu: MenuItem[] = [
             { label: 'Channels', url: '/chat/channels', icon: 'pi pi-hashtag' },
             { label: 'Direct Messages', url: '/chat/messages', icon: 'pi pi-user' },
             { label: 'Chat Analytics', url: '/chat/analytics', icon: 'pi pi-chart-bar' },
+            { label: 'Omni-channel', url: '/retail/omni-channel', icon: 'pi pi-comments' },
             { label: 'Chat Settings', url: '/chat/settings', icon: 'pi pi-cog' }
         ]
     },
@@ -214,6 +252,84 @@ export const menu: MenuItem[] = [
                 expanded: false,
                 children: [
                     { label: 'API Playground', url: '/notification/api', icon: 'pi pi-terminal' },
+                ]
+            }
+        ]
+    },
+    {
+        label: 'Retail Planning',
+        icon: 'pi pi-directions',
+        type: 'item',
+        expanded: false,
+        children: [
+            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-directions' },
+            { label: 'Delivery Points', url: '/planning/delivery-points', icon: 'pi pi-map-marker' },
+            { label: 'Fleet Management', url: '/planning/fleet', icon: 'pi pi-truck' }
+        ]
+    },
+    {
+        label: 'Retail Forecast',
+        icon: 'pi pi-chart-line',
+        type: 'item',
+        expanded: false,
+        children: [
+            { label: 'Demand Forecast', url: '/planning/forecast/demand', icon: 'pi pi-chart-bar' },
+            { label: 'Truck Load Forecast', url: '/planning/forecast/truck', icon: 'pi pi-box' },
+            { label: 'Trip Forecast', url: '/planning/forecast/trip', icon: 'pi pi-map' },
+            { label: 'Hub Forecast', url: '/planning/forecast/hub', icon: 'pi pi-building' }
+        ]
+    },
+    {
+        label: 'Travel Explorer',
+        icon: 'pi pi-globe',
+        type: 'item',
+        expanded: false,
+        children: [
+            { label: 'Travel Overview', url: '/travel', icon: 'pi pi-home' },
+            { label: 'Itineraries', url: '/travel/itineraries', icon: 'pi pi-list' },
+            { label: 'Destinations', url: '/travel/destinations', icon: 'pi pi-map-marker' }
+        ]
+    },
+    {
+        label: 'Hotel Management',
+        icon: 'pi pi-building',
+        type: 'item',
+        expanded: false,
+        children: [
+            {
+                label: 'Property Management',
+                icon: 'pi pi-home',
+                children: [
+                    { label: 'Apartments', url: '/hotel/apartments', icon: 'pi pi-building' },
+                    { label: 'Rooms', url: '/hotel/rooms', icon: 'pi pi-door-open' },
+                    { label: 'Inventory', url: '/hotel/inventory', icon: 'pi pi-box' }
+                ]
+            },
+            {
+                label: 'Reservations & Bookings',
+                icon: 'pi pi-calendar',
+                children: [
+                    { label: 'Bookings', url: '/hotel/bookings', icon: 'pi pi-calendar-check' },
+                    { label: 'Calendar', url: '/hotel/calendar', icon: 'pi pi-calendar' },
+                    { label: 'Check-in', url: '/hotel/checkin', icon: 'pi pi-sign-in' }
+                ]
+            },
+            {
+                label: 'Guest Services',
+                icon: 'pi pi-users',
+                children: [
+                    { label: 'Guests', url: '/hotel/guests', icon: 'pi pi-user' },
+                    { label: 'Reviews', url: '/hotel/reviews', icon: 'pi pi-star' },
+                    { label: 'Support', url: '/hotel/support', icon: 'pi pi-comments' }
+                ]
+            },
+            {
+                label: 'Operations & Staff',
+                icon: 'pi pi-wrench',
+                children: [
+                    { label: 'Maintenance', url: '/hotel/maintenance', icon: 'pi pi-wrench' },
+                    { label: 'Staff Management', url: '/hotel/staff', icon: 'pi pi-users' },
+                    { label: 'Settings', url: '/hotel/settings', icon: 'pi pi-cog' }
                 ]
             }
         ]

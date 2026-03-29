@@ -23,48 +23,50 @@
       </div>
     </div>
 
-    <!-- Applications Grid -->
-    <div class="applications-grid">
-    <button 
-      *ngFor="let app of apps" 
-      type="button"
-      class="app-card"
-      [class.active]="selectedApp === app.key"
-      [attr.data-app-key]="app.key"
-      (click)="selectApp(app.key)"
-      [attr.aria-label]="app.label">
+    <div class="category-section" *ngFor="let category of categories">
+      <h2 class="category-title" *ngIf="category !== 'Platform Core'">{{ category }}</h2>
+      
+      <div class="applications-grid">
+        <button 
+          *ngFor="let app of getAppsByCategory(category)" 
+          type="button"
+          class="app-card"
+          [class.active]="selectedApp === app.key"
+          [attr.data-app-key]="app.key"
+          (click)="selectApp(app.key)"
+          [attr.aria-label]="app.label">
 
-      <!-- Card Pattern -->
-      <div class="card-pattern"></div>
-      
-      <!-- App Accent Bar -->
-      <div class="app-accent-bar"></div>
-      
-      <!-- Card Body -->
-      <div class="card-body">
-        <!-- App Icon -->
-        <div class="app-icon-container">
-          <div class="icon-backdrop"></div>
-          <i [class]="app.icon"></i>
-        </div>
-        
-        <!-- App Info -->
-        <div class="app-info">
-          <h3 class="app-name">{{ app.label }}</h3>
-          <p class="app-desc" *ngIf="app.description">{{ app.description }}</p>
-        </div>
+          <!-- Card Pattern -->
+          <div class="card-pattern"></div>
+          
+          <!-- App Accent Bar -->
+          <div class="app-accent-bar" [style.background]="app.gradient"></div>
+          
+          <!-- Card Body -->
+          <div class="card-body">
+            <!-- App Icon -->
+            <div class="app-icon-container">
+              <div class="icon-backdrop" [style.background]="app.gradient"></div>
+              <i [class]="app.icon"></i>
+            </div>
+            
+            <!-- App Info -->
+            <div class="app-info">
+              <h3 class="app-name">{{ app.label }}</h3>
+              <p class="app-desc" *ngIf="app.description">{{ app.description }}</p>
+            </div>
+          </div>
+          
+          <!-- Active Badge -->
+          <div class="active-indicator" *ngIf="selectedApp === app.key">
+            <i class="pi pi-check-circle"></i>
+            <span>Active</span>
+          </div>
+          
+          <!-- Hover Effect -->
+          <div class="card-hover-effect"></div>
+        </button>
       </div>
-      
-      <!-- Active Badge -->
-      <div class="active-indicator" *ngIf="selectedApp === app.key">
-        <i class="pi pi-check-circle"></i>
-        <span>Active</span>
-      </div>
-      
-      <!-- Hover Effect -->
-      <div class="card-hover-effect"></div>
-
-    </button>
     </div>
   </div>
 </div>

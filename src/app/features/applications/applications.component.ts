@@ -11,7 +11,7 @@ import { AppSwitcherService, AppKey } from '../../core/services/app-switcher.ser
   styleUrls: ['./applications.component.scss']
 })
 export class ApplicationsComponent implements OnInit {
-  apps: { key: AppKey; label: string; icon: string; gradient: string; description?: string }[] = [
+  apps: { key: AppKey; label: string; icon: string; gradient: string; description?: string; category?: string }[] = [
     {
       key: 'explore',
       label: 'Explore',
@@ -24,21 +24,24 @@ export class ApplicationsComponent implements OnInit {
       label: 'Retail Service',
       icon: 'pi pi-shopping-bag',
       gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      description: 'Order management and retail operations'
+      description: 'Order management and retail operations',
+      category: 'Retail Division'
     },
     {
       key: 'inventory',
       label: 'Inventory Management',
       icon: 'pi pi-box',
       gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-      description: 'Stock, products, and warehouse management'
+      description: 'Stock, products, and warehouse management',
+      category: 'Retail Division'
     },
     {
       key: 'loyalty',
       label: 'Loyalty CRM',
       icon: 'pi pi-heart',
       gradient: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
-      description: 'Customer loyalty, rewards, and campaigns'
+      description: 'Customer loyalty, rewards, and campaigns',
+      category: 'Retail Division'
     },
     {
       key: 'governance',
@@ -102,10 +105,83 @@ export class ApplicationsComponent implements OnInit {
       icon: 'pi pi-bell',
       gradient: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)',
       description: 'Unified notification management system'
+    },
+    {
+      key: 'planning',
+      label: 'Planning',
+      icon: 'pi pi-directions',
+      gradient: 'linear-gradient(135deg, #15803d 0%, #22c55e 100%)',
+      description: 'Supply chain planning and route optimization',
+      category: 'Planning Division'
+    },
+    {
+      key: 'forecast',
+      label: 'Forecast',
+      icon: 'pi pi-chart-line',
+      gradient: 'linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)',
+      description: 'Demand signals and capacity forecasting',
+      category: 'Forecast Division'
+    },
+    {
+      key: 'retail-sales' as AppKey,
+      label: 'Sales & Orders',
+      icon: 'pi pi-send',
+      gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+      description: 'Order management, transactions and payments',
+      category: 'Retail Division'
+    },
+    {
+      key: 'retail-products' as AppKey,
+      label: 'Products & Catalog',
+      icon: 'pi pi-tag',
+      gradient: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+      description: 'Product catalog and ecommerce store management',
+      category: 'Retail Division'
+    },
+    {
+      key: 'retail-customers' as AppKey,
+      label: 'Customer Management',
+      icon: 'pi pi-users',
+      gradient: 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)',
+      description: 'Customers, loyalty members and campaigns',
+      category: 'Retail Division'
+    },
+    {
+      key: 'retail-omni' as AppKey,
+      label: 'Omni-channel',
+      icon: 'pi pi-comments',
+      gradient: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)',
+      description: 'Multi-channel retail communication and sales',
+      category: 'Retail Division'
+    },
+    {
+      key: 'retail-pos' as AppKey,
+      label: 'Point of Sale',
+      icon: 'pi pi-desktop',
+      gradient: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
+      description: 'POS terminal and fresh retail operations',
+      category: 'Retail Division'
+    },
+    {
+      key: 'retail-analytics' as AppKey,
+      label: 'Store Analytics',
+      icon: 'pi pi-chart-line',
+      gradient: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+      description: 'Sales analytics, reports and retail settings',
+      category: 'Retail Division'
     }
   ];
 
   selectedApp: AppKey = 'all';
+
+  get categories(): string[] {
+    const cats = this.apps.map(app => app.category || 'Platform Core');
+    return Array.from(new Set(cats));
+  }
+
+  getAppsByCategory(category: string) {
+    return this.apps.filter(app => (app.category || 'Platform Core') === category);
+  }
 
   constructor(
     private router: Router,
@@ -128,7 +204,7 @@ export class ApplicationsComponent implements OnInit {
       loyalty: '/loyalty/overview',
       catalog: '/',
       governance: '/governance/policies',
-      planning: '/planning',
+      planning: '/planning/auto-planning',
       blogger: '/blogger',
       hotel: '/hotel',
       admanager: '/ad-manager',
@@ -136,7 +212,23 @@ export class ApplicationsComponent implements OnInit {
       files: '/files',
       travel: '/travel',
       settings: '/settings',
-      notification: '/notification'
+      notification: '/notification',
+      'auto-planning': '/planning/auto-planning',
+      'delivery-points': '/planning/delivery-points',
+      fleet: '/planning/fleet',
+      demand: '/planning/forecast/demand',
+      truck: '/planning/forecast/truck',
+      trip: '/planning/forecast/trip',
+      hub: '/planning/forecast/hub',
+      forecast: '/planning/forecast/demand',
+      orders: '/retail/orders',
+      transactions: '/retail/transactions',
+      'retail-sales': '/retail/orders',
+      'retail-products': '/retail/products',
+      'retail-customers': '/retail/customers',
+      'retail-omni': '/retail/omni-channel',
+      'retail-pos': '/retail/pos',
+      'retail-analytics': '/retail/analytics'
     };
 
     const target = routeForApp[key] || '/';

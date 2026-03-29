@@ -579,6 +579,13 @@ export class SidebarComponent implements OnInit, OnChanges {
   }
 
   computeVisibleGroups() {
+    // Merge hardcoded menu items with config items
+    const combined = (this.menu || []).concat(fullMenu || []).concat(configGroups || []);
+    this.sidebarGroups = combined.map(g => ({
+       label: g.label,
+       items: (g as any).children || (g as any).items || []
+    }));
+
     if (!this.sidebarGroups || !this.appKey || this.appKey === 'all') {
       // Ensure all groups are included - no filtering
       const allGroups = (this.sidebarGroups || []).filter(g => g && g.label);
@@ -595,14 +602,6 @@ export class SidebarComponent implements OnInit, OnChanges {
 
     const key = this.appKey;
 
-    // Special-case: for Planning app - redirect to Retail (Planning is now merged into Retail)
-    if (key === 'planning') {
-      // Redirect to Retail instead
-      this.appKey = 'retail';
-      this.computeVisibleGroups();
-      return;
-    }
-
     // Special-case: for Retail app, show business sections in a fixed order.
     if (key === 'retail') {
       const retailGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('retail'));
@@ -613,21 +612,24 @@ export class SidebarComponent implements OnInit, OnChanges {
           'retail operations',
           'store analytics',
           'order management',
+          'transactions',
+          'ecommerce',
+          'payment',
+          'customers',
+          'omni-channel',
+          'products',
           'point of sale',
           'retail settings'
         ];
 
-
         businessOrder.forEach(keyPart => {
           const section = ((retailGroup as any).children || (retailGroup as any).items || []).find((it: any) => (it.label || '').toLowerCase().includes(keyPart));
           if (section) {
-            const items = (section as any).children ?? (section as any).items ?? [];
             groups.push({
               label: section.label,
-              icon: section.icon || this.getIconForMenuItem(section),
-              expanded: false,
-              items: items,
-              _flattened: this.getFlattenedItems(items)
+              icon: section.icon,
+              items: (section as any).children || (section as any).items || [],
+              expanded: true
             });
           }
         });
@@ -648,153 +650,145 @@ export class SidebarComponent implements OnInit, OnChanges {
       return;
     }
 
-    // Special-case: for Inventory app - render its child menu items directly (no parent header)
+    if (key === 'planning') {
+      const planningGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('retail planning'));
+      if (planningGroup) {
+        const groups = [{
+          label: planningGroup.label,
+          icon: planningGroup.icon,
+          items: (planningGroup as any).children || (planningGroup as any).items || [],
+          expanded: true,
+          _flattened: this.getFlattenedItems((planningGroup as any).children || (planningGroup as any).items || [])
+        }];
+        this.visibleGroups = groups;
+        return;
+      }
+    }
+
+    if (key === 'forecast') {
+      const forecastGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('retail forecast'));
+      if (forecastGroup) {
+        const groups = [{
+          label: forecastGroup.label,
+          icon: forecastGroup.icon,
+          items: (forecastGroup as any).children || (forecastGroup as any).items || [],
+          expanded: true,
+          _flattened: this.getFlattenedItems((forecastGroup as any).children || (forecastGroup as any).items || [])
+        }];
+        this.visibleGroups = groups;
+        return;
+      }
+    }
+
     if (key === 'inventory') {
-      const inventoryGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('inventory'));
-      if (inventoryGroup) {
-        // Use children directly for pseudo-groups to ensure they are discovered by getFlattenedItems
-        const sourceItems = (inventoryGroup as any).children || (inventoryGroup as any).items || [];
-        const flattened = this.getFlattenedItems(sourceItems);
-        const pseudo = { label: '', icon: '', expanded: true, _noHeader: true, items: sourceItems, _flattened: flattened } as any;
-
-        this.visibleGroups = [pseudo];
-      } else {
-        this.visibleGroups = [];
-      }
-      return;
-    }
-
-    // Special-case: for Loyalty app - render its child menu items directly (no parent header)
-    if (key === 'loyalty') {
-      const loyaltyGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('loyalty'));
-      if (loyaltyGroup) {
-        const sourceItems = (loyaltyGroup as any).children || (loyaltyGroup as any).items || [];
-        const flattened = this.getFlattenedItems(sourceItems);
-        const pseudo = { label: '', icon: '', expanded: true, _noHeader: true, items: sourceItems, _flattened: flattened } as any;
-
-        this.visibleGroups = [pseudo];
-      } else {
-        this.visibleGroups = [];
-      }
-      return;
-    }
-
-    // Special-case: for Hotel app - show Hotel Management groups similar to Retail
-    if (key === 'hotel') {
-      const hotelGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('hotel'));
-      const groups: any[] = [];
-
-      if (hotelGroup) {
-        // 1. Dashboard (first - standalone item)
-        const dashboardItem = (hotelGroup as any).items?.find((it: any) => it.url === '/hotel' && !it.children);
-        if (dashboardItem) {
-          groups.push({
-            label: '',
-            icon: '',
-            expanded: true,
-            _noHeader: true,
-            _isStandalone: true,
-            items: [dashboardItem],
-            _flattened: [dashboardItem]
-          });
-        }
-
-        // 2. Property Management subgroup
-        const property = ((hotelGroup as any).items || []).find((it: any) => (it.label || '').toLowerCase().includes('property'));
-        if (property) {
-          groups.push({
-            label: property.label,
-            icon: property.icon || this.getIconForMenuItem(property),
-            expanded: false,
-            items: ((property as any).children ?? (property as any).items ?? [])
-          });
-        }
-
-        // 3. Reservations & Bookings subgroup
-        const reservations = ((hotelGroup as any).items || []).find((it: any) =>
-          (it.label || '').toLowerCase().includes('reservation') ||
-          (it.label || '').toLowerCase().includes('booking')
-        );
-        if (reservations) {
-          groups.push({
-            label: reservations.label,
-            icon: reservations.icon || this.getIconForMenuItem(reservations),
-            expanded: false,
-            items: ((reservations as any).children ?? (reservations as any).items ?? [])
-          });
-        }
-
-        // 4. Guest Services subgroup
-        const guestServices = ((hotelGroup as any).items || []).find((it: any) =>
-          (it.label || '').toLowerCase().includes('guest') ||
-          (it.label || '').toLowerCase().includes('service')
-        );
-        if (guestServices) {
-          groups.push({
-            label: guestServices.label,
-            icon: guestServices.icon || this.getIconForMenuItem(guestServices),
-            expanded: false,
-            items: ((guestServices as any).children ?? (guestServices as any).items ?? [])
-          });
-        }
-
-        // 5. Operations subgroup
-        const operations = ((hotelGroup as any).items || []).find((it: any) =>
-          (it.label || '').toLowerCase().includes('operation') ||
-          (it.label || '').toLowerCase().includes('maintenance')
-        );
-        if (operations) {
-          groups.push({
-            label: operations.label,
-            icon: operations.icon || this.getIconForMenuItem(operations),
-            expanded: false,
-            items: ((operations as any).children ?? (operations as any).items ?? [])
-          });
-        }
-
-        // 6. Analytics & Reports subgroup
-        const analytics = ((hotelGroup as any).items || []).find((it: any) =>
-          (it.label || '').toLowerCase().includes('analytics') ||
-          (it.label || '').toLowerCase().includes('report')
-        );
-        if (analytics) {
-          groups.push({
-            label: analytics.label,
-            icon: analytics.icon || this.getIconForMenuItem(analytics),
-            expanded: false,
-            items: ((analytics as any).children ?? (analytics as any).items ?? [])
-          });
-        }
-
-        // 7. Settings (last - standalone item)
-        const settingsItem = (hotelGroup as any).items?.find((it: any) =>
-          it.url === '/hotel/settings' && !it.children
-        );
-        if (settingsItem) {
-          groups.push({
-            label: '',
-            icon: '',
-            expanded: false,
-            _noHeader: true,
-            _isStandalone: true,
-            items: [settingsItem],
-            _flattened: [settingsItem]
-          });
-        }
-      }
-
-      // Don't reorder - keep the exact order we set (Dashboard first, Settings last)
-      this.visibleGroups = groups;
-      // Close all groups by default (except Dashboard which should be expanded)
-      this.visibleGroups.forEach(g => {
-        // Keep Dashboard expanded if it's standalone
-        if ((g as any)._isStandalone && (g as any).items?.[0]?.url === '/hotel') {
+      const group = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('inventory management'));
+      if (group) {
+        this.visibleGroups = [group];
+        this.visibleGroups.forEach(g => {
           g.expanded = true;
-        } else {
-          g.expanded = false;
-        }
-        (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
-      });
+          (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
+        });
+      } else {
+        this.visibleGroups = [];
+      }
+      return;
+    }
+
+    if (key === 'loyalty') {
+      const group = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('loyalty & crm'));
+      if (group) {
+        this.visibleGroups = [group];
+        this.visibleGroups.forEach(g => {
+          g.expanded = true;
+          (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
+        });
+      } else {
+        this.visibleGroups = [];
+      }
+      return;
+    }
+
+    if (key === 'orders') {
+      const retailGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('retail'));
+      const group = ((retailGroup as any)?.children || (retailGroup as any)?.items || []).find((it: any) => (it.label || '').toLowerCase().includes('order management'));
+      if (group) {
+        const sourceItems = (group as any).children || (group as any).items || [];
+        const flattened = this.getFlattenedItems(sourceItems);
+        this.visibleGroups = [{
+          label: '',
+          icon: '',
+          items: sourceItems,
+          expanded: true,
+          _noHeader: true,
+          _flattened: flattened
+        }];
+      } else {
+        this.visibleGroups = [];
+      }
+      return;
+    }
+
+    if (key === 'transactions') {
+      const retailGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('retail'));
+      const group = ((retailGroup as any)?.children || (retailGroup as any)?.items || []).find((it: any) => (it.label || '').toLowerCase().includes('transactions'));
+      if (group) {
+        const sourceItems = (group as any).children || (group as any).items || [];
+        const flattened = this.getFlattenedItems(sourceItems);
+        this.visibleGroups = [{
+          label: '',
+          icon: '',
+          items: sourceItems,
+          expanded: true,
+          _noHeader: true,
+          _flattened: flattened
+        }];
+      } else {
+        this.visibleGroups = [];
+      }
+      return;
+    }
+
+    // Retail sub-app handlers: extract specific sub-group from 'Retail Operations'
+    const retailSubGroupHandler = (subGroupLabel: string) => {
+      const retailGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('retail operations'));
+      const group = ((retailGroup as any)?.children || []).find((it: any) =>
+        (it.label || '').toLowerCase().includes(subGroupLabel.toLowerCase())
+      );
+      if (group) {
+        const sourceItems = (group as any).children || (group as any).items || [];
+        this.visibleGroups = [{
+          label: group.label,
+          icon: group.icon,
+          items: sourceItems,
+          expanded: true,
+          _flattened: this.getFlattenedItems(sourceItems)
+        }];
+      } else {
+        this.visibleGroups = [];
+      }
+    };
+
+    if (key === 'retail-sales') { retailSubGroupHandler('sales & orders'); return; }
+    if (key === 'retail-products') { retailSubGroupHandler('products & catalog'); return; }
+    if (key === 'retail-customers') { retailSubGroupHandler('customer management'); return; }
+    if (key === 'retail-omni') { retailSubGroupHandler('omni-channel'); return; }
+    if (key === 'retail-pos') { retailSubGroupHandler('point of sale'); return; }
+    if (key === 'retail-analytics') { retailSubGroupHandler('store analytics'); return; }
+
+    if (key === 'hotel') {
+      const hotelGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('hotel'));
+      if (hotelGroup) {
+        const groups = ((hotelGroup as any).children || (hotelGroup as any).items || []).map((section: any) => ({
+          label: section.label,
+          icon: section.icon,
+          items: (section as any).children || (section as any).items || [],
+          expanded: true,
+          _flattened: this.getFlattenedItems((section as any).children || (section as any).items || [])
+        }));
+        this.visibleGroups = groups;
+      } else {
+        this.visibleGroups = [];
+      }
       return;
     }
 
@@ -882,7 +876,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     }
     // Special-case: for Explore app - render its child menu items directly (no parent header)
     if (key === 'explore') {
-      const exploreGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('explore'));
+      const exploreGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase() === 'explore');
       if (exploreGroup) {
         const items: any[] = this.getFlattenedItems((exploreGroup as any).items || []);
         const pseudo = { label: '', icon: '', expanded: false, _noHeader: true, items } as any;
@@ -923,16 +917,13 @@ export class SidebarComponent implements OnInit, OnChanges {
       }
       return;
     }
-    // Special-case: for Travel app - force single-level menu (no nested groups)
     if (key === 'travel') {
-      const travelGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase() === 'travel');
+      const travelGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase() === 'travel explorer');
       if (travelGroup) {
         const items: any[] = this.getFlattenedItems((travelGroup as any).items || []);
-        const pseudo = { label: '', icon: '', expanded: false, _noHeader: true, items } as any;
+        const pseudo = { label: '', icon: '', expanded: true, _noHeader: true, items } as any;
         pseudo._flattened = items;
-
         this.visibleGroups = [pseudo];
-        this.visibleGroups.forEach(g => (g as any)._flattened = (g as any)._flattened || this.getFlattenedItems((g as any).items || []));
       } else {
         this.visibleGroups = [];
       }
@@ -986,6 +977,17 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (p === '/' || p === '' || p === '/applications') return 'all';
     if (p.startsWith('/governance')) return 'governance';
     if (p.startsWith('/retail/loyalty') || p.startsWith('/retail/rewards') || p.startsWith('/retail/campaigns')) return 'loyalty';
+    if (p.startsWith('/retail/orders')) return 'retail-sales';
+    if (p.startsWith('/retail/transactions')) return 'retail-sales';
+    if (p.startsWith('/retail/payment')) return 'retail-sales';
+    if (p.startsWith('/retail/products')) return 'retail-products';
+    if (p.startsWith('/retail/ecommerce')) return 'retail-products';
+    if (p.startsWith('/retail/customers')) return 'retail-customers';
+    if (p.startsWith('/retail/omni-channel')) return 'retail-omni';
+    if (p.startsWith('/retail/pos')) return 'retail-pos';
+    if (p.startsWith('/retail/fresh-retail')) return 'retail-pos';
+    if (p.startsWith('/retail/analytics')) return 'retail-analytics';
+    if (p.startsWith('/retail/settings')) return 'retail-analytics';
     if (p.startsWith('/retail')) return 'retail';
     if (p.startsWith('/inventory')) return 'inventory';
     if (p.startsWith('/loyalty')) return 'loyalty';
@@ -997,6 +999,9 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (p.startsWith('/travel')) return 'travel';
     if (p.startsWith('/settings')) return 'settings';
     if (p.startsWith('/notification')) return 'notification';
+    if (p.startsWith('/planning/forecast')) return 'forecast';
+    if (p.startsWith('/planning')) return 'planning';
+    if (p.startsWith('/chat')) return 'chat';
     // Marketplace removed - routes to root now
     // default: nothing to force
     return null;
@@ -1020,7 +1025,23 @@ export class SidebarComponent implements OnInit, OnChanges {
       travel: ['travel'],
       settings: [],
       notification: ['notification'],
-      all: []
+      all: [],
+      'auto-planning': ['planning'],
+      'delivery-points': ['planning'],
+      fleet: ['planning'],
+      demand: ['forecast'],
+      truck: ['forecast'],
+      trip: ['forecast'],
+      hub: ['forecast'],
+      forecast: ['forecast'],
+      orders: ['order management'],
+      transactions: ['transactions'],
+      'retail-sales': ['sales & orders', 'order management'],
+      'retail-products': ['products & catalog'],
+      'retail-customers': ['customer management'],
+      'retail-omni': ['omni-channel'],
+      'retail-pos': ['point of sale'],
+      'retail-analytics': ['store analytics']
     };
 
     const priorities = priorityMap[key] || [];
@@ -1178,7 +1199,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       loyalty: '/loyalty/overview',
       catalog: '/',
       governance: '/governance/policies',
-      planning: '/planning',
+      planning: '/planning/auto-planning',
       blogger: '/blogger',
       hotel: '/hotel',
       admanager: '/ad-manager',
@@ -1186,7 +1207,23 @@ export class SidebarComponent implements OnInit, OnChanges {
       files: '/files',
       travel: '/travel',
       settings: '/settings',
-      notification: '/notification'
+      notification: '/notification',
+      'auto-planning': '/planning/auto-planning',
+      'delivery-points': '/planning/delivery-points',
+      fleet: '/planning/fleet',
+      demand: '/planning/forecast/demand',
+      truck: '/planning/forecast/truck',
+      trip: '/planning/forecast/trip',
+      hub: '/planning/forecast/hub',
+      forecast: '/planning/forecast/demand',
+      orders: '/retail/orders',
+      transactions: '/retail/transactions',
+      'retail-sales': '/retail/orders',
+      'retail-products': '/retail/products',
+      'retail-customers': '/retail/customers',
+      'retail-omni': '/retail/omni-channel',
+      'retail-pos': '/retail/pos',
+      'retail-analytics': '/retail/analytics'
     };
 
     const target = routeForApp[key] || '/';
