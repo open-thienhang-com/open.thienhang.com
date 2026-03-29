@@ -5,32 +5,37 @@ export const API_HOSTS = {
     local: 'http://localhost:8082'
 };
 
+/**
+ * Set to `false` to use local API server (localhost:8082) during development.
+ * Set to `true` (default) to always use the production API at api.thienhang.com.
+ */
+const DEV_USE_PRODUCTION_API = true;
+
 export function getApiBase(): string {
-    // Preference order: runtime override via window.__API_BASE__, then environment stored in localStorage, fallback to DEFAULT_API_BASE
     try {
-        // Allow a runtime override for quick testing
+        // Allow a runtime override for quick testing (window.__API_BASE__ = '...')
         // @ts-ignore
         if (typeof window !== 'undefined' && window.__API_BASE__) {
             // @ts-ignore
             return window.__API_BASE__;
         }
+        // Allow override via localStorage key 'API_BASE'
         const stored = localStorage.getItem('API_BASE');
         if (stored) return stored;
     } catch (e) {
         // ignore
     }
-    // If running on localhost, prefer the local API host to avoid calling production API during development
-    try {
-        // @ts-ignore
-        if (typeof window !== 'undefined' && window.location && window.location.hostname) {
-            // treat localhost and 127.x.x.x as local dev
-            const host = window.location.hostname;
-            if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host === '::1') {
-                return API_HOSTS.local;
+
+    if (!DEV_USE_PRODUCTION_API) {
+        // Only use local server when explicitly opted in
+        try {
+            if (typeof window !== 'undefined' && window.location) {
+                const host = window.location.hostname;
+                if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host === '::1') {
+                    return API_HOSTS.local;
+                }
             }
-        }
-    } catch (e) {
-        // ignore
+        } catch (e) { /* ignore */ }
     }
 
     return DEFAULT_API_BASE;

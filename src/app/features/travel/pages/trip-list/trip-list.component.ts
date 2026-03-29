@@ -8,8 +8,8 @@ import { TagModule } from 'primeng/tag';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputTextModule } from 'primeng/inputtext';
-import { TravelService } from '../../services/travel.service';
-import { Trip, BlogPost } from '../../models/travel.model';
+import { TravelService, TripApiItem } from '../../services/travel.service';
+import { TripStoreService } from '../../services/trip-store.service';
 
 interface CheckpointPlace {
   display_name: string;
@@ -85,37 +85,37 @@ interface CheckpointPlace {
           <div class="pane-header p-4 flex justify-between items-center border-bottom border-200">
             <div>
               <h1 class="text-2xl font-bold text-gray-900 m-0">Travel Explorer</h1>
-              <p class="text-gray-500 text-sm m-0">Discover and manage your journeys</p>
+              <p class="text-gray-500 text-sm m-0">{{ trips().length }} trips · Manage your journeys</p>
             </div>
             <p-button icon="pi pi-plus" label="New Trip" severity="primary" [rounded]="true" size="small" (onClick)="goToCreateTrip()"></p-button>
           </div>
 
           <div class="pane-scrollable p-4">
-            <!-- Category Filters -->
+            <!-- Status Filters -->
             <div class="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
               <button 
-                *ngFor="let cat of categories"
-                (click)="filterByCategory(cat)"
+                *ngFor="let s of statusFilters"
+                (click)="filterByStatus(s)"
                 class="px-4 py-2 rounded-full text-xs font-bold transition-all border whitespace-nowrap"
-                [class.bg-blue-600]="selectedCategory() === cat"
-                [class.text-white]="selectedCategory() === cat"
-                [class.border-blue-600]="selectedCategory() === cat"
-                [class.bg-white]="selectedCategory() !== cat"
-                [class.text-gray-500]="selectedCategory() !== cat"
-                [class.border-gray-200]="selectedCategory() !== cat">
-                {{ cat | uppercase }}
+                [class.bg-blue-600]="selectedStatus() === s"
+                [class.text-white]="selectedStatus() === s"
+                [class.border-blue-600]="selectedStatus() === s"
+                [class.bg-white]="selectedStatus() !== s"
+                [class.text-gray-500]="selectedStatus() !== s"
+                [class.border-gray-200]="selectedStatus() !== s">
+                {{ s | uppercase }}
               </button>
             </div>
 
             <!-- Stats Grid -->
             <div class="grid grid-cols-2 gap-3 mb-6">
               <div class="stat-mini-card bg-blue-50">
-                <span class="text-xs text-blue-600 font-bold uppercase">Total Stories</span>
-                <span class="text-xl font-bold block">{{ posts().length }}</span>
+                <span class="text-xs text-blue-600 font-bold uppercase">Total Trips</span>
+                <span class="text-xl font-bold block">{{ trips().length }}</span>
               </div>
               <div class="stat-mini-card bg-purple-50">
-                <span class="text-xs text-purple-600 font-bold uppercase">Views</span>
-                <span class="text-xl font-bold block">{{ 1240 | number }}</span>
+                <span class="text-xs text-purple-600 font-bold uppercase">Destinations</span>
+                <span class="text-xl font-bold block">{{ trips().length }}</span>
               </div>
             </div>
 
@@ -130,43 +130,53 @@ interface CheckpointPlace {
               </div>
             </div>
 
-            <!-- Post Cards -->
-            <div *ngIf="!loading()" class="space-y-4" [@listAnimation]="posts().length">
-              <div *ngFor="let post of posts(); trackBy: trackByPost" 
+            <!-- Trip Cards (Real API Data) -->
+            <div *ngIf="!loading()" class="space-y-4" [@listAnimation]="trips().length">
+              <div *ngFor="let trip of trips()" 
                    class="trip-card group flex gap-4 p-3" 
-                   (click)="selectTrip(post)">
-                <div class="h-20 w-20 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
-                  <img [src]="post.thumbnail || 'assets/placeholder-trip.jpg'" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                   (click)="selectTrip(trip)">
+                <!-- Thumbnail -->
+                <div class="h-20 w-20 rounded-lg bg-gradient-to-br from-blue-100 to-purple-100 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                  <img *ngIf="trip.thumbnail_image_urls?.[0]" [src]="trip.thumbnail_image_urls[0]" class="w-full h-full object-cover" />
+                  <i *ngIf="!trip.thumbnail_image_urls?.[0]" class="pi pi-map-marker text-2xl text-blue-300"></i>
                 </div>
+                <!-- Info -->
                 <div class="flex-1 min-w-0">
                   <div class="flex justify-between items-start">
                     <h3 class="text-sm font-bold text-gray-900 truncate group-hover:text-blue-600 transition-colors">
-                      {{ post.title }}
+                      {{ trip.name }}
                     </h3>
                   </div>
-                  <p class="text-xs text-gray-500 line-clamp-2 mt-1">{{ post.summary }}</p>
-                  <div class="flex items-center gap-3 mt-3">
+                  <p class="text-xs text-blue-500 font-medium mt-0.5 flex items-center gap-1">
+                    <i class="pi pi-map-marker text-[9px]"></i> {{ trip.destination }}
+                  </p>
+                  <div class="flex items-center gap-3 mt-2">
                     <div class="flex items-center gap-1 text-[10px] text-gray-400 font-medium">
-                      <i class="pi pi-user text-[8px]"></i>
-                      <span class="truncate">{{ post.author?.name }}</span>
+                      <i class="pi pi-calendar text-[8px]"></i>
+                      <span>{{ formatDate(trip.start_date) }}</span>
                     </div>
                     <div class="flex items-center gap-1 text-[10px] text-gray-400 font-medium">
-                      <i class="pi pi-eye text-[8px]"></i>
-                      <span>{{ post.view_count || 0 }}</span>
+                      <i class="pi pi-users text-[8px]"></i>
+                      <span>{{ trip.people_count }} người</span>
+                    </div>
+                    <div class="flex items-center gap-1 text-[10px] text-gray-400 font-medium">
+                      <i class="pi pi-wallet text-[8px]"></i>
+                      <span>{{ trip.budget | number:'1.0-0' }} ₫</span>
                     </div>
                   </div>
                 </div>
+                <!-- Actions -->
                 <div class="flex flex-col justify-between items-end">
-                   <p-tag [value]="post.status" [severity]="getStatusSeverity(post.status)" styleClass="text-[8px] uppercase font-black px-2 py-0.5 rounded-sm"></p-tag>
-                   <p-button icon="pi pi-arrow-up-right" [rounded]="true" [text]="true" size="small" (onClick)="openTrip(post)"></p-button>
+                   <p-tag [value]="trip.status" [severity]="getStatusSeverity(trip.status)" styleClass="text-[8px] uppercase font-black px-2 py-0.5 rounded-sm"></p-tag>
+                   <p-button icon="pi pi-arrow-up-right" [rounded]="true" [text]="true" size="small" (onClick)="openTrip(trip); $event.stopPropagation()"></p-button>
                 </div>
               </div>
 
               <!-- Empty State -->
-              <div *ngIf="posts().length === 0" class="text-center py-10 glass-card mx-2">
+              <div *ngIf="trips().length === 0" class="text-center py-10 glass-card mx-2">
                 <i class="pi pi-compass text-4xl text-blue-200 mb-3 block"></i>
-                <p class="text-gray-500 font-medium">No stories found in {{ selectedCategory() }}</p>
-                <p-button label="Clear Filters" [link]="true" size="small" (onClick)="filterByCategory('travel')"></p-button>
+                <p class="text-gray-500 font-medium">No trips found</p>
+                <p-button label="Create Your First Trip" severity="primary" size="small" (onClick)="goToCreateTrip()"></p-button>
               </div>
             </div>
           </div>
@@ -194,14 +204,16 @@ interface CheckpointPlace {
 })
 export class TripListComponent implements OnInit, AfterViewInit, OnDestroy {
   private travelService = inject(TravelService);
+  private tripStore = inject(TripStoreService);
   private router = inject(Router);
 
   @ViewChild('checkpointMap') checkpointMapRef?: ElementRef<HTMLDivElement>;
 
-  posts = this.travelService.posts;
+  // Use real Travel API trips signal
+  trips = this.travelService.trips;
   loading = this.travelService.loading;
-  categories = ['travel', 'adventure', 'nature', 'city', 'culture'];
-  selectedCategory = signal<string>('travel');
+  statusFilters = ['all', 'draft', 'upcoming', 'ongoing', 'completed'];
+  selectedStatus = signal<string>('all');
 
   searchQuery = '';
   searching = false;
@@ -214,17 +226,22 @@ export class TripListComponent implements OnInit, AfterViewInit, OnDestroy {
   private resizeObserver?: ResizeObserver;
 
   ngOnInit(): void {
-    this.loadPosts();
+    this.loadTrips();
   }
 
-  loadPosts(): void {
-    this.travelService.listTrips({ category: this.selectedCategory() }).subscribe();
+  loadTrips(): void {
+    const status = this.selectedStatus() === 'all' ? undefined : this.selectedStatus();
+    this.travelService.listTrips({ limit: 50, status }).subscribe();
   }
 
-  filterByCategory(category: string): void {
-    this.selectedCategory.set(category);
-    this.loadPosts();
+  filterByStatus(status: string): void {
+    this.selectedStatus.set(status);
+    this.loadTrips();
   }
+
+  // legacy alias kept for template compatibility
+  filterByCategory = this.filterByStatus.bind(this);
+  loadPosts = this.loadTrips.bind(this);
 
   async ngAfterViewInit(): Promise<void> {
     await this.initMap();
@@ -239,19 +256,26 @@ export class TripListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.resizeObserver?.disconnect();
   }
 
-  selectTrip(post: any): void {
-    const id = post.id;
-    if (id) {
-      this.travelService.selectedPost.set(post);
-      if (post.title) {
-        this.searchQuery = post.title;
-        this.searchPlaces();
-      }
+  selectTrip(trip: TripApiItem): void {
+    this.tripStore.setActiveTrip({
+      id: trip._id,
+      title: trip.name,
+      destination: trip.destination,
+      start_date: trip.start_date?.split('T')[0],
+      end_date: trip.end_date?.split('T')[0],
+      budget: trip.budget,
+      cover_image: trip.thumbnail_image_urls?.[0],
+      status: trip.status
+    });
+    if (trip.destination) {
+      this.searchQuery = trip.destination;
+      this.searchPlaces();
     }
   }
 
-  openTrip(post: any): void {
-    if (post.id) this.router.navigate(['/travel', post.id]);
+  openTrip(trip: TripApiItem): void {
+    this.selectTrip(trip);
+    this.router.navigate(['/travel', trip._id]);
   }
 
   goToCreateTrip(): void {
@@ -260,9 +284,11 @@ export class TripListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   getStatusSeverity(status?: string): 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast' {
     switch ((status || '').toLowerCase()) {
-      case 'published': return 'success';
+      case 'upcoming': return 'info';
+      case 'ongoing': return 'warning';
+      case 'completed': return 'success';
       case 'draft': return 'secondary';
-      default: return 'info';
+      default: return 'secondary';
     }
   }
 

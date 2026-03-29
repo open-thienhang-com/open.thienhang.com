@@ -226,3 +226,83 @@ export interface UploadResult {
   file_size?: number;
   mime_type?: string;
 }
+
+/** OpenSpec Travel Extensions **/
+
+// Member & Onboarding Models
+export type TravelRole = 'owner' | 'admin' | 'member' | 'viewer';
+export interface TravelMember {
+  id: string;
+  user_id: string;
+  trip_id: string;
+  role: TravelRole;
+  name: string;
+  avatar_url?: string;
+  dietary_restrictions?: string[];
+  skills?: string[]; // e.g. 'driver', 'navigator'
+  tasks?: string[];
+  joined_at: string;
+  presence?: {
+    location?: { lat: number; lng: number };
+    last_seen: string;
+  };
+}
+
+// POI & Route Models
+export interface PointOfInterest {
+  id: string;
+  name: string;
+  category: string;
+  description?: string;
+  lat: number;
+  lng: number;
+  estimated_duration_minutes: number;
+  cover_image?: string;
+  google_place_id?: string;
+}
+
+// Shared Wallet / Expense Models
+export type SplitMethod = 'equal' | 'percentage' | 'shares' | 'exact';
+export interface ExpenseSplit {
+  user_id: string;
+  amount_owed: number;
+  shares?: number;
+  percentage?: number;
+}
+export interface Expense {
+  id: string;
+  trip_id: string;
+  paid_by: string; // user_id
+  amount: number;
+  currency: string;
+  category: string;
+  description: string;
+  date: string;
+  split_method: SplitMethod;
+  splits: ExpenseSplit[];
+  created_at: string;
+}
+export interface WalletSettlement {
+  payer_id: string;
+  payee_id: string;
+  amount: number;
+  currency: string;
+  status: 'pending' | 'resolved';
+}
+
+// Trip Gallery (Photo Management) Models
+export interface TripPhoto {
+  id: string;
+  trip_id: string;
+  itinerary_item_id?: string; // Optional binding to a specific stop
+  uploaded_by: string;
+  uploaded_at?: string;
+  url: string;
+  thumbnail_url?: string;
+  metadata?: {
+    lat?: number;
+    lng?: number;
+    captured_at?: string;
+  };
+  sync_status: 'pending' | 'synced' | 'failed';
+}
