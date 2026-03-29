@@ -626,10 +626,11 @@ export class SidebarComponent implements OnInit, OnChanges {
           const section = ((retailGroup as any).children || (retailGroup as any).items || []).find((it: any) => (it.label || '').toLowerCase().includes(keyPart));
           if (section) {
             groups.push({
-              label: section.label,
-              icon: section.icon,
+              label: '',
+              icon: '',
               items: (section as any).children || (section as any).items || [],
-              expanded: true
+              expanded: false,
+              _noHeader: true
             });
           }
         });
@@ -653,13 +654,16 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (key === 'planning') {
       const planningGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('retail planning'));
       if (planningGroup) {
+        const sourceItems = (planningGroup as any).children || (planningGroup as any).items || [];
+        const flattened = this.getFlattenedItems(sourceItems);
         const groups = [{
-          label: planningGroup.label,
-          icon: planningGroup.icon,
-          items: (planningGroup as any).children || (planningGroup as any).items || [],
-          expanded: true,
-          _flattened: this.getFlattenedItems((planningGroup as any).children || (planningGroup as any).items || [])
-        }];
+          label: '',
+          icon: '',
+          items: sourceItems,
+          expanded: false,
+          _noHeader: true,
+          _flattened: flattened
+        } as any];
         this.visibleGroups = groups;
         return;
       }
@@ -668,13 +672,16 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (key === 'forecast') {
       const forecastGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('retail forecast'));
       if (forecastGroup) {
+        const sourceItems = (forecastGroup as any).children || (forecastGroup as any).items || [];
+        const flattened = this.getFlattenedItems(sourceItems);
         const groups = [{
-          label: forecastGroup.label,
-          icon: forecastGroup.icon,
-          items: (forecastGroup as any).children || (forecastGroup as any).items || [],
-          expanded: true,
-          _flattened: this.getFlattenedItems((forecastGroup as any).children || (forecastGroup as any).items || [])
-        }];
+          label: '',
+          icon: '',
+          items: sourceItems,
+          expanded: false,
+          _noHeader: true,
+          _flattened: flattened
+        } as any];
         this.visibleGroups = groups;
         return;
       }
@@ -755,21 +762,26 @@ export class SidebarComponent implements OnInit, OnChanges {
         (it.label || '').toLowerCase().includes(subGroupLabel.toLowerCase())
       );
       if (group) {
+        // Promote children into a pseudo-group without header to match Governance
         const sourceItems = (group as any).children || (group as any).items || [];
-        this.visibleGroups = [{
-          label: group.label,
-          icon: group.icon,
+        const flattened = this.getFlattenedItems(sourceItems);
+        const pseudo = { 
+          label: '', 
+          icon: '', 
+          expanded: false, 
+          _noHeader: true, 
           items: sourceItems,
-          expanded: true,
-          _flattened: this.getFlattenedItems(sourceItems)
-        }];
+          _flattened: flattened 
+        } as any;
+        
+        this.visibleGroups = [pseudo];
       } else {
         this.visibleGroups = [];
       }
     };
 
     if (key === 'retail-sales') { retailSubGroupHandler('sales & orders'); return; }
-    if (key === 'retail-products') { retailSubGroupHandler('products & catalog'); return; }
+    if (key === 'retail-products') { retailSubGroupHandler('ecommerce'); return; }
     if (key === 'retail-customers') { retailSubGroupHandler('customer management'); return; }
     if (key === 'retail-omni') { retailSubGroupHandler('omni-channel'); return; }
     if (key === 'retail-pos') { retailSubGroupHandler('point of sale'); return; }

@@ -20,20 +20,12 @@ export class ApplicationsComponent implements OnInit {
       description: 'Discover data products and explore assets'
     },
     {
-      key: 'retail',
-      label: 'Retail Service',
-      icon: 'pi pi-shopping-bag',
-      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      description: 'Order management and retail operations',
-      category: 'Retail Division'
-    },
-    {
       key: 'inventory',
       label: 'Inventory Management',
       icon: 'pi pi-box',
       gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
       description: 'Stock, products, and warehouse management',
-      category: 'Retail Division'
+      category: 'Retail & Supply Chain'
     },
     {
       key: 'loyalty',
@@ -41,7 +33,7 @@ export class ApplicationsComponent implements OnInit {
       icon: 'pi pi-heart',
       gradient: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
       description: 'Customer loyalty, rewards, and campaigns',
-      category: 'Retail Division'
+      category: 'Retail & Supply Chain'
     },
     {
       key: 'governance',
@@ -112,7 +104,7 @@ export class ApplicationsComponent implements OnInit {
       icon: 'pi pi-directions',
       gradient: 'linear-gradient(135deg, #15803d 0%, #22c55e 100%)',
       description: 'Supply chain planning and route optimization',
-      category: 'Planning Division'
+      category: 'Retail & Supply Chain'
     },
     {
       key: 'forecast',
@@ -120,7 +112,7 @@ export class ApplicationsComponent implements OnInit {
       icon: 'pi pi-chart-line',
       gradient: 'linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)',
       description: 'Demand signals and capacity forecasting',
-      category: 'Forecast Division'
+      category: 'Retail & Supply Chain'
     },
     {
       key: 'retail-sales' as AppKey,
@@ -128,15 +120,15 @@ export class ApplicationsComponent implements OnInit {
       icon: 'pi pi-send',
       gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
       description: 'Order management, transactions and payments',
-      category: 'Retail Division'
+      category: 'Retail & Supply Chain'
     },
     {
       key: 'retail-products' as AppKey,
-      label: 'Products & Catalog',
+      label: 'Ecommerce',
       icon: 'pi pi-tag',
       gradient: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
       description: 'Product catalog and ecommerce store management',
-      category: 'Retail Division'
+      category: 'Retail & Supply Chain'
     },
     {
       key: 'retail-customers' as AppKey,
@@ -144,7 +136,7 @@ export class ApplicationsComponent implements OnInit {
       icon: 'pi pi-users',
       gradient: 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)',
       description: 'Customers, loyalty members and campaigns',
-      category: 'Retail Division'
+      category: 'Retail & Supply Chain'
     },
     {
       key: 'retail-omni' as AppKey,
@@ -152,7 +144,7 @@ export class ApplicationsComponent implements OnInit {
       icon: 'pi pi-comments',
       gradient: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)',
       description: 'Multi-channel retail communication and sales',
-      category: 'Retail Division'
+      category: 'Retail & Supply Chain'
     },
     {
       key: 'retail-pos' as AppKey,
@@ -160,7 +152,7 @@ export class ApplicationsComponent implements OnInit {
       icon: 'pi pi-desktop',
       gradient: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
       description: 'POS terminal and fresh retail operations',
-      category: 'Retail Division'
+      category: 'Retail & Supply Chain'
     },
     {
       key: 'retail-analytics' as AppKey,
@@ -168,7 +160,7 @@ export class ApplicationsComponent implements OnInit {
       icon: 'pi pi-chart-line',
       gradient: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
       description: 'Sales analytics, reports and retail settings',
-      category: 'Retail Division'
+      category: 'Retail & Supply Chain'
     }
   ];
 

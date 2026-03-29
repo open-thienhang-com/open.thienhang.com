@@ -119,7 +119,7 @@ export const menu: MenuItem[] = [
                 ]
             },
             {
-                label: 'Products & Catalog',
+                label: 'Ecommerce',
                 icon: 'pi pi-tag',
                 children: [
                     { label: 'Product List', url: '/retail/products', icon: 'pi pi-tags' },
