@@ -149,7 +149,7 @@
         <!-- Render if group has items or if a flattened item list was provided (pseudo-group) -->
         <!-- Skip rendering if it's a standalone item -->
         <ul class="nav-list"
-            *ngIf="!group._isStandalone && !collapsed && (hasItems(group) || (group._flattened && group._flattened.length > 0))"
+            *ngIf="!group._isStandalone && !collapsed && hasItems(group)"
             [ngClass]="{ open: group.expanded || group._noHeader }">
           <li *ngFor="let item of group._flattened; trackBy: trackByItem">
             <a
@@ -341,7 +341,7 @@
 </p-dialog>
 
 <!-- Blogger Sidebar Card (Redesigned) -->
-<div class="blogger-sidebar-card" *ngIf="!collapsed">
+<div class="blogger-sidebar-card" *ngIf="!collapsed && selectedApp === 'blogger'">
   <div class="blogger-accent-bar"></div>
   <div class="blogger-header flex items-center gap-3 mb-2">
     <i class="pi pi-pencil blogger-icon"></i>

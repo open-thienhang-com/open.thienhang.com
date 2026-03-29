@@ -20,7 +20,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ToastModule } from 'primeng/toast';
 import { BadgeModule } from 'primeng/badge';
 import { MessageService } from 'primeng/api';
-import { WarehouseService } from '../../../retail/services/retail.service';
+import { WarehouseService } from '../../../inventory/services/inventory.service';
 
 interface DeliveryPointItem {
   id: string;

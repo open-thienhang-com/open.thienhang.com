@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { ProductService, CategoryService } from '../../services/retail.service';
-import { Product } from '../../models/retail.models';
+import { ProductService, CategoryService } from '../../../inventory/services/inventory.service';
+import { Product } from '../../../inventory/models/inventory.models';
 
 export interface CartItem {
   product: Product;

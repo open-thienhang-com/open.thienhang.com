@@ -24,12 +24,19 @@ export class ApplicationsComponent implements OnInit {
       label: 'Retail Service',
       icon: 'pi pi-shopping-bag',
       gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      description: ''
+      description: 'Order management and retail operations'
+    },
+    {
+      key: 'inventory',
+      label: 'Inventory Management',
+      icon: 'pi pi-box',
+      gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+      description: 'Stock, products, and warehouse management'
     },
     {
       key: 'loyalty',
-      label: 'Loyalty Program',
-      icon: 'pi pi-star',
+      label: 'Loyalty CRM',
+      icon: 'pi pi-heart',
       gradient: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
       description: 'Customer loyalty, rewards, and campaigns'
     },
@@ -45,7 +52,7 @@ export class ApplicationsComponent implements OnInit {
       label: 'Blogger',
       icon: 'pi pi-pencil',
       gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-      description: ''
+      description: 'Create and manage content for the blog'
     },
     {
       key: 'hotel',
@@ -59,35 +66,35 @@ export class ApplicationsComponent implements OnInit {
       label: 'Ad Manager',
       icon: 'pi pi-chart-bar',
       gradient: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
-      description: ''
+      description: 'Manage advertising campaigns and placements'
     },
     {
       key: 'travel',
-      label: 'Travel',
+      label: 'Travel Explorer',
       icon: 'pi pi-globe',
       gradient: 'linear-gradient(135deg, #2af598 0%, #009efd 100%)',
-      description: 'Plan and manage your trips'
+      description: 'Plan and manage global travel itineraries'
     },
     {
       key: 'chat',
-      label: 'Chat',
+      label: 'Chat & Collaboration',
       icon: 'pi pi-comments',
       gradient: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-      description: 'Team chat and discussions'
+      description: 'Team chat, channels, and direct messaging'
     },
     {
       key: 'files',
-      label: 'Files',
+      label: 'File Manager',
       icon: 'pi pi-folder',
       gradient: 'linear-gradient(135deg, #4f46e5 0%, #2563eb 100%)',
-      description: 'File storage and management'
+      description: 'Shared storage and document management'
     },
     {
       key: 'settings',
       label: 'Settings',
       icon: 'pi pi-cog',
       gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-      description: ''
+      description: 'System and workspace configurations'
     },
     {
       key: 'notification',
@@ -116,8 +123,9 @@ export class ApplicationsComponent implements OnInit {
     const routeForApp: Record<AppKey, string> = {
       all: '/',
       explore: '/explore',
-      retail: '/retail',
-      loyalty: '/retail/loyalty',
+      retail: '/retail/fresh-retail',
+      inventory: '/inventory/overview',
+      loyalty: '/loyalty/overview',
       catalog: '/',
       governance: '/governance/policies',
       planning: '/planning',

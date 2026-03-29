@@ -5,8 +5,8 @@ import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { Agent, ChatAnalytics, Conversation as ApiConversation, Message as ApiMessage } from '../../../chat/models/chat.model';
 import { ChatService } from '../../../chat/services/chat.service';
-import { Product } from '../../models/retail.models';
-import { OrderService, ProductService } from '../../services/retail.service';
+import { Product } from '../../../inventory/models/inventory.models';
+import { InventoryService as OrderService, ProductService } from '../../../inventory/services/inventory.service';
 
 type ChannelKey = string;
 

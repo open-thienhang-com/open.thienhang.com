@@ -7,8 +7,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { ProductService, OrderService } from '../../services/retail.service';
-import { Product } from '../../models/retail.models';
+import { ProductService, InventoryService as OrderService } from '../../../inventory/services/inventory.service';
+import { Product } from '../../../inventory/models/inventory.models';
 
 interface PosProduct {
   id: string;

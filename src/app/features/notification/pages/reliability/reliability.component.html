@@ -75,27 +75,27 @@
     </div>
     
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div *ngFor="let cb of circuitBreakers" class="group bg-white p-7 rounded-[2rem] shadow-sm border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-xl">
+      <div *ngFor="let cb of circuitBreakers" class="group bg-white p-7 rounded-[2.5rem] shadow-sm border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-xl">
         <div class="flex justify-between items-start mb-8">
-          <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:scale-110 transition-transform">
+          <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:scale-110 transition-transform shadow-inner">
             <i class="pi pi-bolt text-lg"></i>
           </div>
-          <p-tag [value]="cb.status" [severity]="getStatusSeverity(cb.status)" class="rounded-lg px-2.5 py-1 uppercase text-[10px] font-black tracking-widest"></p-tag>
+          <p-tag [value]="cb.state" [severity]="getStatusSeverity(cb.state)" class="rounded-lg px-2.5 py-1 uppercase text-[10px] font-black tracking-widest"></p-tag>
         </div>
         
-        <h4 class="font-extrabold text-xl text-gray-900 mb-1">{{cb.name}}</h4>
-        <p class="text-[10px] font-bold text-gray-300 mb-8 uppercase tracking-tight">Last failure: {{cb.lastFailure || 'None recorded'}}</p>
+        <h4 class="font-extrabold text-xl text-gray-900 mb-1 capitalize">{{cb.channel}}</h4>
+        <p class="text-[10px] font-bold text-gray-300 mb-8 uppercase tracking-widest">Global Dispatch Gateway</p>
         
         <div class="space-y-3">
           <div class="flex justify-between items-end">
-            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Failure Rate</span>
-            <span class="text-xs font-black" [style.color]="cb.failureRate > 0.4 ? 'var(--red-500)' : 'var(--green-500)'">{{cb.failureRate * 100}}%</span>
+            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">System Health</span>
+            <span class="text-xs font-black">{{ cb.state === 'Closed' ? '100%' : '50%' }}</span>
           </div>
-          <p-progressBar [value]="cb.failureRate * 100" [showValue]="false" [style]="{height: '8px', borderRadius: '100px'}" [color]="cb.failureRate > 0.4 ? '#ef4444' : '#10b981'"></p-progressBar>
+          <p-progressBar [value]="cb.state === 'Closed' ? 100 : 50" [showValue]="false" [style]="{height: '8px', borderRadius: '100px'}" [color]="cb.state === 'Closed' ? '#10b981' : '#f59e0b'"></p-progressBar>
         </div>
 
         <div class="absolute bottom-0 left-0 h-1.5 w-full bg-gray-50">
-          <div class="h-full transition-all duration-1000" [style.backgroundColor]="cb.color" [style.width]="cb.status === 'Closed' ? '100%' : '50%'"></div>
+          <div class="h-full transition-all duration-1000" [style.backgroundColor]="cb.state === 'Closed' ? '#10b981' : '#f59e0b'" [style.width]="cb.state === 'Closed' ? '100%' : '50%'"></div>
         </div>
       </div>
     </div>
@@ -103,46 +103,41 @@
 
   <!-- DLQ Section -->
   <section>
-    <div class="flex items-center gap-3 mb-6">
+    <div class="flex items-center gap-3 mb-6 pt-4">
       <div class="h-6 w-1 rounded-full bg-rose-500"></div>
       <h3 class="text-sm font-black text-gray-400 uppercase tracking-[0.2em]">Dead Letter Queue</h3>
     </div>
     
     <div class="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
-      <p-table [value]="dlqItems" styleClass="p-datatable-sm no-border">
+      <p-table [value]="dlqItems" [rows]="10" [paginator]="true" styleClass="p-datatable-sm no-border">
         <ng-template pTemplate="header">
           <tr class="bg-gray-50/30">
             <th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Message ID</th>
             <th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Target</th>
             <th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Critical Error</th>
-            <th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Retries</th>
+            <th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Age</th>
             <th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Actions</th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item>
           <tr class="border-b border-gray-50 last:border-0 hover:bg-rose-50/10 transition-all duration-200">
-            <td class="px-8 py-5 font-mono text-[10px] font-bold text-gray-400">{{item.id}}</td>
+            <td class="px-8 py-5 font-mono text-[10px] font-bold text-gray-400">{{item.ID}}</td>
             <td class="px-8 py-5">
               <div class="flex flex-col">
-                <span class="text-xs font-black text-gray-700 uppercase tracking-tight">{{item.channel}}</span>
-                <span class="text-[10px] font-medium text-gray-400">{{item.recipient}}</span>
+                <span class="text-xs font-black text-gray-700 uppercase tracking-tight">{{item.Channel}}</span>
+                <span class="text-[10px] font-medium text-gray-400">{{item.Recipients ? item.Recipients[0]?.Address : 'N/A'}}</span>
               </div>
             </td>
             <td class="px-8 py-5">
-              <span class="text-[10px] font-bold text-rose-500 bg-rose-50 px-2.5 py-1.5 rounded-xl border border-rose-100 inline-block uppercase tracking-tighter">{{item.lastError}}</span>
+              <span class="text-[10px] font-bold text-rose-500 bg-rose-50 px-2.5 py-1.5 rounded-xl border border-rose-100 inline-block uppercase tracking-tighter" [pTooltip]="item.Error">{{item.Error}}</span>
             </td>
-            <td class="px-8 py-5">
-              <div class="flex items-center gap-3">
-                <span class="text-xs font-black text-gray-800">{{item.retries}}/5</span>
-                <div class="flex gap-1">
-                  <div *ngFor="let i of [1,2,3,4,5]" class="w-2 h-2 rounded-full border border-gray-100 shadow-inner" [class.bg-rose-400]="i <= item.retries" [class.bg-gray-50]="i > item.retries"></div>
-                </div>
-              </div>
+            <td class="px-8 py-5 text-right">
+              <span class="text-xs font-black text-gray-800">{{item.CreatedAt | date:'shortTime'}}</span>
             </td>
             <td class="px-8 py-5 text-right">
               <div class="flex justify-end gap-2">
                 <button pButton icon="pi pi-replay" [rounded]="true" [outlined]="true" severity="info" size="small" pTooltip="Manual Retry"></button>
-                <button pButton icon="pi pi-trash" [rounded]="true" [outlined]="true" severity="danger" size="small" pTooltip="Discard Message"></button>
+                <button pButton icon="pi pi-trash" [rounded]="true" [outlined]="true" severity="danger" size="small" pTooltip="Discard"></button>
               </div>
             </td>
           </tr>
@@ -155,7 +150,7 @@
                   <i class="pi pi-check text-4xl text-emerald-500"></i>
                 </div>
                 <h3 class="text-gray-900 text-xl font-bold mb-2">Queue is Empty</h3>
-                <p class="text-gray-500 text-sm">Perfect! No dead letter messages currently requiring attention.</p>
+                <p class="text-gray-500 text-sm">No dead letter messages currently requiring attention.</p>
               </div>
             </td>
           </tr>

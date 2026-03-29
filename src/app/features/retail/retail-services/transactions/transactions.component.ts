@@ -9,7 +9,7 @@ import { ToastModule } from 'primeng/toast';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
-import { TransactionService } from '../../services/retail.service';
+import { InventoryService as TransactionService } from '../../../inventory/services/inventory.service';
 
 interface TransactionItem {
   id: string;

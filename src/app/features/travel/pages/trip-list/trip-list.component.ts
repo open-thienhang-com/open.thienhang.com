@@ -1,4 +1,6 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { Injectable, signal, inject, AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { animate, query, stagger, style, transition, trigger } from '@angular/animations';
+import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -6,9 +8,8 @@ import { TagModule } from 'primeng/tag';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputTextModule } from 'primeng/inputtext';
-import { finalize } from 'rxjs';
 import { TravelService } from '../../services/travel.service';
-import { Trip } from '../../models/travel.model';
+import { Trip, BlogPost } from '../../models/travel.model';
 
 interface CheckpointPlace {
   display_name: string;
@@ -28,284 +29,167 @@ interface CheckpointPlace {
     TagModule,
     SkeletonModule,
     TooltipModule,
-    InputTextModule
+    InputTextModule,
+    FormsModule
+  ],
+  animations: [
+    trigger('listAnimation', [
+      transition('* <=> *', [
+        query(':enter', [
+          style({ opacity: 0, transform: 'translateY(20px)' }),
+          stagger('100ms', [
+            animate('400ms cubic-bezier(0.35, 0, 0.25, 1)', style({ opacity: 1, transform: 'translateY(0)' }))
+          ])
+        ], { optional: true })
+      ])
+    ])
   ],
   template: `
-    <div class="bg-gray-50 min-h-screen p-6">
-      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
-              <i class="pi pi-globe text-white text-xl"></i>
+    <div class="explorer-container">
+      <!-- Main Content: Split Pane -->
+      <div class="split-pane">
+        
+        <!-- Left Pane: Map (Immersive) -->
+        <div class="map-pane">
+          <div #checkpointMap class="full-map"></div>
+          
+          <!-- Floating Command Palette / Search -->
+          <div class="floating-search-box blur-effect">
+            <div class="p-input-icon-left w-full">
+              <i class="pi pi-search"></i>
+              <input 
+                pInputText 
+                type="text" 
+                [(ngModel)]="searchQuery" 
+                (keydown.enter)="searchPlaces()"
+                placeholder="Search destinations..." 
+                class="w-full border-none bg-transparent focus:shadow-none" />
             </div>
-            <div>
-              <h1 class="text-3xl font-bold text-gray-900 m-0">Travel Planner</h1>
-              <p class="text-gray-600 m-0 mt-1">Plan and manage all trips in one dashboard</p>
-            </div>
+            <p-button icon="pi pi-directions" [loading]="searching" (onClick)="searchPlaces()" severity="primary" [rounded]="true" [text]="true"></p-button>
           </div>
-          <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-            <p-button icon="pi pi-refresh" severity="info" [outlined]="true" [rounded]="true" (onClick)="loadTrips()" class="hidden sm:inline-flex"></p-button>
-            <p-button label="Create Trip" icon="pi pi-plus" severity="primary" size="small" (onClick)="goToCreateTrip()" class="sm:hidden"></p-button>
-            <p-button icon="pi pi-plus" severity="primary" [rounded]="true" (onClick)="goToCreateTrip()" class="hidden sm:inline-flex"></p-button>
-          </div>
-        </div>
-      </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-600">Total Trips</p>
-              <p class="text-3xl font-bold text-gray-900 m-0">{{ trips.length }}</p>
-            </div>
-            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <i class="pi pi-briefcase text-blue-600 text-xl"></i>
-            </div>
-          </div>
-        </div>
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-600">Draft</p>
-              <p class="text-3xl font-bold text-gray-700 m-0">{{ countByStatus('draft') }}</p>
-            </div>
-            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-              <i class="pi pi-pencil text-gray-600 text-xl"></i>
+          <!-- Map Overlay: Selected Place Info -->
+          <div class="selected-place-card blur-effect" *ngIf="selectedPlace">
+            <div class="flex justify-between items-start">
+              <div>
+                <h4 class="text-sm font-bold text-gray-900 m-0">{{ selectedPlace.display_name }}</h4>
+                <p class="text-xs text-gray-500 m-0 mt-1 uppercase tracking-wider">{{ selectedPlace.type || selectedPlace.class }}</p>
+              </div>
+              <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="secondary" size="small" (onClick)="selectedPlace = null"></p-button>
             </div>
           </div>
         </div>
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-600">In Progress</p>
-              <p class="text-3xl font-bold text-orange-600 m-0">{{ countByStatus('in_progress') }}</p>
-            </div>
-            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <i class="pi pi-clock text-orange-600 text-xl"></i>
-            </div>
-          </div>
-        </div>
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-600">Completed</p>
-              <p class="text-3xl font-bold text-green-600 m-0">{{ countByStatus('completed') }}</p>
-            </div>
-            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <i class="pi pi-check-circle text-green-600 text-xl"></i>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <div *ngIf="loading" class="grid">
-        <div class="col-12 md:col-6 lg:col-4 p-3" *ngFor="let i of [1,2,3,4,5,6]">
-          <div class="surface-card border-round shadow-2 p-4">
-            <p-skeleton height="120px" styleClass="mb-3 border-round"></p-skeleton>
-            <p-skeleton width="70%" height="1rem" styleClass="mb-2"></p-skeleton>
-            <p-skeleton width="50%" height="1rem"></p-skeleton>
+        <!-- Right Pane: List & Stats (Glassmorphic) -->
+        <div class="list-pane border-left border-200">
+          <div class="pane-header p-4 flex justify-between items-center border-bottom border-200">
+            <div>
+              <h1 class="text-2xl font-bold text-gray-900 m-0">Travel Explorer</h1>
+              <p class="text-gray-500 text-sm m-0">Discover and manage your journeys</p>
+            </div>
+            <p-button icon="pi pi-plus" label="New Trip" severity="primary" [rounded]="true" size="small" (onClick)="goToCreateTrip()"></p-button>
           </div>
-        </div>
-      </div>
 
-      <div *ngIf="!loading" class="trip-layout">
-        <div class="bg-white rounded-lg shadow-sm p-3">
-          <div *ngIf="trips.length; else emptyTrips" class="grid">
-            <div class="col-12 md:col-6 xl:col-6 p-3" *ngFor="let trip of trips; trackBy: trackByTrip">
-              <div class="bg-white border border-gray-200 rounded-lg h-full flex flex-column p-4 gap-3 hover:shadow-md transition-shadow">
-                <div class="flex justify-content-between align-items-start gap-2 mb-1">
-                  <h2 class="text-xl font-bold text-900 m-0 line-clamp-2 cursor-pointer" [pTooltip]="trip.title" (click)="openTrip(trip)">
-                    {{ trip.title || 'Untitled trip' }}
-                  </h2>
-                  <p-tag [value]="trip.status || 'unknown'" [severity]="getStatusSeverity(trip.status)"></p-tag>
+          <div class="pane-scrollable p-4">
+            <!-- Category Filters -->
+            <div class="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+              <button 
+                *ngFor="let cat of categories"
+                (click)="filterByCategory(cat)"
+                class="px-4 py-2 rounded-full text-xs font-bold transition-all border whitespace-nowrap"
+                [class.bg-blue-600]="selectedCategory() === cat"
+                [class.text-white]="selectedCategory() === cat"
+                [class.border-blue-600]="selectedCategory() === cat"
+                [class.bg-white]="selectedCategory() !== cat"
+                [class.text-gray-500]="selectedCategory() !== cat"
+                [class.border-gray-200]="selectedCategory() !== cat">
+                {{ cat | uppercase }}
+              </button>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 gap-3 mb-6">
+              <div class="stat-mini-card bg-blue-50">
+                <span class="text-xs text-blue-600 font-bold uppercase">Total Stories</span>
+                <span class="text-xl font-bold block">{{ posts().length }}</span>
+              </div>
+              <div class="stat-mini-card bg-purple-50">
+                <span class="text-xs text-purple-600 font-bold uppercase">Views</span>
+                <span class="text-xl font-bold block">{{ 1240 | number }}</span>
+              </div>
+            </div>
+
+            <!-- Loading Skeleton -->
+            <div *ngIf="loading()" class="space-y-4">
+              <div *ngFor="let i of [1,2,3]" class="p-4 border border-200 rounded-xl">
+                <p-skeleton width="80%" height="1.5rem" styleClass="mb-3"></p-skeleton>
+                <div class="flex gap-2">
+                  <p-skeleton width="40" height="40" shape="circle"></p-skeleton>
+                  <p-skeleton width="40%" height="1rem"></p-skeleton>
                 </div>
+              </div>
+            </div>
 
-                <div class="text-gray-600 grid gap-2">
-                  <div><i class="pi pi-map-marker mr-2"></i>{{ trip.destination || 'No destination' }}</div>
-                  <div><i class="pi pi-calendar mr-2"></i>{{ formatDateRange(trip.start_date, trip.end_date) }}</div>
+            <!-- Post Cards -->
+            <div *ngIf="!loading()" class="space-y-4" [@listAnimation]="posts().length">
+              <div *ngFor="let post of posts(); trackBy: trackByPost" 
+                   class="trip-card group flex gap-4 p-3" 
+                   (click)="selectTrip(post)">
+                <div class="h-20 w-20 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
+                  <img [src]="post.thumbnail || 'assets/placeholder-trip.jpg'" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
                 </div>
-
-                <p class="text-700 line-clamp-3 mb-0">{{ trip.description || 'No description for this trip yet.' }}</p>
-
-                <div class="planner-chip-row">
-                  <span class="planner-chip">
-                    <i class="pi pi-clock mr-1"></i>
-                    {{ getTripDurationLabel(trip.start_date, trip.end_date) }}
-                  </span>
-                  <span class="planner-chip">
-                    <i class="pi pi-user mr-1"></i>
-                    {{ trip.people_count || 1 }} people
-                  </span>
-                </div>
-
-                <div class="mt-auto flex justify-content-between align-items-center pt-2 border-top-1 border-200">
-                  <small class="text-500">ID: {{ getTripId(trip) || '-' }}</small>
-                  <div class="flex gap-2">
-                    <button pButton label="Open" icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm" (click)="openTrip(trip)"></button>
-                    <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger p-button-sm" (click)="deleteTrip(trip)"></button>
+                <div class="flex-1 min-w-0">
+                  <div class="flex justify-between items-start">
+                    <h3 class="text-sm font-bold text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+                      {{ post.title }}
+                    </h3>
+                  </div>
+                  <p class="text-xs text-gray-500 line-clamp-2 mt-1">{{ post.summary }}</p>
+                  <div class="flex items-center gap-3 mt-3">
+                    <div class="flex items-center gap-1 text-[10px] text-gray-400 font-medium">
+                      <i class="pi pi-user text-[8px]"></i>
+                      <span class="truncate">{{ post.author?.name }}</span>
+                    </div>
+                    <div class="flex items-center gap-1 text-[10px] text-gray-400 font-medium">
+                      <i class="pi pi-eye text-[8px]"></i>
+                      <span>{{ post.view_count || 0 }}</span>
+                    </div>
                   </div>
                 </div>
+                <div class="flex flex-col justify-between items-end">
+                   <p-tag [value]="post.status" [severity]="getStatusSeverity(post.status)" styleClass="text-[8px] uppercase font-black px-2 py-0.5 rounded-sm"></p-tag>
+                   <p-button icon="pi pi-arrow-up-right" [rounded]="true" [text]="true" size="small" (onClick)="openTrip(post)"></p-button>
+                </div>
+              </div>
+
+              <!-- Empty State -->
+              <div *ngIf="posts().length === 0" class="text-center py-10 glass-card mx-2">
+                <i class="pi pi-compass text-4xl text-blue-200 mb-3 block"></i>
+                <p class="text-gray-500 font-medium">No stories found in {{ selectedCategory() }}</p>
+                <p-button label="Clear Filters" [link]="true" size="small" (onClick)="filterByCategory('travel')"></p-button>
               </div>
             </div>
           </div>
-          <ng-template #emptyTrips>
-            <div class="bg-white rounded-lg border border-gray-200 p-10 text-center">
-              <h3 class="text-xl font-bold">No trips yet</h3>
-              <p class="text-600">Create your first trip to start planning.</p>
-            </div>
-          </ng-template>
         </div>
-
-        <aside class="checkpoint-sidebar bg-white rounded-lg shadow-sm p-4">
-          <div class="checkpoint-head">
-            <h3 class="m-0 text-xl font-bold text-900">Checkpoint</h3>
-            <p class="m-0 text-600 text-sm mt-1">Search destinations, view map, and check destination details.</p>
-          </div>
-
-          <div class="checkpoint-search mt-3">
-            <input
-              pInputText
-              type="text"
-              [value]="searchQuery"
-              (input)="searchQuery = ($any($event.target).value || '')"
-              (keydown.enter)="searchPlaces()"
-              placeholder="Search destination..." />
-            <button pButton label="Search" icon="pi pi-search" [loading]="searching" (click)="searchPlaces()"></button>
-          </div>
-
-          <div class="checkpoint-results" *ngIf="searchResults.length">
-            <button
-              type="button"
-              class="checkpoint-result-item"
-              *ngFor="let place of searchResults; trackBy: trackByPlace"
-              (click)="selectPlace(place)">
-              <div class="result-title">{{ place.display_name }}</div>
-              <div class="result-type">{{ place.type || place.class || 'place' }}</div>
-            </button>
-          </div>
-
-          <div class="checkpoint-content">
-            <div #checkpointMap class="checkpoint-map"></div>
-            <div class="checkpoint-info">
-              <div *ngIf="selectedPlace; else noSelectedPlace">
-                <h4 class="m-0 text-base font-semibold text-900">{{ selectedPlace.display_name }}</h4>
-                <p class="m-0 mt-2 text-700">Type: {{ selectedPlace.type || selectedPlace.class || '-' }}</p>
-                <p class="m-0 mt-1 text-700">Lat: {{ selectedPlace.lat }}</p>
-                <p class="m-0 mt-1 text-700">Lon: {{ selectedPlace.lon }}</p>
-              </div>
-              <ng-template #noSelectedPlace>
-                <p class="m-0 text-600">No destination selected. Search and click one result to view details.</p>
-              </ng-template>
-            </div>
-          </div>
-        </aside>
       </div>
     </div>
   `,
   styles: [`
-    :host { display: block; }
-    .trip-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: 1rem;
-      align-items: start;
-    }
-    .checkpoint-sidebar {
-      position: sticky;
-      top: 1rem;
-    }
-    .checkpoint-search {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 0.5rem;
-    }
-    .checkpoint-search input {
-      width: 100%;
-    }
-    .checkpoint-results {
-      margin-top: 0.5rem;
-      display: grid;
-      gap: 0.4rem;
-      max-height: 180px;
-      overflow: auto;
-    }
-    .checkpoint-result-item {
-      border: 1px solid #e5e7eb;
-      background: #f8fafc;
-      border-radius: 0.5rem;
-      text-align: left;
-      padding: 0.5rem 0.6rem;
-      cursor: pointer;
-    }
-    .result-title {
-      font-size: 0.78rem;
-      color: #1f2937;
-      line-height: 1.35;
-    }
-    .result-type {
-      margin-top: 0.2rem;
-      font-size: 0.7rem;
-      color: #64748b;
-      text-transform: uppercase;
-    }
-    .checkpoint-content {
-      margin-top: 0.75rem;
-      display: grid;
-      grid-template-columns: 1.4fr 1fr;
-      gap: 0.75rem;
-      min-height: 280px;
-    }
-    .checkpoint-map {
-      border: 1px solid #e5e7eb;
-      border-radius: 0.5rem;
-      min-height: 280px;
-      background: #eef2ff;
-    }
-    .checkpoint-info {
-      border: 1px solid #e5e7eb;
-      border-radius: 0.5rem;
-      padding: 0.75rem;
-      background: #f8fafc;
-    }
-    .planner-chip-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-    .planner-chip {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.3rem 0.6rem;
-      border-radius: 999px;
-      font-size: 0.78rem;
-      color: #0c4a6e;
-      background: #e0f2fe;
-    }
-    .line-clamp-2 {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    .line-clamp-3 {
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    @media (min-width: 1280px) {
-      .trip-layout {
-        grid-template-columns: minmax(0, 2fr) minmax(360px, 1fr);
-      }
-    }
-    @media (max-width: 1024px) {
-      .checkpoint-content {
-        grid-template-columns: 1fr;
-      }
-      .checkpoint-sidebar {
-        position: static;
-      }
-    }
+    :host { display: block; height: calc(100vh - 64px); }
+    .explorer-container { height: 100%; overflow: hidden; }
+    .split-pane { display: grid; grid-template-columns: 1fr 400px; height: 100%; }
+    .map-pane { position: relative; height: 100%; background: #eef2ff; }
+    .full-map { width: 100%; height: 100%; }
+    .floating-search-box { position: absolute; top: 1.5rem; left: 1.5rem; right: 1.5rem; max-width: 400px; z-index: 1000; padding: 0.5rem 1rem; border-radius: 999px; display: flex; align-items: center; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.4); }
+    .selected-place-card { position: absolute; bottom: 1.5rem; left: 1.5rem; width: 320px; z-index: 1000; padding: 1rem; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.4); }
+    .blur-effect { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    .list-pane { display: flex; flex-direction: column; background: #fff; }
+    .pane-scrollable { flex: 1; overflow-y: auto; }
+    .stat-mini-card { padding: 0.75rem; border-radius: 0.75rem; }
+    .trip-card { padding: 1rem; border-radius: 1rem; border: 1px solid #f1f5f9; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .trip-card:hover { border-color: #e2e8f0; background: #f8fafc; transform: translateY(-1px); }
+    .trip-card.active { border-color: #3b82f6; background: #eff6ff; box-shadow: 0 4px 6px -1px rgba(59,130,246,0.1); }
+    @media (max-width: 1024px) { .split-pane { grid-template-columns: 1fr; } .list-pane { height: 50%; } .map-pane { height: 50%; } }
   `]
 })
 export class TripListComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -314,8 +198,10 @@ export class TripListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('checkpointMap') checkpointMapRef?: ElementRef<HTMLDivElement>;
 
-  trips: Trip[] = [];
-  loading = false;
+  posts = this.travelService.posts;
+  loading = this.travelService.loading;
+  categories = ['travel', 'adventure', 'nature', 'city', 'culture'];
+  selectedCategory = signal<string>('travel');
 
   searchQuery = '';
   searching = false;
@@ -325,13 +211,24 @@ export class TripListComponent implements OnInit, AfterViewInit, OnDestroy {
   private map: any;
   private L: any;
   private mapMarker: any;
+  private resizeObserver?: ResizeObserver;
 
   ngOnInit(): void {
-    this.loadTrips();
+    this.loadPosts();
+  }
+
+  loadPosts(): void {
+    this.travelService.listTrips({ category: this.selectedCategory() }).subscribe();
+  }
+
+  filterByCategory(category: string): void {
+    this.selectedCategory.set(category);
+    this.loadPosts();
   }
 
   async ngAfterViewInit(): Promise<void> {
     await this.initMap();
+    this.setupResizeObserver();
   }
 
   ngOnDestroy(): void {
@@ -339,105 +236,47 @@ export class TripListComponent implements OnInit, AfterViewInit, OnDestroy {
       this.map.remove();
       this.map = null;
     }
+    this.resizeObserver?.disconnect();
   }
 
-  loadTrips(): void {
-    this.loading = true;
-    this.travelService.listTrips()
-      .pipe(finalize(() => (this.loading = false)))
-      .subscribe({
-        next: (data) => {
-          this.trips = data;
-        },
-        error: (err) => {
-          console.error('Failed to load trips:', err);
-          this.trips = [];
-        }
-      });
-  }
-
-  openTrip(trip: Trip): void {
-    const id = this.getTripId(trip);
-    if (!id) {
-      return;
+  selectTrip(post: any): void {
+    const id = post.id;
+    if (id) {
+      this.travelService.selectedPost.set(post);
+      if (post.title) {
+        this.searchQuery = post.title;
+        this.searchPlaces();
+      }
     }
-    this.router.navigate(['/travel', id]);
+  }
+
+  openTrip(post: any): void {
+    if (post.id) this.router.navigate(['/travel', post.id]);
   }
 
   goToCreateTrip(): void {
     this.router.navigate(['/travel/new']);
   }
 
-  deleteTrip(trip: Trip): void {
-    const id = this.getTripId(trip);
-    if (!id) {
-      return;
-    }
-    if (!window.confirm(`Delete trip "${trip.title}"?`)) {
-      return;
-    }
-    this.travelService.deleteTrip(id).subscribe({
-      next: () => this.loadTrips(),
-      error: (err) => console.error('Delete trip failed:', err)
-    });
-  }
-
-  getTripId(trip: Trip): string | null {
-    return trip.trip_id || trip.id || trip._id || null;
-  }
-
   getStatusSeverity(status?: string): 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast' {
     switch ((status || '').toLowerCase()) {
-      case 'completed':
-        return 'success';
-      case 'in_progress':
-      case 'in progress':
-        return 'warning';
-      case 'upcoming':
-        return 'info';
-      case 'draft':
-        return 'secondary';
-      default:
-        return 'secondary';
+      case 'published': return 'success';
+      case 'draft': return 'secondary';
+      default: return 'info';
     }
   }
 
-  formatDateRange(start?: string, end?: string): string {
-    if (!start && !end) {
-      return '-';
-    }
-    if (start && end) {
-      return `${start} -> ${end}`;
-    }
-    return start || end || '-';
+  formatDate(date?: string): string {
+    if (!date) return '-';
+    return new Date(date).toLocaleDateString();
   }
 
-  countByStatus(status: Trip['status']): number {
-    const normalized = (status || '').toLowerCase().replace(' ', '_');
-    return this.trips.filter((trip) => (trip.status || '').toLowerCase().replace(' ', '_') === normalized).length;
-  }
-
-  getTripDurationLabel(start?: string, end?: string): string {
-    if (!start || !end) {
-      return 'Flexible schedule';
-    }
-    const s = new Date(start);
-    const e = new Date(end);
-    if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime())) {
-      return 'Flexible schedule';
-    }
-    const diff = Math.floor((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-    return diff > 0 ? `${diff} days` : '1 day';
-  }
-
-  trackByTrip = (_: number, trip: Trip): string => this.getTripId(trip) || trip.title || String(_);
+  trackByPost = (_: number, post: any): string => post.id || String(_);
   trackByPlace = (_: number, place: CheckpointPlace): string => `${place.lat},${place.lon},${place.display_name}`;
 
   async searchPlaces(): Promise<void> {
     const keyword = this.searchQuery.trim();
-    if (!keyword || this.searching) {
-      return;
-    }
+    if (!keyword || this.searching) return;
 
     this.searching = true;
     try {
@@ -445,9 +284,7 @@ export class TripListComponent implements OnInit, AfterViewInit, OnDestroy {
       const response = await fetch(url, { headers: { Accept: 'application/json' } });
       const data = await response.json();
       this.searchResults = Array.isArray(data) ? data : [];
-      if (this.searchResults.length) {
-        this.selectPlace(this.searchResults[0]);
-      }
+      if (this.searchResults.length) this.selectPlace(this.searchResults[0]);
     } catch (error) {
       console.error('Search places failed:', error);
       this.searchResults = [];
@@ -458,48 +295,44 @@ export class TripListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   selectPlace(place: CheckpointPlace): void {
     this.selectedPlace = place;
-
-    if (!this.map || !this.L) {
-      return;
-    }
+    if (!this.map || !this.L) return;
 
     const lat = Number(place.lat);
     const lon = Number(place.lon);
-    if (Number.isNaN(lat) || Number.isNaN(lon)) {
-      return;
-    }
+    if (Number.isNaN(lat) || Number.isNaN(lon)) return;
 
     this.map.setView([lat, lon], 13);
-    if (this.mapMarker) {
-      this.map.removeLayer(this.mapMarker);
-    }
+    if (this.mapMarker) this.map.removeLayer(this.mapMarker);
 
     this.mapMarker = this.L.circleMarker([lat, lon], {
       radius: 8,
-      color: '#0ea5e9',
-      fillColor: '#38bdf8',
+      color: '#3b82f6',
+      fillColor: '#60a5fa',
       fillOpacity: 0.9,
       weight: 2
     }).addTo(this.map);
   }
 
-  private async initMap(): Promise<void> {
-    if (this.map || !this.checkpointMapRef?.nativeElement) {
-      return;
+  private setupResizeObserver(): void {
+    if (this.checkpointMapRef?.nativeElement) {
+      this.resizeObserver = new ResizeObserver(() => this.map?.invalidateSize());
+      this.resizeObserver.observe(this.checkpointMapRef.nativeElement);
     }
+  }
+
+  private async initMap(): Promise<void> {
+    if (this.map || !this.checkpointMapRef?.nativeElement) return;
 
     const leaflet = await import('leaflet');
     this.L = leaflet;
     this.map = leaflet.map(this.checkpointMapRef.nativeElement, {
-      zoomControl: true
+      zoomControl: false
     }).setView([16.0471, 108.2068], 6);
 
     leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(this.map);
 
-    setTimeout(() => {
-      this.map?.invalidateSize();
-    }, 0);
+    leaflet.control.zoom({ position: 'bottomright' }).addTo(this.map);
   }
 }

@@ -76,28 +76,102 @@ export const menu: MenuItem[] = [
         ]
     },
     {
-        label: 'Fresh Retail',
-        icon: 'pi pi-shop',
-        type: 'item',
-        expanded: true,
-        children: [
-            { label: 'Product Overview', url: '/retail/fresh-retail', icon: 'pi pi-home' },
-            { label: 'Inventory Control', url: '/retail/inventory/products', icon: 'pi pi-box' },
-            { label: 'Demand Forecasting', url: '/planning/forecast/demand', icon: 'pi pi-chart-line' },
-            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-directions' },
-            { label: 'Omni Channel', url: '/retail/omni-channel', icon: 'pi pi-comments' }
-        ]
-    },
-    {
-        label: 'Inventory',
+        label: 'Inventory Management',
         icon: 'pi pi-box',
         type: 'item',
         expanded: false,
         children: [
-            { label: 'Online Store', url: '/retail/ecommerce', icon: 'pi pi-shopping-bag' },
-            { label: 'Partners', url: '/retail/inventory/partners', icon: 'pi pi-briefcase' },
-            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-cog' },
-            { label: 'Fleet', url: '/planning/fleet', icon: 'pi pi-truck' }
+            { label: 'Overview', url: '/inventory/overview', icon: 'pi pi-th-large' },
+            { label: 'Products', url: '/inventory/products', icon: 'pi pi-tag' },
+            { label: 'Categories', url: '/inventory/categories', icon: 'pi pi-list' },
+            { label: 'Warehouses', url: '/inventory/warehouses', icon: 'pi pi-building' },
+            { label: 'Suppliers', url: '/inventory/suppliers', icon: 'pi pi-truck' },
+            { label: 'Partners', url: '/inventory/partners', icon: 'pi pi-users' },
+            { label: 'Stock Analytics', url: '/inventory/analytics', icon: 'pi pi-chart-bar' },
+        ]
+    },
+    {
+        label: 'Loyalty & CRM',
+        icon: 'pi pi-heart',
+        type: 'item',
+        expanded: false,
+        children: [
+            { label: 'Loyalty Overview', url: '/loyalty/overview', icon: 'pi pi-home' },
+            { label: 'Members', url: '/loyalty/members', icon: 'pi pi-users' },
+            { label: 'Rewards Catalog', url: '/loyalty/rewards', icon: 'pi pi-gift' },
+            { label: 'Campaigns', url: '/loyalty/campaigns', icon: 'pi pi-megaphone' },
+            { label: 'Channels', url: '/loyalty/channels', icon: 'pi pi-share-alt' },
+        ]
+    },
+    {
+        label: 'Retail Operations',
+        icon: 'pi pi-shopping-bag',
+        type: 'item',
+        expanded: false,
+        children: [
+            { label: 'Store Analytics', url: '/retail/analytics', icon: 'pi pi-chart-line' },
+            { label: 'Order Management', url: '/retail/orders', icon: 'pi pi-send' },
+            {
+                label: 'Point of Sale (POS)',
+                icon: 'pi pi-desktop',
+                children: [
+                    { label: 'Register', url: '/retail/pos/register', icon: 'pi pi-calculator' },
+                    { label: 'Transactions', url: '/retail/pos/transactions', icon: 'pi pi-receipt' },
+                    { label: 'Session History', url: '/retail/pos/sessions', icon: 'pi pi-history' },
+                    { label: 'Terminal Settings', url: '/retail/pos/settings', icon: 'pi pi-cog' }
+                ]
+            },
+            { label: 'Retail Settings', url: '/retail/settings', icon: 'pi pi-cog' },
+        ]
+    },
+    {
+        label: 'Chat & Collaboration',
+        icon: 'pi pi-comments',
+        type: 'item',
+        expanded: false,
+        children: [
+            { label: 'Chat Overview', url: '/chat', icon: 'pi pi-home' },
+            { label: 'Channels', url: '/chat/channels', icon: 'pi pi-hashtag' },
+            { label: 'Direct Messages', url: '/chat/messages', icon: 'pi pi-user' },
+            { label: 'Chat Analytics', url: '/chat/analytics', icon: 'pi pi-chart-bar' },
+            { label: 'Chat Settings', url: '/chat/settings', icon: 'pi pi-cog' }
+        ]
+    },
+    {
+        label: 'Ad Manager',
+        icon: 'pi pi-bullhorn',
+        type: 'item',
+        expanded: false,
+        children: [
+            { label: 'Ad Overview', url: '/ad-manager', icon: 'pi pi-chart-line' },
+            { label: 'Campaigns', url: '/ad-manager/campaigns', icon: 'pi pi-megaphone' },
+            { label: 'Creative Library', url: '/ad-manager/creatives', icon: 'pi pi-images' },
+            { label: 'Ad Placements', url: '/ad-manager/placements', icon: 'pi pi-map-marker' },
+            { label: 'Settings', url: '/ad-manager/settings', icon: 'pi pi-cog' }
+        ]
+    },
+    {
+        label: 'Blogger',
+        icon: 'pi pi-pencil',
+        type: 'item',
+        expanded: false,
+        children: [
+            { label: 'Dashboard', url: '/blogger', icon: 'pi pi-home' },
+            { label: 'Posts', url: '/blogger/posts', icon: 'pi pi-file-edit' },
+            { label: 'Authors', url: '/blogger/authors', icon: 'pi pi-users' },
+            { label: 'Categories', url: '/blogger/categories', icon: 'pi pi-tags' }
+        ]
+    },
+    {
+        label: 'File Manager',
+        icon: 'pi pi-folder',
+        type: 'item',
+        expanded: false,
+        children: [
+            { label: 'My Files', url: '/files', icon: 'pi pi-folder-open' },
+            { label: 'Shared with Me', url: '/files/shared', icon: 'pi pi-users' },
+            { label: 'Recent', url: '/files/recent', icon: 'pi pi-clock' },
+            { label: 'Trash', url: '/files/trash', icon: 'pi pi-trash' }
         ]
     },
     {

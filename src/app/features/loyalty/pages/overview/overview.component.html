@@ -1,0 +1,52 @@
+<div class="p-4">
+    <div class="flex justify-content-between align-items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold m-0 text-900">Loyalty & CRM</h1>
+            <p class="text-600 m-0 mt-2">Manage customer relationships, rewards, and marketing campaigns.</p>
+        </div>
+        <div class="flex gap-2">
+            <button pButton icon="pi pi-plus" label="New Campaign" class="p-button-primary"></button>
+            <button pButton icon="pi pi-refresh" class="p-button-outlined p-button-secondary"></button>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid mb-6">
+        <div *ngFor="let stat of stats" class="col-12 md:col-6 lg:col-3">
+            <div class="p-4 border-round-xl bg-card shadow-1 flex align-items-center gap-4 transition-all hover:shadow-3 border-1 border-white-alpha-10 glassmorphic">
+                <div [class]="'w-4rem h-4rem border-round-lg flex align-items-center justify-content-center bg-' + stat.color + '-500 text-white'">
+                    <i [class]="stat.icon + ' text-2xl'"></i>
+                </div>
+                <div>
+                    <div class="text-600 font-medium mb-1">{{stat.label}}</div>
+                    <div class="text-2xl font-bold text-900">{{stat.value}}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Access -->
+    <div class="grid">
+        <div class="col-12 lg:col-8">
+            <div class="p-4 border-round-xl bg-card shadow-1 glassmorphic min-h-full">
+                <h3 class="text-xl font-bold m-0 mb-4">Loyalty Tools</h3>
+                <div class="grid">
+                    <div class="col-12 md:col-6">
+                        <div class="p-3 border-round-lg border-1 border-white-alpha-10 hover:surface-hover cursor-pointer transition-all mb-3" routerLink="../members">
+                            <i class="pi pi-users text-blue-500 text-xl mb-3"></i>
+                            <div class="font-bold mb-1">Member Directory</div>
+                            <div class="text-sm text-600">Manage loyalty program members and tiers</div>
+                        </div>
+                    </div>
+                    <div class="col-12 md:col-6">
+                        <div class="p-3 border-round-lg border-1 border-white-alpha-10 hover:surface-hover cursor-pointer transition-all mb-3" routerLink="../channels">
+                            <i class="pi pi-share-alt text-purple-500 text-xl mb-3"></i>
+                            <div class="font-bold mb-1">Communication Channels</div>
+                            <div class="text-sm text-600">Omni-channel customer engagement</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

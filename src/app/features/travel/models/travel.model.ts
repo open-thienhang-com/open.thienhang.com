@@ -177,3 +177,52 @@ export interface AssetCreate {
 }
 
 export interface AssetUpdate extends Partial<AssetCreate> {}
+
+/** Blogger Domain Interfaces **/
+
+export interface BlogAuthor {
+  id: string;
+  name: string;
+  avatar_url?: string;
+  bio?: string;
+  posts_count?: number;
+  total_views?: number;
+}
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  content?: string;
+  summary?: string;
+  url?: string;
+  thumbnail?: string;
+  author?: BlogAuthor;
+  category?: string;
+  tags?: string[];
+  status?: 'draft' | 'published';
+  published_at?: string;
+  updated_at?: string;
+  view_count?: number;
+  comment_count?: number;
+  like_count?: number;
+}
+
+export interface TravelAnalytics {
+  total_posts: number;
+  total_views: number;
+  total_comments: number;
+  engagement_rate: number;
+  trending_tags: string[];
+  top_categories: { name: string; count: number }[];
+}
+
+/** Uploads Domain Interfaces **/
+
+export interface UploadResult {
+  url: string;
+  provider: 'imgur' | 'supabase' | 'gcs';
+  asset_id?: string;
+  file_name?: string;
+  file_size?: number;
+  mime_type?: string;
+}

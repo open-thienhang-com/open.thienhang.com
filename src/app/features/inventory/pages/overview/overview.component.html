@@ -1,0 +1,89 @@
+<div class="p-4">
+    <div class="flex justify-content-between align-items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold m-0 text-900">Inventory Overview</h1>
+            <p class="text-600 m-0 mt-2">Manage your stock, products, and supply chain operations.</p>
+        </div>
+        <div class="flex gap-2">
+            <button pButton icon="pi pi-plus" label="New Product" routerLink="../products/create" class="p-button-primary"></button>
+            <button pButton icon="pi pi-refresh" class="p-button-outlined p-button-secondary"></button>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid mb-6">
+        <div *ngFor="let stat of stats" class="col-12 md:col-6 lg:col-3">
+            <div class="p-4 border-round-xl bg-card shadow-1 flex align-items-center gap-4 transition-all hover:shadow-3 border-1 border-white-alpha-10 glassmorphic">
+                <div [class]="'w-4rem h-4rem border-round-lg flex align-items-center justify-content-center bg-' + stat.color + '-500 text-white'">
+                    <i [class]="stat.icon + ' text-2xl'"></i>
+                </div>
+                <div>
+                    <div class="text-600 font-medium mb-1">{{stat.label}}</div>
+                    <div class="text-2xl font-bold text-900">{{stat.value}}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fast Actions -->
+    <div class="grid">
+        <div class="col-12 lg:col-8">
+            <div class="p-4 border-round-xl bg-card shadow-1 glassmorphic min-h-full">
+                <div class="flex justify-content-between align-items-center mb-4">
+                    <h3 class="text-xl font-bold m-0">Quick Access</h3>
+                </div>
+                <div class="grid">
+                    <div class="col-12 md:col-4">
+                        <div class="p-3 border-round-lg border-1 border-white-alpha-10 hover:surface-hover cursor-pointer transition-all" routerLink="../products">
+                            <i class="pi pi-tag text-blue-500 text-xl mb-3"></i>
+                            <div class="font-bold mb-1">Product Catalog</div>
+                            <div class="text-sm text-600">Browse and manage all products</div>
+                        </div>
+                    </div>
+                    <div class="col-12 md:col-4">
+                        <div class="p-3 border-round-lg border-1 border-white-alpha-10 hover:surface-hover cursor-pointer transition-all" routerLink="../warehouses">
+                            <i class="pi pi-building text-purple-500 text-xl mb-3"></i>
+                            <div class="font-bold mb-1">Warehouses</div>
+                            <div class="text-sm text-600">Monitor stock across locations</div>
+                        </div>
+                    </div>
+                    <div class="col-12 md:col-4">
+                        <div class="p-3 border-round-lg border-1 border-white-alpha-10 hover:surface-hover cursor-pointer transition-all" routerLink="../analytics">
+                            <i class="pi pi-chart-bar text-green-500 text-xl mb-3"></i>
+                            <div class="font-bold mb-1">Stock Analytics</div>
+                            <div class="text-sm text-600">Inventory performance insights</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 lg:col-4">
+            <div class="p-4 border-round-xl bg-card shadow-1 glassmorphic min-h-full">
+                <h3 class="text-xl font-bold m-0 mb-4">Inventory Status</h3>
+                <div class="flex flex-column gap-3">
+                    <div class="flex align-items-center justify-content-between p-2 border-round-lg surface-hover">
+                        <div class="flex align-items-center gap-3">
+                            <i class="pi pi-circle-fill text-green-500 text-xs"></i>
+                            <span>In Stock</span>
+                        </div>
+                        <span class="font-bold">85%</span>
+                    </div>
+                    <div class="flex align-items-center justify-content-between p-2 border-round-lg surface-hover">
+                        <div class="flex align-items-center gap-3">
+                            <i class="pi pi-circle-fill text-orange-500 text-xs"></i>
+                            <span>Low Stock</span>
+                        </div>
+                        <span class="font-bold">12%</span>
+                    </div>
+                    <div class="flex align-items-center justify-content-between p-2 border-round-lg surface-hover">
+                        <div class="flex align-items-center gap-3">
+                            <i class="pi pi-circle-fill text-red-500 text-xs"></i>
+                            <span>Out of Stock</span>
+                        </div>
+                        <span class="font-bold">3%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

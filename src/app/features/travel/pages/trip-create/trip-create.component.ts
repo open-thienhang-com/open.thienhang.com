@@ -10,7 +10,6 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { DropdownModule } from 'primeng/dropdown';
 import { TagModule } from 'primeng/tag';
 import { TravelService } from '../../services/travel.service';
-import { ItineraryItem, ItineraryItemCreate, Trip } from '../../models/travel.model';
 import { PageHeaderComponent } from '../../../retail-planning/components/page-header/page-header.component';
 
 @Component({
@@ -31,611 +30,187 @@ import { PageHeaderComponent } from '../../../retail-planning/components/page-he
   template: `
     <div class="planning-page">
       <app-page-header
-        [title]="isDetailMode ? 'Trip Detail' : 'Auto Trip Planning'"
-        [subtitle]="isDetailMode ? 'View and update trip information using the same planning UI.' : 'Configure trip basics, schedule, and budget before creating a plan.'"
-        icon="pi pi-map">
+        title="Create Travel Story"
+        subtitle="Share your journey with the world."
+        icon="pi pi-pencil">
       </app-page-header>
 
-      <div class="planning-stepper-container">
+      <div class="planning-stepper-container blur-effect">
         <aside class="planning-stepper-nav">
           <div class="trip-profile-card">
             <div class="trip-profile-image-wrap">
               <img [src]="displayTripImage" alt="Trip cover" class="trip-profile-image" />
-              <button pButton type="button" class="p-button-sm p-button-contrast trip-image-upload-btn" icon="pi pi-camera" (click)="triggerImageUpload()"></button>
+              <div class="image-overlay">
+                <button pButton type="button" class="p-button-sm p-button-rounded p-button-glass" icon="pi pi-camera" (click)="tripImageInput.click()"></button>
+              </div>
               <input #tripImageInput type="file" accept="image/*" class="hidden-file-input" (change)="onTripImageSelected($event)" />
             </div>
-            <div class="trip-profile-title">{{ preview.title || 'Untitled Trip' }}</div>
-            <div class="trip-profile-subtitle">{{ preview.destination || 'No destination yet' }}</div>
-            <div class="trip-profile-meta">{{ preview.start_date || '-' }} -> {{ preview.end_date || '-' }}</div>
-            <div class="trip-profile-grid">
-              <div><span>Budget</span><strong>{{ preview.budget }}</strong></div>
-              <div><span>People</span><strong>{{ preview.people_count }}</strong></div>
-              <div><span>Status</span><strong>{{ preview.status || 'draft' }}</strong></div>
-              <div><span>Items</span><strong>{{ detailCounts.itinerary }}</strong></div>
+            <div class="px-2 pt-1">
+              <div class="trip-profile-title">{{ form.value.title || 'Untitled Story' }}</div>
+              <div class="trip-profile-subtitle flex items-center gap-1">
+                <i class="pi pi-tag text-[10px]"></i>
+                {{ form.value.category || 'No category' }}
+              </div>
+            </div>
+            
+            <div class="upload-status mt-4" *ngIf="isUploading">
+               <div class="text-[10px] font-bold text-blue-600 mb-1 uppercase">Uploading Media...</div>
+               <div class="h-1 bg-gray-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-blue-600 animate-pulse w-full"></div>
+               </div>
             </div>
           </div>
 
-          <div class="planning-stepper-title">Trip Setup Steps</div>
-          <div class="planning-step-item" [class.active]="currentStep >= 1" [class.current]="currentStep === 1" (click)="goToStep(1)">
-            <div class="planning-step-indicator">1</div>
-            <div class="planning-step-label">
-              <div class="planning-step-title">Trip Basics</div>
-              <div class="planning-step-desc">Name, destination, and description</div>
+          <div class="nav-steps mt-6">
+            <h4 class="nav-header">Draft Progress</h4>
+            <div class="planning-step-item" [class.active]="currentStep >= 1" [class.current]="currentStep === 1" (click)="goToStep(1)">
+              <div class="step-dot"></div>
+              <div class="step-text">
+                <span class="title">The Story</span>
+                <span class="desc">Title & Category</span>
+              </div>
             </div>
-          </div>
-          <div class="planning-step-item" [class.active]="currentStep >= 2" [class.current]="currentStep === 2" (click)="goToStep(2)">
-            <div class="planning-step-indicator">2</div>
-            <div class="planning-step-label">
-              <div class="planning-step-title">Schedule</div>
-              <div class="planning-step-desc">Start date, end date, timezone</div>
+            <div class="planning-step-item" [class.active]="currentStep >= 2" [class.current]="currentStep === 2" (click)="goToStep(2)">
+              <div class="step-dot"></div>
+              <div class="step-text">
+                <span class="title">Media</span>
+                <span class="desc">Upload Cover Photo</span>
+              </div>
             </div>
-          </div>
-          <div class="planning-step-item" [class.active]="currentStep >= 3" [class.current]="currentStep === 3" (click)="goToStep(3)">
-            <div class="planning-step-indicator">3</div>
-            <div class="planning-step-label">
-              <div class="planning-step-title">Capacity & Budget</div>
-              <div class="planning-step-desc">People count, budget, status</div>
+            <div class="planning-step-item" [class.active]="currentStep >= 3" [class.current]="currentStep === 3" (click)="goToStep(3)">
+              <div class="step-dot"></div>
+              <div class="step-text">
+                <span class="title">Narrative</span>
+                <span class="desc">Summary & Status</span>
+              </div>
             </div>
           </div>
         </aside>
 
         <section class="planning-step-content">
-          <div class="planning-step-panel active">
-            <div class="planning-step-header">
-              <div class="header-top">
+          <div class="step-card">
+            <div class="step-header">
+              <div class="flex justify-between items-start">
                 <div>
-                  <h3>{{ isDetailMode ? 'Trip Information' : 'Create New Trip' }}</h3>
-                  <p>
-                    {{ isDetailMode ? 'Update the selected trip directly from this shared screen.' : 'Default values are prefilled. Click Create Trip to submit immediately.' }}
-                  </p>
+                  <h3 class="text-xl font-bold text-gray-900 m-0">{{ getStepTitle() }}</h3>
+                  <p class="text-sm text-gray-500 m-0 mt-1">{{ getStepSubtitle() }}</p>
                 </div>
-                <p-tag [value]="(preview.status || 'draft').toString()" [severity]="getStatusSeverity(preview.status)"></p-tag>
+                <p-tag [value]="form.value.status" [severity]="getStatusSeverity(form.value.status)" styleClass="text-[10px] uppercase font-bold px-2 py-1"></p-tag>
               </div>
             </div>
 
-            <div class="planning-step-body">
-              <form [formGroup]="form" (ngSubmit)="submit()" class="form-grid">
-                <ng-container *ngIf="currentStep === 1">
-                  <div class="field">
-                    <label for="name">Trip Name *</label>
-                    <input pInputText id="name" type="text" formControlName="name" placeholder="Summer Vacation 2026" />
+            <div class="step-body p-6">
+              <form [formGroup]="form" class="space-y-6">
+                <!-- Step 1: Basics -->
+                <div *ngIf="currentStep === 1" class="grid grid-cols-2 gap-6 animate-fade-in">
+                  <div class="field col-span-2">
+                    <label class="premium-label">Story Title</label>
+                    <input pInputText formControlName="title" placeholder="E.g., Wandering through the streets of Paris" class="premium-input" />
                   </div>
+                  <div class="field col-span-2">
+                    <label class="premium-label">Category</label>
+                    <p-dropdown [options]="['travel', 'adventure', 'nature', 'city', 'culture']" formControlName="category" styleClass="w-full premium-dropdown"></p-dropdown>
+                  </div>
+                </div>
 
-                  <div class="field">
-                    <label for="destination">Destination</label>
-                    <input pInputText id="destination" type="text" formControlName="destination" placeholder="Da Nang" />
-                  </div>
-
-                  <div class="field field-full">
-                    <label for="description">Description</label>
-                    <textarea id="description" rows="4" formControlName="description" placeholder="Trip notes"></textarea>
-                  </div>
-                </ng-container>
-
-                <ng-container *ngIf="currentStep === 2">
-                  <div class="field">
-                    <label for="start_date">Start Date</label>
-                    <input pInputText id="start_date" type="date" formControlName="start_date" />
-                  </div>
-                  <div class="field">
-                    <label for="end_date">End Date</label>
-                    <input pInputText id="end_date" type="date" formControlName="end_date" />
-                  </div>
-                  <div class="field">
-                    <label for="timezone">Timezone</label>
-                    <input pInputText id="timezone" type="text" formControlName="timezone" placeholder="UTC" />
-                  </div>
-
-                  <div class="field field-full travel-plan-board" *ngIf="isDetailMode">
-                    <div class="plan-toolbar">
-                      <div>
-                        <div class="plan-toolbar-title">Travel Plan</div>
-                        <div class="plan-toolbar-subtitle">Simple itinerary list for this trip.</div>
+                <!-- Step 2: Media -->
+                <div *ngIf="currentStep === 2" class="animate-fade-in text-center py-10">
+                   <div *ngIf="!form.value.thumbnail" class="upload-placeholder border-2 border-dashed border-gray-200 rounded-2xl p-12 hover:border-blue-400 transition-colors cursor-pointer" (click)="tripImageInput.click()">
+                      <i class="pi pi-cloud-upload text-5xl text-gray-300 mb-4 block"></i>
+                      <p class="text-gray-500 font-bold">Click to upload cover photo</p>
+                      <p class="text-[10px] text-gray-400 mt-2 uppercase">Imgur / Supabase integration</p>
+                   </div>
+                   <div *ngIf="form.value.thumbnail" class="relative rounded-2xl overflow-hidden group shadow-xl max-w-sm mx-auto">
+                      <img [src]="form.value.thumbnail" class="w-full h-auto" />
+                      <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                         <p-button label="Change Photo" icon="pi pi-refresh" (onClick)="tripImageInput.click()" severity="secondary" size="small"></p-button>
                       </div>
-                      <div class="plan-count">{{ timelineItems.length }} items</div>
-                    </div>
+                   </div>
+                </div>
 
-                    <form [formGroup]="timelineForm" class="timeline-form-grid">
-                      <div class="field">
-                        <label for="timeline-day">Day</label>
-                        <input pInputText id="timeline-day" type="date" formControlName="day" />
-                      </div>
-                      <div class="field">
-                        <label for="timeline-title">Activity</label>
-                        <input pInputText id="timeline-title" type="text" formControlName="title" placeholder="Sunrise at beach" />
-                      </div>
-                      <div class="field">
-                        <label for="timeline-location">Location</label>
-                        <input pInputText id="timeline-location" type="text" formControlName="location" placeholder="My Khe Beach" />
-                      </div>
-                      <div class="field">
-                        <label for="timeline-start">Start Time (ISO)</label>
-                        <input pInputText id="timeline-start" type="text" formControlName="start_time" />
-                      </div>
-                      <div class="field">
-                        <label for="timeline-end">End Time (ISO)</label>
-                        <input pInputText id="timeline-end" type="text" formControlName="end_time" />
-                      </div>
-                      <div class="field">
-                        <label for="timeline-activity">Activity Type</label>
-                        <input pInputText id="timeline-activity" type="text" formControlName="activity_type" placeholder="sightseeing" />
-                      </div>
-                      <div class="field field-full">
-                        <label for="timeline-note">Note</label>
-                        <textarea id="timeline-note" rows="2" formControlName="note" placeholder="Notes..."></textarea>
-                      </div>
-                    </form>
-                    <div class="timeline-actions">
-                      <button
-                        pButton
-                        type="button"
-                        label="Add To Plan"
-                        icon="pi pi-plus"
-                        [loading]="creatingTimeline"
-                        [disabled]="creatingTimeline || loadingDetail || timelineForm.invalid"
-                        (click)="createTimelineItem()"></button>
-                    </div>
-
-                    <div class="plan-timeline" *ngIf="timelineItems.length; else noTimelineData">
-                      <div class="timeline-row" *ngFor="let item of timelineItems">
-                        <div class="timeline-dot"></div>
-                        <div class="timeline-content">
-                          <div class="plan-row-title">{{ item.title || '-' }}</div>
-                          <div class="plan-row-meta">
-                            {{ formatDateOnly(item.day || item.date) }} ·
-                            {{ formatTime(item.start_time || item.time) }} - {{ formatTime(item.end_time) }} ·
-                            {{ item.location || '-' }}
-                          </div>
-                          <div class="plan-row-note">{{ item.note || item.description || '-' }}</div>
-                        </div>
-                        <div class="plan-row-type">{{ item.activity_type || 'activity' }}</div>
-                      </div>
-                    </div>
-
-                    <ng-template #noTimelineData>
-                      <div class="timeline-empty">No activities yet. Add your first stop to start this travel plan.</div>
-                    </ng-template>
+                <!-- Step 3: Narrative -->
+                <div *ngIf="currentStep === 3" class="grid grid-cols-2 gap-6 animate-fade-in">
+                  <div class="field col-span-2">
+                    <label class="premium-label">Summary</label>
+                    <textarea pInputTextarea rows="4" formControlName="summary" placeholder="A brief hook for your readers..." class="premium-input resize-none"></textarea>
                   </div>
-                </ng-container>
-
-                <ng-container *ngIf="currentStep === 3">
-                  <div class="field">
-                    <label for="budget">Budget</label>
-                    <p-inputNumber inputId="budget" formControlName="budget" mode="decimal" [min]="0"></p-inputNumber>
+                  <div class="field col-span-2">
+                    <label class="premium-label">Status</label>
+                    <p-dropdown [options]="[{label: 'Draft', value: 'draft'}, {label: 'Published', value: 'published'}]" formControlName="status" optionLabel="label" optionValue="value" styleClass="w-full premium-dropdown"></p-dropdown>
                   </div>
-
-                  <div class="field">
-                    <label for="people_count">People Count</label>
-                    <p-inputNumber inputId="people_count" formControlName="people_count" mode="decimal" [min]="1"></p-inputNumber>
-                  </div>
-
-                  <div class="field">
-                    <label for="status">Status</label>
-                    <p-dropdown
-                      inputId="status"
-                      [options]="statusOptions"
-                      formControlName="status"
-                      optionLabel="label"
-                      optionValue="value"
-                      [showClear]="false">
-                    </p-dropdown>
-                  </div>
-                </ng-container>
+                </div>
               </form>
             </div>
 
-            <div class="planning-step-footer">
-              <button pButton type="button" label="Back to Trips" class="p-button-text" (click)="cancel()"></button>
-              <button pButton type="button" label="Previous" class="p-button-text" [disabled]="currentStep === 1" (click)="previousStep()"></button>
-              <button pButton type="button" label="Next" class="p-button-text" *ngIf="currentStep < 3" (click)="nextStep()"></button>
-              <button
-                pButton
-                type="button"
-                [label]="isDetailMode ? 'Update Trip' : 'Create Trip'"
-                icon="pi pi-check"
-                [loading]="submitting || loadingDetail"
-                [disabled]="form.invalid || submitting || loadingDetail || currentStep !== 3"
-                (click)="submit()"></button>
+            <div class="step-footer">
+              <p-button label="Cancel" icon="pi pi-times" [text]="true" severity="secondary" (onClick)="cancel()"></p-button>
+              <div class="flex gap-2">
+                <p-button label="Back" icon="pi pi-chevron-left" [text]="true" *ngIf="currentStep > 1" (onClick)="previousStep()"></p-button>
+                <p-button [label]="currentStep === 3 ? 'Post Story' : 'Continue'" 
+                          [icon]="currentStep === 3 ? 'pi pi-send' : 'pi pi-chevron-right'" 
+                          iconPos="right"
+                          [loading]="submitting"
+                          [disabled]="form.invalid || isUploading"
+                          [severity]="currentStep === 3 ? 'success' : 'primary'"
+                          (onClick)="currentStep === 3 ? submit() : nextStep()"></p-button>
+              </div>
             </div>
           </div>
-
-          <p *ngIf="errorMessage" class="text-red-500 m-0 mt-3">{{ errorMessage }}</p>
-          <p *ngIf="successMessage" class="text-green-600 m-0 mt-3">{{ successMessage }}</p>
         </section>
       </div>
+
+      <p *ngIf="errorMessage" class="text-red-500 m-0 mt-4 px-6">{{ errorMessage }}</p>
+      <p *ngIf="successMessage" class="text-green-600 m-0 mt-4 px-6">{{ successMessage }}</p>
     </div>
   `,
   styles: [`
-    :host { display: block; }
-    .planning-page {
-      height: calc(100vh - 4rem);
-      padding: 1rem;
-      background: #f9fafb;
-      overflow-y: auto;
+    .planning-page { height: calc(100vh - 64px); background: #f1f5f9; padding: 2rem; }
+    .planning-stepper-container { 
+      display: grid; grid-template-columns: 320px 1fr; 
+      height: 100%; max-width: 1200px; margin: 0 auto;
+      border-radius: 1.5rem; border: 1px solid rgba(255,255,255,0.4);
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1); overflow: hidden;
     }
-    .planning-stepper-container {
-      display: flex;
-      background: var(--p-surface-0);
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid var(--p-surface-200);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    }
-    .planning-stepper-nav {
-      width: 320px;
-      background: var(--p-surface-50);
-      border-right: 1px solid var(--p-surface-200);
-      padding: 20px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .trip-profile-card {
-      border: 1px solid var(--p-surface-200);
-      border-radius: 10px;
-      background: var(--p-surface-0);
-      padding: 10px;
-      margin-bottom: 4px;
-    }
-    .trip-profile-image-wrap {
-      position: relative;
-      border-radius: 8px;
-      overflow: hidden;
-      height: 130px;
-      background: var(--p-surface-100);
-      margin-bottom: 8px;
-    }
-    .trip-profile-image {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .trip-image-upload-btn {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-    }
-    .hidden-file-input {
-      display: none;
-    }
-    .trip-profile-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--p-surface-900);
-    }
-    .trip-profile-subtitle {
-      margin-top: 2px;
-      font-size: 12px;
-      color: var(--p-surface-700);
-    }
-    .trip-profile-meta {
-      margin-top: 4px;
-      font-size: 11px;
-      color: var(--p-surface-600);
-    }
-    .trip-profile-grid {
-      margin-top: 8px;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 6px;
-    }
-    .trip-profile-grid div {
-      border: 1px solid var(--p-surface-200);
-      border-radius: 6px;
-      padding: 6px;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      background: var(--p-surface-50);
-    }
-    .trip-profile-grid span {
-      font-size: 10px;
-      color: var(--p-surface-600);
-      text-transform: uppercase;
-    }
-    .trip-profile-grid strong {
-      font-size: 12px;
-      color: var(--p-surface-900);
-    }
-    .planning-stepper-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--p-surface-700);
-      margin-bottom: 6px;
-      padding-left: 6px;
-    }
-    .planning-step-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      padding: 10px;
-      border-radius: 8px;
-      background: var(--p-surface-0);
-      border: 1px solid var(--p-surface-200);
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .planning-step-item.active {
-      background: rgba(var(--p-primary-500), 0.08);
-      border-color: rgba(var(--p-primary-500), 0.2);
-    }
-    .planning-step-item.current {
-      box-shadow: inset 0 0 0 1px var(--p-primary-500);
-    }
-    .planning-step-indicator {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: var(--p-primary-500);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-    .planning-step-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--p-surface-800);
-      margin-bottom: 2px;
-    }
-    .planning-step-desc {
-      font-size: 12px;
-      color: var(--p-surface-600);
-    }
-    .planning-step-content {
-      flex: 1;
-      padding: 20px;
-      background: var(--p-surface-0);
-      overflow-y: auto;
-    }
-    .planning-step-panel {
-      border: 1px solid var(--p-surface-200);
-      border-radius: 10px;
-      background: var(--p-surface-0);
-      overflow: hidden;
-    }
-    .planning-step-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--p-surface-200);
-      background: linear-gradient(135deg, rgba(var(--p-primary-500), 0.08), rgba(var(--p-primary-500), 0.02));
-    }
-    .header-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-    }
-    .planning-step-header h3 {
-      margin: 0 0 4px;
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--p-surface-900);
-    }
-    .planning-step-header p {
-      margin: 0;
-      font-size: 13px;
-      color: var(--p-surface-600);
-    }
-    .planning-step-body {
-      padding: 16px;
-    }
-    .trip-info-panel {
-      border: 1px solid var(--p-surface-200);
-      border-radius: 10px;
-      background: var(--p-surface-50);
-      padding: 12px;
-      margin-bottom: 16px;
-    }
-    .trip-info-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--p-surface-800);
-      margin-bottom: 10px;
-    }
-    .trip-info-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-    .info-item {
-      background: var(--p-surface-0);
-      border: 1px solid var(--p-surface-200);
-      border-radius: 8px;
-      padding: 8px 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .info-item-full {
-      grid-column: 1 / -1;
-    }
-    .info-label {
-      font-size: 11px;
-      color: var(--p-surface-600);
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-    .info-value {
-      font-size: 13px;
-      color: var(--p-surface-900);
-      font-weight: 600;
-      word-break: break-word;
-    }
-    .trip-stats {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-    }
-    .stat-card {
-      background: var(--p-surface-0);
-      border: 1px solid var(--p-surface-200);
-      border-radius: 8px;
-      padding: 8px 10px;
-      text-align: center;
-    }
-    .stat-value {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--p-primary-600);
-      line-height: 1.1;
-    }
-    .stat-label {
-      margin-top: 2px;
-      font-size: 11px;
-      color: var(--p-surface-600);
-    }
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1rem;
-    }
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-    }
-    .field label {
-      font-size: 0.85rem;
-      color: var(--text-color-secondary);
-    }
-    .field-full {
-      grid-column: 1 / -1;
-    }
-    textarea,
-    input[type='text'],
-    input[type='date'] {
-      width: 100%;
-      padding: 0.65rem 0.75rem;
-      border: 1px solid var(--surface-border);
-      border-radius: 0.5rem;
-      background: var(--surface-card);
-      color: var(--text-color);
-      font: inherit;
-    }
-    .planning-step-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.5rem;
-      padding: 14px 16px;
-      border-top: 1px solid var(--p-surface-200);
-      background: var(--p-surface-50);
-    }
-    .travel-plan-board {
-      margin-top: 0.5rem;
-      border: 1px solid var(--p-surface-200);
-      border-radius: 10px;
-      background: var(--p-surface-0);
-      padding: 10px;
-    }
-    .plan-toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 10px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--p-surface-200);
-    }
-    .plan-toolbar-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--p-surface-900);
-    }
-    .plan-toolbar-subtitle {
-      font-size: 12px;
-      color: var(--p-surface-600);
-      margin-top: 2px;
-    }
-    .plan-count {
-      font-size: 12px;
-      color: var(--p-surface-700);
-      background: var(--p-surface-100);
-      border-radius: 999px;
-      padding: 4px 8px;
-    }
-    .timeline-form-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.75rem;
-    }
-    .timeline-actions {
-      margin-top: 10px;
-      display: flex;
-      justify-content: flex-end;
-    }
-    .plan-timeline {
-      margin-top: 10px;
-      display: grid;
-      gap: 6px;
-      border-left: 2px solid var(--p-surface-200);
-      padding-left: 10px;
-    }
-    .timeline-row {
-      border: 1px solid var(--p-surface-200);
-      border-radius: 8px;
-      background: var(--p-surface-50);
-      padding: 8px 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 10px;
-      position: relative;
-    }
-    .timeline-dot {
-      position: absolute;
-      left: -17px;
-      top: 12px;
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: var(--p-primary-500);
-    }
-    .timeline-content {
-      min-width: 0;
-      flex: 1;
-    }
-    .plan-row-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--p-surface-900);
-    }
-    .plan-row-meta {
-      margin-top: 2px;
-      font-size: 12px;
-      color: var(--p-surface-600);
-    }
-    .plan-row-note {
-      margin-top: 2px;
-      font-size: 12px;
-      color: var(--p-surface-700);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .plan-row-type {
-      align-self: flex-start;
-      font-size: 11px;
-      color: var(--p-surface-700);
-      background: var(--p-surface-100);
-      border-radius: 999px;
-      padding: 3px 8px;
-      white-space: nowrap;
-    }
-    .timeline-empty {
-      margin-top: 12px;
-      border: 1px dashed var(--p-surface-300);
-      border-radius: 8px;
-      background: var(--p-surface-0);
-      padding: 10px;
-      font-size: 12px;
-      color: var(--p-surface-600);
-      text-align: center;
-    }
+    .blur-effect { background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+    
+    .planning-stepper-nav { background: rgba(255,255,255,0.5); padding: 2rem; border-right: 1px solid #e2e8f0; }
+    .trip-profile-card { background: #fff; padding: 1rem; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .trip-profile-image-wrap { position: relative; height: 160px; border-radius: 0.75rem; overflow: hidden; background: #f8fafc; }
+    .trip-profile-image { width: 100%; height: 100%; object-fit: cover; }
+    .image-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; }
+    .trip-profile-image-wrap:hover .image-overlay { opacity: 1; }
+    
+    .trip-profile-title { font-size: 1.125rem; font-weight: 800; color: #1e293b; margin-top: 0.75rem; }
+    .trip-profile-subtitle { font-size: 0.875rem; color: #64748b; margin-top: 0.25rem; font-weight: 500; }
+    
+    .trip-profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .stat-box { background: #f8fafc; padding: 0.75rem; border-radius: 0.75rem; border: 1px solid #f1f5f9; }
+    .stat-box .label { font-size: 0.625rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; display: block; }
+    .stat-box .value { font-size: 0.875rem; font-weight: 700; color: #334155; }
+
+    .nav-header { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-bottom: 1rem; }
+    .planning-step-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; cursor: pointer; border-radius: 0.75rem; opacity: 0.5; transition: all 0.2s; }
+    .planning-step-item.active { opacity: 1; }
+    .planning-step-item.current { background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .step-dot { width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1; }
+    .planning-step-item.active .step-dot { background: #3b82f6; box-shadow: 0 0 0 4px #eff6ff; }
+    .step-text .title { font-size: 0.875rem; font-weight: 700; color: #1e293b; display: block; }
+    .step-text .desc { font-size: 0.75rem; color: #64748b; }
+
+    .planning-step-content { background: #fff; padding: 0; display: flex; flex-direction: column; }
+    .step-card { display: flex; flex-direction: column; height: 100%; }
+    .step-header { padding: 2rem; border-bottom: 1px solid #f1f5f9; }
+    .step-body { flex: 1; overflow-y: auto; }
+    .step-footer { padding: 1.5rem 2rem; background: #f8fafc; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; }
+
+    .premium-label { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 0.5rem; display: block; }
+    .premium-input { width: 100%; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; transition: all 0.2s; }
+    .premium-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px #eff6ff; outline: none; }
+    
+    ::ng-deep .premium-dropdown .p-dropdown { width: 100%; border-radius: 0.75rem; border-color: #e2e8f0; }
+    
+    @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in { animation: fade-in 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
     @media (max-width: 1024px) {
       .planning-stepper-container {
         flex-direction: column;
@@ -662,346 +237,94 @@ export class TripCreateComponent implements OnInit {
   private fb = inject(FormBuilder);
   private travelService = inject(TravelService);
   private router = inject(Router);
-  private route = inject(ActivatedRoute);
-  private readonly defaultTripImage = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700"><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="%230ea5e9"/><stop offset="1" stop-color="%232563eb"/></linearGradient></defs><rect width="1200" height="700" fill="url(%23g)"/><circle cx="930" cy="170" r="60" fill="%23fef08a"/><path d="M0 520L190 430L360 520L560 390L760 520L960 360L1200 520V700H0Z" fill="%23dbeafe"/><path d="M0 570L180 500L370 580L600 450L780 570L970 440L1200 600V700H0Z" fill="%23bfdbfe"/><text x="80" y="130" font-family="Arial" font-size="56" font-weight="700" fill="%23ffffff">Travel Plan</text></svg>';
+  private readonly defaultTripImage = 'assets/placeholder-trip.jpg';
 
   @ViewChild('tripImageInput') tripImageInput?: ElementRef<HTMLInputElement>;
 
   submitting = false;
-  creatingTimeline = false;
-  loadingDetail = false;
+  isUploading = false;
   errorMessage = '';
   successMessage = '';
-  tripId = '';
-  loadedTrip: Trip | null = null;
-  uploadedTripImage = '';
-  timelineItems: ItineraryItem[] = [];
-  detailCounts = {
-    itinerary: 0,
-    bookings: 0,
-    budgets: 0,
-    notifications: 0
-  };
   currentStep = 1;
 
-  statusOptions = [
-    { label: 'Draft', value: 'draft' },
-    { label: 'Upcoming', value: 'upcoming' },
-    { label: 'In Progress', value: 'in_progress' },
-    { label: 'Completed', value: 'completed' }
-  ];
-
   form = this.fb.group({
-    name: ['string', [Validators.required, Validators.maxLength(120)]],
-    destination: ['string'],
-    start_date: ['2026-03-01'],
-    end_date: ['2026-03-01'],
-    budget: [0],
-    people_count: [1],
-    timezone: ['UTC'],
-    status: ['draft'],
-    description: ['string'],
-    cover_image: ['']
+    title: ['', [Validators.required, Validators.maxLength(120)]],
+    category: ['travel', Validators.required],
+    summary: ['', [Validators.required]],
+    thumbnail: [''],
+    status: ['draft']
   });
-
-  timelineForm = this.fb.group({
-    day: ['2026-03-01', Validators.required],
-    start_time: ['08:53:07.663Z', Validators.required],
-    end_time: ['08:53:07.663Z', Validators.required],
-    title: ['string', Validators.required],
-    location: ['string'],
-    note: ['string'],
-    activity_type: ['string']
-  });
-
-  get isDetailMode(): boolean {
-    return !!this.tripId;
-  }
-
-  get preview(): {
-    id: string;
-    title: string;
-    destination: string;
-    start_date: string;
-    end_date: string;
-    budget: number;
-    people_count: number;
-    timezone: string;
-    status: string;
-    description: string;
-    cover_image: string;
-  } {
-    const value = this.form.getRawValue();
-    return {
-      id: this.loadedTrip?.trip_id || this.loadedTrip?.id || this.loadedTrip?._id || this.tripId || '',
-      title: (value.name || '').toString().trim(),
-      destination: (value.destination || '').toString().trim(),
-      start_date: (value.start_date || '').toString().trim(),
-      end_date: (value.end_date || '').toString().trim(),
-      budget: typeof value.budget === 'number' ? value.budget : 0,
-      people_count: typeof value.people_count === 'number' ? value.people_count : 0,
-      timezone: (value.timezone || '').toString().trim(),
-      status: (value.status || 'draft').toString(),
-      description: (value.description || '').toString().trim(),
-      cover_image: (value.cover_image || '').toString().trim()
-    };
-  }
 
   get displayTripImage(): string {
-    return this.uploadedTripImage || this.preview.cover_image || this.loadedTrip?.cover_image || this.defaultTripImage;
+    return this.form.value.thumbnail || this.defaultTripImage;
   }
 
-  ngOnInit(): void {
-    this.tripId = this.route.snapshot.paramMap.get('id') || '';
-    if (this.tripId) {
-      this.loadTripDetail();
+  ngOnInit(): void {}
+
+  getStepTitle(): string {
+    switch (this.currentStep) {
+      case 1: return 'The Genesis';
+      case 2: return 'Visual Hook';
+      case 3: return 'The Narrative';
+      default: return 'Draft Story';
     }
   }
 
-  private loadTripDetail(): void {
-    this.loadingDetail = true;
-    this.errorMessage = '';
-
-    forkJoin({
-      trip: this.travelService.getTrip(this.tripId),
-      itinerary: this.travelService.listItineraryItems(this.tripId),
-      bookings: this.travelService.listBookings(this.tripId),
-      budgets: this.travelService.listBudgetItems(this.tripId),
-      notifications: this.travelService.listNotifications(this.tripId)
-    })
-      .pipe(finalize(() => (this.loadingDetail = false)))
-      .subscribe({
-        next: (res) => {
-          if (!res.trip) {
-            this.errorMessage = `Trip not found: ${this.tripId}`;
-            return;
-          }
-          this.loadedTrip = res.trip;
-          this.timelineItems = this.sortTimelineItems(res.itinerary);
-          this.form.patchValue({
-            name: res.trip.title || res.trip.name || '',
-            destination: res.trip.destination || '',
-            start_date: res.trip.start_date || '',
-            end_date: res.trip.end_date || '',
-            budget: typeof res.trip.budget === 'number' ? res.trip.budget : 0,
-            people_count: typeof res.trip.people_count === 'number' ? res.trip.people_count : 1,
-            timezone: res.trip.timezone || 'UTC',
-            status: (res.trip.status || 'draft') as string,
-            description: res.trip.description || '',
-            cover_image: res.trip.cover_image || ''
-          });
-          this.timelineForm.patchValue({
-            day: this.toDateInputValue(res.trip.start_date) || this.toDateInputValue(this.timelineItems[0]?.day) || '2026-03-01',
-            title: res.trip.title || 'string',
-            location: res.trip.destination || 'string',
-            note: res.trip.description || 'string'
-          });
-          this.detailCounts = {
-            itinerary: this.timelineItems.length,
-            bookings: res.bookings.length,
-            budgets: res.budgets.length,
-            notifications: res.notifications.length
-          };
-        },
-        error: (err) => {
-          this.errorMessage = err?.error?.detail || err?.error?.message || 'Load trip detail failed';
-          this.loadedTrip = null;
-          this.timelineItems = [];
-          this.detailCounts = {
-            itinerary: 0,
-            bookings: 0,
-            budgets: 0,
-            notifications: 0
-          };
-        }
-      });
-  }
-
-  submit(): void {
-    if (this.form.invalid || this.submitting || this.loadingDetail) {
-      return;
+  getStepSubtitle(): string {
+    switch (this.currentStep) {
+      case 1: return 'Identity and classification.';
+      case 2: return 'Attach a compelling cover photo.';
+      case 3: return 'Write a brief overview.';
+      default: return 'Configure your post.';
     }
-
-    this.submitting = true;
-    this.errorMessage = '';
-    this.successMessage = '';
-
-    const value = this.form.getRawValue();
-    const payload = {
-      title: (value.name || '').trim(),
-      destination: value.destination || undefined,
-      start_date: value.start_date || undefined,
-      end_date: value.end_date || undefined,
-      description: value.description || undefined,
-      cover_image: value.cover_image || undefined,
-      budget: typeof value.budget === 'number' ? value.budget : undefined,
-      people_count: typeof value.people_count === 'number' ? value.people_count : undefined,
-      timezone: value.timezone || undefined,
-      status: value.status || 'draft'
-    };
-
-    const request$ = this.isDetailMode
-      ? this.travelService.updateTrip(this.tripId, payload)
-      : this.travelService.createTrip(payload);
-
-    request$
-      .pipe(finalize(() => (this.submitting = false)))
-      .subscribe({
-        next: (trip) => {
-          if (!this.isDetailMode && trip) {
-            const id = trip.trip_id || trip.id || trip._id;
-            if (id) {
-              this.router.navigate(['/travel', id]);
-              return;
-            }
-          }
-          if (this.isDetailMode) {
-            this.successMessage = 'Trip updated successfully.';
-            this.loadTripDetail();
-            return;
-          }
-          this.router.navigate(['/travel']);
-        },
-        error: (err) => {
-          this.errorMessage = this.isDetailMode
-            ? (err?.error?.detail || err?.error?.message || 'Update trip failed')
-            : (err?.error?.detail || err?.error?.message || 'Create trip failed');
-        }
-      });
-  }
-
-  createTimelineItem(): void {
-    if (!this.tripId || this.creatingTimeline || this.loadingDetail || this.timelineForm.invalid) {
-      return;
-    }
-
-    this.creatingTimeline = true;
-    this.errorMessage = '';
-    this.successMessage = '';
-
-    const value = this.timelineForm.getRawValue();
-    const day = (value.day || '').trim() || new Date().toISOString().slice(0, 10);
-    const payload: ItineraryItemCreate = {
-      trip_id: this.tripId,
-      day,
-      start_time: (value.start_time || '').trim() || '08:53:07.663Z',
-      end_time: (value.end_time || '').trim() || '08:53:07.663Z',
-      title: (value.title || '').trim() || 'string',
-      location: (value.location || '').trim() || 'string',
-      note: (value.note || '').trim() || 'string',
-      activity_type: (value.activity_type || '').trim() || 'string'
-    };
-
-    this.travelService.createItineraryItem(this.tripId, payload)
-      .pipe(finalize(() => (this.creatingTimeline = false)))
-      .subscribe({
-        next: () => {
-          this.successMessage = 'Timeline item created successfully.';
-          this.loadTripDetail();
-        },
-        error: (err) => {
-          this.errorMessage = err?.error?.detail || err?.error?.message || 'Create timeline item failed';
-        }
-      });
-  }
-
-  triggerImageUpload(): void {
-    this.tripImageInput?.nativeElement.click();
   }
 
   onTripImageSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
-    if (!file) {
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const value = typeof reader.result === 'string' ? reader.result : '';
-      if (!value) {
-        return;
+    if (!file) return;
+
+    this.isUploading = true;
+    this.travelService.uploadMedia(file).pipe(
+      finalize(() => this.isUploading = false)
+    ).subscribe({
+      next: (res: any) => {
+        if (res?.url) {
+           this.form.patchValue({ thumbnail: res.url });
+           this.successMessage = 'Photo uploaded successfully to ' + res.provider;
+        }
+      },
+      error: (err: any) => {
+        this.errorMessage = 'Upload failed: ' + (err?.message || 'Unknown error');
       }
-      this.uploadedTripImage = value;
-      this.form.patchValue({ cover_image: value });
-    };
-    reader.readAsDataURL(file);
-  }
-
-  formatDateOnly(value?: string): string {
-    if (!value) {
-      return '-';
-    }
-    const raw = value.split('T')[0];
-    return raw || value;
-  }
-
-  formatTime(value?: string): string {
-    if (!value) {
-      return '-';
-    }
-    const match = value.match(/^(\d{2}:\d{2})/);
-    if (match) {
-      return match[1];
-    }
-    const timePart = value.includes('T') ? value.split('T')[1] : value;
-    return timePart?.slice(0, 5) || value;
-  }
-
-  private sortTimelineItems(items: ItineraryItem[]): ItineraryItem[] {
-    return [...items].sort((a, b) => {
-      const aDay = a.day || a.date || '';
-      const bDay = b.day || b.date || '';
-      const dayCompare = bDay.localeCompare(aDay);
-      if (dayCompare !== 0) {
-        return dayCompare;
-      }
-      const aTime = a.start_time || a.time || '';
-      const bTime = b.start_time || b.time || '';
-      return aTime.localeCompare(bTime);
     });
   }
 
-  private toDateInputValue(value?: string): string {
-    if (!value) {
-      return '';
-    }
-    return value.split('T')[0] || '';
+  submit(): void {
+    if (this.form.invalid || this.submitting) return;
+
+    this.submitting = true;
+    this.errorMessage = '';
+    
+    this.travelService.createTrip(this.form.getRawValue()).pipe(
+      finalize(() => this.submitting = false)
+    ).subscribe({
+      next: () => {
+        this.successMessage = 'Story created/saved successfully.';
+        setTimeout(() => this.router.navigate(['/travel']), 1500);
+      },
+      error: (err: any) => {
+        this.errorMessage = 'Failed to save story: ' + (err?.message || 'API error');
+      }
+    });
   }
 
-  cancel(): void {
-    this.router.navigate(['/travel']);
-  }
+  cancel(): void { this.router.navigate(['/travel']); }
+  goToStep(step: number): void { this.currentStep = step; }
+  nextStep(): void { if (this.currentStep < 3) this.currentStep++; }
+  previousStep(): void { if (this.currentStep > 1) this.currentStep--; }
 
-  goToStep(step: number): void {
-    if (step < 1 || step > 3) {
-      return;
-    }
-    this.currentStep = step;
-  }
-
-  nextStep(): void {
-    if (this.currentStep < 3) {
-      this.currentStep += 1;
-    }
-  }
-
-  previousStep(): void {
-    if (this.currentStep > 1) {
-      this.currentStep -= 1;
-    }
-  }
-
-  getStatusSeverity(status?: string): 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast' {
-    switch ((status || '').toLowerCase()) {
-      case 'completed':
-        return 'success';
-      case 'in_progress':
-      case 'in progress':
-        return 'warning';
-      case 'upcoming':
-        return 'info';
-      default:
-        return 'secondary';
-    }
+  getStatusSeverity(status?: string): 'success' | 'secondary' | 'info' {
+    return status === 'published' ? 'success' : 'secondary';
   }
 }

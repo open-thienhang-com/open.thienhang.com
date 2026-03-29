@@ -1,0 +1,137 @@
+.orders-view {
+  // ── Layout Specifics ────────────────────────────────────────────────────────
+  .explorer-container {
+    grid-template-columns: 260px 1fr; // No right sidebar for orders yet
+  }
+
+  .orders-table-container {
+    margin-top: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+  }
+
+  // ── Table Styling ───────────────────────────────────────────────────────────
+  ::ng-deep .p-datatable-glass {
+    .p-datatable-thead > tr > th {
+      background: rgba(255, 255, 255, 0.02);
+      color: #94a3b8;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 1.25rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .p-datatable-tbody > tr {
+      background: transparent;
+      color: #e2e8f0;
+      transition: background 0.2s;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      > td {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+    }
+
+    .p-paginator {
+      background: transparent;
+      border: none;
+      padding: 1rem;
+      .p-paginator-pages .p-paginator-page {
+        color: #94a3b8;
+        &.p-highlight { background: rgba(249, 115, 22, 0.1); color: #f97316; }
+      }
+    }
+  }
+
+  // ── Column Components ───────────────────────────────────────────────────────
+  .order-id {
+    display: flex;
+    flex-direction: column;
+    .number { font-weight: 700; color: #fff; font-size: 0.9rem; }
+    .uuid { font-size: 0.7rem; color: #475569; font-family: monospace; }
+  }
+
+  .dest-info {
+    display: flex;
+    flex-direction: column;
+    .warehouse { font-size: 0.8rem; color: #fff; }
+    .customer { font-size: 0.7rem; color: #64748b; }
+  }
+
+  .count-badge {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.25rem 0.6rem;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .amount {
+    font-weight: 800;
+    color: #fff;
+    font-family: 'Outfit', sans-serif;
+  }
+
+  .status-pill {
+    padding: 0.35rem 0.75rem;
+    border-radius: 99px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+
+    // Fulfillment Statuses
+    &[data-status="pending"]   { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+    &[data-status="confirmed"] { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+    &[data-status="cancelled"] { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+    // Payment Statuses
+    &[data-payment="paid"]   { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+    &[data-payment="unpaid"] { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+    &[data-payment="failed"] { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+  }
+
+  .time { font-size: 0.75rem; color: #64748b; }
+
+  // ── Sidebar Helpers ─────────────────────────────────────────────────────────
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    label { font-size: 0.65rem; color: #475569; text-transform: uppercase; letter-spacing: 0.1em; }
+  }
+
+  ::ng-deep .glass-dropdown {
+    width: 100%;
+    .p-dropdown {
+      background: rgba(255, 255, 255, 0.03) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 0.75rem !important;
+      .p-dropdown-label { color: #fff !important; font-size: 0.85rem; }
+      .p-dropdown-trigger { color: #94a3b8; }
+    }
+  }
+
+  .refresh-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    &:hover { background: rgba(255, 255, 255, 0.1); transform: rotate(180deg); }
+  }
+
+  .stat-card {
+    &.yellow { background: linear-gradient(135deg, #92400e, #f59e0b); color: #fff; }
+  }
+}

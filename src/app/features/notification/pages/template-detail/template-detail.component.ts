@@ -142,6 +142,27 @@ export class NotificationTemplateDetailComponent implements OnInit {
     });
   }
 
+  get renderedBody(): string {
+    let result = this.templateForm.get('body')?.value || '';
+    this.discoveredVariables.forEach(v => {
+      const val = this.previewVariables[v] || `{{${v}}}`;
+      result = result.split(`{{${v}}}`).join(val);
+      // Also handle with spaces: {{ v }}
+      result = result.split(`{{ ${v} }}`).join(val);
+    });
+    return result;
+  }
+
+  get renderedSubject(): string {
+    let result = this.templateForm.get('subject')?.value || '';
+    this.discoveredVariables.forEach(v => {
+      const val = this.previewVariables[v] || `{{${v}}}`;
+      result = result.split(`{{${v}}}`).join(val);
+      result = result.split(`{{ ${v} }}`).join(val);
+    });
+    return result;
+  }
+
   onSave(): void {
     if (this.templateForm.invalid) {
       return;

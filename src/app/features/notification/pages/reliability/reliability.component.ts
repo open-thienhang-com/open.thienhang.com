@@ -7,6 +7,8 @@ import { CardModule } from 'primeng/card';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ChartModule } from 'primeng/chart';
 
+import { NotificationService } from '../../../../core/services/notification.service';
+
 @Component({
   selector: 'app-notification-reliability',
   standalone: true,
@@ -19,20 +21,34 @@ import { ChartModule } from 'primeng/chart';
 export class NotificationReliabilityComponent implements OnInit {
   chartData: any;
   chartOptions: any;
+  circuitBreakers: any[] = [];
+  dlqItems: any[] = [];
+  loading = false;
 
-  circuitBreakers = [
-    { name: 'Email Dispatcher (SendGrid)', status: 'Closed', failureRate: 0.02, lastFailure: '2 hours ago', color: '#10b981' },
-    { name: 'SMS Gateway (Twilio)', status: 'Closed', failureRate: 0.05, lastFailure: '1 day ago', color: '#10b981' },
-    { name: 'FCM Push Service', status: 'Half-Open', failureRate: 0.45, lastFailure: '15 mins ago', color: '#f59e0b' }
-  ];
-
-  dlqItems = [
-    { id: 'msg_98231', channel: 'Email', recipient: 'john.doe@example.com', lastError: 'SMTP Timeout (Retry 5/5)', retries: 5, createdAt: new Date() },
-    { id: 'msg_98235', channel: 'SMS', recipient: '+84912345678', lastError: 'Invalid Phone Format', retries: 1, createdAt: new Date() }
-  ];
+  constructor(private notificationService: NotificationService) {}
 
   ngOnInit(): void {
     this.initChart();
+    this.loadData();
+  }
+
+  loadData(): void {
+    this.loading = true;
+    this.notificationService.getCircuitBreakers().subscribe({
+      next: (resp) => {
+        this.circuitBreakers = resp.data || [];
+      }
+    });
+
+    this.notificationService.getDeadLetterQueue().subscribe({
+      next: (resp) => {
+        this.dlqItems = resp.data || [];
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      }
+    });
   }
 
   initChart(): void {

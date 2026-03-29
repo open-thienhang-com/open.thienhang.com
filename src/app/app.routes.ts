@@ -14,6 +14,8 @@ import { chatRoutes } from './features/chat/chat.routes';
 import { filesRoutes } from './features/files/files.routes';
 import { notificationRoutes } from './features/notification/notification.routes';
 import { FRESH_RETAIL_FEATURE_CONFIG } from './features/retail/retail-services/feature-page/fresh-retail.config';
+import { INVENTORY_ROUTES } from './features/inventory/inventory.routes';
+import { LOYALTY_ROUTES } from './features/loyalty/loyalty.routes';
 
 
 export const routes: Routes = [
@@ -260,11 +262,19 @@ export const routes: Routes = [
         loadComponent: () => import('./features/explore/search/search-explorer.component').then(m => m.SearchExplorerComponent),
       },
       {
+        path: 'inventory',
+        children: INVENTORY_ROUTES
+      },
+      {
+        path: 'loyalty',
+        children: LOYALTY_ROUTES
+      },
+      {
         path: 'retail',
         children: [
           {
             path: '',
-            redirectTo: '/planning/stochastic',
+            redirectTo: '/inventory/overview',
             pathMatch: 'full'
           },
           {
@@ -280,7 +290,7 @@ export const routes: Routes = [
           },
           {
             path: 'products',
-            loadComponent: () => import('./features/retail/pages/product-catalog/product-catalog.component').then(m => m.ProductCatalogComponent),
+            loadComponent: () => import('./features/inventory/pages/products/products.component').then(m => m.ProductsComponent),
           },
           {
             path: 'shop',
@@ -289,78 +299,23 @@ export const routes: Routes = [
           },
           {
             path: 'inventory',
-            children: [
-              {
-                path: '',
-                redirectTo: 'products',
-                pathMatch: 'full'
-              },
-              {
-                path: 'product-catalog',
-                loadComponent: () => import('./features/retail/retail-services/inventory/product-catalog/product-catalog.component').then(m => m.ProductCatalogComponent),
-              },
-              {
-                path: 'products',
-                loadComponent: () => import('./features/retail/retail-services/inventory/products/products.component').then(m => m.ProductsComponent),
-              },
-              {
-                path: 'products/create',
-                loadComponent: () => import('./features/retail/retail-services/inventory/products/product-create.component').then(m => m.ProductCreateComponent),
-              },
-              {
-                path: 'products/:id',
-                loadComponent: () => import('./features/retail/retail-services/inventory/products/product-detail.component').then(m => m.ProductDetailComponent),
-              },
-              {
-                path: 'categories',
-                loadComponent: () => import('./features/retail/retail-services/inventory/categories/categories.component').then(m => m.CategoriesComponent),
-              },
-              {
-                path: 'locations',
-                loadComponent: () => import('./features/retail/retail-services/inventory/locations/locations.component').then(m => m.LocationsComponent),
-              },
-              {
-                path: 'partners',
-                loadComponent: () => import('./features/retail/retail-services/inventory/partners/partners.component').then(m => m.PartnersComponent),
-              },
-              {
-                path: 'suppliers',
-                loadComponent: () => import('./features/retail/retail-services/inventory/suppliers/suppliers.component').then(m => m.SuppliersComponent),
-              },
-              {
-                path: 'support',
-                redirectTo: 'settings',
-                pathMatch: 'full'
-              },
-              {
-                path: 'settings',
-                loadComponent: () => import('./features/retail/retail-services/inventory/settings/settings.component').then(m => m.SettingsComponent),
-              },
-            ]
+            redirectTo: '/inventory',
+            pathMatch: 'prefix'
           },
           {
             path: 'loyalty',
-            loadComponent: () => import('./features/retail/retail-services/feature-page/retail-feature-page.component').then(m => m.RetailFeaturePageComponent),
-            data: {
-              featureConfig: {
-                title: 'Loyalty Program',
-                subtitle: 'Member lifecycle, tier management, and retention campaigns',
-                icon: 'pi pi-star',
-                accent: '#db2777',
-                stats: [
-                  { label: 'Active Members', value: '82,450', trend: '+5.4%' },
-                  { label: 'Points Issued', value: '9.3M', trend: '+11.2%' },
-                  { label: 'Redemption Rate', value: '27.1%', trend: '+3.0%' },
-                  { label: 'Churn Risk', value: '6.2%', trend: '-0.8%' }
-                ],
-                actions: [
-                  { label: 'Issue Bonus Points', icon: 'pi pi-gift', description: 'Launch limited-time point bonuses' },
-                  { label: 'Adjust Tier Rules', icon: 'pi pi-sliders-h', description: 'Update thresholds and progression logic' },
-                  { label: 'View Member Cohorts', icon: 'pi pi-chart-line', description: 'Compare retention by signup month' }
-                ],
-                checklist: ['Tier rules confirmed', 'Reward catalog published', 'Fraud controls enabled', 'Member notifications live']
-              }
-            }
+            redirectTo: '/loyalty',
+            pathMatch: 'prefix'
+          },
+          {
+            path: 'rewards',
+            redirectTo: '/loyalty/rewards',
+            pathMatch: 'full'
+          },
+          {
+            path: 'campaigns',
+            redirectTo: '/loyalty/campaigns',
+            pathMatch: 'full'
           },
           {
             path: 'pos',
@@ -368,7 +323,7 @@ export const routes: Routes = [
           },
           {
             path: 'ecommerce',
-            loadComponent: () => import('./features/retail/pages/shop/shop.component').then(m => m.RetailShopComponent),
+            loadComponent: () => import('./features/retail/retail-services/ecommerce/ecommerce.component').then(m => m.EcommerceComponent),
           },
           {
             path: 'omni-channel',
@@ -393,51 +348,13 @@ export const routes: Routes = [
           },
           {
             path: 'rewards',
-            loadComponent: () => import('./features/retail/retail-services/feature-page/retail-feature-page.component').then(m => m.RetailFeaturePageComponent),
-            data: {
-              featureConfig: {
-                title: 'Rewards Catalog',
-                subtitle: 'Reward design, partner offers, and redemption economics',
-                icon: 'pi pi-gift',
-                accent: '#c026d3',
-                stats: [
-                  { label: 'Active Rewards', value: '146', trend: '+18' },
-                  { label: 'Redeem Cost', value: '$2.31', trend: '-0.17' },
-                  { label: 'Redemption Volume', value: '78,212', trend: '+10.5%' },
-                  { label: 'Partner Offers', value: '29', trend: '+4' }
-                ],
-                actions: [
-                  { label: 'Add Reward', icon: 'pi pi-plus', description: 'Create fixed, tiered, or seasonal rewards' },
-                  { label: 'Adjust Point Cost', icon: 'pi pi-sliders-h', description: 'Optimize redemption economics' },
-                  { label: 'Track Utilization', icon: 'pi pi-chart-pie', description: 'Analyze reward performance by segment' }
-                ],
-                checklist: ['Reward SLAs validated', 'Partner contracts synced', 'Fraud checks enabled', 'Expiry policies configured']
-              }
-            }
+            redirectTo: '/loyalty/rewards',
+            pathMatch: 'full'
           },
           {
             path: 'campaigns',
-            loadComponent: () => import('./features/retail/retail-services/feature-page/retail-feature-page.component').then(m => m.RetailFeaturePageComponent),
-            data: {
-              featureConfig: {
-                title: 'Loyalty Campaigns',
-                subtitle: 'Campaign orchestration across channels and customer tiers',
-                icon: 'pi pi-megaphone',
-                accent: '#0f766e',
-                stats: [
-                  { label: 'Campaigns Live', value: '32', trend: '+5' },
-                  { label: 'Open Rate', value: '42.3%', trend: '+4.4%' },
-                  { label: 'Conversion', value: '9.8%', trend: '+1.6%' },
-                  { label: 'ROI', value: '3.7x', trend: '+0.5x' }
-                ],
-                actions: [
-                  { label: 'Launch Campaign', icon: 'pi pi-send', description: 'Deploy a targeted retention campaign' },
-                  { label: 'A/B Test Message', icon: 'pi pi-clone', description: 'Test creative and offer variants' },
-                  { label: 'Pause Low ROI', icon: 'pi pi-pause', description: 'Stop underperforming campaign streams' }
-                ],
-                checklist: ['Audience rules validated', 'Channel throttling configured', 'Attribution window set', 'Post-campaign report automated']
-              }
-            }
+            redirectTo: '/loyalty/campaigns',
+            pathMatch: 'full'
           },
         ]
       },

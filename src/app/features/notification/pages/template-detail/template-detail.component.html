@@ -177,12 +177,12 @@
                 <span class="text-xs font-bold">ThienHang Notification <br/><small class="text-gray-400 font-normal">no-reply&#64;thienhang.com.vn</small></span>
               </div>
               <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-400 font-semibold w-10">Subject:</span>
-                <span class="text-xs font-bold text-indigo-600">{{previewData?.rendered_subject || templateForm.get('subject')?.value || 'No Subject'}}</span>
+                <span class="text-xs font-bold text-gray-400 font-semibold w-10">Subject:</span>
+                <span class="text-xs font-bold text-indigo-600">{{renderedSubject || 'No Subject'}}</span>
               </div>
             </div>
             <div class="prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed" 
-                 [innerHTML]="getSafeHtml(previewData?.rendered_body || templateForm.get('body')?.value || 'No content loaded')">
+                 [innerHTML]="getSafeHtml(renderedBody || 'No content loaded')">
             </div>
           </div>
         </div>
@@ -211,7 +211,7 @@
 
             <div class="flex justify-start pr-8">
               <div class="bg-[#242426] p-4 rounded-2xl rounded-tl-sm text-white text-sm shadow-xl leading-snug font-medium"
-                   [innerHTML]="getSafeHtml(previewData?.rendered_body || templateForm.get('body')?.value || 'SMS content placeholder...')">
+                   [innerHTML]="getSafeHtml(renderedBody || 'SMS content placeholder...')">
               </div>
             </div>
             <div class="text-[10px] text-gray-600 font-black mt-2 ml-2 uppercase">Delivered • 1m ago</div>
@@ -237,7 +237,7 @@
             <h3 class="text-lg font-bold text-gray-900 mb-2">Live Preview Available</h3>
             <p class="text-sm text-gray-500 max-w-xs mx-auto mb-6">Preview support for {{templateForm.get('channel')?.value}} is standard. MacOS and iPhone frames are used for Email and SMS respectively.</p>
             <div class="w-full bg-gray-50 p-6 rounded-2xl text-left font-mono text-sm border border-gray-100">
-               <pre class="whitespace-pre-wrap">{{previewData?.rendered_body || templateForm.get('body')?.value || 'Rendered output will appear here...'}}</pre>
+               <pre class="whitespace-pre-wrap">{{renderedBody || 'Rendered output will appear here...'}}</pre>
             </div>
           </div>
         </div>

@@ -5,7 +5,7 @@
 <div class="bg-gray-50 min-h-screen p-6">
   <!-- Header Section -->
   <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
-    <div class="flex items-center justify-between flex-wrap gap-4">
+    <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
       <div class="flex items-center gap-4">
         <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100">
           <i class="pi pi-history text-white text-xl"></i>
@@ -17,9 +17,41 @@
       </div>
       
       <div class="flex items-center gap-2">
-        <button pButton icon="pi pi-refresh" [outlined]="true" [rounded]="true" severity="secondary" (click)="loadLogs()" pTooltip="Refresh Data"></button>
-        <button pButton icon="pi pi-download" [outlined]="true" [rounded]="true" severity="secondary" pTooltip="Export Logs"></button>
-        <button pButton label="Filter Logs" icon="pi pi-filter" [rounded]="true" severity="info" [outlined]="true" class="px-4"></button>
+        <button pButton icon="pi pi-refresh" [outlined]="true" [rounded]="true" severity="secondary" (click)="onFilter()" pTooltip="Refresh Data"></button>
+        <button pButton icon="pi pi-download" [outlined]="true" [rounded]="true" severity="secondary" (click)="onExport()" pTooltip="Export CSV"></button>
+        <button pButton label="Clear Filters" icon="pi pi-filter-slash" [rounded]="true" severity="secondary" [outlined]="true" (click)="resetFilters()" class="px-4"></button>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Message ID</label>
+        <input pInputText [(ngModel)]="filters.message_id" placeholder="Ex: 65f..." class="p-inputtext-sm w-full rounded-lg" (keyup.enter)="onFilter()">
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Recipient</label>
+        <input pInputText [(ngModel)]="filters.recipient" placeholder="Email or Phone" class="p-inputtext-sm w-full rounded-lg" (keyup.enter)="onFilter()">
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Channel</label>
+        <p-dropdown [options]="channels" [(ngModel)]="filters.channel" (onChange)="onFilter()" styleClass="p-dropdown-sm w-full rounded-lg"></p-dropdown>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Status</label>
+        <p-dropdown [options]="statuses" [(ngModel)]="filters.status" (onChange)="onFilter()" styleClass="p-dropdown-sm w-full rounded-lg"></p-dropdown>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Event Type</label>
+        <p-dropdown [options]="eventTypes" [(ngModel)]="filters.event_type" (onChange)="onFilter()" styleClass="p-dropdown-sm w-full rounded-lg"></p-dropdown>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">From</label>
+        <p-calendar [(ngModel)]="filters.from_time" [showTime]="true" [showIcon]="true" dateFormat="yy-mm-dd" (onSelect)="onFilter()" styleClass="w-full" inputStyleClass="p-inputtext-sm rounded-l-lg"></p-calendar>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">To</label>
+        <p-calendar [(ngModel)]="filters.to_time" [showTime]="true" [showIcon]="true" dateFormat="yy-mm-dd" (onSelect)="onFilter()" styleClass="w-full" inputStyleClass="p-inputtext-sm rounded-l-lg"></p-calendar>
       </div>
     </div>
   </div>

@@ -105,8 +105,9 @@
         type="text" 
         pInputText 
         [(ngModel)]="searchQuery" 
-        placeholder="Filter by code or subject..." 
+        placeholder="Search by template code..." 
         class="w-full pl-11 rounded-xl border-gray-100 bg-gray-50 focus:bg-white transition-all py-2.5"
+        (keyup.enter)="onFilter()"
       >
     </div>
     
@@ -115,7 +116,10 @@
       [(ngModel)]="selectedChannel" 
       class="min-w-[200px]"
       styleClass="w-full rounded-xl border-gray-100 bg-gray-50 h-11"
+      (onChange)="onFilter()"
     ></p-dropdown>
+    
+    <button pButton label="Search" icon="pi pi-search" [rounded]="true" (click)="onFilter()" class="px-6"></button>
   </div>
 
   <!-- Content Grid -->
@@ -131,44 +135,58 @@
     </div>
   </div>
 
-  <div *ngIf="!loading && filteredTemplates.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <div *ngFor="let t of filteredTemplates" class="group relative bg-white rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col h-full overflow-hidden">
-      <div class="flex justify-between items-start mb-6">
-        <p-tag [value]="t.channel.toUpperCase()" [severity]="getChannelSeverity(t.channel)" [icon]="getChannelIcon(t.channel)" class="rounded-lg px-2 text-[10px] font-bold tracking-wider"></p-tag>
-        <span class="text-xs font-bold text-gray-300">V{{t.version}}.0</span>
-      </div>
-      
-      <h3 class="text-xl font-bold text-gray-900 mb-3 truncate group-hover:text-blue-600 transition-colors">{{t.code}}</h3>
-      <p class="text-sm text-gray-500 mb-8 line-clamp-3 leading-relaxed flex-1">
-        {{t.subject || 'No defined subject for this template'}}
-      </p>
+  <div *ngIf="!loading && templates.length > 0">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div *ngFor="let t of templates" class="group relative bg-white rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col h-full overflow-hidden">
+        <div class="flex justify-between items-start mb-6">
+          <p-tag [value]="t.channel.toUpperCase()" [severity]="getChannelSeverity(t.channel)" [icon]="getChannelIcon(t.channel)" class="rounded-lg px-2 text-[10px] font-bold tracking-wider"></p-tag>
+          <span class="text-xs font-bold text-gray-300">V{{t.version}}.0</span>
+        </div>
+        
+        <h3 class="text-xl font-bold text-gray-900 mb-2 truncate group-hover:text-blue-600 transition-colors">{{t.code}}</h3>
+        <p class="text-[11px] text-gray-400 font-bold uppercase tracking-widest mb-3" *ngIf="t.description">{{t.description}}</p>
+        <p class="text-sm text-gray-500 mb-8 line-clamp-2 leading-relaxed flex-1 italic">
+          {{t.subject || 'No defined subject for this template'}}
+        </p>
 
-      <div class="flex justify-between items-center pt-4 border-t border-gray-50">
-        <div class="flex items-center gap-2">
-          <div class="px-2.5 py-1 rounded-lg bg-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-tight">{{t.locale}}</div>
-          <div *ngIf="t.is_builtin" class="w-6 h-6 rounded-full bg-amber-50 flex items-center justify-center text-amber-500" pTooltip="System Template">
-            <i class="pi pi-lock text-[10px]"></i>
+        <div class="flex justify-between items-center pt-4 border-t border-gray-50">
+          <div class="flex items-center gap-2">
+            <div class="px-2.5 py-1 rounded-lg bg-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-tight">{{t.locale}}</div>
+            <div *ngIf="t.is_builtin" class="w-6 h-6 rounded-full bg-amber-50 flex items-center justify-center text-amber-500" pTooltip="System Template">
+              <i class="pi pi-lock text-[10px]"></i>
+            </div>
+          </div>
+          
+          <div class="flex gap-2">
+            <button pButton icon="pi pi-send" [rounded]="true" severity="info" [outlined]="true" size="small" pTooltip="Send" [routerLink]="['/notification/composer']" [queryParams]="{code: t.code, locale: t.locale, channel: t.channel}"></button>
+            <button pButton icon="pi pi-pencil" [rounded]="true" severity="secondary" [outlined]="true" size="small" pTooltip="Edit" (click)="onEdit(t)"></button>
           </div>
         </div>
         
-        <div class="flex gap-2">
-          <button pButton icon="pi pi-send" [rounded]="true" severity="info" [outlined]="true" size="small" pTooltip="Send" [routerLink]="['/notification/composer']" [queryParams]="{code: t.code, locale: t.locale, channel: t.channel}"></button>
-          <button pButton icon="pi pi-pencil" [rounded]="true" severity="secondary" [outlined]="true" size="small" pTooltip="Edit" (click)="onEdit(t)"></button>
-          <button pButton icon="pi pi-trash" [rounded]="true" severity="danger" [outlined]="true" size="small" pTooltip="Archive"></button>
-        </div>
+        <div class="absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 bg-blue-50/50 rounded-full group-hover:scale-150 transition-transform duration-500 -z-0"></div>
       </div>
-      
-      <div class="absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 bg-blue-50/50 rounded-full group-hover:scale-150 transition-transform duration-500 -z-0"></div>
+    </div>
+
+    <!-- Paginator -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-2">
+      <p-paginator 
+        [first]="(page - 1) * rows" 
+        [rows]="rows" 
+        [totalRecords]="totalRecords" 
+        [rowsPerPageOptions]="[12, 24, 48]"
+        (onPageChange)="onPageChange($event)"
+        styleClass="no-border"
+      ></p-paginator>
     </div>
   </div>
 
   <!-- Empty State -->
-  <div *ngIf="!loading && filteredTemplates.length === 0" class="flex flex-col items-center justify-center py-20 text-center bg-white rounded-3xl shadow-sm border border-gray-50">
+  <div *ngIf="!loading && templates.length === 0" class="flex flex-col items-center justify-center py-20 text-center bg-white rounded-3xl shadow-sm border border-gray-50">
     <div class="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6">
       <i class="pi pi-folder-open text-4xl text-gray-300"></i>
     </div>
     <h3 class="text-2xl font-bold text-gray-900 mb-2">No templates found</h3>
     <p class="text-gray-500 mb-8 max-w-sm">Try adjusting your filters or create a new template to get started.</p>
-    <button pButton label="Clear All Filters" [outlined]="true" [rounded]="true" (click)="searchQuery = ''; selectedChannel = ''"></button>
+    <button pButton label="Clear All Filters" [outlined]="true" [rounded]="true" (click)="searchQuery = ''; selectedChannel = ''; onFilter()"></button>
   </div>
 </div>

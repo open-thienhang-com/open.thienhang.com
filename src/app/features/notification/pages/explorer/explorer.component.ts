@@ -9,6 +9,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
+import { PaginatorModule } from 'primeng/paginator';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { Router } from '@angular/router';
@@ -20,7 +21,8 @@ import { NotificationService, NotificationTemplate } from '../../../../core/serv
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterModule,
-    ButtonModule, CardModule, InputTextModule, DropdownModule, SkeletonModule, TagModule, TooltipModule, ToastModule
+    ButtonModule, CardModule, InputTextModule, DropdownModule, SkeletonModule, TagModule, TooltipModule, ToastModule,
+    PaginatorModule
   ],
   providers: [MessageService],
   templateUrl: './explorer.component.html',
@@ -35,6 +37,11 @@ export class NotificationExplorerComponent implements OnInit {
   apiUrl = '';
   authToken = '';
 
+  // Pagination
+  totalRecords = 0;
+  rows = 12;
+  page = 1;
+
   stats = {
     total: 0,
     email: 0,
@@ -46,7 +53,9 @@ export class NotificationExplorerComponent implements OnInit {
     { label: 'All Channels', value: '' },
     { label: 'Email Service', value: 'email' },
     { label: 'SMS Gateway', value: 'sms' },
-    { label: 'Webhook / Push', value: 'http_push' }
+    { label: 'Webhook / Push', value: 'http_push' },
+    { label: 'WebSocket', value: 'websocket' },
+    { label: 'gRPC', value: 'grpc' }
   ];
 
   constructor(
@@ -58,6 +67,17 @@ export class NotificationExplorerComponent implements OnInit {
   ngOnInit(): void {
     this.apiUrl = this.notificationService.getBaseUrl();
     this.authToken = this.notificationService.getAuthToken();
+    this.loadTemplates();
+  }
+
+  onPageChange(event: any): void {
+    this.page = (event.first / event.rows) + 1;
+    this.rows = event.rows;
+    this.loadTemplates();
+  }
+
+  onFilter(): void {
+    this.page = 1;
     this.loadTemplates();
   }
 
@@ -83,9 +103,17 @@ export class NotificationExplorerComponent implements OnInit {
 
   loadTemplates(): void {
     this.loading = true;
-    this.notificationService.getTemplates().subscribe({
+    const params = {
+      page: this.page,
+      size: this.rows,
+      code: this.searchQuery, // The backend ListByFilter uses 'code' for filtering
+      channel: this.selectedChannel
+    };
+
+    this.notificationService.getTemplates(params).subscribe({
       next: (resp) => {
         this.templates = resp.data?.list || [];
+        this.totalRecords = resp.data?.total || 0;
         this.computeStats();
         this.loading = false;
       },

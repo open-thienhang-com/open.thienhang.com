@@ -10,7 +10,8 @@ import { DropdownModule } from 'primeng/dropdown';
 import { BadgeModule } from 'primeng/badge';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { CustomerService } from '../../services/retail.service';
+import { InventoryService as TransactionService } from '../../../inventory/services/inventory.service';
+import { PartnerService as CustomerService } from '../../../inventory/services/inventory.service';
 
 interface CustomerItem {
   id: string;

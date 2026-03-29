@@ -61,8 +61,7 @@ export class NotificationComposerComponent implements OnInit {
     // Check for query params (e.g. from Explorer)
     this.route.queryParams.subscribe(params => {
       if (params['code']) {
-        // Wait for templates to load, then select
-        const checkTemplates = setInterval(() => {
+        const checkTemplates = () => {
           if (this.templates.length > 0) {
             const found = this.templates.find(t => 
               t.code === params['code'] && 
@@ -72,16 +71,18 @@ export class NotificationComposerComponent implements OnInit {
             if (found) {
               this.onTemplateSelect(found);
             }
-            clearInterval(checkTemplates);
+          } else {
+            setTimeout(checkTemplates, 100);
           }
-        }, 100);
+        };
+        checkTemplates();
       }
     });
   }
 
   loadTemplates(): void {
     this.loading = true;
-    this.notificationService.getTemplates().subscribe({
+    this.notificationService.getTemplates({ size: 100 }).subscribe({ // Load more for composer selection
       next: (resp) => {
         this.templates = resp.data?.list || [];
         this.loading = false;
@@ -106,7 +107,7 @@ export class NotificationComposerComponent implements OnInit {
   }
 
   resetForm(): void {
-    this.selectedTemplate = undefined;
+    this.selectedTemplate = null;
     this.body = '';
     this.subject = '';
     this.recipient = '';
@@ -149,14 +150,15 @@ export class NotificationComposerComponent implements OnInit {
       return;
     }
 
+    // Map to backend DTO: submitNotificationRequest
     const payload = {
-      recipient: this.recipient,
+      recipients: [this.recipient], // Backend expects an array
       channel: this.channel,
-      template_code: this.selectedTemplate?.code,
-      locale: this.selectedTemplate?.locale,
       subject: this.injectedSubject,
-      body: this.injectedBody,
-      metadata: this.variables.reduce((acc, curr) => ({ ...acc, [curr.name]: curr.value }), {})
+      content: this.injectedBody,    // Backend expects 'content' instead of 'body'
+      metadata: this.variables.reduce((acc, curr) => ({ ...acc, [curr.name]: curr.value }), {}),
+      template_code: this.selectedTemplate?.code, // Optional info for tracking
+      locale: this.selectedTemplate?.locale
     };
 
     this.sending = true;
