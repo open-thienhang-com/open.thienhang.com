@@ -142,48 +142,45 @@ export class NotificationService {
   }
 
   getAuditLogs(filter: AuditQueryFilter = {}): Observable<ApiResponse<ListAuditResponse>> {
-    const params: any = {};
+    const payload: any = {};
     if (filter.page && filter.size) {
-      params.offset = (filter.page - 1) * filter.size;
-      params.limit = filter.size;
+      payload.offset = (filter.page - 1) * filter.size;
+      payload.limit = filter.size;
     } else {
-      if (filter.offset !== undefined) params.offset = filter.offset;
-      if (filter.limit !== undefined) params.limit = filter.limit;
+      if (filter.offset !== undefined) payload.offset = filter.offset;
+      if (filter.limit !== undefined) payload.limit = filter.limit;
     }
-    if (filter.message_id) params.message_id = filter.message_id;
-    if (filter.recipient) params.recipient = filter.recipient;
-    if (filter.channel) params.channel = filter.channel;
-    if (filter.status) params.status = filter.status;
-    if (filter.event_type) params.event_type = filter.event_type;
-    if (filter.from_time) params.from_time = filter.from_time;
-    if (filter.to_time) params.to_time = filter.to_time;
+    if (filter.message_id) payload.message_id = filter.message_id;
+    if (filter.recipient) payload.recipient = filter.recipient;
+    if (filter.channel) payload.channel = filter.channel;
+    if (filter.status) payload.status = filter.status;
+    if (filter.event_type) payload.event_type = filter.event_type;
+    if (filter.from_time) payload.from_time = filter.from_time;
+    if (filter.to_time) payload.to_time = filter.to_time;
 
-    return this.http.get<any>(`${this.getBaseUrl()}/notifications/audit`, { 
-      headers: this.getHeaders(),
-      params: params
+    return this.http.post<any>(`${this.getBaseUrl()}/notifications/audit/list`, payload, { 
+      headers: this.getHeaders()
     }).pipe(
       map(resp => this.normalizeResponse<ListAuditResponse>(resp))
     );
   }
 
-  getExportAuditUrl(filter: AuditQueryFilter = {}): string {
-    const baseUrl = this.getBaseUrl();
-    const queryParts: string[] = [];
-    if (filter.message_id) queryParts.push(`message_id=${filter.message_id}`);
-    if (filter.recipient) queryParts.push(`recipient=${filter.recipient}`);
-    if (filter.channel) queryParts.push(`channel=${filter.channel}`);
-    if (filter.status) queryParts.push(`status=${filter.status}`);
-    if (filter.event_type) queryParts.push(`event_type=${filter.event_type}`);
-    if (filter.from_time) queryParts.push(`from_time=${filter.from_time}`);
-    if (filter.to_time) queryParts.push(`to_time=${filter.to_time}`);
-    
-    // Auth token is usually passed in header, but for simple location.href it might need query param 
-    // or the backend must allow it (or use a temporary token). 
-    // Backend controller currently uses Middleware which checks Authorization header.
-    // For browser download, we might need a different approach or the user handles it.
-    // We'll provide the URL and the component can decide how to fetch.
-    return `${baseUrl}/notifications/audit/export?${queryParts.join('&')}`;
+  exportAuditLogs(filter: AuditQueryFilter = {}): Observable<Blob> {
+    const payload: any = {};
+    if (filter.message_id) payload.message_id = filter.message_id;
+    if (filter.recipient) payload.recipient = filter.recipient;
+    if (filter.channel) payload.channel = filter.channel;
+    if (filter.status) payload.status = filter.status;
+    if (filter.event_type) payload.event_type = filter.event_type;
+    if (filter.from_time) payload.from_time = filter.from_time;
+    if (filter.to_time) payload.to_time = filter.to_time;
+
+    return this.http.post(`${this.getBaseUrl()}/notifications/audit/export`, payload, {
+      headers: this.getHeaders(),
+      responseType: 'blob'
+    });
   }
+
 
   sendNotification(payload: any): Observable<ApiResponse<any>> {
     return this.http.post<any>(`${this.getBaseUrl()}/notifications`, payload, { headers: this.getHeaders() }).pipe(
@@ -192,13 +189,13 @@ export class NotificationService {
   }
 
   getCircuitBreakers(): Observable<ApiResponse<any[]>> {
-    return this.http.get<any>(`${this.getBaseUrl()}/reliability/circuit-breakers`, { headers: this.getHeaders() }).pipe(
+    return this.http.post<any>(`${this.getBaseUrl()}/reliability/circuit-breakers/list`, {}, { headers: this.getHeaders() }).pipe(
       map(resp => this.normalizeResponse<any[]>(resp))
     );
   }
 
   getDeadLetterQueue(): Observable<ApiResponse<any[]>> {
-    return this.http.get<any>(`${this.getBaseUrl()}/reliability/dead-letter-queue`, { headers: this.getHeaders() }).pipe(
+    return this.http.post<any>(`${this.getBaseUrl()}/reliability/dead-letter-queue/list`, {}, { headers: this.getHeaders() }).pipe(
       map(resp => this.normalizeResponse<any[]>(resp))
     );
   }

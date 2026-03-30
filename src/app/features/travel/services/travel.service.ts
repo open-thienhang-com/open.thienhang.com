@@ -255,6 +255,14 @@ export class TravelService {
       .pipe(map(res => this.unwrapList<any>(res)));
   }
 
+  getAnalytics(): Observable<TravelAnalytics | null> {
+    return this.http.get<any>(`${this.bloggerBase}/analytics`)
+      .pipe(
+        map(res => this.unwrapOne<TravelAnalytics>(res)),
+        tap(analytics => this.analytics.set(analytics))
+      );
+  }
+
   // ─────────────────────────────────────────────────────────
   // Helpers
   // ─────────────────────────────────────────────────────────

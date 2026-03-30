@@ -104,12 +104,33 @@ export class NotificationAuditComponent implements OnInit {
   }
 
   onExport(): void {
-    const url = this.notificationService.getExportAuditUrl(this.filters);
-    // Since we need Auth header, we don't use location.href directly.
-    // We can use the service token or simpler: 
-    // Usually browser downloads need either a cookie or a signed URL.
-    // For local dev, we'll just log the URL or use fetch.
-    window.open(url + '&token=' + this.notificationService.getAuthToken(), '_blank');
+    const query = { ...this.filters };
+    if (query.from_time instanceof Date) query.from_time = query.from_time.toISOString();
+    if (query.to_time instanceof Date) query.to_time = query.to_time.toISOString();
+
+    this.notificationService.exportAuditLogs(query).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `notification_audit_${new Date().getTime()}.csv`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Audit logs exported successfully'
+        });
+      },
+      error: (err) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to export audit logs'
+        });
+      }
+    });
   }
 
   loadLogs(event?: any): void {

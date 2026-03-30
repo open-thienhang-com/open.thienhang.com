@@ -213,7 +213,7 @@ export interface TravelAnalytics {
   total_comments: number;
   engagement_rate: number;
   trending_tags: string[];
-  top_categories: { name: string; count: number }[];
+  top_categories: { category: string; count: number }[];
 }
 
 /** Uploads Domain Interfaces **/
