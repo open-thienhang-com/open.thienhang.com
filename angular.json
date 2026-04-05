@@ -29,7 +29,14 @@
               "polyfills": ["zone.js"],
               "tsConfig": "tsconfig.app.json",
               "inlineStyleLanguage": "scss",
-              "assets": ["src/assets"],
+              "assets": [
+                "src/assets",
+                {
+                  "glob": "CNAME",
+                  "input": ".",
+                  "output": "/"
+                }
+              ],
               "styles": [
                 "src/styles.scss"
               ],
