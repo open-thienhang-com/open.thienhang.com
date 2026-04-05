@@ -37,7 +37,9 @@ export interface UserProfile extends User {
   providedIn: 'root'
 })
 export class UserService {
-  private baseUrl = getApiBase();
+  private get baseUrl(): string {
+    return getApiBase();
+  }
 
   constructor(private http: HttpClient) { }
 

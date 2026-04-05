@@ -69,7 +69,9 @@ export interface DataProductMetrics {
   providedIn: 'root',
 })
 export class DataProductServices {
-  private baseUrl = getApiBase();
+  private get baseUrl(): string {
+    return getApiBase();
+  }
 
   constructor(private http: HttpClient) { }
 

@@ -245,7 +245,9 @@ export interface Permission {
   providedIn: 'root'
 })
 export class GovernanceServices {
-  private baseUrl = getApiBase();
+  private get baseUrl(): string {
+    return getApiBase();
+  }
 
   constructor(
     private http: HttpClient,

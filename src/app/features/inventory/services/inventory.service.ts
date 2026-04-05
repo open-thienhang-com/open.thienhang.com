@@ -13,8 +13,12 @@ import {
   providedIn: 'root'
 })
 export class ProductService {
-  private apiBase = getApiBase();
-  private retailDomainUrl = `${this.apiBase}/data-mesh/domains/retail`;
+  private get apiBase(): string {
+    return getApiBase();
+  }
+  private get retailDomainUrl(): string {
+    return `${this.apiBase}/data-mesh/domains/retail`;
+  }
 
   // Signals for state management
   products = signal<Product[]>([]);
@@ -92,7 +96,9 @@ export class ProductService {
   providedIn: 'root'
 })
 export class InventoryService {
-  private baseUrl = `${getApiBase()}/adapters/retail`;
+  private get baseUrl(): string {
+    return `${getApiBase()}/adapters/retail`;
+  }
 
   // Signals for state management
   stocks = signal<Stock[]>([]);
@@ -185,7 +191,9 @@ export class InventoryService {
   providedIn: 'root'
 })
 export class AnalyticsService {
-  private baseUrl = `${getApiBase()}/adapters/retail`;
+  private get baseUrl(): string {
+    return `${getApiBase()}/adapters/retail`;
+  }
 
   constructor(private http: HttpClient) { }
 
@@ -214,7 +222,9 @@ export class AnalyticsService {
   providedIn: 'root'
 })
 export class CategoryService {
-  private baseUrl = `${getApiBase()}/data-mesh/domains/retail/categories`;
+  private get baseUrl(): string {
+    return `${getApiBase()}/data-mesh/domains/retail/categories`;
+  }
 
   constructor(private http: HttpClient) { }
 
@@ -251,7 +261,9 @@ export class CategoryService {
   providedIn: 'root'
 })
 export class WarehouseService {
-  private baseUrl = `${getApiBase()}/data-mesh/domains/retail/warehouses`;
+  private get baseUrl(): string {
+    return `${getApiBase()}/data-mesh/domains/retail/warehouses`;
+  }
 
   constructor(private http: HttpClient) { }
 
@@ -280,7 +292,9 @@ export class WarehouseService {
   providedIn: 'root'
 })
 export class PartnerService {
-  private baseUrl = `${getApiBase()}/data-mesh/domains/retail/partners`;
+  private get baseUrl(): string {
+    return `${getApiBase()}/data-mesh/domains/retail/partners`;
+  }
 
   constructor(private http: HttpClient) { }
 
@@ -331,7 +345,9 @@ export class PartnerService {
 })
 export class SupplierService {
   // Added stub as per tasks.md requirement for future use
-  private baseUrl = `${getApiBase()}/data-mesh/domains/retail/suppliers`;
+  private get baseUrl(): string {
+    return `${getApiBase()}/data-mesh/domains/retail/suppliers`;
+  }
   constructor(private http: HttpClient) { }
   listSuppliers(): Observable<any> { return of([]); }
 }

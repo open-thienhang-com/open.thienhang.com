@@ -16,6 +16,9 @@ export const sidebarGroups: MenuItem[] = [
                 ]
             },
             { label: 'Database', url: '/explore/database', icon: 'pi pi-database' },
+            { label: 'Google', url: '/explore/google', icon: 'pi pi-google' },
+            { label: 'Data Warehouse', url: '/explore/data-warehouse', icon: 'pi pi-server' },
+            { label: 'Docker Hub', url: '/data-mesh/domains/dockerhub', icon: 'pi pi-box' },
             { label: 'Pipelines', url: '/explore/pipelines', icon: 'pi pi-sliders-h' },
             { label: 'Topics', url: '/explore/topics', icon: 'pi pi-tags' },
             { label: 'ML Models', url: '/explore/ml-models', icon: 'pi pi-brain' },

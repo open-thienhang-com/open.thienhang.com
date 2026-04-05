@@ -5,7 +5,9 @@ import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class DataAssetsService {
-  private baseUrl = `${getApiBase()}/data-catalog`;
+  private get baseUrl(): string {
+    return `${getApiBase()}/data-catalog`;
+  }
 
   constructor(private http: HttpClient) { }
 

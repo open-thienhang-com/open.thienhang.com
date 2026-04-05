@@ -21,8 +21,9 @@ import {
 })
 export class FilesService {
   private http = inject(HttpClient);
-  private apiBase = getApiBase();
-  private filesBaseUrl = `${this.apiBase}/data-mesh/domains/files`;
+  private get filesBaseUrl(): string {
+    return `${getApiBase()}/data-mesh/domains/files`;
+  }
 
   getVersion(): Observable<FilesVersion> {
     return this.http.get<FilesVersion>(`${this.filesBaseUrl}/version`);

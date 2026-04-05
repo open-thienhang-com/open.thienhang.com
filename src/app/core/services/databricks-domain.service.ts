@@ -109,7 +109,9 @@ export interface DatabricksVersion {
   providedIn: 'root'
 })
 export class DatabricksDomainService {
-  private readonly baseUrl = `${getApiBase()}/data-mesh/domains/databricks`;
+  private get baseUrl(): string {
+    return `${getApiBase()}/data-mesh/domains/databricks`;
+  }
 
   constructor(private readonly http: HttpClient) {}
 

@@ -87,7 +87,9 @@ export interface DockerHubVersion {
   providedIn: 'root'
 })
 export class DockerHubDomainService {
-  private readonly baseUrl = `${getApiBase()}/data-mesh/domains/dockerhub`;
+  private get baseUrl(): string {
+    return `${getApiBase()}/data-mesh/domains/dockerhub`;
+  }
 
   constructor(private readonly http: HttpClient) {}
 

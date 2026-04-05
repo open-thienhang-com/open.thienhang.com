@@ -1,72 +1,96 @@
-<div class="applications-page">
-  <!-- Animated Background -->
-  <div class="animated-background">
-    <div class="gradient-orb orb-1"></div>
-    <div class="gradient-orb orb-2"></div>
-    <div class="gradient-orb orb-3"></div>
-    <div class="gradient-orb orb-4"></div>
-    <div class="mesh-gradient"></div>
+<div class="applications-page premium-theme">
+  <!-- Fluid Ambient Background -->
+  <div class="ambient-background">
+    <div class="mesh-blob blob-1"></div>
+    <div class="mesh-blob blob-2"></div>
+    <div class="mesh-blob blob-3"></div>
+    <div class="mesh-blob blob-4"></div>
+    <div class="mesh-blob blob-5"></div>
+    <div class="noise-overlay"></div>
   </div>
 
-  <!-- Content Container -->
+  <!-- Main Content -->
   <div class="content-container">
-    <!-- Header Section -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="header-icon">
+    
+    <!-- Header -->
+    <header class="page-header stagger-in">
+      <div class="header-glass-panel">
+        <div class="header-icon-container">
+          <div class="icon-ring"></div>
           <i class="pi pi-th-large"></i>
         </div>
-        <div class="header-text">
-          <h1 class="page-title">All Applications</h1>
-          <p class="page-subtitle">Choose an application to get started</p>
+        <div class="header-text-content">
+          <h1 class="page-title">Application Hub</h1>
+          <p class="page-subtitle">Select a module to launch your workspace</p>
         </div>
       </div>
-    </div>
+    </header>
 
-    <div class="category-section" *ngFor="let category of categories">
-      <h2 class="category-title" *ngIf="category !== 'Platform Core'">{{ category }}</h2>
-      
-      <div class="applications-grid">
-        <button 
-          *ngFor="let app of getAppsByCategory(category)" 
-          type="button"
-          class="app-card"
-          [class.active]="selectedApp === app.key"
-          [attr.data-app-key]="app.key"
-          (click)="selectApp(app.key)"
-          [attr.aria-label]="app.label">
+    <!-- Categories -->
+    <main class="categories-wrapper">
+      <section class="category-section" 
+               *ngFor="let category of categories; let i = index" 
+               [style.animation-delay]="i * 0.1 + 's'">
+               
+        <div class="category-header fade-in-up" *ngIf="category !== 'Platform Core'">
+          <div class="category-indicator"></div>
+          <h2 class="category-title">{{ category }}</h2>
+          <div class="category-line"></div>
+        </div>
+        
+        <div class="applications-grid">
+          <button 
+            *ngFor="let app of getAppsByCategory(category); let j = index" 
+            type="button"
+            class="app-card glass-card fade-in-up"
+            [class.active]="selectedApp === app.key"
+            (click)="selectApp(app.key)"
+            [attr.aria-label]="app.label"
+            [style.animation-delay]="(i * 0.15) + (j * 0.05) + 's'"
+            [style.--app-gradient]="app.gradient">
 
-          <!-- Card Pattern -->
-          <div class="card-pattern"></div>
-          
-          <!-- App Accent Bar -->
-          <div class="app-accent-bar" [style.background]="app.gradient"></div>
-          
-          <!-- Card Body -->
-          <div class="card-body">
-            <!-- App Icon -->
-            <div class="app-icon-container">
-              <div class="icon-backdrop" [style.background]="app.gradient"></div>
-              <i [class]="app.icon"></i>
+            <!-- Animated Edge Glow -->
+            <div class="card-edge-glow" [style.background]="app.gradient"></div>
+            
+            <!-- Card Body / Glass Layer -->
+            <div class="card-content">
+              
+              <!-- Icon Setup -->
+              <div class="app-icon-wrapper">
+                <div class="icon-bg" [style.background]="app.gradient"></div>
+                <!-- Drop shadow that matches the gradient -->
+                <div class="icon-shadow" [style.background]="app.gradient"></div>
+                <i [class]="app.icon"></i>
+              </div>
+              
+              <!-- Text Info -->
+              <div class="app-info">
+                <h3 class="app-name">{{ app.label }}</h3>
+                <p class="app-desc" *ngIf="app.description">{{ app.description }}</p>
+                <p class="app-desc-empty" *ngIf="!app.description">Launch module</p>
+              </div>
+
+              <!-- Action Indicator -->
+              <div class="app-action">
+                <i class="pi pi-arrow-right"></i>
+              </div>
             </div>
             
-            <!-- App Info -->
-            <div class="app-info">
-              <h3 class="app-name">{{ app.label }}</h3>
-              <p class="app-desc" *ngIf="app.description">{{ app.description }}</p>
+            <!-- Active State Badge -->
+            <div class="active-badge" *ngIf="selectedApp === app.key">
+              <div class="badge-bg" [style.background]="app.gradient"></div>
+              <div class="badge-content">
+                <i class="pi pi-check-circle"></i>
+                <span>Active</span>
+              </div>
             </div>
-          </div>
-          
-          <!-- Active Badge -->
-          <div class="active-indicator" *ngIf="selectedApp === app.key">
-            <i class="pi pi-check-circle"></i>
-            <span>Active</span>
-          </div>
-          
-          <!-- Hover Effect -->
-          <div class="card-hover-effect"></div>
-        </button>
-      </div>
-    </div>
+            
+            <!-- Ambient Hover Glow -->
+            <div class="hover-ambient-glow" [style.background]="app.gradient"></div>
+          </button>
+        </div>
+      </section>
+    </main>
+
   </div>
 </div>

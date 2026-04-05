@@ -26,6 +26,7 @@ export interface GoogleCredential {
   status: string;
   expires_at: string;
   has_refresh_token: boolean;
+  provider?: string;
   access_token_masked?: string;
   refresh_token_masked?: string;
 }
@@ -153,7 +154,9 @@ export interface GoogleIntegrationFilters {
   providedIn: 'root'
 })
 export class GoogleDomainService {
-  private readonly baseUrl = `${getApiBase()}/data-mesh/domains/google`;
+  private get baseUrl(): string {
+    return `${getApiBase()}/data-mesh/domains/google`;
+  }
 
   constructor(private readonly http: HttpClient) {}
 

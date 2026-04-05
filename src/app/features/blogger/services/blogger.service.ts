@@ -247,7 +247,9 @@ export interface BloggerFeaturesResponse {
 })
 export class BloggerService {
     private http = inject(HttpClient);
-    private apiBase = getApiBase();
+    private get apiBase(): string {
+        return getApiBase();
+    }
 
     getAuthors(limit: number = 10, offset: number = 0): Observable<AuthorsResponse> {
         const params = new HttpParams()

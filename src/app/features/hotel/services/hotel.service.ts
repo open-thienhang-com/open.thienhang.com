@@ -11,7 +11,9 @@ import { getApiBase } from '../../../core/config/api-config';
   providedIn: 'root'
 })
 export class HotelService {
-  private baseUrl = `${getApiBase()}/data-mesh/domains/hotel`;
+  private get baseUrl(): string {
+    return `${getApiBase()}/data-mesh/domains/hotel`;
+  }
 
   constructor(private http: HttpClient) { }
 

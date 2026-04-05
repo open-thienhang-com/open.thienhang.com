@@ -82,7 +82,9 @@ export interface SchemaIndex {
   providedIn: 'root',
 })
 export class DiscoveryServices {
-  private baseUrl = getApiBase();
+  private get baseUrl(): string {
+    return getApiBase();
+  }
 
   constructor(private http: HttpClient) { }
 

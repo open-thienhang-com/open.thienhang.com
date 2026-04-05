@@ -15,6 +15,7 @@ import { DialogModule } from 'primeng/dialog';
 import { TreeModule } from 'primeng/tree';
 import { DataViewModule } from 'primeng/dataview';
 import { OrderListModule } from 'primeng/orderlist';
+import { DividerModule } from 'primeng/divider';
 import { TreeNode } from 'primeng/api';
 import { forkJoin } from 'rxjs';
 
@@ -93,7 +94,8 @@ interface DomainNode {
         DialogModule,
         TreeModule,
         DataViewModule,
-        OrderListModule
+        OrderListModule,
+        DividerModule
     ],
     templateUrl: './explore.component.html',
     styleUrls: ['./explore.component.scss']
@@ -142,6 +144,33 @@ export class ExploreComponent implements OnInit {
     loadingFilters: boolean = false;
     loadingTree: boolean = false;
     loadingStats: boolean = false;
+    
+    specializedExplorers = [
+        {
+            key: 'google',
+            label: 'Google Explorer',
+            icon: 'pi pi-google',
+            description: 'OAuth consent, Drive files, and Gmail inventory',
+            route: '/explore/google',
+            gradient: 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)'
+        },
+        {
+            key: 'databricks',
+            label: 'Databricks',
+            icon: 'pi pi-server',
+            description: 'Workspaces, SQL assets, and jobs monitor',
+            route: '/explore/data-warehouse',
+            gradient: 'linear-gradient(135deg, #FF3621 0%, #172534 100%)'
+        },
+        {
+            key: 'docker',
+            label: 'Docker Hub',
+            icon: 'pi pi-box',
+            description: 'Manage containers and Docker Hub domains',
+            route: '/data-mesh/domains/dockerhub',
+            gradient: 'linear-gradient(135deg, #2496ED 0%, #1D63ED 100%)'
+        }
+    ];
 
     constructor(
         private dataAssetsService: DataAssetsService, 
@@ -487,6 +516,10 @@ export class ExploreComponent implements OnInit {
     }
 
     // Navigation
+    navigateToExplorer(route: string): void {
+        this.router.navigate([route]);
+    }
+
     openDetailPage(asset: Asset): void {
         if (asset && asset._id) {
             this.router.navigate(['/explore', asset._id]);

@@ -8,7 +8,9 @@ import { LoyaltyMember, LoyaltyReward, LoyaltyCampaign } from '../models/loyalty
   providedIn: 'root'
 })
 export class LoyaltyService {
-  private apiBase = getApiBase();
+  private get apiBase(): string {
+    return getApiBase();
+  }
   // Placeholder service for loyalty operations
 
   constructor(private http: HttpClient) { }

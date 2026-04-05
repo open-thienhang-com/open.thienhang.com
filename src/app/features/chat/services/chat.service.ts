@@ -32,10 +32,11 @@ import {
 })
 export class ChatService {
     private http = inject(HttpClient);
-    private apiBase = getApiBase();
 
     // Base URL for chat domain
-    private chatBaseUrl = `${this.apiBase}/data-mesh/domains/chat`;
+    private get chatBaseUrl(): string {
+        return `${getApiBase()}/data-mesh/domains/chat`;
+    }
 
     getChatDataProducts(): Observable<ApiResponse<ChatDataProducts>> {
         return this.http.get<ApiResponse<ChatDataProducts>>(`${this.chatBaseUrl}/`);

@@ -73,73 +73,93 @@
             <ng-container [ngSwitch]="activeSection">
               <!-- Section: Connect -->
               <div *ngSwitchCase="'connect'" class="google-section">
-                <div class="grid-2">
-                  <div class="flat-card">
-                    <div class="card-header">
-                      <div class="card-icon"><i class="pi pi-link"></i></div>
-                      <div class="card-title-group">
-                        <h2 class="card-title">OAuth Connection</h2>
-                        <p class="card-subtitle">Current authorization state and linked account details</p>
-                      </div>
-                      <p-tag [value]="oauthState" [severity]="getSeverity(oauthState)" rounded="true"></p-tag>
+                <div class="flat-card content-center min-h-[400px]">
+                  
+                  <!-- Loading State -->
+                  <div *ngIf="credentialsState.loading || authConfigState.loading" class="flex flex-col items-center gap-4 py-16">
+                    <i class="pi pi-spin pi-spinner text-4xl text-blue-500"></i>
+                    <p class="text-secondary">Checking connection status...</p>
+                  </div>
+
+                  <!-- Error State (when credentials call fails) -->
+                  <div *ngIf="!credentialsState.loading && credentialsState.error" class="flex flex-col items-center gap-4 py-16 text-center max-w-md mx-auto">
+                    <div class="p-6 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 mb-2">
+                      <i class="pi pi-exclamation-circle text-5xl"></i>
                     </div>
-                    <div class="card-body">
-                      <div class="kv-list">
-                        <div class="kv-item"><span>Status</span><strong>{{ oauthState }}</strong></div>
-                        <div class="kv-item"><span>Account</span><strong>{{ connectionState.data?.linked_account || 'Not linked' }}</strong></div>
-                        <div class="kv-item"><span>Credential ID</span><strong>{{ connectionState.data?.credential_id || 'N/A' }}</strong></div>
-                        <div class="kv-item"><span>Expiry</span><strong>{{ formatDate(connectionState.data?.expires_at) }}</strong></div>
+                    <h3 class="text-xl font-bold">Connection Check Failed</h3>
+                    <p class="text-secondary">{{ credentialsState.error }}</p>
+                    <button pButton label="Reconnect with Google" icon="pi pi-google" class="p-button-raised p-button-primary mt-4" (click)="startGoogleConnect()"></button>
+                  </div>
+
+                  <!-- Connected State -->
+                  <div *ngIf="!credentialsState.loading && !credentialsState.error && (credentialsState.data?.total || 0) > 0" class="flex flex-col items-center gap-6 py-12">
+                    <div class="p-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 shadow-sm">
+                      <i class="pi pi-check-circle text-6xl"></i>
+                    </div>
+                    <div class="text-center">
+                      <h3 class="text-2xl font-bold">Successfully Connected</h3>
+                      <p class="text-secondary mt-2">Your Google ecosystem is linked and synchronization is active</p>
+                    </div>
+                    
+                    <div class="w-full max-w-sm p-5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm mt-2">
+                      <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl font-bold">
+                          {{ (credentialsState.data?.data?.[0]?.google_account_email || 'G').charAt(0).toUpperCase() }}
+                        </div>
+                        <div class="flex-1 overflow-hidden">
+                          <div class="font-bold truncate">{{ credentialsState.data?.data?.[0]?.google_account_email }}</div>
+                          <div class="text-xs text-secondary truncate font-mono opacity-60">{{ credentialsState.data?.data?.[0]?.credential_id }}</div>
+                        </div>
+                        <p-tag [value]="credentialsState.data?.data?.[0]?.status" severity="success" rounded="true"></p-tag>
                       </div>
-                      <div class="action-row mt-3">
-                        <button pButton type="button" label="Inspect Request" icon="pi pi-code" class="p-button-outlined p-button-sm" (click)="createAuthUrl()"></button>
-                        <button pButton type="button" label="Connect Now" icon="pi pi-google" class="p-button-sm" (click)="startGoogleConnect()"></button>
+                    </div>
+
+                    <div class="flex gap-4 mt-4">
+                      <button pButton label="Manage Credentials" icon="pi pi-list" class="p-button-text font-semibold" (click)="switchSection('credentials')"></button>
+                      <button pButton label="Add Another Account" icon="pi pi-plus" class="p-button-outlined font-semibold" (click)="startGoogleConnect()"></button>
+                    </div>
+                  </div>
+
+                  <!-- Disconnected State -->
+                  <div *ngIf="!credentialsState.loading && !credentialsState.error && (credentialsState.data?.total || 0) === 0" class="flex flex-col items-center gap-8 py-16">
+                    <div class="p-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 shadow-inner">
+                      <i class="pi pi-google text-7xl"></i>
+                    </div>
+                    <div class="text-center max-w-lg">
+                      <h3 class="text-4xl font-extrabold tracking-tight">Connect Your Google Workspace</h3>
+                      <p class="text-lg text-secondary mt-4 leading-relaxed">Integrate your Google ecosystem to explore Drive files, analyze Gmail metadata, and monitor Cloud resources directly within the Data Mesh hub.</p>
+                    </div>
+                    
+                    <div class="flex flex-col items-center gap-4 mt-4">
+                      <button pButton label="Connect with Google" icon="pi pi-google" class="p-button-raised p-button-primary p-button-lg px-10 py-5 text-xl font-bold shadow-lg transform hover:scale-105 transition-all" (click)="startGoogleConnect()"></button>
+                      <div class="flex items-center gap-2 text-xs text-secondary opacity-60 mt-2">
+                        <i class="pi pi-lock text-[10px]"></i>
+                        <span>You will be redirected to Google for secure authorization</span>
+                      </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-10 w-full max-w-2xl pt-12 border-t border-gray-100 dark:border-gray-800 mt-6 text-center">
+                      <div class="flex flex-col items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500">
+                           <i class="pi pi-file text-xl"></i>
+                        </div>
+                        <span class="text-xs font-semibold uppercase tracking-wider opacity-80">Drive Assets</span>
+                      </div>
+                      <div class="flex flex-col items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-500">
+                           <i class="pi pi-envelope text-xl"></i>
+                        </div>
+                        <span class="text-xs font-semibold uppercase tracking-wider opacity-80">Gmail Intelligence</span>
+                      </div>
+                      <div class="flex flex-col items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-500">
+                           <i class="pi pi-cloud text-xl"></i>
+                        </div>
+                        <span class="text-xs font-semibold uppercase tracking-wider opacity-80">GCP Integration</span>
                       </div>
                     </div>
                   </div>
 
-                  <div class="flat-card">
-                    <div class="card-header">
-                      <div class="card-icon"><i class="pi pi-shield"></i></div>
-                      <div class="card-title-group">
-                        <h2 class="card-title">Consent Payload</h2>
-                        <p class="card-subtitle">Detailed OAuth request data returned from the secure domain</p>
-                      </div>
-                    </div>
-                    <div class="card-body">
-                      <div *ngIf="authConfigState.loading" class="flex justify-center p-4">
-                        <p-progressSpinner strokeWidth="3" [style]="{width: '40px', height: '40px'}"></p-progressSpinner>
-                      </div>
-
-                      <p-message *ngIf="authConfigState.error" severity="error" [text]="authConfigState.error" styleClass="w-full mb-3"></p-message>
-
-                      <ng-container *ngIf="authConfigState.data as auth">
-                        <div class="data-block mb-3">
-                          <label class="sidebar-eyebrow">Redirect URI</label>
-                          <div class="mono-block mb-2">{{ auth.redirect_uri }}</div>
-                        </div>
-
-                        <div class="data-block mb-3">
-                          <label class="sidebar-eyebrow">Authorization URL</label>
-                          <div class="mono-block mb-2" style="max-height: 100px; overflow-y: auto; font-size: 0.75rem;">{{ auth.authorization_url }}</div>
-                        </div>
-
-                        <div class="data-block mb-4">
-                          <label class="sidebar-eyebrow">Requested Scopes</label>
-                          <div class="pill-list">
-                            <span class="info-pill" *ngFor="let scope of auth.scopes">{{ scope }}</span>
-                          </div>
-                        </div>
-
-                        <div class="action-row pt-2 border-top-1 border-gray-100">
-                          <button pButton type="button" label="Authorize & Redirect" icon="pi pi-external-link" class="p-button-sm w-full" (click)="startGoogleConnect()"></button>
-                        </div>
-                      </ng-container>
-
-                      <div *ngIf="!authConfigState.loading && !authConfigState.data && !authConfigState.error" class="empty-state p-4">
-                        <button pButton type="button" label="Generate Auth Config" icon="pi pi-cog" class="p-button-outlined p-button-sm" (click)="createAuthUrl()"></button>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -159,9 +179,10 @@
                       <ng-template pTemplate="header">
                         <tr>
                           <th>Account</th>
+                          <th>Provider</th>
                           <th>Status</th>
                           <th>Expires</th>
-                          <th>Methods</th>
+                          <th>Tokens</th>
                           <th>Actions</th>
                         </tr>
                       </ng-template>
@@ -171,13 +192,19 @@
                             <div class="font-bold">{{ credential.google_account_email }}</div>
                             <div class="text-xs text-secondary">{{ credential.credential_id }}</div>
                           </td>
+                          <td><p-tag [value]="credential.provider || 'google'" severity="info"></p-tag></td>
                           <td><p-tag [value]="credential.status" [severity]="getSeverity(credential.status)"></p-tag></td>
                           <td>{{ formatDate(credential.expires_at) }}</td>
                           <td>
-                            <div class="pill-list compact-pills">
-                              <span class="info-pill" *ngIf="credential.has_refresh_token">Refresh</span>
-                              <span class="info-pill" *ngFor="let scope of credential.scopes.slice(0, 2)">{{ scope }}</span>
-                              <span class="info-pill" *ngIf="credential.scopes.length > 2">+{{ credential.scopes.length - 2 }}</span>
+                            <div class="flex flex-col gap-1">
+                              <div class="flex items-center gap-1" *ngIf="credential.access_token_masked">
+                                <span class="text-xs opacity-60">Access:</span>
+                                <code class="text-xs">{{ credential.access_token_masked }}</code>
+                              </div>
+                              <div class="flex items-center gap-1" *ngIf="credential.refresh_token_masked">
+                                <span class="text-xs opacity-60">Refresh:</span>
+                                <code class="text-xs">{{ credential.refresh_token_masked }}</code>
+                              </div>
                             </div>
                           </td>
                           <td>
@@ -252,25 +279,34 @@
                     <div class="card-icon"><i class="pi pi-table"></i></div>
                     <div class="card-title-group">
                       <h2 class="card-title">Integration Inventory</h2>
-                      <p class="card-subtitle">Centralized view of all Google ecosystem integrations</p>
+                      <p class="card-subtitle">Centralized view of all Google ecosystem integrations from root domain</p>
                     </div>
                   </div>
                   <div class="card-body">
-                    <p-table [value]="integrationsState.data?.data || []" [paginator]="true" [rows]="10" styleClass="p-datatable-sm">
+                    <p-table [value]="rootIntegrationsState.data?.data || []" [paginator]="true" [rows]="10" styleClass="p-datatable-sm" [loading]="rootIntegrationsState.loading">
                       <ng-template pTemplate="header">
                         <tr>
                           <th>Service</th>
+                          <th>Resource Name</th>
                           <th>Project</th>
+                          <th>Region</th>
                           <th>Owner</th>
                           <th>Status</th>
+                          <th>Last Sync</th>
                         </tr>
                       </ng-template>
                       <ng-template pTemplate="body" let-item>
-                        <tr>
-                          <td class="font-bold">{{ item.service }}</td>
-                          <td>{{ item.project_id }}</td>
+                        <tr class="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/30" (click)="selectIntegration(item.id)">
+                          <td class="font-bold flex items-center gap-2">
+                            <i [class]="item.service === 'storage' ? 'pi pi-folder' : item.service === 'bigquery' ? 'pi pi-database' : 'pi pi-box'"></i>
+                            {{ item.service }}
+                          </td>
+                          <td class="text-blue-600 dark:text-blue-400 font-medium">{{ item.resource_name }}</td>
+                          <td><span class="text-xs font-mono">{{ item.project_id }}</span></td>
+                          <td><p-tag [value]="item.region" severity="secondary" rounded="true"></p-tag></td>
                           <td>{{ item.owner }}</td>
                           <td><p-tag [value]="item.status" [severity]="getSeverity(item.status)"></p-tag></td>
+                          <td class="text-xs">{{ formatDate(item.last_sync_at) }}</td>
                         </tr>
                       </ng-template>
                     </p-table>

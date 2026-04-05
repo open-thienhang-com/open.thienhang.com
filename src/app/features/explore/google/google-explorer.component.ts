@@ -279,7 +279,10 @@ done`;
       this.applyState(this.rootIntegrationsState, result.root);
       this.loadedSections.add('inventory');
 
-      const initialIntegrationId = this.integrationDetailState.data?.id || this.integrationsState.data?.data?.[0]?.id;
+      const initialIntegrationId = this.integrationDetailState.data?.id || 
+                                   this.rootIntegrationsState.data?.data?.[0]?.id || 
+                                   this.integrationsState.data?.data?.[0]?.id;
+                                   
       if (initialIntegrationId) {
         this.selectIntegration(initialIntegrationId);
       } else {
@@ -541,10 +544,10 @@ done`;
 
     switch (section) {
       case 'connect':
+        this.globalLoading = true;
+        this.loadCredentials(force);
         if (!this.authConfigState.data && !this.authConfigState.loading) {
           this.createAuthUrl();
-        } else {
-          this.globalLoading = false;
         }
         this.loadedSections.add(section);
         break;

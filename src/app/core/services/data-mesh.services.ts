@@ -241,7 +241,9 @@ export interface SchemaRegistryItem {
   providedIn: 'root',
 })
 export class DataMeshServices {
-  private baseUrl = getApiBase();
+  private get baseUrl(): string {
+    return getApiBase();
+  }
 
   constructor(private http: HttpClient) { }
 

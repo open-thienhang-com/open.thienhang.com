@@ -38,7 +38,9 @@ interface TruckDetailResponse {
   providedIn: 'root'
 })
 export class TruckService {
-  private baseUrl = `${getApiBase()}/data-mesh/domains/retail/trucks`;
+  private get baseUrl(): string {
+    return `${getApiBase()}/data-mesh/domains/retail/trucks`;
+  }
 
   constructor(private http: HttpClient) {}
 

@@ -11,7 +11,9 @@ import { getApiBase } from '../config/api-config';
 export class ConnectionService {
     private online$ = new BehaviorSubject<boolean>(navigator.onLine);
     private apiAvailable$ = new BehaviorSubject<boolean>(true);
-    private readonly API_BASE_URL = getApiBase();
+    private get API_BASE_URL(): string {
+        return getApiBase();
+    }
 
     constructor(
         private router: Router,

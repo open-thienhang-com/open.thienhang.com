@@ -153,7 +153,9 @@ export interface UsageAnalytics {
   providedIn: 'root',
 })
 export class ObservabilityServices {
-  private baseUrl = getApiBase();
+  private get baseUrl(): string {
+    return getApiBase();
+  }
 
   constructor(private http: HttpClient) { }
 
