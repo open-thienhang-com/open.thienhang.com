@@ -213,10 +213,10 @@ export class SidebarComponent implements OnInit, OnChanges {
     },
     {
       key: 'loyalty',
-      label: 'Loyalty Program',
-      icon: 'pi pi-star',
+      label: 'CRM & Customers',
+      icon: 'pi pi-users',
       gradient: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
-      description: 'Customer loyalty, rewards, and campaigns'
+      description: 'Customer management, loyalty rewards and campaigns'
     },
     {
       key: 'governance',
@@ -258,7 +258,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       label: 'Inventory Management',
       icon: 'pi pi-box',
       gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-      description: 'Stock, products, and warehouse management'
+      description: 'Stock, products, warehouses, fleet and forecasting'
     },
     {
       key: 'files',
@@ -308,6 +308,10 @@ export class SidebarComponent implements OnInit, OnChanges {
       this.savethemeState(state);
       this.handleDarkModeTransition(state);
     });
+  }
+
+  get isLoggedIn(): boolean {
+    return this.authServices.isLoggedIn();
   }
 
   get workspaceLabel(): string {
@@ -604,33 +608,26 @@ export class SidebarComponent implements OnInit, OnChanges {
 
     // Special-case: for Retail app, show business sections in a fixed order.
     if (key === 'retail') {
-      const retailGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('retail'));
+      const retailGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('sales & commerce'));
       const groups: any[] = [];
 
       if (retailGroup) {
         const businessOrder = [
-          'retail operations',
-          'store analytics',
-          'order management',
-          'transactions',
+          'sales & orders',
           'ecommerce',
-          'payment',
-          'customers',
           'omni-channel',
-          'products',
           'point of sale',
-          'retail settings'
         ];
 
         businessOrder.forEach(keyPart => {
           const section = ((retailGroup as any).children || (retailGroup as any).items || []).find((it: any) => (it.label || '').toLowerCase().includes(keyPart));
           if (section) {
             groups.push({
-              label: '',
-              icon: '',
+              label: section.label,
+              icon: section.icon,
               items: (section as any).children || (section as any).items || [],
               expanded: false,
-              _noHeader: true
+              _noHeader: false
             });
           }
         });
@@ -651,42 +648,6 @@ export class SidebarComponent implements OnInit, OnChanges {
       return;
     }
 
-    if (key === 'fleet') {
-      const fleetGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('fleet'));
-      if (fleetGroup) {
-        const sourceItems = (fleetGroup as any).children || (fleetGroup as any).items || [];
-        const flattened = this.getFlattenedItems(sourceItems);
-        const groups = [{
-          label: '',
-          icon: '',
-          items: sourceItems,
-          expanded: false,
-          _noHeader: true,
-          _flattened: flattened
-        } as any];
-        this.visibleGroups = groups;
-        return;
-      }
-    }
-
-    if (key === 'warehouse') {
-      const warehouseGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('warehouse'));
-      if (warehouseGroup) {
-        const sourceItems = (warehouseGroup as any).children || (warehouseGroup as any).items || [];
-        const flattened = this.getFlattenedItems(sourceItems);
-        const groups = [{
-          label: '',
-          icon: '',
-          items: sourceItems,
-          expanded: false,
-          _noHeader: true,
-          _flattened: flattened
-        } as any];
-        this.visibleGroups = groups;
-        return;
-      }
-    }
-
     if (key === 'planning') {
       const planningGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('retail planning'));
       if (planningGroup) {
@@ -705,40 +666,38 @@ export class SidebarComponent implements OnInit, OnChanges {
       }
     }
 
-    if (key === 'forecast') {
-      const forecastGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('retail forecast'));
-      if (forecastGroup) {
-        const sourceItems = (forecastGroup as any).children || (forecastGroup as any).items || [];
-        const flattened = this.getFlattenedItems(sourceItems);
-        const groups = [{
-          label: '',
-          icon: '',
-          items: sourceItems,
-          expanded: false,
-          _noHeader: true,
-          _flattened: flattened
-        } as any];
+    if (key === 'inventory' || key === 'fleet' || key === 'warehouse' || key === 'forecast') {
+      const invGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('inventory management'));
+      if (invGroup) {
+        const subGroupLabels = ['stock & products', 'fleet & warehouse', 'forecast'];
+        const currentUrl = this.router.url;
+        const groups: any[] = subGroupLabels.map(subLabel => {
+          const sub = ((invGroup as any).children || []).find((it: any) =>
+            (it.label || '').toLowerCase().includes(subLabel)
+          );
+          if (!sub) return null;
+          const sourceItems = (sub as any).children || (sub as any).items || [];
+          const flattened = this.getFlattenedItems(sourceItems);
+          const matchesCurrent = flattened.some((item: any) =>
+            this.getPath(item.url) === this.getPath(currentUrl)
+          );
+          return {
+            label: sub.label,
+            icon: sub.icon,
+            expanded: matchesCurrent || subLabel === 'stock & products',
+            items: sourceItems,
+            _flattened: flattened
+          };
+        }).filter(Boolean);
         this.visibleGroups = groups;
-        return;
-      }
-    }
-
-    if (key === 'inventory') {
-      const group = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('inventory management'));
-      if (group) {
-        this.visibleGroups = [group];
-        this.visibleGroups.forEach(g => {
-          g.expanded = true;
-          (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
-        });
       } else {
         this.visibleGroups = [];
       }
       return;
     }
 
-    if (key === 'loyalty') {
-      const group = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('loyalty & crm'));
+    if (key === 'loyalty' || key === 'retail-customers') {
+      const group = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('crm & customers'));
       if (group) {
         this.visibleGroups = [group];
         this.visibleGroups.forEach(g => {
@@ -816,12 +775,33 @@ export class SidebarComponent implements OnInit, OnChanges {
       }
     };
 
-    if (key === 'retail-sales') { retailSubGroupHandler('sales & orders'); return; }
-    if (key === 'retail-products') { retailSubGroupHandler('ecommerce'); return; }
-    if (key === 'retail-customers') { retailSubGroupHandler('customer management'); return; }
+    if (key === 'retail-sales' || key === 'retail-products' || key === 'retail-pos' || key === 'retail-analytics') {
+      const salesGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('sales & commerce'));
+      if (salesGroup) {
+        const children = (salesGroup as any)?.children || [];
+        const subGroupLabels = ['sales & orders', 'ecommerce', 'point of sale'];
+        const groups: any[] = [];
+        subGroupLabels.forEach(subLabel => {
+          const sub = children.find((it: any) => (it.label || '').toLowerCase().includes(subLabel));
+          if (sub) {
+            const sourceItems = (sub as any).children || (sub as any).items || [];
+            const flattened = this.getFlattenedItems(sourceItems);
+            groups.push({
+              label: sub.label,
+              icon: sub.icon,
+              expanded: false,
+              items: sourceItems,
+              _flattened: flattened
+            });
+          }
+        });
+        this.visibleGroups = groups;
+      } else {
+        this.visibleGroups = [];
+      }
+      return;
+    }
     if (key === 'retail-omni') { retailSubGroupHandler('omni-channel'); return; }
-    if (key === 'retail-pos') { retailSubGroupHandler('point of sale'); return; }
-    if (key === 'retail-analytics') { retailSubGroupHandler('store analytics'); return; }
 
     if (key === 'hotel') {
       const hotelGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('hotel'));
@@ -1025,17 +1005,17 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (p === '/' || p === '' || p === '/applications') return 'all';
     if (p.startsWith('/governance')) return 'governance';
     if (p.startsWith('/retail/loyalty') || p.startsWith('/retail/rewards') || p.startsWith('/retail/campaigns')) return 'loyalty';
+    if (p.startsWith('/retail/customers')) return 'loyalty';
     if (p.startsWith('/retail/orders')) return 'retail-sales';
     if (p.startsWith('/retail/transactions')) return 'retail-sales';
     if (p.startsWith('/retail/payment')) return 'retail-sales';
-    if (p.startsWith('/retail/products')) return 'retail-products';
-    if (p.startsWith('/retail/ecommerce')) return 'retail-products';
-    if (p.startsWith('/retail/customers')) return 'retail-customers';
+    if (p.startsWith('/retail/products')) return 'retail-sales';
+    if (p.startsWith('/retail/ecommerce')) return 'retail-sales';
     if (p.startsWith('/retail/omni-channel')) return 'retail-omni';
-    if (p.startsWith('/retail/pos')) return 'retail-pos';
-    if (p.startsWith('/retail/fresh-retail')) return 'retail-pos';
-    if (p.startsWith('/retail/analytics')) return 'retail-analytics';
-    if (p.startsWith('/retail/settings')) return 'retail-analytics';
+    if (p.startsWith('/retail/pos')) return 'retail-sales';
+    if (p.startsWith('/retail/fresh-retail')) return 'retail-sales';
+    if (p.startsWith('/retail/analytics')) return 'retail-sales';
+    if (p.startsWith('/retail/settings')) return 'retail-sales';
     if (p.startsWith('/retail')) return 'retail';
     if (p.startsWith('/inventory')) return 'inventory';
     if (p.startsWith('/loyalty')) return 'loyalty';
@@ -1047,9 +1027,9 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (p.startsWith('/travel')) return 'travel';
     if (p.startsWith('/settings')) return 'settings';
     if (p.startsWith('/notification')) return 'notification';
-    if (p.startsWith('/planning/forecast')) return 'forecast';
-    if (p.startsWith('/planning/delivery-points')) return 'warehouse';
-    if (p.startsWith('/planning/fleet')) return 'fleet';
+    if (p.startsWith('/planning/forecast')) return 'inventory';
+    if (p.startsWith('/planning/delivery-points')) return 'inventory';
+    if (p.startsWith('/planning/fleet')) return 'inventory';
     if (p.startsWith('/planning')) return 'planning';
     if (p.startsWith('/chat')) return 'chat';
     // Marketplace removed - routes to root now
@@ -1060,13 +1040,13 @@ export class SidebarComponent implements OnInit, OnChanges {
   orderGroupsForApp(groups: any[], key: AppKey) {
     // Simple prioritization map: which group labels should appear first per app
     const priorityMap: Record<AppKey, string[]> = {
-      retail: ['Retail Operations'],
+      retail: ['Sales & Commerce'],
       inventory: ['Inventory Management'],
-      loyalty: ['Loyalty & CRM'],
+      loyalty: ['CRM & Customers'],
       catalog: [],
       explore: ['explore', 'data mesh'],
       chat: [],
-      warehouse: ['warehouse'],
+      warehouse: ['inventory management'],
       planning: ['planning'],
       blogger: ['blog', 'blogger', 'posts'],
       hotel: ['hotel', 'rooms', 'bookings', 'management'],
@@ -1079,20 +1059,20 @@ export class SidebarComponent implements OnInit, OnChanges {
       all: [],
       'auto-planning': ['planning'],
       'delivery-points': ['planning'],
-      fleet: ['fleet'],
-      demand: ['forecast'],
-      truck: ['forecast'],
-      trip: ['forecast'],
-      hub: ['forecast'],
-      forecast: ['forecast'],
+      fleet: ['inventory management'],
+      demand: ['inventory management'],
+      truck: ['inventory management'],
+      trip: ['inventory management'],
+      hub: ['inventory management'],
+      forecast: ['inventory management'],
       orders: ['order management'],
       transactions: ['transactions'],
-      'retail-sales': ['sales & orders', 'order management'],
-      'retail-products': ['products & catalog'],
-      'retail-customers': ['customer management'],
+      'retail-sales': ['sales & commerce', 'sales & orders'],
+      'retail-products': ['sales & commerce'],
+      'retail-customers': ['crm & customers'],
       'retail-omni': ['omni-channel'],
-      'retail-pos': ['point of sale'],
-      'retail-analytics': ['store analytics']
+      'retail-pos': ['sales & commerce'],
+      'retail-analytics': ['sales & commerce']
     };
 
     const priorities = priorityMap[key] || [];

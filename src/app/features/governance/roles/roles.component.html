@@ -215,8 +215,8 @@
       </div>
     </div>
 
-    <!-- Loading State -->
-    <div *ngIf="loading" class="bg-white rounded-lg shadow-sm p-6">
+    <!-- Loading State — only on first load (no data yet) -->
+    <div *ngIf="loading && roles.length === 0" class="bg-white rounded-lg shadow-sm p-6">
       <div class="space-y-4">
         <p-skeleton height="4rem"></p-skeleton>
         <p-skeleton height="4rem"></p-skeleton>
@@ -224,14 +224,15 @@
       </div>
     </div>
 
-    <!-- List View -->
-    <div *ngIf="!loading && viewMode === 'list'" class="bg-white rounded-lg shadow-sm">
-      <p-table 
-        [value]="roles" 
-        [paginator]="true" 
-        [rows]="pageSize" 
+    <!-- List View — always in DOM so p-table is never destroyed/recreated -->
+    <div *ngIf="viewMode === 'list'" class="bg-white rounded-lg shadow-sm">
+      <p-table
+        [value]="roles"
+        [paginator]="true"
+        [rows]="pageSize"
         [totalRecords]="totalRecords"
         [lazy]="true"
+        [loading]="loading"
         (onLazyLoad)="onLazyLoad($event)"
         [showCurrentPageReport]="true" 
         currentPageReportTemplate="Showing {first} to {last} of {totalRecords} roles"
@@ -350,7 +351,7 @@
     </div>
 
     <!-- Card View -->
-    <div *ngIf="!loading && viewMode === 'card'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div *ngIf="viewMode === 'card'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div *ngFor="let role of roles; trackBy: trackByRoleId" class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
         <div class="p-6">
           <div class="flex items-start justify-between mb-4">

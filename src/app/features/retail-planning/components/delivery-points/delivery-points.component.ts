@@ -83,6 +83,18 @@ export class DeliveryPointsComponent implements OnInit, AfterViewInit, OnDestroy
   private readonly VIETNAM_CENTER: [number, number] = [16.5, 106.0];
   private readonly DEFAULT_ZOOM = 6;
 
+  // Drawing state
+  drawMode: 'none' | 'point' | 'route' | 'tag' = 'none';
+  private drawnPoints: any[] = [];
+  private drawnRoutes: any[] = [];
+  private drawnTags: any[] = [];
+  private currentRouteCoords: [number, number][] = [];
+  private currentPolyline: any = null;
+  private mapClickHandler: any = null;
+  tagInputVisible = false;
+  tagInputText = '';
+  private pendingTagLatLng: any = null;
+
   statusOptions = [
     { label: 'All Status', value: '' },
     { label: 'Active', value: 'active' },
@@ -112,6 +124,7 @@ export class DeliveryPointsComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   ngOnDestroy(): void {
+    this.detachMapClickHandler();
     if (this.map) {
       this.map.remove();
       this.map = null;
@@ -308,6 +321,130 @@ export class DeliveryPointsComponent implements OnInit, AfterViewInit, OnDestroy
 
   hasValidCoordinates(item: DeliveryPointItem | null): boolean {
     return !!item && item.latitude != null && item.longitude != null && !isNaN(item.latitude) && !isNaN(item.longitude);
+  }
+
+  // ── Drawing toolbar ──────────────────────────────────────────────────────
+
+  async setDrawMode(mode: 'none' | 'point' | 'route' | 'tag'): Promise<void> {
+    if (this.drawMode === mode) {
+      this.drawMode = 'none';
+      this.detachMapClickHandler();
+      if (mode === 'route') this.finaliseRoute();
+      return;
+    }
+    if (this.drawMode === 'route' && mode !== 'route') this.finaliseRoute();
+    this.drawMode = mode;
+    if (!this.map) await this.initMap();
+    this.detachMapClickHandler();
+    if (mode !== 'none') this.attachMapClickHandler();
+    this.cdr.detectChanges();
+  }
+
+  private attachMapClickHandler(): void {
+    if (!this.map) return;
+    this.mapClickHandler = (e: any) => this.onMapClick(e);
+    this.map.on('click', this.mapClickHandler);
+    this.map.getContainer().style.cursor = 'crosshair';
+  }
+
+  private detachMapClickHandler(): void {
+    if (this.map && this.mapClickHandler) {
+      this.map.off('click', this.mapClickHandler);
+      this.mapClickHandler = null;
+    }
+    if (this.map) this.map.getContainer().style.cursor = '';
+  }
+
+  private async onMapClick(e: any): Promise<void> {
+    const { lat, lng } = e.latlng;
+    const L = await import('leaflet');
+
+    if (this.drawMode === 'point') {
+      const circle = L.circleMarker([lat, lng], {
+        radius: 8, color: '#2563eb', fillColor: '#3b82f6', fillOpacity: 0.85, weight: 2
+      }).addTo(this.map);
+      circle.bindPopup(`<b>Point</b><br>${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+      this.drawnPoints.push(circle);
+
+    } else if (this.drawMode === 'route') {
+      this.currentRouteCoords.push([lat, lng]);
+      if (this.currentPolyline) this.map.removeLayer(this.currentPolyline);
+      this.currentPolyline = L.polyline(this.currentRouteCoords, {
+        color: '#f97316', weight: 3, dashArray: '6 4'
+      }).addTo(this.map);
+      // Small waypoint dot
+      L.circleMarker([lat, lng], {
+        radius: 5, color: '#f97316', fillColor: '#fff', fillOpacity: 1, weight: 2
+      }).addTo(this.map);
+
+    } else if (this.drawMode === 'tag') {
+      this.pendingTagLatLng = e.latlng;
+      this.tagInputText = '';
+      this.tagInputVisible = true;
+      this.cdr.detectChanges();
+    }
+  }
+
+  private finaliseRoute(): void {
+    if (this.currentPolyline) {
+      this.drawnRoutes.push(this.currentPolyline);
+      this.currentPolyline = null;
+    }
+    this.currentRouteCoords = [];
+  }
+
+  async confirmTag(): Promise<void> {
+    if (!this.pendingTagLatLng || !this.map) return;
+    const L = await import('leaflet');
+    const { lat, lng } = this.pendingTagLatLng;
+    const label = this.tagInputText.trim() || 'Tag';
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="background:#7c3aed;color:#fff;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.2)">${label}</div>`,
+      iconAnchor: [0, 10]
+    });
+    const marker = L.marker([lat, lng], { icon }).addTo(this.map);
+    this.drawnTags.push(marker);
+    this.tagInputVisible = false;
+    this.pendingTagLatLng = null;
+    this.cdr.detectChanges();
+  }
+
+  cancelTag(): void {
+    this.tagInputVisible = false;
+    this.pendingTagLatLng = null;
+  }
+
+  undoLastDrawing(): void {
+    if (!this.map) return;
+    if (this.drawMode === 'point' && this.drawnPoints.length) {
+      this.map.removeLayer(this.drawnPoints.pop());
+    } else if (this.drawMode === 'route' && this.currentRouteCoords.length) {
+      this.currentRouteCoords.pop();
+      if (this.currentPolyline) this.map.removeLayer(this.currentPolyline);
+      if (this.currentRouteCoords.length > 0) {
+        import('leaflet').then(L => {
+          this.currentPolyline = L.polyline(this.currentRouteCoords, {
+            color: '#f97316', weight: 3, dashArray: '6 4'
+          }).addTo(this.map);
+        });
+      } else { this.currentPolyline = null; }
+    } else if (this.drawMode === 'tag' && this.drawnTags.length) {
+      this.map.removeLayer(this.drawnTags.pop());
+    }
+    this.cdr.detectChanges();
+  }
+
+  clearAllDrawings(): void {
+    if (!this.map) return;
+    [...this.drawnPoints, ...this.drawnRoutes, ...this.drawnTags].forEach(l => this.map.removeLayer(l));
+    if (this.currentPolyline) this.map.removeLayer(this.currentPolyline);
+    this.drawnPoints = [];
+    this.drawnRoutes = [];
+    this.drawnTags = [];
+    this.currentPolyline = null;
+    this.currentRouteCoords = [];
+    this.cdr.detectChanges();
   }
 
   private async initMap(): Promise<void> {

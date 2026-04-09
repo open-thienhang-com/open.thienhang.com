@@ -111,9 +111,10 @@ export class PermissionsComponent extends AppBaseComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log('Permissions component initialized');
+    // Initial load is triggered by p-table's onLazyLoad event (fires on mount).
+    // Do NOT call getPermissions() here — causes infinite loop when API errors:
+    // loading=false → *ngIf re-mounts table → onLazyLoad → loop.
     this.permissions = { data: [], total: 0 };
-    this.getPermissions();
   }
 
   getPermissions = (page = 0) => {

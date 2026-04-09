@@ -125,11 +125,11 @@ export class RolesComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Initialize pagination with valid numbers
+    // Initial load is triggered by p-table's onLazyLoad event (fires on mount).
+    // Do NOT call loadRoles() here — that would double-call and cause an infinite
+    // loop when the API errors: loading=false → *ngIf re-mounts table → onLazyLoad → loop.
     this.currentPage = 0;
     this.pageSize = 10;
-    this.loadRoles();
-    this.loadStats();
   }
 
   loadRoles(): void {

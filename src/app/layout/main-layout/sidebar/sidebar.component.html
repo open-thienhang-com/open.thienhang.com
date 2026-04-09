@@ -3,6 +3,14 @@
   <div class="header-actions" [class.collapsed]="collapsed">
     <!-- Action Buttons Row -->
     <div class="actions-row" [class.justify-center]="collapsed">
+      <!-- Mobile close button -->
+      <button
+        type="button"
+        class="header-btn mobile-close-btn"
+        (click)="toggle.emit()"
+        aria-label="Close sidebar">
+        <i class="pi pi-times"></i>
+      </button>
       <!-- App Switcher -->
       <button
         type="button"
@@ -93,6 +101,16 @@
         tooltipPosition="right">
         <i class="pi pi-sign-out"></i>
       </button>
+
+      <!-- Collapse toggle — desktop only, always visible -->
+      <button
+        type="button"
+        class="header-btn collapse-toggle-btn"
+        (click)="toggle.emit()"
+        [pTooltip]="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+        tooltipPosition="right">
+        <i class="pi" [ngClass]="collapsed ? 'pi-chevron-right' : 'pi-chevron-left'"></i>
+      </button>
     </div>
 
     <!-- App Name Label - Below actions row -->
@@ -102,8 +120,18 @@
 
   </div>
 
+  <!-- Navigation — only shown when logged in -->
+  <ng-container *ngIf="!isLoggedIn">
+    <div class="sidebar-auth-prompt">
+      <div class="auth-prompt-inner">
+        <i class="pi pi-lock"></i>
+        <span *ngIf="!collapsed">Please log in to view the menu</span>
+      </div>
+    </div>
+  </ng-container>
+
   <!-- Navigation - Scrollable Middle Section -->
-  <div class="sidebar-content">
+  <div class="sidebar-content" *ngIf="isLoggedIn">
     <nav class="sidebar-nav" [class.collapsed]="collapsed">
 
       <!-- Quick Access Section -->
@@ -168,8 +196,8 @@
     </nav>
   </div>
 
-  <!-- Footer - Fixed at bottom -->
-  <div class="sidebar-footer" [class.collapsed]="collapsed">
+  <!-- Footer - Fixed at bottom (only when logged in) -->
+  <div class="sidebar-footer" [class.collapsed]="collapsed" *ngIf="isLoggedIn">
 
     <!-- User Info removed per request -->
 

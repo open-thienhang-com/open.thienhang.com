@@ -24,7 +24,7 @@ export class ApplicationsComponent implements OnInit {
       label: 'Inventory Management',
       icon: 'pi pi-box',
       gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-      description: 'Stock, products, and warehouse management',
+      description: 'Stock, products, warehouses, fleet and demand forecasting',
       category: 'Retail & Supply Chain'
     },
     {
@@ -107,51 +107,19 @@ export class ApplicationsComponent implements OnInit {
       category: 'Retail & Supply Chain'
     },
     {
-      key: 'forecast',
-      label: 'Forecast',
-      icon: 'pi pi-chart-line',
-      gradient: 'linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)',
-      description: 'Demand signals and capacity forecasting',
-      category: 'Retail & Supply Chain'
-    },
-    {
-      key: 'fleet' as AppKey,
-      label: 'Fleet',
-      icon: 'pi pi-truck',
-      gradient: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)',
-      description: 'Fleet tracking and vehicle management',
-      category: 'Retail & Supply Chain'
-    },
-    {
-      key: 'warehouse' as AppKey,
-      label: 'Warehouse',
-      icon: 'pi pi-building',
-      gradient: 'linear-gradient(135deg, #f87171 0%, #dc2626 100%)',
-      description: 'Warehouse locations and delivery points management',
-      category: 'Retail & Supply Chain'
-    },
-    {
       key: 'retail-sales' as AppKey,
-      label: 'Sales & Orders',
-      icon: 'pi pi-send',
+      label: 'Sales & Commerce',
+      icon: 'pi pi-shopping-bag',
       gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-      description: 'Order management, transactions and payments',
+      description: 'Sales, orders, ecommerce and point of sale operations',
       category: 'Retail & Supply Chain'
     },
     {
-      key: 'retail-products' as AppKey,
-      label: 'Ecommerce',
-      icon: 'pi pi-tag',
-      gradient: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
-      description: 'Product catalog and ecommerce store management',
-      category: 'Retail & Supply Chain'
-    },
-    {
-      key: 'retail-customers' as AppKey,
-      label: 'Customer Management',
+      key: 'loyalty',
+      label: 'CRM & Customers',
       icon: 'pi pi-users',
-      gradient: 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)',
-      description: 'Customers, loyalty members and campaigns',
+      gradient: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
+      description: 'Customer management, loyalty rewards and campaigns',
       category: 'Retail & Supply Chain'
     },
     {
@@ -160,22 +128,6 @@ export class ApplicationsComponent implements OnInit {
       icon: 'pi pi-comments',
       gradient: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)',
       description: 'Multi-channel retail communication and sales',
-      category: 'Retail & Supply Chain'
-    },
-    {
-      key: 'retail-pos' as AppKey,
-      label: 'Point of Sale',
-      icon: 'pi pi-desktop',
-      gradient: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
-      description: 'POS terminal and fresh retail operations',
-      category: 'Retail & Supply Chain'
-    },
-    {
-      key: 'retail-analytics' as AppKey,
-      label: 'Store Analytics',
-      icon: 'pi pi-chart-line',
-      gradient: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-      description: 'Sales analytics, reports and retail settings',
       category: 'Retail & Supply Chain'
     }
   ];

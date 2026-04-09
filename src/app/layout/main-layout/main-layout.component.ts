@@ -27,9 +27,8 @@ import { AppSwitcherService, AppKey } from '../../core/services/app-switcher.ser
 })
 export class MainLayoutComponent implements OnInit, OnDestroy {
   collapsed = false;
-  // Initialize sidebarOpen to true immediately so sidebar is visible on page load/refresh
-  // (The template CSS will hide it on mobile via responsive classes)
-  sidebarOpen = true;
+  // Mobile: closed by default; desktop: sidebar is always visible via CSS (ignores this flag)
+  sidebarOpen = false;
   currentApp: AppKey = 'all';
   showFooter = true;
   loadingState: LoadingState = {
@@ -78,6 +77,10 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
           event.url.startsWith('/retail') ||
           event.url.startsWith('/planning')
         );
+        // Auto-close sidebar on mobile after navigation
+        if (window.innerWidth < 1024) {
+          this.sidebarOpen = false;
+        }
       });
 
     // Check initial route
@@ -106,11 +109,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
           loadingState.type = this.getRandomAnimalType();
         }
 
-        this.loadingState = {
-          ...loadingState,
-          fullScreen: true, // Make loading full screen for better UX
-          size: 'large' // Use large size for better visibility
-        };
+        this.loadingState = { ...loadingState };
       });
   }
 
@@ -125,6 +124,27 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     } else {
       this.collapsed = !this.collapsed;
     }
+  }
+
+  get currentAppLabel(): string {
+    const labels: Partial<Record<AppKey, string>> = {
+      all: 'All Apps',
+      explore: 'Explore',
+      retail: 'Retail Service',
+      loyalty: 'Loyalty Program',
+      governance: 'Governance',
+      blogger: 'Blogger',
+      hotel: 'Hotel',
+      chat: 'Chat',
+      inventory: 'Inventory',
+      notification: 'Notifications',
+      planning: 'Planning',
+      settings: 'Settings',
+      admanager: 'Ad Manager',
+      files: 'Files',
+      travel: 'Travel',
+    };
+    return labels[this.currentApp] ?? 'Menu';
   }
 
   private getRandomAnimalType(): 'cat-running' | 'dog-running' | 'rabbit-hopping' | 'penguin-walking' | 'hamster-wheel' | 'fox-trotting' | 'unicorn-flying' | 'owl-flying' | 'butterfly-floating' | 'fish-swimming' | 'panda-rolling' | 'koala-climbing' | 'sloth-hanging' | 'duck-swimming' {
@@ -147,6 +167,6 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     // Hide loading after a short delay to allow content to load
     setTimeout(() => {
       this.loadingService.hide();
-    }, 2000);
+    }, 800);
   }
 }

@@ -84,18 +84,42 @@ export const menu: MenuItem[] = [
         type: 'item',
         expanded: false,
         children: [
-            { label: 'Overview', url: '/inventory/overview', icon: 'pi pi-th-large' },
-            { label: 'Products', url: '/inventory/products', icon: 'pi pi-tag' },
-            { label: 'Categories', url: '/inventory/categories', icon: 'pi pi-list' },
-            { label: 'Warehouses', url: '/inventory/warehouses', icon: 'pi pi-building' },
-            { label: 'Suppliers', url: '/inventory/suppliers', icon: 'pi pi-truck' },
-            { label: 'Partners', url: '/inventory/partners', icon: 'pi pi-users' },
-            { label: 'Stock Analytics', url: '/inventory/analytics', icon: 'pi pi-chart-bar' },
+            {
+                label: 'Stock & Products',
+                icon: 'pi pi-box',
+                children: [
+                    { label: 'Overview', url: '/inventory/overview', icon: 'pi pi-th-large' },
+                    { label: 'Products', url: '/inventory/products', icon: 'pi pi-tag' },
+                    { label: 'Categories', url: '/inventory/categories', icon: 'pi pi-list' },
+                    { label: 'Warehouses', url: '/inventory/warehouses', icon: 'pi pi-building' },
+                    { label: 'Suppliers', url: '/inventory/suppliers', icon: 'pi pi-truck' },
+                    { label: 'Partners', url: '/inventory/partners', icon: 'pi pi-users' },
+                    { label: 'Stock Analytics', url: '/inventory/analytics', icon: 'pi pi-chart-bar' },
+                ]
+            },
+            {
+                label: 'Fleet & Warehouse',
+                icon: 'pi pi-truck',
+                children: [
+                    { label: 'Fleet Management', url: '/inventory/fleet', icon: 'pi pi-truck' },
+                    { label: 'Delivery Points', url: '/inventory/delivery-points', icon: 'pi pi-map-marker' },
+                ]
+            },
+            {
+                label: 'Forecast',
+                icon: 'pi pi-chart-line',
+                children: [
+                    { label: 'Demand Forecast', url: '/inventory/forecast/demand', icon: 'pi pi-chart-bar' },
+                    { label: 'Truck Load', url: '/inventory/forecast/truck', icon: 'pi pi-box' },
+                    { label: 'Trip Forecast', url: '/inventory/forecast/trip', icon: 'pi pi-map' },
+                    { label: 'Hub Forecast', url: '/inventory/forecast/hub', icon: 'pi pi-building' },
+                ]
+            },
         ]
     },
     {
-        label: 'Loyalty & CRM',
-        icon: 'pi pi-heart',
+        label: 'CRM & Customers',
+        icon: 'pi pi-users',
         type: 'item',
         expanded: false,
         children: [
@@ -104,10 +128,11 @@ export const menu: MenuItem[] = [
             { label: 'Rewards Catalog', url: '/loyalty/rewards', icon: 'pi pi-gift' },
             { label: 'Campaigns', url: '/loyalty/campaigns', icon: 'pi pi-megaphone' },
             { label: 'Channels', url: '/loyalty/channels', icon: 'pi pi-share-alt' },
+            { label: 'Customers', url: '/retail/customers', icon: 'pi pi-user-plus' },
         ]
     },
     {
-        label: 'Retail Operations',
+        label: 'Sales & Commerce',
         icon: 'pi pi-shopping-bag',
         type: 'item',
         expanded: false,
@@ -130,15 +155,6 @@ export const menu: MenuItem[] = [
                 ]
             },
             {
-                label: 'Customer Management',
-                icon: 'pi pi-users',
-                children: [
-                    { label: 'Customers', url: '/retail/customers', icon: 'pi pi-users' },
-                    { label: 'Loyalty Members', url: '/loyalty/members', icon: 'pi pi-heart' },
-                    { label: 'Campaigns', url: '/loyalty/campaigns', icon: 'pi pi-megaphone' },
-                ]
-            },
-            {
                 label: 'Omni-channel',
                 icon: 'pi pi-comments',
                 children: [
@@ -152,14 +168,6 @@ export const menu: MenuItem[] = [
                 children: [
                     { label: 'POS Dashboard', url: '/retail/pos', icon: 'pi pi-home' },
                     { label: 'Fresh Retail', url: '/retail/fresh-retail', icon: 'pi pi-shopping-bag' },
-                ]
-            },
-            {
-                label: 'Store Analytics',
-                icon: 'pi pi-chart-line',
-                children: [
-                    { label: 'Sales Analytics', url: '/retail/analytics', icon: 'pi pi-chart-bar' },
-                    { label: 'Retail Settings', url: '/retail/settings', icon: 'pi pi-cog' },
                 ]
             },
         ]
@@ -260,42 +268,12 @@ export const menu: MenuItem[] = [
         ]
     },
     {
-        label: 'Warehouse',
-        icon: 'pi pi-building',
-        type: 'item',
-        expanded: false,
-        children: [
-            { label: 'Delivery Points', url: '/planning/delivery-points', icon: 'pi pi-map-marker' },
-        ]
-    },
-    {
         label: 'Retail Planning',
         icon: 'pi pi-directions',
         type: 'item',
         expanded: false,
         children: [
             { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-directions' }
-        ]
-    },
-    {
-        label: 'Fleet',
-        icon: 'pi pi-truck',
-        type: 'item',
-        expanded: false,
-        children: [
-            { label: 'Fleet Management', url: '/planning/fleet', icon: 'pi pi-truck' }
-        ]
-    },
-    {
-        label: 'Retail Forecast',
-        icon: 'pi pi-chart-line',
-        type: 'item',
-        expanded: false,
-        children: [
-            { label: 'Demand Forecast', url: '/planning/forecast/demand', icon: 'pi pi-chart-bar' },
-            { label: 'Truck Load Forecast', url: '/planning/forecast/truck', icon: 'pi pi-box' },
-            { label: 'Trip Forecast', url: '/planning/forecast/trip', icon: 'pi pi-map' },
-            { label: 'Hub Forecast', url: '/planning/forecast/hub', icon: 'pi pi-building' }
         ]
     },
     {

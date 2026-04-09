@@ -1,1 +1,309 @@
-<p>analytics works!</p>
+<div class="bg-gray-50 min-h-screen p-6">
+
+  <!-- Header -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+          <i class="pi pi-chart-bar text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Stock Analytics</h1>
+          <p class="text-gray-600">Inventory performance, product margins and stock health</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <p-button
+          icon="pi pi-refresh"
+          severity="info"
+          [outlined]="true"
+          [rounded]="true"
+          (click)="loadData()"
+          pTooltip="Refresh"
+          class="hidden sm:inline-flex">
+        </p-button>
+        <p-button
+          icon="pi pi-download"
+          severity="secondary"
+          [outlined]="true"
+          [rounded]="true"
+          pTooltip="Export CSV"
+          class="hidden sm:inline-flex">
+        </p-button>
+        <p-button
+          label="Overview"
+          icon="pi pi-arrow-left"
+          severity="secondary"
+          [outlined]="true"
+          routerLink="../overview">
+        </p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <div *ngFor="let stat of stats" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">{{ stat.label }}</p>
+          <p class="text-2xl font-bold text-gray-900 mt-1">{{ stat.value }}</p>
+          <p class="text-xs text-gray-400 mt-0.5">{{ stat.sub }}</p>
+        </div>
+        <div class="w-12 h-12 rounded-lg flex items-center justify-center" [class]="stat.color">
+          <i [class]="stat.icon + ' text-xl ' + stat.iconColor"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <ng-container *ngIf="loading">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+      <i class="pi pi-spin pi-spinner text-blue-500 text-3xl"></i>
+      <p class="text-gray-500 mt-3">Loading analytics data...</p>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- Alerts + Health row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+
+      <!-- Stock Alerts -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden lg:col-span-2">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+          <i class="pi pi-bell text-orange-500"></i>
+          <h2 class="text-base font-semibold text-gray-900">Stock Alerts</h2>
+          <span class="text-xs bg-red-100 text-red-600 font-semibold px-2 py-0.5 rounded-full">
+            {{ alerts.length }}
+          </span>
+        </div>
+        <p-table
+          [value]="alerts"
+          [loading]="isTableLoading"
+          [paginator]="alerts.length > 8"
+          [rows]="8"
+          responsiveLayout="scroll">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Product</th>
+              <th>Alert Type</th>
+              <th>Stock / Reorder</th>
+              <th>Severity</th>
+              <th>Date</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-alert>
+            <tr>
+              <td class="font-medium text-gray-900">{{ alert.product_name }}</td>
+              <td class="text-gray-600 text-sm">{{ getAlertTypeLabel(alert.alert_type) }}</td>
+              <td>
+                <div class="flex items-center gap-1 text-sm">
+                  <span class="font-semibold"
+                        [class.text-red-600]="alert.current_stock === 0"
+                        [class.text-orange-600]="alert.current_stock > 0">
+                    {{ alert.current_stock }}
+                  </span>
+                  <span class="text-gray-400">/</span>
+                  <span class="text-gray-500">{{ alert.reorder_level }}</span>
+                </div>
+              </td>
+              <td>
+                <p-tag [value]="getAlertSeverityLabel(alert.severity)"
+                       [severity]="getAlertSeverityTag(alert.severity)">
+                </p-tag>
+              </td>
+              <td class="text-gray-500 text-xs">{{ formatDate(alert.created_at) }}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="5" class="text-center p-8">
+                <i class="pi pi-check-circle text-green-400 text-3xl"></i>
+                <p class="text-gray-500 mt-2">No stock alerts — inventory is healthy!</p>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+
+      <!-- Stock Health -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center gap-3 mb-5">
+          <i class="pi pi-chart-pie text-green-600"></i>
+          <h2 class="text-base font-semibold text-gray-900">Stock Health</h2>
+        </div>
+        <ng-container *ngIf="analyticsData?.summary as s">
+          <div class="space-y-4">
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
+                  <span class="text-gray-700">In Stock</span>
+                </div>
+                <span class="font-semibold text-gray-900">
+                  {{ s.total_products - s.low_stock_count - s.out_of_stock_count }}
+                </span>
+              </div>
+              <div class="w-full bg-gray-100 rounded-full h-2">
+                <div class="h-2 rounded-full bg-green-500"
+                     [style.width.%]="s.total_products ? ((s.total_products - s.low_stock_count - s.out_of_stock_count) / s.total_products * 100) : 0">
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-orange-500 inline-block"></span>
+                  <span class="text-gray-700">Low Stock</span>
+                </div>
+                <span class="font-semibold text-gray-900">{{ s.low_stock_count }}</span>
+              </div>
+              <div class="w-full bg-gray-100 rounded-full h-2">
+                <div class="h-2 rounded-full bg-orange-500"
+                     [style.width.%]="s.total_products ? (s.low_stock_count / s.total_products * 100) : 0">
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span>
+                  <span class="text-gray-700">Out of Stock</span>
+                </div>
+                <span class="font-semibold text-gray-900">{{ s.out_of_stock_count }}</span>
+              </div>
+              <div class="w-full bg-gray-100 rounded-full h-2">
+                <div class="h-2 rounded-full bg-red-500"
+                     [style.width.%]="s.total_products ? (s.out_of_stock_count / s.total_products * 100) : 0">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-6 pt-4 border-t border-gray-100 space-y-3">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500">Total Quantity</span>
+              <span class="font-semibold text-gray-900">{{ s.total_quantity?.toLocaleString() || '—' }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500">Cost Value</span>
+              <span class="font-semibold text-gray-900">{{ formatCurrency(s.total_cost_value) }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500">Selling Value</span>
+              <span class="font-semibold text-green-600">{{ formatCurrency(s.total_selling_value) }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500">Turnover Rate</span>
+              <span class="font-semibold text-blue-600">{{ s.turnover_rate?.toFixed(2) || '—' }}x</span>
+            </div>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="!analyticsData?.summary">
+          <div class="text-center py-8 text-gray-400">
+            <i class="pi pi-chart-pie text-3xl mb-2"></i>
+            <p class="text-sm">No summary available</p>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- Products Analytics Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <i class="pi pi-list text-blue-600"></i>
+          <h2 class="text-base font-semibold text-gray-900">Product Analytics</h2>
+          <p-tag [value]="filteredProducts.length + ' items'" severity="info" *ngIf="filteredProducts.length > 0"></p-tag>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="p-input-icon-left">
+            <i class="pi pi-search"></i>
+            <input pInputText type="text" [(ngModel)]="searchTerm"
+                   placeholder="Search products..." class="text-sm w-48">
+          </span>
+          <p-button icon="pi pi-refresh" [rounded]="true" [text]="true"
+                    severity="secondary" (click)="loadData()" pTooltip="Refresh">
+          </p-button>
+        </div>
+      </div>
+
+      <p-table
+        [value]="filteredProducts"
+        [loading]="isTableLoading"
+        [paginator]="true"
+        [rows]="15"
+        [rowsPerPageOptions]="[10, 15, 25, 50]"
+        responsiveLayout="scroll">
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="product_name">Product <p-sortIcon field="product_name"></p-sortIcon></th>
+            <th pSortableColumn="category">Category <p-sortIcon field="category"></p-sortIcon></th>
+            <th pSortableColumn="quantity" class="text-right">Qty <p-sortIcon field="quantity"></p-sortIcon></th>
+            <th pSortableColumn="cost_value" class="text-right">Cost Value <p-sortIcon field="cost_value"></p-sortIcon></th>
+            <th pSortableColumn="selling_value" class="text-right">Sell Value <p-sortIcon field="selling_value"></p-sortIcon></th>
+            <th pSortableColumn="margin_percentage" class="text-right">Margin <p-sortIcon field="margin_percentage"></p-sortIcon></th>
+            <th pSortableColumn="turnover_rate" class="text-right">Turnover <p-sortIcon field="turnover_rate"></p-sortIcon></th>
+            <th pSortableColumn="last_sold">Last Sold <p-sortIcon field="last_sold"></p-sortIcon></th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-product>
+          <tr>
+            <td>
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-tag text-blue-500 text-xs"></i>
+                </div>
+                <span class="font-medium text-gray-900">{{ product.product_name }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full font-medium">
+                {{ product.category }}
+              </span>
+            </td>
+            <td class="text-right">
+              <span class="font-semibold"
+                    [class.text-red-600]="product.quantity === 0"
+                    [class.text-orange-600]="product.quantity > 0 && product.quantity <= 10"
+                    [class.text-gray-900]="product.quantity > 10">
+                {{ product.quantity }}
+              </span>
+            </td>
+            <td class="text-right text-gray-600 text-sm">{{ formatCurrency(product.cost_value) }}</td>
+            <td class="text-right font-medium text-gray-900 text-sm">{{ formatCurrency(product.selling_value) }}</td>
+            <td class="text-right">
+              <span class="font-semibold text-sm" [class]="getMarginClass(product.margin_percentage)">
+                {{ product.margin_percentage?.toFixed(1) }}%
+              </span>
+            </td>
+            <td class="text-right">
+              <span class="text-blue-600 font-medium text-sm">{{ product.turnover_rate?.toFixed(2) }}x</span>
+            </td>
+            <td class="text-gray-500 text-xs">{{ formatDate(product.last_sold) }}</td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="8" class="text-center p-12">
+              <div class="flex flex-col items-center gap-4">
+                <i class="pi pi-chart-bar text-gray-300 text-5xl"></i>
+                <div>
+                  <h3 class="text-lg font-medium text-gray-900">No analytics data found</h3>
+                  <p class="text-gray-500">Data will appear once products have stock records.</p>
+                </div>
+                <p-button label="Refresh" icon="pi pi-refresh" severity="primary" (click)="loadData()"></p-button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+  </ng-container>
+
+</div>

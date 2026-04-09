@@ -1,66 +1,170 @@
-.app-layout {
-  display: flex;
-  height: 100vh;
-  overflow: hidden;
+// ─── Mobile overlay backdrop ─────────────────────────────────────────────────
+// Only rendered (display: block) when active, so it never sits invisibly on top of content
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 39;
 
-  .sidebar {
-    width: 200px;
-    height: 100%;
-    transition: width 0.3s;
-    overflow: hidden;
-    border-right: 1px solid var(--p-content-border-color);
-    background: var(--card-bg);
-    box-shadow: 1px 0 3px 1px var(--p-content-border-color);
-
-    &.collapsed {
-      width: 60px;
-    }
-
-    app-sidebar {
+  @media (max-width: 1023px) {
+    &.active {
       display: block;
-      height: 100%;
-    }
-  }
-
-  .main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
-
-    .content {
-      flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 1rem 1.5rem;
-      height: 100%;
     }
   }
 }
 
-// Ensure main content area is scrollable
-main {
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-  
-  // Custom scrollbar styling (optional)
-  &::-webkit-scrollbar {
-    width: 8px;
+// ─── Sidebar wrapper (responsive) ─────────────────────────────────────────────
+.sidebar-wrapper {
+  // Mobile default: completely removed from rendering — no transform tricks
+  // that can break when a parent has transform/opacity animations
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 40;
+  width: 280px;
+  height: 100dvh;
+
+  @supports not (height: 100dvh) {
+    height: 100vh;
   }
-  
+
+  // Solid background — sidebar is never see-through
+  background: var(--surface-card);
+
+  // Mobile open: slide in from left
+  @media (max-width: 1023px) {
+    &.open {
+      display: block;
+      animation: sidebarSlideIn 0.25s ease-out forwards;
+      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  // Desktop: always visible, inline flex child — never hidden
+  @media (min-width: 1024px) {
+    display: block;
+    position: relative;
+    height: 100%;
+    width: 256px;
+
+    &.collapsed {
+      width: 64px;
+    }
+  }
+}
+
+@keyframes sidebarSlideIn {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+// ─── Mobile / tablet top bar ──────────────────────────────────────────────────
+.mobile-topbar {
+  display: none;
+
+  @media (max-width: 1023px) {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+    height: 52px;
+    padding: 0 1rem;
+    background: var(--surface-card);
+    border-bottom: 1px solid var(--surface-border);
+  }
+
+  .hamburger-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    padding: 0;
+    flex-shrink: 0;
+
+    &:hover, &:active {
+      background: var(--surface-hover);
+    }
+
+    i {
+      font-size: 1.25rem;
+      color: var(--text-color);
+    }
+  }
+
+  .topbar-label {
+    flex: 1;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// ─── Root layout container ─────────────────────────────────────────────────────
+.layout-root {
+  display: flex;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--surface-ground);
+
+  @supports not (height: 100dvh) {
+    height: 100vh;
+  }
+}
+
+// ─── Main content wrapper ──────────────────────────────────────────────────────
+.layout-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+// ─── Scrollable page content ───────────────────────────────────────────────────
+.layout-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--surface-border);
     border-radius: 4px;
-    
+
     &:hover {
-      background: rgba(0, 0, 0, 0.3);
+      background: var(--text-color-secondary);
     }
   }
+}
+
+// ─── Legacy selectors kept for any child components that still rely on them ────
+.app-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
 }
 
 

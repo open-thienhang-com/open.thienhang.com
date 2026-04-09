@@ -41,9 +41,37 @@ export const INVENTORY_ROUTES: Routes = [
                 path: 'analytics', 
                 loadComponent: () => import('./pages/analytics/analytics.component').then(m => m.AnalyticsComponent) 
             },
-            { 
-                path: 'settings', 
-                loadComponent: () => import('./pages/settings/settings.component').then(m => m.SettingsComponent) 
+            {
+                path: 'settings',
+                loadComponent: () => import('./pages/settings/settings.component').then(m => m.SettingsComponent)
+            },
+            {
+                path: 'fleet',
+                loadComponent: () => import('../retail-planning/components/fleet/fleet.component').then(m => m.FleetComponent)
+            },
+            {
+                path: 'delivery-points',
+                loadComponent: () => import('../retail-planning/components/delivery-points/delivery-points.component').then(m => m.DeliveryPointsComponent)
+            },
+            {
+                path: 'forecast/demand',
+                loadComponent: () => import('../retail-planning/components/dataset/dataset.component').then(m => m.DatasetComponent),
+                data: { datasetType: 'demand' }
+            },
+            {
+                path: 'forecast/truck',
+                loadComponent: () => import('../retail-planning/components/fleet/fleet.component').then(m => m.FleetComponent),
+                data: { forecastType: 'truck' }
+            },
+            {
+                path: 'forecast/trip',
+                loadComponent: () => import('../retail-planning/components/dataset/dataset.component').then(m => m.DatasetComponent),
+                data: { datasetType: 'trip' }
+            },
+            {
+                path: 'forecast/hub',
+                loadComponent: () => import('../retail-planning/components/dataset/dataset.component').then(m => m.DatasetComponent),
+                data: { datasetType: 'hub' }
             }
         ]
     }

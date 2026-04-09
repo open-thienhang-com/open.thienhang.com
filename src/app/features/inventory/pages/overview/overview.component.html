@@ -1,89 +1,166 @@
-<div class="p-4">
-    <div class="flex justify-content-between align-items-center mb-6">
+<div class="bg-gray-50 min-h-screen p-6">
+
+  <!-- Header -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center">
+          <i class="pi pi-box text-white text-xl"></i>
+        </div>
         <div>
-            <h1 class="text-3xl font-bold m-0 text-900">Inventory Overview</h1>
-            <p class="text-600 m-0 mt-2">Manage your stock, products, and supply chain operations.</p>
+          <h1 class="text-3xl font-bold text-gray-900">Inventory Overview</h1>
+          <p class="text-gray-600">Manage your stock, products, warehouses, fleet and forecasting</p>
         </div>
-        <div class="flex gap-2">
-            <button pButton icon="pi pi-plus" label="New Product" routerLink="../products/create" class="p-button-primary"></button>
-            <button pButton icon="pi pi-refresh" class="p-button-outlined p-button-secondary"></button>
+      </div>
+      <div class="flex items-center gap-2">
+        <p-button
+          icon="pi pi-refresh"
+          severity="info"
+          [outlined]="true"
+          [rounded]="true"
+          (click)="loadStats()"
+          pTooltip="Refresh"
+          class="hidden sm:inline-flex">
+        </p-button>
+        <p-button
+          icon="pi pi-download"
+          severity="secondary"
+          [outlined]="true"
+          [rounded]="true"
+          pTooltip="Export"
+          class="hidden sm:inline-flex">
+        </p-button>
+        <p-button
+          label="New Product"
+          icon="pi pi-plus"
+          severity="primary"
+          routerLink="../products/create">
+        </p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <div *ngFor="let stat of stats" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">{{ stat.label }}</p>
+          <p class="text-2xl font-bold text-gray-900 mt-1">{{ stat.value }}</p>
         </div>
+        <div class="w-12 h-12 rounded-lg flex items-center justify-center" [class]="stat.color">
+          <i [class]="stat.icon + ' text-xl ' + stat.iconColor"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Navigation Sections -->
+  <div class="space-y-6 mb-6">
+    <div *ngFor="let section of sections"
+         class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+
+      <!-- Section header -->
+      <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+        <i [class]="section.icon + ' text-green-600'"></i>
+        <h2 class="text-base font-semibold text-gray-800">{{ section.label }}</h2>
+        <span class="text-xs text-gray-500 bg-gray-100 rounded-full px-2 py-0.5 ml-auto">
+          {{ section.links.length }} modules
+        </span>
+      </div>
+
+      <!-- Links grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 divide-x divide-y divide-gray-100"
+           [class.lg:grid-cols-6]="section.links.length === 6"
+           [class.lg:grid-cols-4]="section.links.length === 4"
+           [class.lg:grid-cols-2]="section.links.length === 2">
+        <a *ngFor="let link of section.links"
+           [routerLink]="link.route"
+           class="flex items-center gap-3 px-5 py-4 hover:bg-gray-50 cursor-pointer transition-colors group no-underline">
+          <div class="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0
+                      group-hover:bg-green-100 transition-colors">
+            <i [class]="link.icon + ' text-gray-500 group-hover:text-green-600 transition-colors'"></i>
+          </div>
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-gray-800 group-hover:text-green-700 transition-colors truncate">
+              {{ link.label }}
+            </p>
+            <p class="text-xs text-gray-400 truncate">{{ link.desc }}</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom row: Health + Alerts -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Inventory Health -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div class="flex items-center gap-3 mb-5">
+        <i class="pi pi-heart-fill text-green-600"></i>
+        <h2 class="text-base font-semibold text-gray-900">Inventory Health</h2>
+      </div>
+      <div class="space-y-4">
+        <div *ngFor="let level of stockLevels">
+          <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full inline-block" [class]="level.dotClass"></span>
+              <span class="text-sm text-gray-700">{{ level.label }}</span>
+            </div>
+            <span class="text-sm font-semibold text-gray-900">{{ level.percent }}%</span>
+          </div>
+          <div class="w-full bg-gray-100 rounded-full h-2">
+            <div class="h-2 rounded-full transition-all duration-700"
+                 [class]="level.colorClass"
+                 [style.width.%]="level.percent">
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Stats Grid -->
-    <div class="grid mb-6">
-        <div *ngFor="let stat of stats" class="col-12 md:col-6 lg:col-3">
-            <div class="p-4 border-round-xl bg-card shadow-1 flex align-items-center gap-4 transition-all hover:shadow-3 border-1 border-white-alpha-10 glassmorphic">
-                <div [class]="'w-4rem h-4rem border-round-lg flex align-items-center justify-content-center bg-' + stat.color + '-500 text-white'">
-                    <i [class]="stat.icon + ' text-2xl'"></i>
-                </div>
-                <div>
-                    <div class="text-600 font-medium mb-1">{{stat.label}}</div>
-                    <div class="text-2xl font-bold text-900">{{stat.value}}</div>
-                </div>
-            </div>
+    <!-- Stock Alerts -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden lg:col-span-2">
+      <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <i class="pi pi-bell text-orange-500"></i>
+          <h2 class="text-base font-semibold text-gray-900">Stock Alerts</h2>
+          <span class="text-xs bg-red-100 text-red-600 font-semibold px-2 py-0.5 rounded-full">
+            {{ alerts.length }}
+          </span>
         </div>
+        <a routerLink="../analytics"
+           class="text-sm text-green-600 hover:text-green-700 font-medium flex items-center gap-1 no-underline">
+          View all <i class="pi pi-arrow-right text-xs"></i>
+        </a>
+      </div>
+      <div class="divide-y divide-gray-100">
+        <div *ngFor="let alert of alerts"
+             class="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition-colors">
+          <!-- Icon badge -->
+          <div class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center"
+               [class.bg-red-100]="alert.severity === 'critical'"
+               [class.bg-orange-100]="alert.severity === 'warning'"
+               [class.bg-green-100]="alert.severity === 'info'">
+            <i [class]="alert.icon"
+               [class.text-red-500]="alert.severity === 'critical'"
+               [class.text-orange-500]="alert.severity === 'warning'"
+               [class.text-green-500]="alert.severity === 'info'"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-gray-900 truncate">{{ alert.product }}</p>
+            <p class="text-xs text-gray-500 truncate">{{ alert.message }}</p>
+          </div>
+          <div class="flex-shrink-0 flex items-center gap-2">
+            <p-tag [value]="alert.severityTag === 'danger' ? 'Critical' : alert.severityTag === 'warning' ? 'Warning' : 'OK'"
+                   [severity]="alert.severityTag">
+            </p-tag>
+            <span class="text-xs text-gray-400 whitespace-nowrap">{{ alert.time }}</span>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Fast Actions -->
-    <div class="grid">
-        <div class="col-12 lg:col-8">
-            <div class="p-4 border-round-xl bg-card shadow-1 glassmorphic min-h-full">
-                <div class="flex justify-content-between align-items-center mb-4">
-                    <h3 class="text-xl font-bold m-0">Quick Access</h3>
-                </div>
-                <div class="grid">
-                    <div class="col-12 md:col-4">
-                        <div class="p-3 border-round-lg border-1 border-white-alpha-10 hover:surface-hover cursor-pointer transition-all" routerLink="../products">
-                            <i class="pi pi-tag text-blue-500 text-xl mb-3"></i>
-                            <div class="font-bold mb-1">Product Catalog</div>
-                            <div class="text-sm text-600">Browse and manage all products</div>
-                        </div>
-                    </div>
-                    <div class="col-12 md:col-4">
-                        <div class="p-3 border-round-lg border-1 border-white-alpha-10 hover:surface-hover cursor-pointer transition-all" routerLink="../warehouses">
-                            <i class="pi pi-building text-purple-500 text-xl mb-3"></i>
-                            <div class="font-bold mb-1">Warehouses</div>
-                            <div class="text-sm text-600">Monitor stock across locations</div>
-                        </div>
-                    </div>
-                    <div class="col-12 md:col-4">
-                        <div class="p-3 border-round-lg border-1 border-white-alpha-10 hover:surface-hover cursor-pointer transition-all" routerLink="../analytics">
-                            <i class="pi pi-chart-bar text-green-500 text-xl mb-3"></i>
-                            <div class="font-bold mb-1">Stock Analytics</div>
-                            <div class="text-sm text-600">Inventory performance insights</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 lg:col-4">
-            <div class="p-4 border-round-xl bg-card shadow-1 glassmorphic min-h-full">
-                <h3 class="text-xl font-bold m-0 mb-4">Inventory Status</h3>
-                <div class="flex flex-column gap-3">
-                    <div class="flex align-items-center justify-content-between p-2 border-round-lg surface-hover">
-                        <div class="flex align-items-center gap-3">
-                            <i class="pi pi-circle-fill text-green-500 text-xs"></i>
-                            <span>In Stock</span>
-                        </div>
-                        <span class="font-bold">85%</span>
-                    </div>
-                    <div class="flex align-items-center justify-content-between p-2 border-round-lg surface-hover">
-                        <div class="flex align-items-center gap-3">
-                            <i class="pi pi-circle-fill text-orange-500 text-xs"></i>
-                            <span>Low Stock</span>
-                        </div>
-                        <span class="font-bold">12%</span>
-                    </div>
-                    <div class="flex align-items-center justify-content-between p-2 border-round-lg surface-hover">
-                        <div class="flex align-items-center gap-3">
-                            <i class="pi pi-circle-fill text-red-500 text-xs"></i>
-                            <span>Out of Stock</span>
-                        </div>
-                        <span class="font-bold">3%</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+  </div>
 </div>

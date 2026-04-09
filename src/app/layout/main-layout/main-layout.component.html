@@ -1,33 +1,30 @@
-<div class="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
-  <!-- Mobile overlay -->
-  <div 
-    class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden transition-opacity duration-300"
-    [class.opacity-0]="!sidebarOpen"
-    [class.pointer-events-none]="!sidebarOpen"
-    [class.opacity-50]="sidebarOpen"
-    (click)="sidebarOpen = false">
+<div class="layout-root">
+  <!-- Mobile/tablet overlay backdrop -->
+  <div class="mobile-overlay" [class.active]="sidebarOpen" (click)="sidebarOpen = false"></div>
+
+  <!-- Sidebar wrapper — overlay on mobile, inline on desktop -->
+  <div class="sidebar-wrapper" [class.open]="sidebarOpen" [class.collapsed]="collapsed">
+    <app-sidebar [collapsed]="collapsed" (toggle)="toggleSidebar()"></app-sidebar>
   </div>
 
-  <!-- Sidebar -->
-  <div class="fixed inset-y-0 left-0 z-40 h-screen transition-all duration-300 lg:relative lg:translate-x-0 lg:h-auto"
-       [class.w-64]="!collapsed"
-       [class.w-16]="collapsed"
-       [class.-translate-x-full]="!sidebarOpen && !collapsed"
-       [class.translate-x-0]="sidebarOpen || collapsed">
-    <app-sidebar [collapsed]="collapsed" (toggle)="sidebarOpen = false"></app-sidebar>
-  </div>
+  <!-- Main content area -->
+  <div class="layout-main">
+    <!-- Mobile/tablet top bar -->
+    <div class="mobile-topbar">
+      <button class="hamburger-btn" (click)="toggleSidebar()" type="button" aria-label="Toggle sidebar">
+        <i class="pi pi-bars"></i>
+      </button>
+      <span class="topbar-label">{{ currentAppLabel }}</span>
+    </div>
 
-  <!-- Main content -->
-  <div class="flex-1 min-w-0 h-screen flex flex-col">
     <!-- Page content -->
-    <main class="flex-1 overflow-y-auto overflow-x-hidden">
+    <main class="layout-content">
       <router-outlet></router-outlet>
-      <!-- Footer -->
       <app-footer *ngIf="showFooter"></app-footer>
     </main>
   </div>
 
-  <!-- Global Loading Component -->
+  <!-- Global Loading -->
   <app-loading
     *ngIf="loadingState.isLoading"
     [type]="loadingState.type"
@@ -37,9 +34,6 @@
     [fullScreen]="loadingState.fullScreen">
   </app-loading>
 
-  <!-- Toast notifications -->
   <p-toast></p-toast>
-  
-  <!-- Confirmation dialogs -->
   <p-confirmDialog></p-confirmDialog>
 </div>

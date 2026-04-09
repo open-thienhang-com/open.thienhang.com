@@ -259,16 +259,16 @@
         </div>
       </div>
       
-      <!-- Loading State -->
-      <div class="p-8 text-center" *ngIf="loading">
+      <!-- Loading State — only on first load (no data yet) -->
+      <div class="p-8 text-center" *ngIf="loading && permissions?.data?.length === 0">
         <div class="flex flex-col items-center gap-4">
           <i class="pi pi-spin pi-spinner text-blue-500 text-2xl"></i>
           <p class="text-gray-500">Loading permissions...</p>
         </div>
       </div>
-      
-      <!-- List View -->
-      <div class="overflow-x-auto" *ngIf="!loading && viewMode === 'list'">
+
+      <!-- List View — always in DOM so p-table is never destroyed/recreated -->
+      <div class="overflow-x-auto" *ngIf="viewMode === 'list'">
         <p-table 
           [value]="permissions?.data || []" 
           [loading]="isTableLoading"
@@ -397,7 +397,7 @@
       </div>
       
       <!-- Card View -->
-      <div class="p-6" *ngIf="!loading && viewMode === 'card'">
+      <div class="p-6" *ngIf="viewMode === 'card'">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" *ngIf="permissions?.data?.length > 0">
           <div *ngFor="let permission of permissions?.data" 
                class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
