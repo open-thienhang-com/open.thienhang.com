@@ -158,6 +158,105 @@
   background: #fff7ed;
 }
 
+/* ── Drawing toolbar ───────────────────────────────────────── */
+.delivery-draw-toolbar {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 650;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  border-radius: 1rem;
+  padding: 0.5rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(8px);
+}
+
+.draw-tool-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #f8fafc;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 0.9rem;
+}
+
+.draw-tool-btn:hover {
+  background: #e0f2fe;
+  border-color: #7dd3fc;
+  color: #0284c7;
+}
+
+.draw-tool-btn.active {
+  background: #2563eb;
+  border-color: #1d4ed8;
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.draw-tool-btn--secondary:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.draw-tool-btn--danger:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.draw-tool-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 0.125rem 0;
+}
+
+.delivery-draw-mode {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 650;
+  background: rgba(15, 23, 42, 0.82);
+  color: #e2e8f0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.delivery-tag-input {
+  position: absolute;
+  inset: 0;
+  z-index: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(4px);
+}
+
+.delivery-tag-input-card {
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  width: 280px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
+}
+
 :host ::ng-deep .leaflet-container {
   font-family: inherit;
   background: #dbeafe;

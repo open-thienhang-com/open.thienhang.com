@@ -123,12 +123,40 @@ export const menu: MenuItem[] = [
         type: 'item',
         expanded: false,
         children: [
-            { label: 'Loyalty Overview', url: '/loyalty/overview', icon: 'pi pi-home' },
-            { label: 'Members', url: '/loyalty/members', icon: 'pi pi-users' },
-            { label: 'Rewards Catalog', url: '/loyalty/rewards', icon: 'pi pi-gift' },
-            { label: 'Campaigns', url: '/loyalty/campaigns', icon: 'pi pi-megaphone' },
-            { label: 'Channels', url: '/loyalty/channels', icon: 'pi pi-share-alt' },
-            { label: 'Customers', url: '/retail/customers', icon: 'pi pi-user-plus' },
+            {
+                label: 'Overview & Members',
+                icon: 'pi pi-home',
+                type: 'item',
+                expanded: false,
+                children: [
+                    { label: 'Overview',        url: '/loyalty/overview',  icon: 'pi pi-home' },
+                    { label: 'Members',         url: '/loyalty/members',   icon: 'pi pi-users' },
+                    { label: 'Customers',       url: '/retail/customers',  icon: 'pi pi-user' },
+                    { label: 'Channels',        url: '/loyalty/channels',  icon: 'pi pi-share-alt' },
+                ]
+            },
+            {
+                label: 'Rewards & Campaigns',
+                icon: 'pi pi-megaphone',
+                type: 'item',
+                expanded: false,
+                children: [
+                    { label: 'Rewards Catalog', url: '/loyalty/rewards',    icon: 'pi pi-gift' },
+                    { label: 'Campaigns',        url: '/loyalty/campaigns',  icon: 'pi pi-megaphone' },
+                    { label: 'Segments',         url: '/loyalty/segments',   icon: 'pi pi-filter' },
+                    { label: 'Automation',       url: '/loyalty/automation', icon: 'pi pi-bolt' },
+                ]
+            },
+            {
+                label: 'Strategy & Analytics',
+                icon: 'pi pi-chart-bar',
+                type: 'item',
+                expanded: false,
+                children: [
+                    { label: 'Loyalty Strategy', url: '/loyalty/strategy',  icon: 'pi pi-sitemap' },
+                    { label: 'Analytics',        url: '/loyalty/analytics', icon: 'pi pi-chart-bar' },
+                ]
+            },
         ]
     },
     {
@@ -159,7 +187,7 @@ export const menu: MenuItem[] = [
                 icon: 'pi pi-comments',
                 children: [
                     { label: 'Channels Overview', url: '/retail/omni-channel', icon: 'pi pi-share-alt' },
-                    { label: 'Chat & Messaging', url: '/chat/channels', icon: 'pi pi-hashtag' },
+                    { label: 'Chat & Messaging', url: '/chat/conversations', icon: 'pi pi-hashtag' },
                 ]
             },
             {
@@ -178,12 +206,14 @@ export const menu: MenuItem[] = [
         type: 'item',
         expanded: false,
         children: [
-            { label: 'Chat Overview', url: '/chat', icon: 'pi pi-home' },
-            { label: 'Channels', url: '/chat/channels', icon: 'pi pi-hashtag' },
-            { label: 'Direct Messages', url: '/chat/messages', icon: 'pi pi-user' },
-            { label: 'Chat Analytics', url: '/chat/analytics', icon: 'pi pi-chart-bar' },
-            { label: 'Omni-channel', url: '/retail/omni-channel', icon: 'pi pi-comments' },
-            { label: 'Chat Settings', url: '/chat/settings', icon: 'pi pi-cog' }
+            { label: 'Overview', url: '/chat', icon: 'pi pi-home' },
+            { label: 'Conversations', url: '/chat/conversations', icon: 'pi pi-comments' },
+            { label: 'Analytics', url: '/chat/analytics', icon: 'pi pi-chart-bar' },
+            { label: 'Templates', url: '/chat/templates', icon: 'pi pi-copy' },
+            { label: 'Automation', url: '/chat/automation', icon: 'pi pi-bolt' },
+            { label: 'Bot Settings', url: '/chat/bot-settings', icon: 'pi pi-cog' },
+            { label: 'Delivery Health', url: '/chat/delivery-health', icon: 'pi pi-heart' },
+            { label: 'Omni-channel', url: '/retail/omni-channel', icon: 'pi pi-share-alt' }
         ]
     },
     {

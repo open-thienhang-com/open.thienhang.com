@@ -1,42 +1,75 @@
-<div id="content-dataset" class="forecast-shell">
-  <div class="forecast-content-wrapper">
-    <div class="forecast-content-inner">
-      <div class="forecast-hero">
-        <div class="forecast-hero-copy">
-          <div class="forecast-hero-badge">
-            <i [class]="activeForecastModule.icon"></i>
-          </div>
-          <div>
-            <p class="forecast-eyebrow">Planning governance</p>
-            <h1 class="forecast-title">{{ pageTitle }}</h1>
-            <p class="forecast-subtitle">{{ pageSubtitle }}</p>
-          </div>
-        </div>
+<div id="content-dataset" class="bg-gray-50 min-h-screen p-6">
 
-        <div class="forecast-hero-actions">
-          <button type="button" class="forecast-action-button forecast-action-button--secondary" (click)="loadDatasets()">
-            <i class="pi pi-refresh"></i>
-            <span>Refresh</span>
-          </button>
-          <button *ngIf="currentDatasetType === 'demand'" type="button" class="forecast-action-button" (click)="openSettingsModal()">
-            <i class="pi pi-sliders-h"></i>
-            <span>Configure Demand</span>
-          </button>
+  <!-- Header -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-lg flex items-center justify-center text-white text-xl"
+          [ngClass]="{
+            'bg-gradient-to-br from-orange-500 to-red-600': currentDatasetType === 'demand',
+            'bg-gradient-to-br from-blue-500 to-indigo-600': currentDatasetType === 'truck',
+            'bg-gradient-to-br from-green-500 to-teal-600': currentDatasetType === 'trip',
+            'bg-gradient-to-br from-violet-500 to-purple-600': currentDatasetType === 'hub',
+            'bg-gradient-to-br from-slate-500 to-slate-700': !currentDatasetType
+          }">
+          <i [class]="activeForecastModule.icon"></i>
+        </div>
+        <div>
+          <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-0.5">Planning Forecast</p>
+          <h1 class="text-3xl font-bold text-gray-900">{{ pageTitle }}</h1>
+          <p class="text-gray-600 text-sm">{{ pageSubtitle }}</p>
         </div>
       </div>
-
-      <div class="forecast-overview-grid">
-        <article *ngFor="let card of forecastSummaryCards" class="forecast-summary-card" [attr.data-tone]="card.tone">
-          <div>
-            <p class="forecast-summary-label">{{ card.label }}</p>
-            <h3 class="forecast-summary-value">{{ card.value }}</h3>
-            <p class="forecast-summary-caption">{{ card.caption }}</p>
-          </div>
-          <div class="forecast-summary-icon">
-            <i [class]="card.icon"></i>
-          </div>
-        </article>
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+        <p-button
+          icon="pi pi-refresh"
+          severity="secondary"
+          [outlined]="true"
+          [rounded]="true"
+          (onClick)="loadDatasets()"
+          pTooltip="Refresh"
+          class="hidden sm:inline-flex">
+        </p-button>
+        <p-button
+          *ngIf="currentDatasetType === 'demand'"
+          label="Configure Demand"
+          icon="pi pi-sliders-h"
+          severity="primary"
+          (onClick)="openSettingsModal()">
+        </p-button>
       </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <div *ngFor="let card of forecastSummaryCards" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">{{ card.label }}</p>
+          <p class="text-2xl font-bold text-gray-900 mt-1">{{ card.value }}</p>
+          <p class="text-xs text-gray-400 mt-0.5">{{ card.caption }}</p>
+        </div>
+        <div class="w-12 h-12 rounded-lg flex items-center justify-center"
+          [ngClass]="{
+            'bg-orange-100': card.tone === 'warm',
+            'bg-blue-100': card.tone === 'blue',
+            'bg-green-100': card.tone === 'green',
+            'bg-violet-100': card.tone === 'violet',
+            'bg-gray-100': !card.tone || card.tone === 'neutral'
+          }">
+          <i [class]="card.icon + ' text-xl'"
+            [ngClass]="{
+              'text-orange-600': card.tone === 'warm',
+              'text-blue-600': card.tone === 'blue',
+              'text-green-600': card.tone === 'green',
+              'text-violet-600': card.tone === 'violet',
+              'text-gray-600': !card.tone || card.tone === 'neutral'
+            }"></i>
+        </div>
+      </div>
+    </div>
+  </div>
 
       <div class="forecast-workspace">
         <aside class="forecast-sidebar">

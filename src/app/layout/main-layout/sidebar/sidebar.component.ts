@@ -247,11 +247,11 @@ export class SidebarComponent implements OnInit, OnChanges {
       description: ''
     },
     {
-      key: 'chat',
-      label: 'Chat',
-      icon: 'pi pi-comments',
-      gradient: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-      description: 'Team chat, channels, and direct messaging'
+      key: 'support',
+      label: 'Support',
+      icon: 'pi pi-headphones',
+      gradient: 'linear-gradient(135deg, #06b6d4 0%, #6d28d9 100%)',
+      description: 'Omni-channel inbox, team chat, and notification management'
     },
     {
       key: 'inventory',
@@ -281,13 +281,6 @@ export class SidebarComponent implements OnInit, OnChanges {
       gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
       description: ''
     },
-    {
-      key: 'notification',
-      label: 'Notification Service',
-      icon: 'pi pi-bell',
-      gradient: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)',
-      description: 'Unified notification management system'
-    }
   ];
 
   selectedApp: AppKey = 'all';
@@ -752,7 +745,10 @@ export class SidebarComponent implements OnInit, OnChanges {
 
     // Retail sub-app handlers: extract specific sub-group from 'Retail Operations'
     const retailSubGroupHandler = (subGroupLabel: string) => {
-      const retailGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('retail operations'));
+      const retailGroup = fullMenu.find(g => {
+        const l = (g.label || '').toLowerCase();
+        return l.includes('retail operations') || l.includes('sales & commerce') || l.includes('sales');
+      });
       const group = ((retailGroup as any)?.children || []).find((it: any) =>
         (it.label || '').toLowerCase().includes(subGroupLabel.toLowerCase())
       );
@@ -917,18 +913,70 @@ export class SidebarComponent implements OnInit, OnChanges {
       }
       return;
     }
-    // Special-case: for Chat app - render its child menu items directly (no parent header)
-    if (key === 'chat') {
+    // Special-case: for Support app (Chat + Notification + Omni-channel merged)
+    if (key === 'chat' || key === 'support') {
+      const groups: any[] = [];
+
+      // 1. Chat & Collaboration group
       const chatGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('chat'));
       if (chatGroup) {
         const sourceItems = (chatGroup as any).children || (chatGroup as any).items || [];
-        const flattened = this.getFlattenedItems(sourceItems);
-        const pseudo = { label: '', icon: '', expanded: true, _noHeader: true, items: sourceItems, _flattened: flattened } as any;
-
-        this.visibleGroups = [pseudo];
-      } else {
-        this.visibleGroups = [];
+        groups.push({
+          label: 'Chat & Messaging',
+          icon: 'pi pi-comments',
+          expanded: true,
+          items: sourceItems,
+          _flattened: this.getFlattenedItems(sourceItems)
+        });
       }
+
+      // 2. Notification Center group (sub-groups: Templates, Monitoring, Development)
+      const notifGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('notification'));
+      if (notifGroup) {
+        const notifItems = (notifGroup as any).items || [];
+        // Overview standalone
+        const overviewItem = notifItems.find((it: any) => it.url === '/notification' && !it.children);
+        // Sub-groups
+        const templates = notifItems.find((it: any) => (it.label || '').toLowerCase().includes('template'));
+        const monitoring = notifItems.find((it: any) => (it.label || '').toLowerCase().includes('monitoring'));
+        const development = notifItems.find((it: any) => (it.label || '').toLowerCase().includes('development'));
+
+        const notifFlatItems: any[] = [];
+        if (overviewItem) notifFlatItems.push(overviewItem);
+        [templates, monitoring, development].forEach(sub => {
+          if (sub) {
+            const children = (sub as any).children ?? (sub as any).items ?? [];
+            children.forEach((c: any) => notifFlatItems.push(c));
+          }
+        });
+
+        groups.push({
+          label: 'Notifications',
+          icon: 'pi pi-bell',
+          expanded: false,
+          items: notifFlatItems,
+          _flattened: notifFlatItems.map((it: any) => ({ ...it, icon: this.getIconForMenuItem(it) }))
+        });
+      }
+
+      // 3. Omni-channel standalone item
+      groups.push({
+        label: 'Omni-channel',
+        icon: 'pi pi-share-alt',
+        expanded: true,
+        _noHeader: false,
+        items: [{ label: 'Channels Overview', url: '/retail/omni-channel', icon: 'pi pi-share-alt' }],
+        _flattened: [{ label: 'Channels Overview', url: '/retail/omni-channel', icon: 'pi pi-share-alt' }]
+      });
+
+      const currentUrl = this.router.url;
+      groups.forEach(g => {
+        if (g._flattened?.some((item: any) => this.getPath(item.url) === this.getPath(currentUrl))) {
+          g.expanded = true;
+        }
+      });
+
+      this.visibleGroups = groups;
       return;
     }
     // Special-case: for Ad Manager app - render its child menu items directly (no parent header)
@@ -1006,12 +1054,12 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (p.startsWith('/governance')) return 'governance';
     if (p.startsWith('/retail/loyalty') || p.startsWith('/retail/rewards') || p.startsWith('/retail/campaigns')) return 'loyalty';
     if (p.startsWith('/retail/customers')) return 'loyalty';
+    if (p.startsWith('/retail/omni-channel')) return 'support';
     if (p.startsWith('/retail/orders')) return 'retail-sales';
     if (p.startsWith('/retail/transactions')) return 'retail-sales';
     if (p.startsWith('/retail/payment')) return 'retail-sales';
     if (p.startsWith('/retail/products')) return 'retail-sales';
     if (p.startsWith('/retail/ecommerce')) return 'retail-sales';
-    if (p.startsWith('/retail/omni-channel')) return 'retail-omni';
     if (p.startsWith('/retail/pos')) return 'retail-sales';
     if (p.startsWith('/retail/fresh-retail')) return 'retail-sales';
     if (p.startsWith('/retail/analytics')) return 'retail-sales';
@@ -1026,12 +1074,10 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (p.startsWith('/files')) return 'files';
     if (p.startsWith('/travel')) return 'travel';
     if (p.startsWith('/settings')) return 'settings';
-    if (p.startsWith('/notification')) return 'notification';
     if (p.startsWith('/planning/forecast')) return 'inventory';
     if (p.startsWith('/planning/delivery-points')) return 'inventory';
     if (p.startsWith('/planning/fleet')) return 'inventory';
     if (p.startsWith('/planning')) return 'planning';
-    if (p.startsWith('/chat')) return 'chat';
     // Marketplace removed - routes to root now
     // default: nothing to force
     return null;
@@ -1046,6 +1092,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       catalog: [],
       explore: ['explore', 'data mesh'],
       chat: [],
+      support: ['chat', 'notification', 'omni'],
       warehouse: ['inventory management'],
       planning: ['planning'],
       blogger: ['blog', 'blogger', 'posts'],
@@ -1234,6 +1281,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       blogger: '/blogger',
       hotel: '/hotel',
       admanager: '/ad-manager',
+      support: '/chat',
       chat: '/chat',
       files: '/files',
       travel: '/travel',

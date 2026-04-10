@@ -327,7 +327,7 @@ export const routes: Routes = [
           },
           {
             path: 'omni-channel',
-            loadComponent: () => import('./features/chat/pages/facebook-workspace/facebook-workspace.component').then(m => m.FacebookWorkspaceComponent),
+            loadComponent: () => import('./features/retail/retail-services/omnichannel/omnichannel-overview.component').then(m => m.OmnichannelOverviewComponent),
           },
           {
             path: 'transactions',

@@ -1,1 +1,202 @@
-<p>loyalty works!</p>
+<p-toast></p-toast>
+
+<div class="bg-gray-50 min-h-screen p-6">
+
+  <!-- Header -->
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl flex items-center justify-center">
+          <i class="pi pi-users text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Members</h1>
+          <p class="text-gray-500 text-sm">Loyalty program member directory and tier management</p>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <p-button icon="pi pi-refresh" severity="secondary" [outlined]="true" [rounded]="true" (onClick)="loadMembers()" pTooltip="Refresh" class="hidden sm:inline-flex"></p-button>
+        <p-button icon="pi pi-download" severity="secondary" [outlined]="true" [rounded]="true" pTooltip="Export" class="hidden sm:inline-flex"></p-button>
+        <p-button label="Add Member" icon="pi pi-plus" severity="primary"></p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Total</p>
+      <p class="text-2xl font-bold text-gray-900 mt-1">{{ members.length }}</p>
+      <p class="text-xs text-gray-400 mt-0.5">{{ countActive() }} active</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <p class="text-xs font-semibold uppercase tracking-wide" style="color:#6d28d9">Platinum</p>
+      <p class="text-2xl font-bold text-gray-900 mt-1">{{ countByTier('platinum') }}</p>
+      <p class="text-xs text-gray-400 mt-0.5">top tier</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <p class="text-xs font-semibold uppercase tracking-wide" style="color:#b45309">Gold</p>
+      <p class="text-2xl font-bold text-gray-900 mt-1">{{ countByTier('gold') }}</p>
+      <p class="text-xs text-gray-400 mt-0.5">high value</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Total Points</p>
+      <p class="text-2xl font-bold text-gray-900 mt-1">{{ totalPoints() | number }}</p>
+      <p class="text-xs text-gray-400 mt-0.5">across all members</p>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm mb-6">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <span class="text-sm font-semibold text-gray-700">Filters</span>
+      <span class="text-xs text-gray-400">{{ filtered.length }} of {{ members.length }}</span>
+    </div>
+    <div class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div>
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Search</label>
+        <span class="p-input-icon-left w-full">
+          <i class="pi pi-search"></i>
+          <input pInputText [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Name, ID, email..." class="w-full" />
+        </span>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Tier</label>
+        <p-dropdown [(ngModel)]="selectedTier" [options]="tierOptions" optionLabel="label" optionValue="value" (onChange)="applyFilters()" class="w-full"></p-dropdown>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Status</label>
+        <p-dropdown [(ngModel)]="selectedStatus" [options]="statusOptions" optionLabel="label" optionValue="value" (onChange)="applyFilters()" class="w-full"></p-dropdown>
+      </div>
+      <div class="flex items-end">
+        <p-button label="Clear" icon="pi pi-times" severity="secondary" [outlined]="true" (onClick)="clearFilters()" styleClass="w-full"></p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100">
+      <h2 class="text-base font-semibold text-gray-900">Member List</h2>
+    </div>
+
+    <div class="p-12 text-center" *ngIf="loading">
+      <i class="pi pi-spin pi-spinner text-violet-500 text-2xl"></i>
+      <p class="text-gray-500 text-sm mt-3">Loading members...</p>
+    </div>
+
+    <p-table *ngIf="!loading"
+      [value]="filtered"
+      [paginator]="true" [rows]="15" [rowsPerPageOptions]="[10,15,30,50]"
+      styleClass="p-datatable-sm"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="{first}–{last} / {totalRecords}">
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width:35%">Member</th>
+          <th style="width:10%">Tier</th>
+          <th style="width:12%">Points</th>
+          <th style="width:12%">Joined</th>
+          <th style="width:10%">Status</th>
+          <th style="width:8%"></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-m>
+        <tr class="hover:bg-gray-50 transition-colors cursor-pointer" (click)="openDetail(m)">
+          <td>
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
+                [style.background]="getAvatarBg(m.tier)">{{ getInitials(m.fullName) }}</div>
+              <div class="min-w-0">
+                <div class="font-semibold text-gray-900 truncate">{{ m.fullName }}</div>
+                <div class="text-xs text-gray-400">{{ m.customerId }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border"
+              [style.background]="getTierBadge(m.tier).bg"
+              [style.color]="getTierBadge(m.tier).color"
+              [style.border-color]="getTierBadge(m.tier).border">
+              {{ getTierLabel(m.tier) }}
+            </span>
+          </td>
+          <td>
+            <span class="text-sm font-semibold text-gray-800">{{ m.points | number }}</span>
+            <span class="text-xs text-gray-400 ml-1">pts</span>
+          </td>
+          <td class="text-xs text-gray-500">{{ m.joinedAt | date:'dd/MM/yyyy' }}</td>
+          <td>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
+              [class]="m.status === 'active' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'">
+              {{ m.status }}
+            </span>
+          </td>
+          <td>
+            <div (click)="$event.stopPropagation()">
+              <p-button icon="pi pi-eye" [outlined]="true" size="small" (onClick)="openDetail(m)"></p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="6">
+          <div class="py-16 text-center">
+            <i class="pi pi-users text-gray-300 text-4xl"></i>
+            <p class="text-gray-500 mt-3">No members found</p>
+          </div>
+        </td></tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- Detail dialog -->
+  <p-dialog [(visible)]="showDetail" header="Member Detail" [modal]="true" [style]="{width:'520px'}" [closable]="true">
+    <div *ngIf="selectedMember" class="space-y-4">
+      <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
+        <div class="w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold text-white"
+          [style.background]="getAvatarBg(selectedMember.tier)">{{ getInitials(selectedMember.fullName) }}</div>
+        <div>
+          <div class="text-lg font-bold text-gray-900">{{ selectedMember.fullName }}</div>
+          <div class="text-sm text-gray-500">{{ selectedMember.customerId }}</div>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold mt-1 border"
+            [style.background]="getTierBadge(selectedMember.tier).bg"
+            [style.color]="getTierBadge(selectedMember.tier).color"
+            [style.border-color]="getTierBadge(selectedMember.tier).border">
+            {{ getTierLabel(selectedMember.tier) }}
+          </span>
+        </div>
+        <div class="ml-auto text-right">
+          <div class="text-2xl font-bold text-violet-600">{{ selectedMember.points | number }}</div>
+          <div class="text-xs text-gray-400">points</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div class="bg-gray-50 rounded-lg p-3">
+          <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Email</p>
+          <p class="font-medium text-gray-800 truncate">{{ selectedMember.email || '—' }}</p>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-3">
+          <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Phone</p>
+          <p class="font-medium text-gray-800">{{ selectedMember.phone || '—' }}</p>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-3">
+          <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Joined</p>
+          <p class="font-medium text-gray-800">{{ selectedMember.joinedAt | date:'dd/MM/yyyy' }}</p>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-3">
+          <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Status</p>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
+            [class]="selectedMember.status === 'active' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'">
+            {{ selectedMember.status }}
+          </span>
+        </div>
+      </div>
+    </div>
+    <ng-template pTemplate="footer">
+      <p-button label="Close" [outlined]="true" (onClick)="showDetail = false"></p-button>
+      <p-button label="Edit" icon="pi pi-pencil" severity="primary"></p-button>
+    </ng-template>
+  </p-dialog>
+
+</div>

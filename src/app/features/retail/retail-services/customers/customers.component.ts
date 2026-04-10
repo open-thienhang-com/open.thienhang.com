@@ -221,6 +221,45 @@ export class CustomersComponent implements OnInit {
     return this.customers.filter((it) => it.isActive).length;
   }
 
+  getInitials(name: string): string {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+
+  getAvatarColor(type: string): string {
+    const palette: Record<string, string> = {
+      retail: '#6366f1', vip: '#8b5cf6', wholesale: '#0ea5e9',
+      b2b: '#14b8a6', b2c: '#f59e0b', premium: '#ec4899',
+      corporate: '#0284c7', individual: '#22c55e'
+    };
+    const key = (type || '').toLowerCase();
+    if (palette[key]) return palette[key];
+    const hue = [...key].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
+    return `hsl(${hue}, 55%, 50%)`;
+  }
+
+  getTypeChipBg(type: string): string {
+    const palette: Record<string, string> = {
+      retail: '#eef2ff', vip: '#f5f3ff', wholesale: '#e0f2fe',
+      b2b: '#ccfbf1', b2c: '#fef3c7', premium: '#fce7f3',
+      corporate: '#dbeafe', individual: '#dcfce7'
+    };
+    const key = (type || '').toLowerCase();
+    return palette[key] || '#f1f5f9';
+  }
+
+  getTypeChipColor(type: string): string {
+    const palette: Record<string, string> = {
+      retail: '#4338ca', vip: '#6d28d9', wholesale: '#0369a1',
+      b2b: '#0f766e', b2c: '#b45309', premium: '#be185d',
+      corporate: '#1d4ed8', individual: '#15803d'
+    };
+    const key = (type || '').toLowerCase();
+    return palette[key] || '#475569';
+  }
+
   private openCustomerByMode(item: CustomerItem, mode: 'edit' | 'view'): void {
     this.dialogMode = mode;
     this.saving = true;

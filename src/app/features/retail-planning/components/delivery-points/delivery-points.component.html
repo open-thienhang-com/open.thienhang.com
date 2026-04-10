@@ -37,6 +37,70 @@
 
       <div #deliveryPointsMap class="delivery-map-canvas"></div>
 
+      <!-- Drawing toolbar -->
+      <div class="delivery-draw-toolbar" *ngIf="mapLoaded">
+        <button
+          class="draw-tool-btn"
+          [class.active]="drawMode === 'point'"
+          (click)="setDrawMode('point')"
+          title="Add Point">
+          <i class="pi pi-map-marker"></i>
+        </button>
+        <button
+          class="draw-tool-btn"
+          [class.active]="drawMode === 'route'"
+          (click)="setDrawMode('route')"
+          title="Draw Route">
+          <i class="pi pi-minus"></i>
+        </button>
+        <button
+          class="draw-tool-btn"
+          [class.active]="drawMode === 'tag'"
+          (click)="setDrawMode('tag')"
+          title="Add Tag">
+          <i class="pi pi-tag"></i>
+        </button>
+        <div class="draw-tool-divider"></div>
+        <button
+          class="draw-tool-btn draw-tool-btn--secondary"
+          (click)="undoLastDrawing()"
+          title="Undo">
+          <i class="pi pi-undo"></i>
+        </button>
+        <button
+          class="draw-tool-btn draw-tool-btn--danger"
+          (click)="clearAllDrawings()"
+          title="Clear All">
+          <i class="pi pi-trash"></i>
+        </button>
+      </div>
+
+      <!-- Draw mode indicator -->
+      <div class="delivery-draw-mode" *ngIf="drawMode !== 'none'">
+        <span *ngIf="drawMode === 'point'"><i class="pi pi-map-marker mr-1"></i>Click map to add point</span>
+        <span *ngIf="drawMode === 'route'"><i class="pi pi-minus mr-1"></i>Click to add waypoints · double-click toolbar to finish</span>
+        <span *ngIf="drawMode === 'tag'"><i class="pi pi-tag mr-1"></i>Click map to place tag</span>
+      </div>
+
+      <!-- Tag input overlay -->
+      <div class="delivery-tag-input" *ngIf="tagInputVisible">
+        <div class="delivery-tag-input-card">
+          <p class="text-xs font-semibold text-gray-700 mb-2">Tag label</p>
+          <input
+            pInputText
+            [(ngModel)]="tagInputText"
+            placeholder="Enter tag text..."
+            class="w-full mb-3 text-sm"
+            (keydown.enter)="confirmTag()"
+            (keydown.escape)="cancelTag()"
+            autofocus />
+          <div class="flex gap-2">
+            <button class="flex-1 bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors" (click)="confirmTag()">Confirm</button>
+            <button class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors" (click)="cancelTag()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
       <div class="delivery-map-focus">
         <div class="delivery-map-focus-card">
           <div class="delivery-map-focus-label">Map Focus</div>

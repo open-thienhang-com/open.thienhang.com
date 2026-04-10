@@ -1,65 +1,9 @@
 :host {
     display: block;
     min-height: 100vh;
-    background:
-        radial-gradient(circle at top left, rgba(59, 130, 246, 0.12), transparent 28%),
-        radial-gradient(circle at top right, rgba(249, 115, 22, 0.14), transparent 24%),
-        #f8fafc;
     color: #0f172a;
 }
 
-.forecast-shell {
-    min-height: 100vh;
-}
-
-.forecast-content-wrapper {
-    padding: 2rem;
-}
-
-.forecast-content-inner {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.forecast-hero {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1.5rem;
-    padding: 1.75rem 2rem;
-    border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 58%, #0f766e 100%);
-    color: #fff;
-    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
-}
-
-.forecast-hero-copy {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.forecast-hero-badge,
-.forecast-summary-icon,
-.forecast-sidebar-help-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.forecast-hero-badge {
-    width: 64px;
-    height: 64px;
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.16);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    backdrop-filter: blur(10px);
-    font-size: 1.5rem;
-}
-
-.forecast-eyebrow,
 .forecast-sidebar-eyebrow,
 .forecast-panel-eyebrow {
     margin: 0 0 0.35rem;
@@ -69,10 +13,6 @@
     text-transform: uppercase;
 }
 
-.forecast-eyebrow {
-    color: rgba(255, 255, 255, 0.72);
-}
-
 .forecast-title {
     margin: 0;
     font-size: clamp(2rem, 3vw, 2.75rem);
@@ -80,107 +20,29 @@
     font-weight: 800;
 }
 
-.forecast-subtitle {
-    max-width: 760px;
-    margin: 0.5rem 0 0;
-    color: rgba(255, 255, 255, 0.82);
-    font-size: 0.98rem;
-    line-height: 1.6;
-}
-
-.forecast-hero-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.forecast-action-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    border: 0;
-    border-radius: 14px;
-    background: #fff;
-    color: #0f172a;
-    padding: 0.8rem 1rem;
-    font-size: 0.9rem;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.forecast-action-button--secondary {
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    color: #fff;
-}
-
-.forecast-overview-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1rem;
-}
-
-.forecast-summary-card,
 .forecast-sidebar-panel,
 .forecast-panel {
-    background: rgba(255, 255, 255, 0.88);
-    border: 1px solid rgba(226, 232, 240, 0.95);
-    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-    backdrop-filter: blur(12px);
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
 }
 
-.forecast-summary-card {
-    border-radius: 20px;
-    padding: 1.25rem;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
-}
-
-.forecast-summary-label,
-.forecast-summary-caption {
-    margin: 0;
-}
-
-.forecast-summary-label {
-    color: #475569;
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
-.forecast-summary-value {
-    margin: 0.35rem 0;
-    font-size: 1.5rem;
-    line-height: 1.15;
-    font-weight: 800;
-    color: #0f172a;
-}
-
-.forecast-summary-caption {
-    color: #64748b;
-    font-size: 0.82rem;
-    line-height: 1.5;
-}
-
-.forecast-summary-icon,
 .forecast-sidebar-help-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 16px;
-    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    font-size: 1.1rem;
 }
-
-.forecast-summary-card[data-tone='blue'] .forecast-summary-icon { background: #dbeafe; color: #2563eb; }
-.forecast-summary-card[data-tone='orange'] .forecast-summary-icon { background: #ffedd5; color: #ea580c; }
-.forecast-summary-card[data-tone='purple'] .forecast-summary-icon { background: #f3e8ff; color: #9333ea; }
-.forecast-summary-card[data-tone='emerald'] .forecast-summary-icon { background: #d1fae5; color: #059669; }
 
 .forecast-workspace {
     display: grid;
     grid-template-columns: 320px minmax(0, 1fr);
     gap: 1.5rem;
     align-items: start;
+    margin-bottom: 1.5rem;
 }
 
 .forecast-sidebar {

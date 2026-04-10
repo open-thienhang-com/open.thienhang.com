@@ -28,14 +28,6 @@ export class ApplicationsComponent implements OnInit {
       category: 'Retail & Supply Chain'
     },
     {
-      key: 'loyalty',
-      label: 'Loyalty CRM',
-      icon: 'pi pi-heart',
-      gradient: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
-      description: 'Customer loyalty, rewards, and campaigns',
-      category: 'Retail & Supply Chain'
-    },
-    {
       key: 'governance',
       label: 'Governance',
       icon: 'pi pi-shield',
@@ -71,11 +63,11 @@ export class ApplicationsComponent implements OnInit {
       description: 'Plan and manage global travel itineraries'
     },
     {
-      key: 'chat',
-      label: 'Chat & Collaboration',
-      icon: 'pi pi-comments',
-      gradient: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-      description: 'Team chat, channels, and direct messaging'
+      key: 'support' as AppKey,
+      label: 'Support',
+      icon: 'pi pi-headphones',
+      gradient: 'linear-gradient(135deg, #06b6d4 0%, #6d28d9 100%)',
+      description: 'Omni-channel inbox, team chat, and notification management'
     },
     {
       key: 'files',
@@ -90,13 +82,6 @@ export class ApplicationsComponent implements OnInit {
       icon: 'pi pi-cog',
       gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
       description: 'System and workspace configurations'
-    },
-    {
-      key: 'notification',
-      label: 'Notification Service',
-      icon: 'pi pi-bell',
-      gradient: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)',
-      description: 'Unified notification management system'
     },
     {
       key: 'planning',
@@ -122,14 +107,6 @@ export class ApplicationsComponent implements OnInit {
       description: 'Customer management, loyalty rewards and campaigns',
       category: 'Retail & Supply Chain'
     },
-    {
-      key: 'retail-omni' as AppKey,
-      label: 'Omni-channel',
-      icon: 'pi pi-comments',
-      gradient: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)',
-      description: 'Multi-channel retail communication and sales',
-      category: 'Retail & Supply Chain'
-    }
   ];
 
   selectedApp: AppKey = 'all';
@@ -173,6 +150,7 @@ export class ApplicationsComponent implements OnInit {
       blogger: '/blogger',
       hotel: '/hotel',
       admanager: '/ad-manager',
+      support: '/chat',
       chat: '/chat',
       files: '/files',
       travel: '/travel',
