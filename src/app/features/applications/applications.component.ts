@@ -19,12 +19,13 @@ export class ApplicationsComponent implements OnInit {
       gradient: 'linear-gradient(135deg, #0ea5e9 0%, #14b8a6 100%)',
       description: 'Discover data products and explore assets'
     },
+
     {
       key: 'inventory',
       label: 'Inventory Management',
       icon: 'pi pi-box',
       gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-      description: 'Stock, products, warehouses, fleet and demand forecasting',
+      description: 'Stock, products, warehouses, fleet, forecasting and supply chain planning',
       category: 'Retail & Supply Chain'
     },
     {
@@ -62,13 +63,7 @@ export class ApplicationsComponent implements OnInit {
       gradient: 'linear-gradient(135deg, #2af598 0%, #009efd 100%)',
       description: 'Plan and manage global travel itineraries'
     },
-    {
-      key: 'support' as AppKey,
-      label: 'Support',
-      icon: 'pi pi-headphones',
-      gradient: 'linear-gradient(135deg, #06b6d4 0%, #6d28d9 100%)',
-      description: 'Omni-channel inbox, team chat, and notification management'
-    },
+
     {
       key: 'files',
       label: 'File Manager',
@@ -83,14 +78,7 @@ export class ApplicationsComponent implements OnInit {
       gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
       description: 'System and workspace configurations'
     },
-    {
-      key: 'planning',
-      label: 'Planning',
-      icon: 'pi pi-directions',
-      gradient: 'linear-gradient(135deg, #15803d 0%, #22c55e 100%)',
-      description: 'Supply chain planning and route optimization',
-      category: 'Retail & Supply Chain'
-    },
+
     {
       key: 'retail-sales' as AppKey,
       label: 'Sales & Commerce',
@@ -107,12 +95,20 @@ export class ApplicationsComponent implements OnInit {
       description: 'Customer management, loyalty rewards and campaigns',
       category: 'Retail & Supply Chain'
     },
+    {
+      key: 'support' as AppKey,
+      label: 'Support',
+      icon: 'pi pi-headphones',
+      gradient: 'linear-gradient(135deg, #06b6d4 0%, #6d28d9 100%)',
+      description: 'Omni-channel inbox, team chat, and notification management',
+      category: 'Retail & Supply Chain'
+    },
   ];
 
   selectedApp: AppKey = 'all';
 
   get categories(): string[] {
-    return ['Retail & Supply Chain', 'Others', 'Data Governance'];
+    return ['Retail & Supply Chain', 'Data Governance', 'Others'];
   }
 
   getAppsByCategory(category: string) {
@@ -146,7 +142,7 @@ export class ApplicationsComponent implements OnInit {
       loyalty: '/loyalty/overview',
       catalog: '/',
       governance: '/governance/policies',
-      planning: '/planning/auto-planning',
+      planning: '/inventory/overview',
       blogger: '/blogger',
       hotel: '/hotel',
       admanager: '/ad-manager',

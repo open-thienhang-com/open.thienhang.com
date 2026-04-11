@@ -264,9 +264,8 @@ main {
 main[role="main"],
 main,
 .main,
-.content,
-.flex-1.overflow-auto {
-  overflow-y: auto !important;
+.content {
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 

@@ -576,10 +576,17 @@ export class SidebarComponent implements OnInit, OnChanges {
   }
 
   computeVisibleGroups() {
-    // Merge hardcoded menu items with config items
-    const combined = (this.menu || []).concat(fullMenu || []).concat(configGroups || []);
-    this.sidebarGroups = combined.map(g => ({
+    // Deduplicate groups by label
+    const uniqueGroups = new Map<string, any>();
+    [...(this.menu || []), ...(fullMenu || []), ...(configGroups || [])].forEach(g => {
+      if (g && g.label && !uniqueGroups.has(g.label)) {
+        uniqueGroups.set(g.label, g);
+      }
+    });
+
+    this.sidebarGroups = Array.from(uniqueGroups.values()).map(g => ({
        label: g.label,
+       icon: g.icon,
        items: (g as any).children || (g as any).items || []
     }));
 
@@ -619,7 +626,7 @@ export class SidebarComponent implements OnInit, OnChanges {
               label: section.label,
               icon: section.icon,
               items: (section as any).children || (section as any).items || [],
-              expanded: false,
+              expanded: true,
               _noHeader: false
             });
           }
@@ -662,7 +669,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (key === 'inventory' || key === 'fleet' || key === 'warehouse' || key === 'forecast') {
       const invGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('inventory management'));
       if (invGroup) {
-        const subGroupLabels = ['stock & products', 'fleet & warehouse', 'forecast'];
+        const subGroupLabels = ['stock & products', 'fleet & warehouse', 'forecast', 'planning'];
         const currentUrl = this.router.url;
         const groups: any[] = subGroupLabels.map(subLabel => {
           const sub = ((invGroup as any).children || []).find((it: any) =>
@@ -677,7 +684,7 @@ export class SidebarComponent implements OnInit, OnChanges {
           return {
             label: sub.label,
             icon: sub.icon,
-            expanded: matchesCurrent || subLabel === 'stock & products',
+            expanded: true,
             items: sourceItems,
             _flattened: flattened
           };
@@ -775,7 +782,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       const salesGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('sales & commerce'));
       if (salesGroup) {
         const children = (salesGroup as any)?.children || [];
-        const subGroupLabels = ['sales & orders', 'ecommerce', 'point of sale'];
+        const subGroupLabels = ['sales & orders', 'ecommerce', 'point of sale', 'analytics'];
         const groups: any[] = [];
         subGroupLabels.forEach(subLabel => {
           const sub = children.find((it: any) => (it.label || '').toLowerCase().includes(subLabel));
@@ -785,7 +792,7 @@ export class SidebarComponent implements OnInit, OnChanges {
             groups.push({
               label: sub.label,
               icon: sub.icon,
-              expanded: false,
+              expanded: true,
               items: sourceItems,
               _flattened: flattened
             });
@@ -1077,7 +1084,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (p.startsWith('/planning/forecast')) return 'inventory';
     if (p.startsWith('/planning/delivery-points')) return 'inventory';
     if (p.startsWith('/planning/fleet')) return 'inventory';
-    if (p.startsWith('/planning')) return 'planning';
+    if (p.startsWith('/planning')) return 'inventory';
     // Marketplace removed - routes to root now
     // default: nothing to force
     return null;
@@ -1277,7 +1284,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       loyalty: '/loyalty/overview',
       catalog: '/',
       governance: '/governance/policies',
-      planning: '/planning/auto-planning',
+      planning: '/inventory/overview',
       blogger: '/blogger',
       hotel: '/hotel',
       admanager: '/ad-manager',

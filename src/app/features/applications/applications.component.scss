@@ -2,9 +2,6 @@
 :host {
   display: block;
   width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
 }
 
 // Variables & Fonts
@@ -16,11 +13,7 @@ $glass-border: rgba(255, 255, 255, 0.5);
 
 .applications-page {
   position: relative;
-  min-height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
   background: #f0f4f8; // Soft cool gray backdrop
-  flex: 1;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
   &::-webkit-scrollbar {

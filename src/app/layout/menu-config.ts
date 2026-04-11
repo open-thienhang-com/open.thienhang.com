@@ -82,7 +82,7 @@ export const menu: MenuItem[] = [
         label: 'Inventory Management',
         icon: 'pi pi-box',
         type: 'item',
-        expanded: false,
+        expanded: true,
         children: [
             {
                 label: 'Stock & Products',
@@ -113,6 +113,13 @@ export const menu: MenuItem[] = [
                     { label: 'Truck Load', url: '/inventory/forecast/truck', icon: 'pi pi-box' },
                     { label: 'Trip Forecast', url: '/inventory/forecast/trip', icon: 'pi pi-map' },
                     { label: 'Hub Forecast', url: '/inventory/forecast/hub', icon: 'pi pi-building' },
+                ]
+            },
+            {
+                label: 'Planning',
+                icon: 'pi pi-directions',
+                children: [
+                    { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-directions' }
                 ]
             },
         ]
@@ -172,6 +179,7 @@ export const menu: MenuItem[] = [
                     { label: 'Order List', url: '/retail/orders', icon: 'pi pi-list' },
                     { label: 'Transactions', url: '/retail/transactions', icon: 'pi pi-receipt' },
                     { label: 'Payment', url: '/retail/payment', icon: 'pi pi-credit-card' },
+                    { label: 'Analytics', url: '/retail/analytics', icon: 'pi pi-chart-bar' },
                 ]
             },
             {
@@ -297,15 +305,7 @@ export const menu: MenuItem[] = [
             }
         ]
     },
-    {
-        label: 'Retail Planning',
-        icon: 'pi pi-directions',
-        type: 'item',
-        expanded: false,
-        children: [
-            { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-directions' }
-        ]
-    },
+
     {
         label: 'Travel Explorer',
         icon: 'pi pi-globe',
