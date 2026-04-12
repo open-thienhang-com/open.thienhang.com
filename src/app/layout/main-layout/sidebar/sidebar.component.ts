@@ -607,44 +607,17 @@ export class SidebarComponent implements OnInit, OnChanges {
     const key = this.appKey;
 
     // Special-case: for Retail app, show business sections in a fixed order.
-    if (key === 'retail') {
+    if (key === 'retail' || key === 'retail-sales') {
       const retailGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('sales & commerce'));
-      const groups: any[] = [];
-
       if (retailGroup) {
-        const businessOrder = [
-          'sales & orders',
-          'ecommerce',
-          'omni-channel',
-          'point of sale',
-        ];
+        const sourceItems = (retailGroup as any).children || (retailGroup as any).items || [];
+        const flattened = this.getFlattenedItems(sourceItems);
+        const pseudo = { label: '', icon: '', expanded: true, _noHeader: true, items: sourceItems, _flattened: flattened } as any;
 
-        businessOrder.forEach(keyPart => {
-          const section = ((retailGroup as any).children || (retailGroup as any).items || []).find((it: any) => (it.label || '').toLowerCase().includes(keyPart));
-          if (section) {
-            groups.push({
-              label: section.label,
-              icon: section.icon,
-              items: (section as any).children || (section as any).items || [],
-              expanded: true,
-              _noHeader: false
-            });
-          }
-        });
+        this.visibleGroups = [pseudo];
+      } else {
+        this.visibleGroups = [];
       }
-
-      this.visibleGroups = this.orderGroupsForApp(groups, key);
-      const currentUrl = this.router.url;
-      // Ensure all retail groups have their flattened items computed
-      this.visibleGroups.forEach(g => {
-        if (g.items && (!g._flattened || g._flattened.length === 0)) {
-          g._flattened = this.getFlattenedItems(g.items);
-        }
-        // Auto-expand if current route is within this group
-        if ((g as any)._flattened && (g as any)._flattened.some((item: any) => this.getPath(item.url) === this.getPath(currentUrl))) {
-          g.expanded = true;
-        }
-      });
       return;
     }
 
@@ -778,27 +751,14 @@ export class SidebarComponent implements OnInit, OnChanges {
       }
     };
 
-    if (key === 'retail-sales' || key === 'retail-products' || key === 'retail-pos' || key === 'retail-analytics') {
+    if (key === 'retail-products' || key === 'retail-pos') {
       const salesGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('sales & commerce'));
       if (salesGroup) {
-        const children = (salesGroup as any)?.children || [];
-        const subGroupLabels = ['sales & orders', 'ecommerce', 'point of sale', 'analytics'];
-        const groups: any[] = [];
-        subGroupLabels.forEach(subLabel => {
-          const sub = children.find((it: any) => (it.label || '').toLowerCase().includes(subLabel));
-          if (sub) {
-            const sourceItems = (sub as any).children || (sub as any).items || [];
-            const flattened = this.getFlattenedItems(sourceItems);
-            groups.push({
-              label: sub.label,
-              icon: sub.icon,
-              expanded: true,
-              items: sourceItems,
-              _flattened: flattened
-            });
-          }
-        });
-        this.visibleGroups = groups;
+        const sourceItems = (salesGroup as any).children || (salesGroup as any).items || [];
+        const flattened = this.getFlattenedItems(sourceItems);
+        const pseudo = { label: '', icon: '', expanded: true, _noHeader: true, items: sourceItems, _flattened: flattened } as any;
+
+        this.visibleGroups = [pseudo];
       } else {
         this.visibleGroups = [];
       }
@@ -1048,7 +1008,6 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (p.startsWith('/retail/ecommerce')) return 'retail-sales';
     if (p.startsWith('/retail/pos')) return 'retail-sales';
     if (p.startsWith('/retail/fresh-retail')) return 'retail-sales';
-    if (p.startsWith('/retail/analytics')) return 'retail-sales';
     if (p.startsWith('/retail/settings')) return 'retail-sales';
     if (p.startsWith('/retail')) return 'retail';
     if (p.startsWith('/inventory')) return 'inventory';
@@ -1105,7 +1064,6 @@ export class SidebarComponent implements OnInit, OnChanges {
       'retail-customers': ['crm & customers'],
       'retail-omni': ['omni-channel'],
       'retail-pos': ['sales & commerce'],
-      'retail-analytics': ['sales & commerce']
     };
 
     const priorities = priorityMap[key] || [];
@@ -1289,7 +1247,6 @@ export class SidebarComponent implements OnInit, OnChanges {
       'retail-customers': '/retail/customers',
       'retail-omni': '/retail/omni-channel',
       'retail-pos': '/retail/pos',
-      'retail-analytics': '/retail/analytics'
     };
 
     const target = routeForApp[key] || '/';

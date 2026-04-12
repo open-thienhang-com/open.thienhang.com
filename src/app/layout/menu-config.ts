@@ -164,43 +164,15 @@ export const menu: MenuItem[] = [
         label: 'Sales & Commerce',
         icon: 'pi pi-shopping-bag',
         type: 'item',
-        expanded: false,
+        expanded: true,
         children: [
-            {
-                label: 'Sales & Orders',
-                icon: 'pi pi-send',
-                children: [
-                    { label: 'Overview', url: '/retail/overview', icon: 'pi pi-th-large' },
-                    { label: 'Order List', url: '/retail/orders', icon: 'pi pi-list' },
-                    { label: 'Transactions', url: '/retail/transactions', icon: 'pi pi-receipt' },
-                    { label: 'Payment', url: '/retail/payment', icon: 'pi pi-credit-card' },
-                    { label: 'Analytics', url: '/retail/analytics', icon: 'pi pi-chart-bar' },
-                ]
-            },
-            {
-                label: 'Ecommerce',
-                icon: 'pi pi-tag',
-                children: [
-                    { label: 'Product List', url: '/retail/products', icon: 'pi pi-tags' },
-                    { label: 'Ecommerce Store', url: '/retail/ecommerce', icon: 'pi pi-shopping-cart' },
-                ]
-            },
-            {
-                label: 'Omni-channel',
-                icon: 'pi pi-comments',
-                children: [
-                    { label: 'Channels Overview', url: '/retail/omni-channel', icon: 'pi pi-share-alt' },
-                    { label: 'Chat & Messaging', url: '/chat/conversations', icon: 'pi pi-hashtag' },
-                ]
-            },
-            {
-                label: 'Point of Sale',
-                icon: 'pi pi-desktop',
-                children: [
-                    { label: 'POS Dashboard', url: '/retail/pos', icon: 'pi pi-home' },
-                    { label: 'Fresh Retail', url: '/retail/fresh-retail', icon: 'pi pi-shopping-bag' },
-                ]
-            },
+            { label: 'Overview', url: '/retail/overview', icon: 'pi pi-th-large' },
+            { label: 'Transactions', url: '/retail/transactions', icon: 'pi pi-receipt' },
+            { label: 'Orders', url: '/retail/orders', icon: 'pi pi-list' },
+            { label: 'Ecommerce', url: '/retail/ecommerce', icon: 'pi pi-shopping-cart' },
+            { label: 'POS', url: '/retail/pos', icon: 'pi pi-desktop' },
+            { label: 'Payment', url: '/retail/payment', icon: 'pi pi-credit-card' },
+            { label: 'Support', url: '/chat/conversations', icon: 'pi pi-comments' },
         ]
     },
     {

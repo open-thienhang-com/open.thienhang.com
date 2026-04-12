@@ -61,11 +61,15 @@ export class ProductService {
       description: raw?.description ?? '',
       category: String(raw?.category ?? '').trim(),
       subcategory: raw?.subcategory ?? '',
+      category_ids: raw?.category_ids || [],
       discount_price: Number(raw?.discount_price ?? 0),
       reorder_level: Number(raw?.reorder_level ?? 10),
       maximum_stock: Number(raw?.maximum_stock ?? 0),
       supplier_id: raw?.supplier_id ?? '',
-      is_active: raw?.is_active !== false
+      thumbnail: raw?.thumbnail || null,
+      images: raw?.images || [],
+      is_active: raw?.is_active !== false,
+      telnet: raw?.telnet || 'retail'
     };
     return this.http.post<ApiResponse<Product>>(`${this.retailDomainUrl}/products`, payload);
   }
@@ -73,18 +77,25 @@ export class ProductService {
   updateProduct(id: string, data: ProductUpdateRequest): Observable<ApiResponse<Product>> {
     const raw: any = (data as any)?.data ?? data;
     const payload: any = {
-      ...raw
+      sku: String(raw?.sku ?? '').trim(),
+      name: String(raw?.name ?? '').trim(),
+      barcode: String(raw?.barcode ?? raw?.sku ?? '').trim(),
+      cost_price: Number(raw?.cost_price ?? 0),
+      selling_price: Number(raw?.selling_price ?? raw?.price ?? 0),
+      description: raw?.description ?? '',
+      category: String(raw?.category ?? '').trim(),
+      subcategory: raw?.subcategory ?? '',
+      category_ids: raw?.category_ids || [],
+      discount_price: Number(raw?.discount_price ?? 0),
+      reorder_level: Number(raw?.reorder_level ?? 10),
+      maximum_stock: Number(raw?.maximum_stock ?? 0),
+      supplier_id: raw?.supplier_id ?? '',
+      thumbnail: raw?.thumbnail || null,
+      images: raw?.images || [],
+      is_active: raw?.is_active !== false,
+      telnet: raw?.telnet || 'retail'
     };
-    if (payload.price !== undefined && payload.selling_price === undefined) {
-      payload.selling_price = payload.price;
-    }
-    if (!payload.barcode && payload.sku) {
-      payload.barcode = payload.sku;
-    }
-    delete payload.data;
-    // Note: this kept using baseUrl which was adapters/retail in the original.
-    // Keeping it as is to avoid breaking changes to the URL.
-    return this.http.put<ApiResponse<Product>>(`${getApiBase()}/adapters/retail/products/${id}`, payload);
+    return this.http.put<ApiResponse<Product>>(`${this.retailDomainUrl}/products/${id}`, payload);
   }
 
   deleteProduct(id: string): Observable<any> {

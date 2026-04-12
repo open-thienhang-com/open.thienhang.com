@@ -22,6 +22,10 @@ export const INVENTORY_ROUTES: Routes = [
                 loadComponent: () => import('./pages/products/product-detail.component').then(m => m.ProductDetailComponent) 
             },
             { 
+                path: 'products/:id/edit', 
+                loadComponent: () => import('./pages/products/product-edit.component').then(m => m.ProductEditComponent) 
+            },
+            { 
                 path: 'categories', 
                 loadComponent: () => import('./pages/categories/categories.component').then(m => m.CategoriesComponent) 
             },

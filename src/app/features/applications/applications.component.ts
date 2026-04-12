@@ -167,8 +167,7 @@ export class ApplicationsComponent implements OnInit {
       'retail-products': '/retail/products',
       'retail-customers': '/retail/customers',
       'retail-omni': '/retail/omni-channel',
-      'retail-pos': '/retail/pos',
-      'retail-analytics': '/retail/analytics'
+      'retail-pos': '/retail/pos'
     };
 
     const target = routeForApp[key] || '/';

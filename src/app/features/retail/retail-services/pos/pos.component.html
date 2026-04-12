@@ -1,120 +1,188 @@
 <p-toast></p-toast>
 
-<div class="pos-shell">
-  <header class="pos-header">
-    <div>
-      <p class="pos-label">Point of Sale</p>
-      <h1>Retail POS Terminal</h1>
-    </div>
-    <div class="pos-header-meta">
-      <div class="meta-card">
-        <span>Items</span>
-        <strong>{{ itemCount }}</strong>
+<div class="pos-terminal">
+
+  <!-- ── Status Bar ── -->
+  <header class="terminal-bar">
+    <div class="bar-left">
+      <div class="brand">
+        <i class="pi pi-desktop"></i>
+        <span>RETAIL POS v2.0</span>
       </div>
-      <div class="meta-card">
-        <span>Total</span>
-        <strong>{{ formatCurrency(total) }}</strong>
+      <div class="location">
+        <select [(ngModel)]="selectedWarehouseId" (change)="onWarehouseChange()">
+          @for (wh of warehouses; track wh.id) {
+            <option [value]="wh.id">{{ wh.name }}</option>
+          }
+        </select>
+      </div>
+    </div>
+    
+    <div class="bar-center">
+      <div class="barcode-field">
+        <i class="pi pi-filter"></i>
+        <input 
+          type="text" 
+          placeholder="Scan barcode or enter name..." 
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="applyFilters()"
+          #barcodeInput
+        />
+      </div>
+    </div>
+
+    <div class="bar-right">
+      <div class="clock">{{ currentDate | date:'HH:mm' }}</div>
+      <div class="operator">
+        <i class="pi pi-user"></i>
+        <span>Operator #104</span>
       </div>
     </div>
   </header>
 
-  <div class="pos-body">
-    <section class="catalog-panel">
-      <div class="toolbar">
-        <input pInputText [(ngModel)]="searchTerm" placeholder="Search by name, SKU, category..." />
-        <p-dropdown
-          [options]="categoryOptions"
-          [(ngModel)]="selectedCategory"
-          optionLabel="label"
-          optionValue="value"
-          styleClass="w-full md:w-18rem">
-        </p-dropdown>
+  <div class="terminal-workspace">
+    
+    <!-- ── Left: Product Matrix ── -->
+    <main class="matrix-area">
+      <nav class="category-nav">
+        <button 
+          class="cat-btn" 
+          [class.active]="selectedCategory === ''"
+          (click)="selectedCategory = ''; applyFilters()"
+        >ALL</button>
+        @for (cat of categories; track cat) {
+          <button 
+            class="cat-btn" 
+            [class.active]="selectedCategory === cat"
+            (click)="selectedCategory = cat; applyFilters()"
+          >{{ cat | uppercase }}</button>
+        }
+      </nav>
+
+      <div class="product-matrix" [class.loading]="loading">
+        @if (loading) {
+          @for (n of [1,2,3,4,5,6,7,8,9,10,11,12]; track n) {
+            <div class="matrix-tile ghost"></div>
+          }
+        } @else {
+          @for (product of filteredProducts; track product.id) {
+            <button 
+              class="matrix-tile" 
+              [class.sold-out]="getStockLevel(product.id) <= 0"
+              (click)="addToCart(product)"
+            >
+              <div class="tile-img">
+                @if (getProductImage(product)) {
+                  <img [src]="getProductImage(product)" [alt]="product.name" />
+                } @else {
+                  <div class="tile-icon" [style.color]="getCategoryColor(product.category)">
+                    {{ product.name.charAt(0) }}
+                  </div>
+                }
+              </div>
+              <div class="tile-info">
+                <span class="tile-name">{{ product.name }}</span>
+                <span class="tile-price">{{ getEffectivePrice(product) | currency }}</span>
+              </div>
+              <div class="tile-stock" [ngClass]="{'low': getStockLevel(product.id) < 5}">
+                {{ getStockLevel(product.id) }} 
+              </div>
+            </button>
+          }
+        }
       </div>
+    </main>
 
-      <div class="loading-state" *ngIf="loading">Loading catalog...</div>
-
-      <div class="catalog-grid" *ngIf="!loading">
-        <button type="button" class="product-card" *ngFor="let product of filteredProducts" (click)="addToCart(product)">
-          <div class="product-top">
-            <span class="category">{{ product.category }}</span>
-            <span class="sku">{{ product.sku || '-' }}</span>
-          </div>
-          <h3>{{ product.name }}</h3>
-          <p class="price">{{ formatCurrency(product.price) }}</p>
-          <span class="add">Tap to add</span>
-        </button>
-      </div>
-    </section>
-
-    <aside class="checkout-panel">
-      <div class="cart-header">
-        <h2>Current Order</h2>
-        <button type="button" class="clear-btn" (click)="clearCart()" [disabled]="!cart.length">Clear</button>
-      </div>
-
-      <div class="cart-list" *ngIf="cart.length; else emptyCart">
-        <article class="line-item" *ngFor="let line of cart">
-          <div class="line-main">
-            <h4>{{ line.product.name }}</h4>
-            <p>{{ formatCurrency(line.product.price) }}</p>
-          </div>
-          <div class="line-actions">
-            <button type="button" (click)="decrease(line)">-</button>
-            <span>{{ line.quantity }}</span>
-            <button type="button" (click)="increase(line)">+</button>
-            <button type="button" class="remove" (click)="remove(line)">x</button>
-          </div>
-          <div class="line-total">{{ formatCurrency(line.product.price * line.quantity) }}</div>
-        </article>
-      </div>
-
-      <ng-template #emptyCart>
-        <div class="empty-cart">No products in order.</div>
-      </ng-template>
-
-      <div class="payment-box">
-        <div class="summary-row">
-          <span>Subtotal</span>
-          <strong>{{ formatCurrency(subtotal) }}</strong>
-        </div>
-        <div class="summary-row">
-          <span>Tax (8%)</span>
-          <strong>{{ formatCurrency(tax) }}</strong>
-        </div>
-        <div class="summary-row total">
-          <span>Total Due</span>
-          <strong>{{ formatCurrency(total) }}</strong>
+    <!-- ── Right: Transaction Sidebar ── -->
+    <aside class="transaction-sidebar">
+      <div class="transaction-card shadow-pos">
+        <div class="tc-header">
+          <h3>Ticket #{{ orderNumber }}</h3>
+          <button class="void-btn" (click)="clearCart()" [disabled]="cart.length === 0">VOID ALL</button>
         </div>
 
-        <div class="payment-controls">
-          <label>Payment Method</label>
-          <p-dropdown
-            [options]="paymentOptions"
-            [(ngModel)]="paymentMethod"
-            optionLabel="label"
-            optionValue="value"
-            styleClass="w-full">
-          </p-dropdown>
-
-          <ng-container *ngIf="paymentMethod === 'cash'">
-            <label>Amount Received</label>
-            <p-inputNumber [(ngModel)]="amountReceived" mode="currency" currency="USD" locale="en-US" [min]="0" styleClass="w-full"></p-inputNumber>
-            <div class="summary-row">
-              <span>Change</span>
-              <strong>{{ formatCurrency(changeAmount) }}</strong>
+        <div class="tc-lines">
+          @if (cart.length === 0) {
+            <div class="empty-state">
+              <i class="pi pi-shopping-cart"></i>
+              <p>Ready for scanning</p>
             </div>
-          </ng-container>
+          } @else {
+            @for (item of cart; track item.product.id) {
+              <div class="tc-line">
+                <div class="line-data">
+                  <span class="ln-name">{{ item.product.name }}</span>
+                  <span class="ln-details">{{ item.quantity }} x {{ getEffectivePrice(item.product) | currency }}</span>
+                </div>
+                <div class="line-ctrl">
+                  <span class="line-subtotal">{{ (getEffectivePrice(item.product) * item.quantity) | currency }}</span>
+                  <div class="qty-control">
+                    <button (click)="decrease(item)">-</button>
+                    <button (click)="increase(item)" [disabled]="item.quantity >= getStockLevel(item.product.id)">+</button>
+                  </div>
+                </div>
+              </div>
+            }
+          }
         </div>
 
-        <p-button
-          label="Complete Sale"
-          icon="pi pi-check"
-          styleClass="w-full"
-          [loading]="placingOrder"
-          [disabled]="!cart.length || total <= 0"
-          (onClick)="completeSale()">
-        </p-button>
+        <div class="tc-footer">
+          <div class="totals-area">
+            <div class="row">
+              <span>Subtotal</span>
+              <span>{{ subtotal | currency }}</span>
+            </div>
+            <div class="row">
+              <span>Tax (8%)</span>
+              <span>{{ tax | currency }}</span>
+            </div>
+            <div class="row grand">
+              <span>TOTAL DUE</span>
+              <span>{{ total | currency }}</span>
+            </div>
+          </div>
+
+          <!-- Quick Pay Actions -->
+          <div class="payment-methods">
+            <button class="pay-btn cash" (click)="paymentMethod = 'cash'">
+              <i class="pi pi-money-bill"></i>
+              CASH
+            </button>
+            <button class="pay-btn card" (click)="paymentMethod = 'card'">
+              <i class="pi pi-credit-card"></i>
+              CARD
+            </button>
+            <button class="pay-btn more" (click)="paymentMethod = 'ewallet'">
+              <i class="pi pi-wallet"></i>
+              WALLET
+            </button>
+          </div>
+
+          @if (paymentMethod === 'cash') {
+            <div class="cash-entry">
+              <label>Amount Tendered</label>
+              <div class="input-wrap">
+                <input type="number" [(ngModel)]="amountReceived" placeholder="0.00" />
+                <button (click)="amountReceived = total">EXACT</button>
+              </div>
+              <div class="change-display">
+                <span>CHANGE:</span>
+                <strong>{{ changeAmount | currency }}</strong>
+              </div>
+            </div>
+          }
+
+          <button 
+            class="complete-btn" 
+            [disabled]="cart.length === 0 || placingOrder"
+            (click)="completeSale()"
+          >
+            {{ placingOrder ? 'PROCESSING...' : 'COMPLETE SALE' }}
+            <i class="pi pi-check"></i>
+          </button>
+        </div>
       </div>
     </aside>
+
   </div>
 </div>

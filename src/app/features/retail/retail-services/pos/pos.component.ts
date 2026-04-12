@@ -1,26 +1,20 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { ProductService, InventoryService as OrderService } from '../../../inventory/services/inventory.service';
-import { Product } from '../../../inventory/models/inventory.models';
-
-interface PosProduct {
-  id: string;
-  name: string;
-  sku: string;
-  category: string;
-  price: number;
-  isActive: boolean;
-}
+import { ProductService, CategoryService, WarehouseService, InventoryService } from '../../../inventory/services/inventory.service';
+import { UploadService } from '../../../inventory/services/upload.service';
+import { Product, Warehouse, Stock } from '../../../inventory/models/inventory.models';
 
 interface PosCartItem {
-  product: PosProduct;
+  product: Product;
   quantity: number;
 }
 
@@ -40,7 +34,14 @@ interface PosCartItem {
   styleUrl: './pos.component.scss',
   providers: [MessageService]
 })
-export class PosComponent implements OnInit {
+export class PosComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  private inventoryService = inject(InventoryService);
+  private warehouseService = inject(WarehouseService);
+  private productService = inject(ProductService);
+  private categoryService = inject(CategoryService);
+  private uploadService = inject(UploadService);
+  private messageService = inject(MessageService);
   loading = false;
   searchTerm = '';
   selectedCategory = '';
@@ -49,27 +50,35 @@ export class PosComponent implements OnInit {
   amountReceived: number | null = null;
   placingOrder = false;
 
-  products: PosProduct[] = [];
+  products: Product[] = [];
+  categories: string[] = [];
   cart: PosCartItem[] = [];
+  warehouses: Warehouse[] = [];
+  selectedWarehouseId: string = '';
+  stockMap: Record<string, number> = {};
+  currentDate: Date = new Date();
+  orderNumber: string = Math.floor(1000 + Math.random() * 9000).toString();
 
-  categoryOptions: { label: string; value: string }[] = [{ label: 'All Categories', value: '' }];
-  paymentOptions = [
-    { label: 'Cash', value: 'cash' },
-    { label: 'Card', value: 'card' },
-    { label: 'E-Wallet', value: 'ewallet' }
-  ];
-
-  constructor(
-    private productService: ProductService,
-    private orderService: OrderService,
-    private messageService: MessageService
-  ) { }
-
-  ngOnInit(): void {
-    this.loadProducts();
+  constructor() { 
+    setInterval(() => this.currentDate = new Date(), 60000);
   }
 
-  get filteredProducts(): PosProduct[] {
+  applyFilters(): void {
+    // Getter 'filteredProducts' handles the filtering automatically when signals or properties change
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  ngOnInit(): void {
+    this.loadWarehouses();
+    this.loadProducts();
+    this.loadCategories();
+  }
+
+  get filteredProducts(): Product[] {
     const keyword = this.searchTerm.trim().toLowerCase();
     return this.products.filter((product) => {
       const matchesSearch = !keyword
@@ -86,7 +95,7 @@ export class PosComponent implements OnInit {
   }
 
   get subtotal(): number {
-    return this.cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+    return this.cart.reduce((sum, item) => sum + this.getEffectivePrice(item.product) * item.quantity, 0);
   }
 
   get tax(): number {
@@ -105,42 +114,139 @@ export class PosComponent implements OnInit {
 
   loadProducts(): void {
     this.loading = true;
-    this.productService.listProducts(undefined, 0, 200).subscribe({
-      next: (resp: any) => {
-        const raw = Array.isArray(resp?.data) ? resp.data : [];
-        this.products = raw
-          .map((item: Product) => this.mapProduct(item))
-          .filter((item: PosProduct) => item.isActive);
-        if (!this.products.length) {
-          this.products = this.getFallbackProducts();
+    this.productService.listProducts(undefined, 0, 100)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (resp: any) => {
+          this.products = resp.data || [];
+          this.signImages();
+          if (this.selectedWarehouseId) {
+            this.loadStocks();
+          }
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'POS',
+            detail: 'Product API unavailable.'
+          });
         }
-        this.setupCategories();
-        this.loading = false;
-      },
-      error: () => {
-        this.products = this.getFallbackProducts();
-        this.setupCategories();
-        this.loading = false;
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'POS',
-          detail: 'Product API unavailable. Using demo catalog.'
+      });
+  }
+
+  loadWarehouses(): void {
+    this.warehouseService.listWarehouses()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(res => {
+        this.warehouses = res.data || [];
+        if (this.warehouses.length > 0 && !this.selectedWarehouseId) {
+          this.selectedWarehouseId = this.warehouses[0].id;
+          this.loadStocks();
+        }
+      });
+  }
+
+  loadStocks(): void {
+    if (!this.selectedWarehouseId) return;
+    this.inventoryService.listStocks(this.selectedWarehouseId, 0, 200)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(res => {
+        const stocks = res.data || [];
+        this.stockMap = {};
+        stocks.forEach(s => {
+          this.stockMap[s.product_id] = s.quantity;
+        });
+      });
+  }
+
+  onWarehouseChange(): void {
+    this.loadStocks();
+  }
+
+  getStockLevel(productId: string): number {
+    return this.stockMap[productId] ?? 0;
+  }
+
+  loadCategories(): void {
+    this.categoryService.listCategories(0, 50)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(res => {
+        const cats = res.data || [];
+        this.categories = cats.map((c: any) => c.name);
+      });
+  }
+
+  private signImages(): void {
+    this.products.forEach(product => {
+      // Sign thumbnail
+      if (product.thumbnail?.url && !product.thumbnail.url.startsWith('http')) {
+        this.uploadService.getSignedUrl(product.thumbnail.url).subscribe(res => {
+          if (res.success && product.thumbnail) product.thumbnail.url = res.signed_url;
         });
       }
     });
   }
 
-  addToCart(product: PosProduct): void {
+  getProductImage(product: Product): string {
+    return product.thumbnail?.url || '';
+  }
+
+  getEffectivePrice(product: Product): number {
+    return product.discount_price || product.selling_price || product.cost_price || 0;
+  }
+
+  getProductPrice(product: Product): number {
+    return product.selling_price || product.cost_price || 0;
+  }
+
+  hasDiscount(product: Product): boolean {
+    return !!product.discount_price && product.discount_price < this.getProductPrice(product);
+  }
+
+  getDiscountPercent(product: Product): number {
+    const orig = this.getProductPrice(product);
+    const disc = product.discount_price || orig;
+    if (orig <= 0) return 0;
+    return Math.round(((orig - disc) / orig) * 100);
+  }
+
+  getCategoryColor(cat: string): string {
+    const colors: Record<string, string> = {
+      'Electronics': '#3b82f6',
+      'Apparel': '#ec4899',
+      'Groceries': '#10b981',
+      'Home': '#f59e0b',
+      'Beauty': '#8b5cf6'
+    };
+    return colors[cat] || '#64748b';
+  }
+
+  addToCart(product: Product): void {
+    const stock = this.getStockLevel(product.id);
+    const inCart = this.cart.find(i => i.product.id === product.id)?.quantity || 0;
+    
+    if (stock <= inCart) {
+      this.messageService.add({ severity: 'warn', summary: 'Out of Stock', detail: 'Requested quantity exceeds available stock.' });
+      return;
+    }
+
     const existing = this.cart.find((line) => line.product.id === product.id);
     if (existing) {
       existing.quantity += 1;
       return;
     }
-    this.cart.unshift({ product, quantity: 1 });
+    this.cart.unshift({ product: product as any, quantity: 1 });
   }
 
   increase(line: PosCartItem): void {
-    line.quantity += 1;
+    const stock = this.getStockLevel(line.product.id);
+    if (line.quantity < stock) {
+      line.quantity += 1;
+    } else {
+      this.messageService.add({ severity: 'warn', summary: 'Stock Limit', detail: 'Maximum stock reached.' });
+    }
   }
 
   decrease(line: PosCartItem): void {
@@ -177,13 +283,13 @@ export class PosComponent implements OnInit {
       items: this.cart.map((line) => ({
         product_id: line.product.id,
         quantity: line.quantity,
-        unit_price: line.product.price,
-        total_price: line.product.price * line.quantity
+        unit_price: this.getEffectivePrice(line.product as any),
+        total_price: this.getEffectivePrice(line.product as any) * line.quantity
       }))
     };
 
     this.placingOrder = true;
-    this.orderService.createOrder(payload).subscribe({
+    this.inventoryService.createOrder(payload).subscribe({
       next: () => {
         this.placingOrder = false;
         this.messageService.add({
@@ -194,14 +300,12 @@ export class PosComponent implements OnInit {
         this.clearCart();
       },
       error: () => {
-        // POS demo still completes locally even if order API fails.
         this.placingOrder = false;
         this.messageService.add({
-          severity: 'info',
-          summary: 'Demo Checkout',
-          detail: 'Order API unavailable. Checkout completed in demo mode.'
+          severity: 'error',
+          summary: 'Checkout Failed',
+          detail: 'Could not create order.'
         });
-        this.clearCart();
       }
     });
   }
@@ -213,33 +317,4 @@ export class PosComponent implements OnInit {
       maximumFractionDigits: 2
     }).format(value || 0);
   }
-
-  private setupCategories(): void {
-    const categories: string[] = [...new Set(this.products.map((p) => p.category).filter((x) => !!x))];
-    this.categoryOptions = [
-      { label: 'All Categories', value: '' },
-      ...categories.map((category) => ({ label: category, value: category }))
-    ];
-  }
-
-  private mapProduct(item: Product): PosProduct {
-    return {
-      id: String((item as any)?._id || item?.id || ''),
-      name: String(item?.name || 'Unnamed'),
-      sku: String(item?.sku || ''),
-      category: String(item?.category || 'General'),
-      price: Number((item as any)?.selling_price ?? item?.price ?? 0),
-      isActive: (item as any)?.is_active !== false
-    };
-  }
-
-  private getFallbackProducts(): PosProduct[] {
-    return [
-      { id: 'demo-pos-1', name: 'Cold Brew Coffee', sku: 'POS-001', category: 'Beverage', price: 3.5, isActive: true },
-      { id: 'demo-pos-2', name: 'Chicken Sandwich', sku: 'POS-002', category: 'Food', price: 7.9, isActive: true },
-      { id: 'demo-pos-3', name: 'Chocolate Cookie', sku: 'POS-003', category: 'Bakery', price: 2.25, isActive: true },
-      { id: 'demo-pos-4', name: 'Mineral Water', sku: 'POS-004', category: 'Beverage', price: 1.75, isActive: true }
-    ];
-  }
-
 }

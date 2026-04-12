@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { ProductService, CategoryService } from '../../../inventory/services/inventory.service';
-import { Product } from '../../../inventory/models/inventory.models';
+import { ProductService, CategoryService, WarehouseService, InventoryService } from '../../../inventory/services/inventory.service';
+import { UploadService } from '../../../inventory/services/upload.service';
+import { Product, Warehouse, Stock } from '../../../inventory/models/inventory.models';
 
 export interface CartItem {
   product: Product;
@@ -20,12 +21,20 @@ export interface CartItem {
 })
 export class EcommerceComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  private inventoryService = inject(InventoryService);
+  private warehouseService = inject(WarehouseService);
+  private productService = inject(ProductService);
+  private categoryService = inject(CategoryService);
+  private uploadService = inject(UploadService);
 
   // Data
   products: Product[] = [];
   filteredProducts: Product[] = [];
   categories: string[] = [];
   cart: CartItem[] = [];
+  warehouses: Warehouse[] = [];
+  selectedWarehouseId: string = '';
+  stockMap: Record<string, number> = {};
 
   // Filters
   searchQuery = '';
@@ -54,12 +63,10 @@ export class EcommerceComponent implements OnInit, OnDestroy {
     { value: 'name_desc', label: 'Name Z-A' },
   ];
 
-  constructor(
-    private productService: ProductService,
-    private categoryService: CategoryService
-  ) {}
+  constructor() {}
 
   ngOnInit(): void {
+    this.loadWarehouses();
     this.loadProducts();
     this.loadCategories();
   }
@@ -71,22 +78,59 @@ export class EcommerceComponent implements OnInit, OnDestroy {
 
   loadProducts(): void {
     this.isLoading = true;
-    this.productService.listProducts(undefined, 0, 50)
+    this.productService.listProducts(undefined, 0, 100)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res) => {
           this.products = res.data || [];
+          this.signImages();
           this.totalProducts = res.total || this.products.length;
           this.discountDeals = this.products.filter(p => (p.discount_price ?? 0) > 0).length;
           if (this.products.length > 0) {
-            const prices = this.products.map(p => p.selling_price ?? p.price ?? 0);
+            const prices = this.products.map(p => this.getEffectivePrice(p));
             this.averagePrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+          }
+          if (this.selectedWarehouseId) {
+            this.loadStocks();
           }
           this.applyFilters();
           this.isLoading = false;
         },
         error: () => { this.isLoading = false; }
       });
+  }
+
+  loadWarehouses(): void {
+    this.warehouseService.listWarehouses()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(res => {
+        this.warehouses = res.data || [];
+        if (this.warehouses.length > 0 && !this.selectedWarehouseId) {
+          this.selectedWarehouseId = this.warehouses[0].id;
+          this.loadStocks();
+        }
+      });
+  }
+
+  loadStocks(): void {
+    if (!this.selectedWarehouseId) return;
+    this.inventoryService.listStocks(this.selectedWarehouseId, 0, 200)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(res => {
+        const stocks = res.data || [];
+        this.stockMap = {};
+        stocks.forEach(s => {
+          this.stockMap[s.product_id] = s.quantity;
+        });
+      });
+  }
+
+  onWarehouseChange(): void {
+    this.loadStocks();
+  }
+
+  getStockLevel(productId: string): number {
+    return this.stockMap[productId] ?? 0;
   }
 
   loadCategories(): void {
@@ -166,7 +210,8 @@ export class EcommerceComponent implements OnInit, OnDestroy {
   }
 
   getProductImage(product: Product): string {
-    if (product.images && product.images.length > 0) return product.images[0];
+    if (product.thumbnail?.url) return product.thumbnail.url;
+    if (product.images && product.images.length > 0) return product.images[0].url;
     return '';
   }
 
@@ -185,6 +230,14 @@ export class EcommerceComponent implements OnInit, OnDestroy {
 
   // Cart methods
   addToCart(product: Product): void {
+    const stock = this.getStockLevel(product.id);
+    const inCart = this.getCartQuantity(product.id);
+    
+    if (stock <= inCart) {
+      // Small visual feedback or alert could go here
+      return;
+    }
+    
     const existing = this.cart.find(i => i.product.id === product.id);
     if (existing) {
       existing.quantity++;
@@ -251,5 +304,22 @@ export class EcommerceComponent implements OnInit, OnDestroy {
 
   checkout(): void {
     alert('Demo checkout – total: $' + this.getTotal().toFixed(2));
+  }
+
+  private signImages(): void {
+    this.products.forEach(product => {
+      // Sign thumbnail
+      if (product.thumbnail?.url && !product.thumbnail.url.startsWith('http')) {
+        this.uploadService.getSignedUrl(product.thumbnail.url).subscribe(res => {
+          if (res.success && product.thumbnail) product.thumbnail.url = res.signed_url;
+        });
+      }
+      // Sign first gallery image if needed
+      if (product.images?.length && !product.images[0].url.startsWith('http')) {
+        this.uploadService.getSignedUrl(product.images[0].url).subscribe(res => {
+          if (res.success && product.images) product.images[0].url = res.signed_url;
+        });
+      }
+    });
   }
 }

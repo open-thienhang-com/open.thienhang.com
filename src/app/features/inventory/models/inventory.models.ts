@@ -1,6 +1,17 @@
 // Inventory Models and Interfaces
 
 // Product Model
+export interface ImageObject {
+  telnet?: string;
+  file_id?: string;
+  url: string;
+  alt?: string;
+  width?: number;
+  height?: number;
+  sort_order?: number;
+  is_primary?: boolean;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -16,7 +27,9 @@ export interface Product {
   supplier_id?: string;
   cost_price: number;
   sku: string;
-  images?: string[];
+  thumbnail?: ImageObject;
+  images?: ImageObject[];
+  category_ids?: string[];
   is_active: boolean;
   created_at?: string;
   updated_at?: string;
@@ -169,12 +182,15 @@ export interface ProductCreateRequest {
   description?: string;
   category: string;
   subcategory?: string;
-  discount_price?: number;
+  category_ids?: string[];
   reorder_level?: number;
   maximum_stock?: number;
   supplier_id?: string;
-  images?: string[];
+  thumbnail?: ImageObject;
+  images?: ImageObject[];
   is_active: boolean;
+  discount_price?: number;
+  telnet?: string;
 }
 
 export interface ProductUpdateRequest extends Partial<ProductCreateRequest> {

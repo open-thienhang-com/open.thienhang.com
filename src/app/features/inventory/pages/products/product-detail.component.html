@@ -9,7 +9,10 @@
         <p class="text-gray-600">Retail inventory product overview</p>
       </div>
     </div>
-    <p-button label="Back to Products" icon="pi pi-arrow-left" [outlined]="true" (onClick)="goBack()"></p-button>
+    <div class="flex gap-3">
+      <p-button label="Back to Products" icon="pi pi-arrow-left" [outlined]="true" (onClick)="goBack()"></p-button>
+      <p-button label="Edit Product" icon="pi pi-pencil" severity="secondary" (onClick)="editProduct()"></p-button>
+    </div>
   </div>
 
   <div class="bg-white rounded-xl border border-gray-200 p-12 text-center" *ngIf="loading">
@@ -102,6 +105,36 @@
         <div class="md:col-span-2">
           <div class="text-gray-500">Description</div>
           <div class="font-medium text-gray-900 mt-1 whitespace-pre-wrap">{{ product.description || '-' }}</div>
+        </div>
+      </div>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mt-6">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-900">Images & Media</h2>
+      </div>
+      <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Thumbnail -->
+        <div class="space-y-4">
+          <label class="block text-sm font-bold text-gray-900 uppercase tracking-widest text-[10px]">Primary Thumbnail</label>
+          <div class="relative h-64 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-center overflow-hidden">
+            <img *ngIf="thumbnailPreview" [src]="thumbnailPreview" class="w-full h-full object-contain" />
+            <div *ngIf="!thumbnailPreview" class="flex flex-col items-center text-gray-300">
+              <i class="pi pi-image text-4xl"></i>
+              <p class="text-[10px] mt-2 font-bold uppercase">No Thumbnail</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gallery -->
+        <div class="space-y-4" *ngIf="imagePreviews.length > 0">
+          <label class="block text-sm font-bold text-gray-900 uppercase tracking-widest text-[10px]">Gallery Images</label>
+          <div class="grid grid-cols-3 gap-3">
+            <div *ngFor="let preview of imagePreviews" class="relative aspect-square bg-gray-50 border border-gray-200 rounded-lg overflow-hidden group">
+              <img *ngIf="preview" [src]="preview" class="w-full h-full object-cover" />
+              <div *ngIf="!preview" class="w-full h-full flex items-center justify-center">
+                <i class="pi pi-spin pi-spinner text-blue-400 text-xs"></i>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -249,19 +249,6 @@ export class RetailServicesComponent implements OnInit {
           usageCount: 890
         },
         {
-          id: '3',
-          name: 'Customer Behavior Analytics',
-          category: 'analytics',
-          description: 'Advanced customer analytics platform with segmentation, churn prediction, and personalized recommendations.',
-          price: 399,
-          status: 'active',
-          provider: 'DataInsights',
-          lastUpdated: new Date('2024-01-10'),
-          tags: ['analytics', 'customers', 'prediction'],
-          rating: 4.9,
-          usageCount: 675
-        },
-        {
           id: '4',
           name: 'Loyalty Program Manager',
           category: 'loyalty',
@@ -329,7 +316,6 @@ export class RetailServicesComponent implements OnInit {
       'fresh-retail': 'pi pi-shop',
       'payment': 'pi pi-credit-card',
       'inventory': 'pi pi-box',
-      'analytics': 'pi pi-chart-bar',
       'loyalty': 'pi pi-star',
       'pos': 'pi pi-shopping-cart',
       'ecommerce': 'pi pi-globe'
@@ -342,7 +328,6 @@ export class RetailServicesComponent implements OnInit {
       'fresh-retail': 'Fresh Retail',
       'payment': 'Payment Processing',
       'inventory': 'Inventory Management',
-      'analytics': 'Customer Analytics',
       'loyalty': 'Loyalty Programs',
       'pos': 'POS Systems',
       'ecommerce': 'E-commerce'

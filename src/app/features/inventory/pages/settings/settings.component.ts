@@ -13,6 +13,8 @@ import { MessageModule } from 'primeng/message';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { ProfileServices, UserProfile } from '../../../../core/services/profile.services';
+import { UploadService } from '../../services/upload.service';
 
 interface InventorySettings {
   general: {
@@ -145,13 +147,70 @@ export class SettingsComponent implements OnInit {
     { label: 'No Rounding', value: 'none' }
   ];
 
+  userProfile: UserProfile | null = null;
+  avatarPreview: string | null = null;
+  uploadingAvatar = false;
+
   constructor(
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private profileService: ProfileServices,
+    private uploadService: UploadService
   ) { }
 
   ngOnInit() {
     this.loadSettings();
+    this.loadProfile();
+  }
+
+  loadProfile() {
+    this.profileService.getProfile().subscribe({
+      next: (res) => {
+        this.userProfile = res.data;
+        if (this.userProfile?.avatar) {
+          this.signAvatar(this.userProfile.avatar);
+        }
+      },
+      error: (err) => console.error('Failed to load profile', err)
+    });
+  }
+
+  signAvatar(key: string) {
+    if (!key) return;
+    if (key.startsWith('http')) {
+      this.avatarPreview = key;
+      return;
+    }
+    this.uploadService.getSignedUrl(key).subscribe(res => {
+      if (res.success) this.avatarPreview = res.signed_url;
+    });
+  }
+
+  onAvatarSelected(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    this.uploadingAvatar = true;
+    this.uploadService.uploadImage(file).subscribe({
+      next: (resp) => {
+        const key = resp.metadata.key;
+        this.profileService.updateProfile({ avatar: key }).subscribe({
+          next: () => {
+            this.uploadingAvatar = false;
+            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Avatar updated' });
+            this.signAvatar(key);
+          },
+          error: (err) => {
+            this.uploadingAvatar = false;
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update profile' });
+          }
+        });
+      },
+      error: (err) => {
+        this.uploadingAvatar = false;
+        this.messageService.add({ severity: 'error', summary: 'Upload Failed', detail: 'Failed to upload image' });
+      }
+    });
   }
 
   loadSettings() {

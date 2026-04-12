@@ -12,6 +12,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ProductService } from '../../services/inventory.service';
+import { UploadService } from '../../services/upload.service';
 import { Product } from '../../models/inventory.models';
 import { Router } from '@angular/router';
 
@@ -46,9 +47,6 @@ export class ProductsComponent implements OnInit {
   loading = false;
   showFilters = false;
 
-  showProductDialog = false;
-  editingProduct: Product | null = null;
-
   categoryOptions = [
     { label: 'All Categories', value: '' },
     { label: 'Electronics', value: 'electronics' },
@@ -70,6 +68,7 @@ export class ProductsComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
     private productService: ProductService,
+    private uploadService: UploadService,
     private router: Router
   ) { }
 
@@ -83,6 +82,7 @@ export class ProductsComponent implements OnInit {
       next: (response: any) => {
         const apiProducts = Array.isArray(response?.data) ? response.data : [];
         this.products = apiProducts.map((item: any) => this.mapApiProduct(item));
+        this.signThumbnails();
         this.refreshCategoryOptionsFromProducts();
         this.applyFilters();
         this.loading = false;
@@ -174,8 +174,8 @@ export class ProductsComponent implements OnInit {
   }
 
   editProduct(product: Product) {
-    this.editingProduct = { ...product };
-    this.showProductDialog = true;
+    if (!product?.id) return;
+    this.router.navigate(['/inventory/products', product.id, 'edit']);
   }
 
   viewProduct(product: Product) {
@@ -205,42 +205,6 @@ export class ProductsComponent implements OnInit {
 
   createProduct() {
     this.router.navigate(['/inventory/products/create']);
-  }
-
-  saveProduct() {
-    if (this.editingProduct) {
-      // Calculate total value (for UI purposes, though not in model)
-      const quantity = (this.editingProduct as any).quantity ?? 0;
-      const price = this.editingProduct.selling_price ?? this.editingProduct.price ?? 0;
-      (this.editingProduct as any).totalValue = quantity * price;
-
-      if (this.editingProduct.id) {
-        // Update existing
-        const index = this.products.findIndex(p => p.id === this.editingProduct!.id);
-        if (index !== -1) {
-          this.products[index] = { ...this.editingProduct, updated_at: new Date().toISOString() };
-        }
-      } else {
-        // Create new
-        this.editingProduct.id = Date.now().toString();
-        this.products.push({ ...this.editingProduct });
-      }
-
-      this.applyFilters();
-      this.showProductDialog = false;
-      this.editingProduct = null;
-
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Product saved successfully'
-      });
-    }
-  }
-
-  cancelEdit() {
-    this.showProductDialog = false;
-    this.editingProduct = null;
   }
 
   refreshData() {
@@ -327,5 +291,21 @@ export class ProductsComponent implements OnInit {
       { label: 'All Categories', value: '' },
       ...dynamic.map((value) => ({ label: this.getCategoryLabel(value), value }))
     ];
+  }
+
+  private signThumbnails(): void {
+    this.products.forEach(product => {
+      if (product.thumbnail?.url && !product.thumbnail.url.startsWith('http')) {
+        const key = product.thumbnail.url;
+        this.uploadService.getSignedUrl(key).subscribe({
+          next: (res) => {
+            if (res.success && product.thumbnail) {
+              product.thumbnail.url = res.signed_url;
+            }
+          },
+          error: (err) => console.error(`Failed to sign thumbnail for ${product.id}`, err)
+        });
+      }
+    });
   }
 }
