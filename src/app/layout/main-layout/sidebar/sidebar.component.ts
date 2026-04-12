@@ -669,7 +669,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (key === 'inventory' || key === 'fleet' || key === 'warehouse' || key === 'forecast') {
       const invGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('inventory management'));
       if (invGroup) {
-        const subGroupLabels = ['stock & products', 'fleet & warehouse', 'forecast', 'planning'];
+        const subGroupLabels = ['dashboard', 'resources', 'inventory', 'forecasting', 'fleet & routes'];
         const currentUrl = this.router.url;
         const groups: any[] = subGroupLabels.map(subLabel => {
           const sub = ((invGroup as any).children || []).find((it: any) =>
@@ -920,70 +920,49 @@ export class SidebarComponent implements OnInit, OnChanges {
       }
       return;
     }
-    // Special-case: for Support app (Chat + Notification + Omni-channel merged)
+    // Special-case: for Support app (Messaging Platform unified)
     if (key === 'chat' || key === 'support') {
-      const groups: any[] = [];
+      const messagingGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('messaging platform'));
+      if (messagingGroup) {
+        const sourceItems = (messagingGroup as any).children || (messagingGroup as any).items || [];
+        const groups: any[] = [];
 
-      // 1. Chat & Collaboration group
-      const chatGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('chat'));
-      if (chatGroup) {
-        const sourceItems = (chatGroup as any).children || (chatGroup as any).items || [];
-        groups.push({
-          label: 'Chat & Messaging',
-          icon: 'pi pi-comments',
-          expanded: true,
-          items: sourceItems,
-          _flattened: this.getFlattenedItems(sourceItems)
-        });
-      }
-
-      // 2. Notification Center group (sub-groups: Templates, Monitoring, Development)
-      const notifGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('notification'));
-      if (notifGroup) {
-        const notifItems = (notifGroup as any).items || [];
-        // Overview standalone
-        const overviewItem = notifItems.find((it: any) => it.url === '/notification' && !it.children);
-        // Sub-groups
-        const templates = notifItems.find((it: any) => (it.label || '').toLowerCase().includes('template'));
-        const monitoring = notifItems.find((it: any) => (it.label || '').toLowerCase().includes('monitoring'));
-        const development = notifItems.find((it: any) => (it.label || '').toLowerCase().includes('development'));
-
-        const notifFlatItems: any[] = [];
-        if (overviewItem) notifFlatItems.push(overviewItem);
-        [templates, monitoring, development].forEach(sub => {
-          if (sub) {
-            const children = (sub as any).children ?? (sub as any).items ?? [];
-            children.forEach((c: any) => notifFlatItems.push(c));
+        sourceItems.forEach((item: any) => {
+          if (item.url && !item.children) {
+            // Standalone top-level items (like Overview)
+            groups.push({
+              label: '',
+              icon: '',
+              expanded: true,
+              _noHeader: true,
+              _isStandalone: true, // Marker for styling if needed
+              items: [item],
+              _flattened: [item]
+            });
+          } else if (item.children || item.items) {
+            // Functionally grouped items (1. Messaging, 2. Templates, etc.)
+            groups.push({
+              label: item.label,
+              icon: item.icon,
+              expanded: true,
+              _noHeader: false,
+              items: item.children || item.items || [],
+              _flattened: this.getFlattenedItems(item.children || item.items || [])
+            });
           }
         });
 
-        groups.push({
-          label: 'Notifications',
-          icon: 'pi pi-bell',
-          expanded: false,
-          items: notifFlatItems,
-          _flattened: notifFlatItems.map((it: any) => ({ ...it, icon: this.getIconForMenuItem(it) }))
-        });
+        this.visibleGroups = groups;
+      } else {
+        this.visibleGroups = [];
       }
 
-      // 3. Omni-channel standalone item
-      groups.push({
-        label: 'Omni-channel',
-        icon: 'pi pi-share-alt',
-        expanded: true,
-        _noHeader: false,
-        items: [{ label: 'Channels Overview', url: '/retail/omni-channel', icon: 'pi pi-share-alt' }],
-        _flattened: [{ label: 'Channels Overview', url: '/retail/omni-channel', icon: 'pi pi-share-alt' }]
-      });
-
       const currentUrl = this.router.url;
-      groups.forEach(g => {
+      this.visibleGroups.forEach(g => {
         if (g._flattened?.some((item: any) => this.getPath(item.url) === this.getPath(currentUrl))) {
           g.expanded = true;
         }
       });
-
-      this.visibleGroups = groups;
       return;
     }
     // Special-case: for Ad Manager app - render its child menu items directly (no parent header)

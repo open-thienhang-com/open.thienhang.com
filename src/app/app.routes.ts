@@ -273,8 +273,12 @@ export const routes: Routes = [
         path: 'retail',
         children: [
           {
+            path: 'overview',
+            loadComponent: () => import('./features/retail/retail-services/overview/overview.component').then(m => m.RetailOverviewDocComponent),
+          },
+          {
             path: '',
-            redirectTo: '/inventory/overview',
+            redirectTo: 'overview',
             pathMatch: 'full'
           },
           {

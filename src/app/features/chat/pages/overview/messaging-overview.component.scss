@@ -1,0 +1,79 @@
+:host {
+  display: block;
+}
+
+.tracking-tight {
+  letter-spacing: -0.025em;
+}
+
+.tracking-tighter {
+  letter-spacing: -0.05em;
+}
+
+.tracking-widest {
+  letter-spacing: 0.1em;
+}
+
+// Custom animations for a "living document" feel
+@keyframes pulse-subtle {
+  0% { opacity: 1; }
+  50% { opacity: 0.8; }
+  100% { opacity: 1; }
+}
+
+.animate-pulse {
+  animation: pulse-subtle 2s infinite ease-in-out;
+}
+
+// System Documentation Styles
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+// Section Header Baselines
+.bg-sky-100 {
+  background-color: rgba(224, 242, 254, 1);
+}
+
+.text-sky-700 {
+  color: rgba(3, 105, 161, 1);
+}
+
+// Hover effects for the sitemap links
+.hover\:shadow-md:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+// Transition for list markers
+.group:hover .group-hover\:scale-y-110 {
+  transform: scaleY(1.1);
+}
+
+// PrimeNG overrides for the cyan theme
+:host ::ng-deep {
+  .p-button.p-button-info.p-button-outlined {
+    color: #0284c7;
+    border-color: #0284c7;
+    
+    &:hover {
+      background: rgba(2, 132, 199, 0.05);
+    }
+  }
+
+  .p-tag-success {
+    background-color: #ecfdf5;
+    color: #059669;
+  }
+}
+
+// Responsive layout
+@media (max-width: 640px) {
+  .min-h-screen {
+    padding: 1rem;
+  }
+  
+  .max-w-6xl {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}

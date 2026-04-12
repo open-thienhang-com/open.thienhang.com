@@ -1,164 +1,260 @@
-<div class="bg-gray-50 min-h-screen p-6">
+<div class="bg-gray-50 min-h-screen p-6 font-sans">
+  <div class="max-w-6xl mx-auto">
 
-  <!-- Header -->
-  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center">
-          <i class="pi pi-box text-white text-xl"></i>
-        </div>
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900">Inventory Overview</h1>
-          <p class="text-gray-600">Manage your stock, products, warehouses, fleet and forecasting</p>
-        </div>
-      </div>
-      <div class="flex items-center gap-2">
-        <p-button
-          icon="pi pi-refresh"
-          severity="info"
-          [outlined]="true"
-          [rounded]="true"
-          (click)="loadStats()"
-          pTooltip="Refresh"
-          class="hidden sm:inline-flex">
-        </p-button>
-        <p-button
-          icon="pi pi-download"
-          severity="secondary"
-          [outlined]="true"
-          [rounded]="true"
-          pTooltip="Export"
-          class="hidden sm:inline-flex">
-        </p-button>
-        <p-button
-          label="New Product"
-          icon="pi pi-plus"
-          severity="primary"
-          routerLink="../products/create">
-        </p-button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Stats -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-    <div *ngFor="let stat of stats" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <!-- Header: Consistent with Governance Module -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-8 border border-gray-100">
       <div class="flex items-center justify-between">
-        <div>
-          <p class="text-sm font-medium text-gray-600">{{ stat.label }}</p>
-          <p class="text-2xl font-bold text-gray-900 mt-1">{{ stat.value }}</p>
-        </div>
-        <div class="w-12 h-12 rounded-lg flex items-center justify-center" [class]="stat.color">
-          <i [class]="stat.icon + ' text-xl ' + stat.iconColor"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Quick Navigation Sections -->
-  <div class="space-y-6 mb-6">
-    <div *ngFor="let section of sections"
-         class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-
-      <!-- Section header -->
-      <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
-        <i [class]="section.icon + ' text-green-600'"></i>
-        <h2 class="text-base font-semibold text-gray-800">{{ section.label }}</h2>
-        <span class="text-xs text-gray-500 bg-gray-100 rounded-full px-2 py-0.5 ml-auto">
-          {{ section.links.length }} modules
-        </span>
-      </div>
-
-      <!-- Links grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 divide-x divide-y divide-gray-100"
-           [class.lg:grid-cols-6]="section.links.length === 6"
-           [class.lg:grid-cols-4]="section.links.length === 4"
-           [class.lg:grid-cols-2]="section.links.length === 2">
-        <a *ngFor="let link of section.links"
-           [routerLink]="link.route"
-           class="flex items-center gap-3 px-5 py-4 hover:bg-gray-50 cursor-pointer transition-colors group no-underline">
-          <div class="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0
-                      group-hover:bg-green-100 transition-colors">
-            <i [class]="link.icon + ' text-gray-500 group-hover:text-green-600 transition-colors'"></i>
+        <div class="flex items-center gap-5">
+          <div class="w-14 h-14 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg shadow-md flex items-center justify-center">
+            <i class="pi pi-book text-white text-2xl"></i>
           </div>
-          <div class="min-w-0">
-            <p class="text-sm font-medium text-gray-800 group-hover:text-green-700 transition-colors truncate">
-              {{ link.label }}
-            </p>
-            <p class="text-xs text-gray-400 truncate">{{ link.desc }}</p>
-          </div>
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Bottom row: Health + Alerts -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-    <!-- Inventory Health -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <div class="flex items-center gap-3 mb-5">
-        <i class="pi pi-heart-fill text-green-600"></i>
-        <h2 class="text-base font-semibold text-gray-900">Inventory Health</h2>
-      </div>
-      <div class="space-y-4">
-        <div *ngFor="let level of stockLevels">
-          <div class="flex items-center justify-between mb-1">
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full inline-block" [class]="level.dotClass"></span>
-              <span class="text-sm text-gray-700">{{ level.label }}</span>
-            </div>
-            <span class="text-sm font-semibold text-gray-900">{{ level.percent }}%</span>
-          </div>
-          <div class="w-full bg-gray-100 rounded-full h-2">
-            <div class="h-2 rounded-full transition-all duration-700"
-                 [class]="level.colorClass"
-                 [style.width.%]="level.percent">
-            </div>
+          <div>
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Overview</h1>
+            <p class="text-gray-500 text-lg">System Notebook & Reference Document</p>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Stock Alerts -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden lg:col-span-2">
-      <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <i class="pi pi-bell text-orange-500"></i>
-          <h2 class="text-base font-semibold text-gray-900">Stock Alerts</h2>
-          <span class="text-xs bg-red-100 text-red-600 font-semibold px-2 py-0.5 rounded-full">
-            {{ alerts.length }}
-          </span>
+          <p-button
+            icon="pi pi-refresh"
+            severity="info"
+            [outlined]="true"
+            [rounded]="true"
+            (click)="loadStats()"
+            pTooltip="Refresh data from warehouse"
+            class="hidden sm:inline-flex shadow-sm">
+          </p-button>
+          <p-button
+            label="Create Resource"
+            icon="pi pi-plus"
+            severity="primary"
+            routerLink="../products/create"
+            class="shadow-md">
+          </p-button>
         </div>
-        <a routerLink="../analytics"
-           class="text-sm text-green-600 hover:text-green-700 font-medium flex items-center gap-1 no-underline">
-          View all <i class="pi pi-arrow-right text-xs"></i>
-        </a>
       </div>
-      <div class="divide-y divide-gray-100">
-        <div *ngFor="let alert of alerts"
-             class="flex items-center gap-4 px-6 py-3 hover:bg-gray-50 transition-colors">
-          <!-- Icon badge -->
-          <div class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center"
-               [class.bg-red-100]="alert.severity === 'critical'"
-               [class.bg-orange-100]="alert.severity === 'warning'"
-               [class.bg-green-100]="alert.severity === 'info'">
-            <i [class]="alert.icon"
-               [class.text-red-500]="alert.severity === 'critical'"
-               [class.text-orange-500]="alert.severity === 'warning'"
-               [class.text-green-500]="alert.severity === 'info'"></i>
+    </div>
+
+    <!-- Section 0: Functional Description -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8 mb-8 relative overflow-hidden">
+      <div class="absolute top-0 right-0 p-4 opacity-5">
+        <i class="pi pi-info-circle text-8xl"></i>
+      </div>
+      <div class="flex items-center gap-3 mb-4">
+        <span class="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">SECTION 0</span>
+        <h2 class="text-xl font-bold text-gray-800 uppercase tracking-wider">Functional Description</h2>
+      </div>
+      <p class="text-gray-600 text-lg leading-relaxed mb-6 max-w-3xl">
+        This Inventory Overview acts as a <strong>living document</strong>. It is the central nerve center for tracking and coordinating all activities related to goods, logistics, and forecasting. This notebook serves three primary purposes:
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="flex gap-4 p-4 rounded-lg bg-gray-50 border border-gray-100 transition-hover hover:shadow-md cursor-default">
+          <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+            <i class="pi pi-heart text-emerald-600"></i>
           </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold text-gray-900 truncate">{{ alert.product }}</p>
-            <p class="text-xs text-gray-500 truncate">{{ alert.message }}</p>
-          </div>
-          <div class="flex-shrink-0 flex items-center gap-2">
-            <p-tag [value]="alert.severityTag === 'danger' ? 'Critical' : alert.severityTag === 'warning' ? 'Warning' : 'OK'"
-                   [severity]="alert.severityTag">
-            </p-tag>
-            <span class="text-xs text-gray-400 whitespace-nowrap">{{ alert.time }}</span>
+          <div>
+            <h3 class="font-bold text-gray-900 mb-1">Stock Health</h3>
+            <p class="text-sm text-gray-500 leading-snug">Quick snapshot of inventory levels and critical alerts.</p>
           </div>
         </div>
+        <div class="flex gap-4 p-4 rounded-lg bg-gray-50 border border-gray-100 transition-hover hover:shadow-md cursor-default">
+          <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+            <i class="pi pi-directions text-blue-600"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-gray-900 mb-1">Navigation</h3>
+            <p class="text-sm text-gray-500 leading-snug">Unified entry point for all functional modules in the suite.</p>
+          </div>
+        </div>
+        <div class="flex gap-4 p-4 rounded-lg bg-gray-50 border border-gray-100 transition-hover hover:shadow-md cursor-default">
+          <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+            <i class="pi pi-book text-purple-600"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-gray-900 mb-1">User Guide</h3>
+            <p class="text-sm text-gray-500 leading-snug">Contextual descriptions to help you master the system.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 1: Sitemap -->
+    <div class="mb-12">
+      <div class="flex items-center gap-3 mb-6 px-2">
+        <span class="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">SECTION 1</span>
+        <h2 class="text-xl font-bold text-gray-800 uppercase tracking-wider">System Roadmap (Sitemap)</h2>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div *ngFor="let section of sections" class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+          <div class="p-6 border-b border-gray-50">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center">
+                <i [class]="section.icon + ' text-gray-600 text-sm'"></i>
+              </div>
+              <h3 class="text-lg font-bold text-gray-900">{{ section.label }}</h3>
+            </div>
+            <p class="text-sm text-gray-500">{{ section.desc }}</p>
+          </div>
+          <div class="p-2 grid grid-cols-1 sm:grid-cols-2 gap-2 bg-gray-50/30">
+            <a *ngFor="let link of section.links" 
+               [routerLink]="link.route"
+               class="flex items-center gap-3 p-3 rounded-md hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-200 transition-all no-underline group">
+               <div class="w-8 h-8 rounded bg-white flex items-center justify-center border border-gray-100 group-hover:bg-green-50 group-hover:border-green-100">
+                 <i [class]="link.icon + ' text-gray-400 group-hover:text-green-600 transition-colors text-xs'"></i>
+               </div>
+               <div class="min-w-0">
+                 <p class="text-sm font-semibold text-gray-700 group-hover:text-green-700 truncate mb-0.5">{{ link.label }}</p>
+                 <p class="text-[10px] text-gray-400 uppercase tracking-tighter">{{ link.desc }}</p>
+               </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Core Metrics & Dictionary -->
+    <div class="mb-12">
+      <div class="flex items-center gap-3 mb-6 px-2">
+        <span class="px-2.5 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full">SECTION 2</span>
+        <h2 class="text-xl font-bold text-gray-800 uppercase tracking-wider">Core Metrics & Concepts</h2>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-1 gap-8 mb-8">
+        <!-- Metric Dictionary -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
+          <h3 class="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <i class="pi pi-dictionary text-orange-500"></i>
+            Inventory Health Dictionary
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div *ngFor="let level of stockLevels" class="flex flex-col gap-4">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-bold text-gray-800 flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full" [class]="level.dotClass"></span>
+                  {{ level.label }}
+                </span>
+                <span class="text-2xl font-black text-gray-900">{{ level.percent }}%</span>
+              </div>
+              <div class="w-full bg-gray-100 rounded-full h-3">
+                <div class="h-3 rounded-full transition-all duration-1000"
+                     [class]="level.dotClass"
+                     [style.width.%]="level.percent">
+                </div>
+              </div>
+              <p class="text-xs text-gray-500 leading-normal">{{ level.desc }}</p>
+              <div class="bg-blue-50/50 rounded p-2 flex items-start gap-2 border border-blue-100/50">
+                <i class="pi pi-info-circle text-blue-500 text-[10px] mt-1"></i>
+                <p class="text-[10px] text-blue-700 italic">
+                  {{ level.label === 'Low Stock' ? 'Recommended: Review reorder suggestions.' : 
+                     level.label === 'Out of Stock' ? 'Critical: Direct impact on sales. Stock received status must be checked immediately.' : 'Status OK: Maintain current monitoring.' }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Indicators Cards (with Skeleton Loading) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <ng-container *ngIf="!loading; else statsSkeleton">
+          <div *ngFor="let stat of stats" class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 group hover:border-green-200 transition-colors">
+            <div class="flex items-center justify-between mb-4">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center shadow-inner" [class]="stat.color">
+                <i [class]="stat.icon + ' text-lg ' + stat.iconColor"></i>
+              </div>
+              <p-button icon="pi pi-question-circle" [text]="true" [rounded]="true" [pTooltip]="stat.desc" severity="secondary"></p-button>
+            </div>
+            <p class="text-sm font-medium text-gray-500 mb-1 uppercase tracking-tight">{{ stat.label }}</p>
+            <p class="text-2xl font-black text-gray-900 tracking-tight">{{ stat.value }}</p>
+          </div>
+        </ng-container>
+        <ng-template #statsSkeleton>
+          <div *ngFor="let i of [1,2,3,4]" class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="w-10 h-10 rounded-lg bg-gray-100 animate-pulse"></div>
+              <div class="w-6 h-6 rounded-full bg-gray-50 animate-pulse"></div>
+            </div>
+            <div class="w-24 h-4 bg-gray-100 animate-pulse mb-2 rounded"></div>
+            <div class="w-16 h-8 bg-gray-200 animate-pulse rounded"></div>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Section 2.3: Stock Alerts -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-6 border-b border-gray-50 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded bg-red-50 flex items-center justify-center">
+              <i class="pi pi-bell text-red-500 text-sm"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900">System Alerts (Real-time)</h3>
+          </div>
+          <p-button label="Detailed Analytics" [text]="true" routerLink="../analytics" icon="pi pi-arrow-right" iconPos="right" severity="secondary"></p-button>
+        </div>
+        <div class="divide-y divide-gray-50">
+          <div *ngFor="let alert of alerts" class="p-5 flex items-center gap-5 hover:bg-gray-50 transition-colors">
+            <div class="w-2 h-10 rounded-full" 
+                 [class.bg-red-500]="alert.severity === 'critical'"
+                 [class.bg-orange-500]="alert.severity === 'warning'"
+                 [class.bg-blue-500]="alert.severity === 'info'">
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-bold text-gray-900 truncate">{{ alert.product }}</span>
+                <p-tag [severity]="alert.severityTag" [value]="alert.context" class="scale-75 origin-left"></p-tag>
+              </div>
+              <p class="text-sm text-gray-500 truncate">{{ alert.message }}</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+               <p class="text-xs font-bold text-gray-400 mb-1">{{ alert.time }}</p>
+               <p-button label="Action" size="small" [text]="true" severity="info" class="p-0 h-auto"></p-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Data Management Context -->
+    <div class="bg-gray-900 text-white rounded-lg shadow-xl p-10 mb-12 relative overflow-hidden">
+      <div class="absolute -bottom-10 -right-10 opacity-10">
+        <i class="pi pi-database text-[200px]"></i>
+      </div>
+      <div class="relative z-10 max-w-3xl">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="px-2.5 py-1 bg-white/20 text-white text-xs font-bold rounded-full backdrop-blur-sm">SECTION 3</span>
+          <h2 class="text-xl font-bold text-white uppercase tracking-wider">Data Management Context</h2>
+        </div>
+        <p class="text-gray-300 text-lg leading-relaxed mb-8">
+          The inventory system does not operate in a vacuum. It is powered by a high-availability unified architectural baseline, ensuring data integrity across all touchpoints.
+        </p>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="p-4 rounded bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+            <h4 class="text-green-400 font-bold text-xs mb-2 tracking-widest uppercase">Analytics</h4>
+            <p class="text-xs text-gray-400">Data Products & Insights</p>
+          </div>
+          <div class="p-4 rounded bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+            <h4 class="text-blue-400 font-bold text-xs mb-2 tracking-widest uppercase">Exploration</h4>
+            <p class="text-xs text-gray-400">Deep-dive Data Mining</p>
+          </div>
+          <div class="p-4 rounded bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+            <h4 class="text-purple-400 font-bold text-xs mb-2 tracking-widest uppercase">Observability</h4>
+            <p class="text-xs text-gray-400">Real-time System Health</p>
+          </div>
+          <div class="p-4 rounded bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+            <h4 class="text-orange-400 font-bold text-xs mb-2 tracking-widest uppercase">Governance</h4>
+            <p class="text-xs text-gray-400">Policy & Data Control</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center pb-12">
+      <p class="text-gray-400 text-xs italic tracking-widest uppercase mb-2">Inventory System Notebook — v2.4.0</p>
+      <div class="flex justify-center gap-4 text-gray-300">
+        <i class="pi pi-star-fill text-[8px]"></i>
+        <i class="pi pi-star-fill text-[8px]"></i>
+        <i class="pi pi-star-fill text-[8px]"></i>
       </div>
     </div>
 

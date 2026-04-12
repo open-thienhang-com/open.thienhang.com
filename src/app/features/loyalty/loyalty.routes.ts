@@ -7,7 +7,7 @@ export const LOYALTY_ROUTES: Routes = [
             { path: '', redirectTo: 'overview', pathMatch: 'full' },
             {
                 path: 'overview',
-                loadComponent: () => import('./pages/overview/overview.component').then(m => m.LoyaltyOverviewComponent)
+                loadComponent: () => import('./pages/overview/overview.component').then(m => m.LoyaltyOverviewDocComponent)
             },
             {
                 path: 'members',

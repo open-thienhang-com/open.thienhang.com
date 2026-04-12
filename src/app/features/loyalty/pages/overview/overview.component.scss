@@ -1,118 +1,85 @@
 :host {
   display: block;
-  padding: 2rem;
 }
 
-.overview-container {
-  max-width: 1200px;
-  margin: 0 auto;
+.tracking-tight {
+  letter-spacing: -0.025em;
 }
 
-.welcome-section {
-  margin-bottom: 2rem;
-  
-  h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  
-  p {
-    color: var(--text-color-secondary);
-    font-size: 1.1rem;
+.tracking-tighter {
+  letter-spacing: -0.05em;
+}
+
+.tracking-widest {
+  letter-spacing: 0.1em;
+}
+
+// Custom animations for a "living document" feel
+@keyframes pulse-subtle {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+.animate-pulse {
+  animation: pulse-subtle 2s infinite ease-in-out;
+}
+
+// Notebook-specific layout enhancements
+.bg-white {
+  &.rounded-lg {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
   }
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.stat-card {
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
-  border-radius: 12px;
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  transition: transform 0.2s, box-shadow 0.2s;
-  
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  }
-  
-  .stat-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    color: white;
-    
-    &.members { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); }
-    &.points { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-    &.campaigns { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
-  }
-  
-  .stat-content {
-    .stat-label {
-      display: block;
-      font-size: 0.875rem;
-      color: var(--text-color-secondary);
-      margin-bottom: 0.25rem;
+// Deep styling for PrimeNG elements to match the theme
+:host ::ng-deep {
+  .p-button {
+    &.shadow-md {
+      box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.1), 0 2px 4px -2px rgba(124, 58, 237, 0.1);
     }
     
-    .stat-value {
-      display: block;
-      font-size: 1.25rem;
+    &.p-button-text {
       font-weight: 600;
-      color: var(--text-color);
+      color: #7c3aed;
+      
+      &:hover {
+        background: rgba(124, 58, 237, 0.05);
+      }
+    }
+  }
+
+  .p-tag {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+
+  .p-progressbar {
+    background: #f3f4f6;
+    height: 0.75rem !important;
+    border-radius: 9999px;
+    
+    .p-progressbar-value {
+      transition: width 1s ease-in-out;
     }
   }
 }
 
-.quick-actions {
-  h2 {
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
-    color: var(--text-color);
-  }
+// Hover effects for the sitemap links
+a.group:hover {
+  transform: translateY(-1px);
 }
 
-.actions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+// Custom document styling for the health dictionary
+.bg-violet-50\/50 {
+  background-color: rgba(245, 243, 255, 0.5);
 }
 
-.action-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1.5rem;
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
-  border-radius: 12px;
-  color: var(--text-color);
-  text-decoration: none;
-  transition: all 0.2s;
-  
-  i { font-size: 1.5rem; color: var(--primary-500); }
-  span { font-weight: 500; }
-  
-  &:hover {
-    background: var(--primary-50);
-    border-color: var(--primary-200);
-    transform: scale(1.02);
+// Responsiveness tweaks
+@media (max-width: 768px) {
+  .max-w-6xl {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
 }

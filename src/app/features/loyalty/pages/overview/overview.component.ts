@@ -1,44 +1,92 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
+import { Button } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
+import { Tag } from 'primeng/tag';
 
 @Component({
-  selector: 'app-loyalty-overview',
+  selector: 'app-loyalty-overview-doc',
   standalone: true,
-  imports: [CommonModule, RouterModule, ButtonModule],
+  imports: [CommonModule, RouterModule, Button, TooltipModule, Tag],
   templateUrl: './overview.component.html',
   styleUrl: './overview.component.scss'
 })
-export class LoyaltyOverviewComponent {
+export class LoyaltyOverviewDocComponent implements OnInit {
+
+  loading = true;
+
   stats = [
-    { label: 'Total Members', value: '12,480', sub: '+3.2% this month', icon: 'pi pi-users', bg: 'bg-violet-100', color: 'text-violet-600' },
-    { label: 'Active Campaigns', value: '8', sub: '3 ending this week', icon: 'pi pi-megaphone', bg: 'bg-orange-100', color: 'text-orange-600' },
-    { label: 'Points Issued', value: '4.5M', sub: 'all time', icon: 'pi pi-star', bg: 'bg-yellow-100', color: 'text-yellow-600' },
-    { label: 'Redemptions', value: '1,840', sub: 'this quarter', icon: 'pi pi-gift', bg: 'bg-green-100', color: 'text-green-600' },
+    { label: 'Active Members',  value: '12,480', icon: 'pi pi-users', color: 'bg-violet-100', iconColor: 'text-violet-600', desc: 'Total members enrolled in loyalty programs' },
+    { label: 'Retention Rate',  value: '94.2%',   icon: 'pi pi-heart', color: 'bg-pink-100',   iconColor: 'text-pink-600',   desc: 'Percentage of members who returned this month' },
+    { label: 'Points Issued',   value: '4.5M',    icon: 'pi pi-star',  color: 'bg-yellow-100', iconColor: 'text-yellow-600',desc: 'Total loyalty points rewarded to date' },
+    { label: 'Burn Rate',       value: '62%',     icon: 'pi pi-bolt',  color: 'bg-orange-100', iconColor: 'text-orange-600',desc: 'Percentage of points redeemed vs issued' },
   ];
 
-  tiers = [
-    { label: 'Platinum', count: 320, pct: 3, color: '#a855f7', bg: '#f5f3ff' },
-    { label: 'Gold',     count: 1200, pct: 10, color: '#f59e0b', bg: '#fffbeb' },
-    { label: 'Silver',   count: 3800, pct: 30, color: '#64748b', bg: '#f1f5f9' },
-    { label: 'Bronze',   count: 7160, pct: 57, color: '#b45309', bg: '#fef3c7' },
+  sections = [
+    {
+      label: 'Member Engagement',
+      icon: 'pi pi-user-plus',
+      desc: 'Member lifecycle management and audience targeting.',
+      links: [
+        { label: 'Members',        icon: 'pi pi-users',     route: '../members',    desc: 'Member directory'          },
+        { label: 'Segments',       icon: 'pi pi-filter',    route: '../segments',   desc: 'Behavioral segments'       },
+        { label: 'Automation',     icon: 'pi pi-bolt',      route: '../automation', desc: 'Touchpoint rules'           },
+      ]
+    },
+    {
+      label: 'Strategy & Rewards',
+      icon: 'pi pi-megaphone',
+      desc: 'Reward definitions and campaign coordination.',
+      links: [
+        { label: 'Rewards Catalog', icon: 'pi pi-gift',      route: '../rewards',    desc: 'Perk inventory'            },
+        { label: 'Campaigns',       icon: 'pi pi-megaphone', route: '../campaigns',  desc: 'Point multipliers'         },
+        { label: 'Strategy',        icon: 'pi pi-sitemap',   route: '../strategy',   desc: 'Economic configuration'    },
+      ]
+    },
+    {
+      label: 'Analytics',
+      icon: 'pi pi-chart-bar',
+      desc: 'Deeper insights into COHORT behavior and LTV.',
+      links: [
+        { label: 'KPI Dashboard',   icon: 'pi pi-chart-line',route: '../analytics',  desc: 'Retention metrics'         },
+        { label: 'Cohort Reports',  icon: 'pi pi-users',     route: '../analytics',  desc: 'Lifecycle analysis'         },
+      ]
+    },
+    {
+      label: 'Resources',
+      icon: 'pi pi-database',
+      desc: 'Shared data assets and integration channels.',
+      links: [
+        { label: 'Customers',      icon: 'pi pi-user',      route: '/retail/customers', desc: 'Master Customer CRM'    },
+        { label: 'Channels',       icon: 'pi pi-share-alt', route: '../channels',   desc: 'Loyalty touchpoints'       },
+      ]
+    }
   ];
 
-  quickLinks = [
-    { label: 'Members', desc: 'Browse and manage loyalty members', icon: 'pi pi-users', color: 'text-violet-600', bg: 'bg-violet-50', url: '/loyalty/members' },
-    { label: 'Rewards Catalog', desc: 'Define and publish reward items', icon: 'pi pi-gift', color: 'text-green-600', bg: 'bg-green-50', url: '/loyalty/rewards' },
-    { label: 'Campaigns', desc: 'Launch point-multiplier campaigns', icon: 'pi pi-megaphone', color: 'text-orange-600', bg: 'bg-orange-50', url: '/loyalty/campaigns' },
-    { label: 'Segments', desc: 'Target audiences by behavior', icon: 'pi pi-filter', color: 'text-blue-600', bg: 'bg-blue-50', url: '/loyalty/segments' },
-    { label: 'Automation', desc: 'Trigger rules and drip flows', icon: 'pi pi-bolt', color: 'text-indigo-600', bg: 'bg-indigo-50', url: '/loyalty/automation' },
-    { label: 'Analytics', desc: 'Loyalty KPIs and cohort reports', icon: 'pi pi-chart-bar', color: 'text-pink-600', bg: 'bg-pink-50', url: '/loyalty/analytics' },
+  loyaltyHealth = [
+    { label: 'High Engagement', percent: 72, colorClass: 'bg-violet-500',  dotClass: 'bg-violet-500', desc: 'Members active in the last 30 days' },
+    { label: 'At Risk',         percent: 18, colorClass: 'bg-orange-500',  dotClass: 'bg-orange-500', desc: 'Members with no activity for 60+ days' },
+    { label: 'Churned',        percent: 10, colorClass: 'bg-red-500',     dotClass: 'bg-red-500',    desc: 'Members inactive for over 180 days' },
   ];
 
-  recentActivity = [
-    { event: 'Gold tier upgrade', member: 'Nguyen Van A', time: '5m ago', icon: 'pi pi-arrow-up', color: 'text-yellow-600', bg: 'bg-yellow-50' },
-    { event: 'Points redeemed', member: 'Tran Thi B', time: '22m ago', icon: 'pi pi-gift', color: 'text-green-600', bg: 'bg-green-50' },
-    { event: 'Campaign enrolled', member: 'Le Van C', time: '1h ago', icon: 'pi pi-megaphone', color: 'text-orange-600', bg: 'bg-orange-50' },
-    { event: 'New member joined', member: 'Pham Thi D', time: '3h ago', icon: 'pi pi-user-plus', color: 'text-violet-600', bg: 'bg-violet-50' },
-    { event: 'Reward claimed', member: 'Hoang Van E', time: '5h ago', icon: 'pi pi-check-circle', color: 'text-blue-600', bg: 'bg-blue-50' },
+  alerts = [
+    { id: '1', product: 'Gold Tier',   message: 'Nguyen Van A reached Gold status',severity: 'info',     severityTag: 'success', icon: 'pi pi-chevron-up', time: '5m ago', context: 'Tier Upgrade' },
+    { id: '2', product: 'System Rule', message: 'Retention automation rule triggered', severity: 'info',     severityTag: 'info',    icon: 'pi pi-bolt',       time: '22m ago', context: 'Automation' },
+    { id: '3', product: 'Campaign',    message: 'Summer Sale enrollment spike detected',severity: 'warning',  severityTag: 'warning', icon: 'pi pi-chart-line', time: '1h ago', context: 'Monitor' },
   ];
+
+  ngOnInit(): void {
+    // Simulate data loading
+    setTimeout(() => {
+      this.loading = false;
+    }, 800);
+  }
+
+  loadStats(): void {
+    this.loading = true;
+    setTimeout(() => {
+      this.loading = false;
+    }, 500);
+  }
 }

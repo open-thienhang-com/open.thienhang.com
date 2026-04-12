@@ -1,257 +1,94 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
-import { BadgeModule } from 'primeng/badge';
-import { ProgressBarModule } from 'primeng/progressbar';
-import { ChartModule } from 'primeng/chart';
-
-interface ServiceStats {
-  category: string;
-  count: number;
-  active: number;
-  revenue: number;
-  growth: number;
-}
-
-interface RecentActivity {
-  id: string;
-  action: string;
-  service: string;
-  timestamp: Date;
-  status: 'success' | 'warning' | 'error';
-}
+import { Button } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
+import { Tag } from 'primeng/tag';
+import { ProgressBar } from 'primeng/progressbar';
 
 @Component({
-  selector: 'app-overview',
+  selector: 'app-retail-overview-doc',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    CardModule,
-    ButtonModule,
-    BadgeModule,
-    ProgressBarModule,
-    ChartModule
-  ],
+  imports: [CommonModule, RouterModule, Button, TooltipModule, Tag],
   templateUrl: './overview.component.html',
   styleUrl: './overview.component.scss'
 })
-export class OverviewComponent implements OnInit {
-  serviceStats: ServiceStats[] = [];
-  recentActivities: RecentActivity[] = [];
-  chartData: any;
-  chartOptions: any;
+export class RetailOverviewDocComponent implements OnInit {
 
-  serviceCategories = [
+  loading = true;
+
+  stats = [
+    { label: 'Gross Revenue',  value: '$128,450', icon: 'pi pi-dollar', color: 'bg-blue-100',   iconColor: 'text-blue-600',   desc: 'Total sales value before deductions' },
+    { label: 'Total Orders',   value: '1,240',    icon: 'pi pi-shopping-cart', color: 'bg-indigo-100', iconColor: 'text-indigo-600', desc: 'Total number of orders processed' },
+    { label: 'Active Customers', value: '856',    icon: 'pi pi-users', color: 'bg-purple-100', iconColor: 'text-purple-600', desc: 'Customers with at least one order this month' },
+    { label: 'Avg. Order Value', value: '$103.50', icon: 'pi pi-chart-line', color: 'bg-emerald-100', iconColor: 'text-emerald-600', desc: 'Average revenue generated per order' },
+  ];
+
+  sections = [
     {
-      key: 'payment',
-      label: 'Payment Processing',
-      icon: 'pi pi-credit-card',
-      color: '#10b981',
-      description: 'Secure payment processing and gateway management'
+      label: 'Channels',
+      icon: 'pi pi-share-alt',
+      desc: 'Primary sales touchpoints and distribution networks.',
+      links: [
+        { label: 'POS Systems',    icon: 'pi pi-shopping-cart', route: '../pos',          desc: 'In-store retail terminals' },
+        { label: 'E-commerce',     icon: 'pi pi-globe',         route: '../ecommerce',    desc: 'Online storefront & sales' },
+        { label: 'Fresh Retail',   icon: 'pi pi-apple',         route: '../fresh-retail', desc: 'Perishable goods management' },
+      ]
     },
     {
-      key: 'inventory',
-      label: 'Inventory Management',
-      icon: 'pi pi-box',
-      color: '#f59e0b',
-      description: 'Real-time inventory tracking and management'
+      label: 'Operations',
+      icon: 'pi pi-cog',
+      desc: 'Core workflow management for order processing.',
+      links: [
+        { label: 'Orders',         icon: 'pi pi-list',          route: '../orders',       desc: 'Full order lifecycle'      },
+        { label: 'Transactions',   icon: 'pi pi-history',       route: '../transactions', desc: 'Financial records'         },
+        { label: 'Omni-channel',   icon: 'pi pi-sync',          route: '../omni-channel', desc: 'Unified sales coordination' },
+      ]
     },
     {
-      key: 'loyalty',
-      label: 'Loyalty Programs',
-      icon: 'pi pi-star',
-      color: '#ec4899',
-      description: 'Customer loyalty and rewards management'
+      label: 'Resources',
+      icon: 'pi pi-database',
+      desc: 'Essential data assets powering the retail suite.',
+      links: [
+        { label: 'Customers',      icon: 'pi pi-users',         route: '../customers',    desc: 'CRM & contact management'  },
+        { label: 'Products',       icon: 'pi pi-box',           route: '../products',     desc: 'Retail product catalog'    },
+        { label: 'Payments',       icon: 'pi pi-credit-card',   route: '../payment',      desc: 'Gateways & settlements'    },
+      ]
     },
     {
-      key: 'pos',
-      label: 'POS Systems',
-      icon: 'pi pi-shopping-cart',
-      color: '#06b6d4',
-      description: 'Point of sale and transaction management'
-    },
-    {
-      key: 'ecommerce',
-      label: 'E-commerce',
-      icon: 'pi pi-globe',
-      color: '#3b82f6',
-      description: 'Online retail and marketplace solutions'
-    },
-    {
-      key: 'omni-channel',
-      label: 'Omni Channel',
-      icon: 'pi pi-comments',
-      color: '#0f766e',
-      description: 'Unified conversations across social, chat, and marketplace support'
+      label: 'Analytics',
+      icon: 'pi pi-chart-bar',
+      desc: 'Performance tracking and customer behavioral insights.',
+      links: [
+        { label: 'Sales Analytics', icon: 'pi pi-chart-line',    route: '../analytics',   desc: 'Revenue performance'       },
+        { label: 'Insights',       icon: 'pi pi-search-plus',   route: '../analytics',   desc: 'Customer segments'          },
+      ]
     }
   ];
 
-  ngOnInit() {
-    this.loadServiceStats();
-    this.loadRecentActivities();
-    this.initChart();
+  orderHealth = [
+    { label: 'Fulfilled',     percent: 88, colorClass: 'bg-emerald-500',  dotClass: 'bg-emerald-500', desc: 'Orders completed and delivered' },
+    { label: 'Processing',    percent: 9,  colorClass: 'bg-blue-500',     dotClass: 'bg-blue-500',    desc: 'Orders currently being prepared' },
+    { label: 'On Hold',       percent: 3,  colorClass: 'bg-orange-500',   dotClass: 'bg-orange-500',  desc: 'Orders requiring intervention' },
+  ];
+
+  alerts = [
+    { id: '1', product: 'Order #8942', message: 'Payment authorization failed', severity: 'critical', severityTag: 'danger', icon: 'pi pi-times-circle', time: '5m ago', context: 'Action Required' },
+    { id: '2', product: 'E-commerce',  message: 'Traffic spike detected (+40%)', severity: 'info',     severityTag: 'info',   icon: 'pi pi-info-circle',  time: '12m ago', context: 'Monitoring' },
+    { id: '3', product: 'Fresh Store', message: 'POS Terminal 04 offline',       severity: 'warning',  severityTag: 'warning', icon: 'pi pi-exclamation-triangle', time: '1h ago', context: 'Check Connectivity' },
+  ];
+
+  ngOnInit(): void {
+    // Simulate data loading
+    setTimeout(() => {
+      this.loading = false;
+    }, 800);
   }
 
-  loadServiceStats() {
-    // Mock data - replace with actual API call
-    this.serviceStats = [
-      { category: 'Payment Processing', count: 3, active: 3, revenue: 899, growth: 12.5 },
-      { category: 'Inventory Management', count: 2, active: 2, revenue: 399, growth: 8.3 },
-      { category: 'Loyalty Programs', count: 1, active: 0, revenue: 249, growth: -2.1 },
-      { category: 'POS Systems', count: 1, active: 1, revenue: 349, growth: 22.4 },
-      { category: 'E-commerce', count: 0, active: 0, revenue: 0, growth: 0 },
-      { category: 'Omni Channel', count: 1, active: 1, revenue: 429, growth: 17.9 }
-    ];
-  }
-
-  loadRecentActivities() {
-    // Mock data - replace with actual API call
-    this.recentActivities = [
-      {
-        id: '1',
-        action: 'Service Updated',
-        service: 'Advanced Payment Gateway',
-        timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-        status: 'success'
-      },
-      {
-        id: '2',
-        action: 'New Service Added',
-        service: 'Smart Inventory Tracker',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-        status: 'success'
-      },
-      {
-        id: '3',
-        action: 'Service Maintenance',
-        service: 'Loyalty Program Manager',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 6), // 6 hours ago
-        status: 'warning'
-      },
-      {
-        id: '4',
-        action: 'Payment Failed',
-        service: 'Cloud POS System',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 12), // 12 hours ago
-        status: 'error'
-      }
-    ];
-  }
-
-  initChart() {
-    const documentStyle = getComputedStyle(document.documentElement);
-    const textColor = documentStyle.getPropertyValue('--text-color');
-    const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
-    const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
-
-    this.chartData = {
-      labels: ['Payment', 'Inventory', 'Loyalty', 'POS', 'E-commerce', 'Omni Channel'],
-      datasets: [
-        {
-          label: 'Active Services',
-          backgroundColor: [
-          '#10b981',
-          '#f59e0b',
-          '#ec4899',
-          '#06b6d4',
-          '#3b82f6',
-          '#0f766e'
-        ],
-        borderColor: [
-          '#059669',
-          '#d97706',
-          '#db2777',
-          '#0891b2',
-          '#2563eb',
-          '#115e59'
-        ],
-          data: [3, 2, 0, 1, 0, 1]
-        }
-      ]
-    };
-
-    this.chartOptions = {
-      plugins: {
-        legend: {
-          labels: {
-            color: textColor
-          }
-        }
-      },
-      scales: {
-        r: {
-          beginAtZero: true,
-          grid: {
-            color: surfaceBorder
-          },
-          ticks: {
-            color: textColorSecondary,
-            stepSize: 1
-          },
-          pointLabels: {
-            color: textColorSecondary
-          }
-        }
-      }
-    };
-  }
-
-  getTotalServices(): number {
-    return this.serviceStats.reduce((sum, stat) => sum + stat.count, 0);
-  }
-
-  getActiveServices(): number {
-    return this.serviceStats.reduce((sum, stat) => sum + stat.active, 0);
-  }
-
-  getTotalRevenue(): number {
-    return this.serviceStats.reduce((sum, stat) => sum + stat.revenue, 0);
-  }
-
-  getAverageGrowth(): number {
-    const totalGrowth = this.serviceStats.reduce((sum, stat) => sum + stat.growth, 0);
-    return totalGrowth / this.serviceStats.length;
-  }
-
-  getStatusColor(status: string): string {
-    switch (status) {
-      case 'success': return 'success';
-      case 'warning': return 'warning';
-      case 'error': return 'danger';
-      default: return 'info';
-    }
-  }
-
-  getStatusIcon(status: string): string {
-    switch (status) {
-      case 'success': return 'pi pi-check-circle';
-      case 'warning': return 'pi pi-exclamation-triangle';
-      case 'error': return 'pi pi-times-circle';
-      default: return 'pi pi-info-circle';
-    }
-  }
-
-  getCategoryCount(categoryKey: string): number {
-    const stat = this.serviceStats.find(s => s.category.toLowerCase().includes(categoryKey));
-    return stat ? stat.count : 0;
-  }
-
-  formatTimeAgo(timestamp: Date): string {
-    const now = new Date();
-    const diffMs = now.getTime() - timestamp.getTime();
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffMins < 60) {
-      return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
-    } else if (diffHours < 24) {
-      return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
-    } else {
-      return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
-    }
+  loadStats(): void {
+    this.loading = true;
+    setTimeout(() => {
+      this.loading = false;
+    }, 500);
   }
 }

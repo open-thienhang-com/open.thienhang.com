@@ -2,8 +2,13 @@ import { Routes } from '@angular/router';
 
 export const chatRoutes: Routes = [
   {
+    path: 'overview',
+    loadComponent: () => import('./pages/overview/messaging-overview.component').then(m => m.MessagingOverviewComponent),
+  },
+  {
     path: '',
-    loadComponent: () => import('./pages/dashboard/chat-dashboard.component').then(m => m.ChatDashboardComponent),
+    redirectTo: 'overview',
+    pathMatch: 'full'
   },
   {
     path: 'dashboard',
@@ -37,10 +42,7 @@ export const chatRoutes: Routes = [
     path: 'conversations',
     loadComponent: () => import('./pages/conversations/chat-conversations.component').then(m => m.ChatConversationsComponent),
   },
-  {
-    path: 'analytics',
-    loadComponent: () => import('./pages/analytics/chat-analytics.component').then(m => m.ChatAnalyticsComponent),
-  },
+
   {
     path: '**',
     redirectTo: '',
