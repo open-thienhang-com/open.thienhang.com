@@ -1,4 +1,4 @@
-﻿import { Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 
 export const retailPlanningRoutes: Routes = [
   { path: '', loadComponent: () => import('./components/planning-welcome/planning-welcome.component').then(m => m.PlanningWelcomeComponent) },
@@ -28,6 +28,7 @@ export const retailPlanningRoutes: Routes = [
   { path: 'cost-estimation/:id', loadComponent: () => import('./components/cost-estimation/cost-estimation.component').then(m => m.CostEstimationComponent) },
   { path: 'trip-simulation/:id', loadComponent: () => import('./components/trip-simulation/trip-simulation.component').then(m => m.TripSimulationComponent) },
   { path: 'auto-planning', loadComponent: () => import('./components/planning-create-plan/planning-create-plan.component').then(m => m.PlanningCreatePlanComponent) },
+  { path: 'vehicles', loadComponent: () => import('./components/vehicles/vehicles.component').then(m => m.VehiclesComponent) },
   { path: 'planning-productivity-wrapper', loadComponent: () => import('./components/planning-productivity-wrapper/planning-productivity-wrapper').then(m => m.PlanningProductivityWrapper) },
   { path: 'planning-productivity', loadComponent: () => import('./components/planning-productivity/planning-productivity').then(m => m.PlanningProductivity) },
 ];

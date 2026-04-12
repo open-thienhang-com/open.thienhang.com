@@ -1,41 +1,61 @@
 <p-toast></p-toast>
 
 <div class="delivery-points-page">
-  <div class="delivery-points-header bg-white rounded-lg shadow-sm p-6 mb-6">
+  <div class="delivery-points-header">
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
       <div class="flex items-center gap-4">
-        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
-          <i class="pi pi-map-marker text-white text-xl"></i>
+        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded flex items-center justify-center shadow-inner">
+          <i class="pi pi-map-marker text-white text-lg"></i>
         </div>
         <div>
-          <h1 class="text-3xl font-bold text-gray-900">Delivery Points</h1>
-          <p class="text-gray-600">Select a row to focus the warehouse on the map.</p>
+          <h1 class="text-xl font-bold text-gray-900 leading-tight">Warehouses</h1>
+          <p class="text-xs text-gray-500">Inventory warehouse locations & logistics points</p>
         </div>
       </div>
-      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+      <div class="flex items-center gap-2">
+        <!-- View Switcher -->
+        <div class="flex bg-gray-100 p-1 rounded-lg mr-4 border border-gray-200">
+          <button 
+            (click)="viewMode = 'map'" 
+            [class]="viewMode === 'map' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'" 
+            class="px-4 py-1.5 text-[10px] uppercase tracking-widest font-bold rounded-md transition-all flex items-center gap-2">
+            <i class="pi pi-map"></i>
+            Map View
+          </button>
+          <button 
+            (click)="viewMode = 'table'" 
+            [class]="viewMode === 'table' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'" 
+            class="px-4 py-1.5 text-[10px] uppercase tracking-widest font-bold rounded-md transition-all flex items-center gap-2">
+            <i class="pi pi-table"></i>
+            Table View
+          </button>
+        </div>
+
         <p-button
           icon="pi pi-refresh"
           severity="secondary"
           [outlined]="true"
-          [rounded]="true"
           (onClick)="loadDeliveryPoints()"
           pTooltip="Refresh"
-          class="hidden sm:inline-flex"></p-button>
-        <p-button label="Add Delivery Point" icon="pi pi-plus" severity="primary" (onClick)="createDeliveryPoint()"></p-button>
+          size="small"></p-button>
+        <p-button [label]="viewMode === 'map' ? 'Add Point' : 'Add Location'" icon="pi pi-plus" severity="primary" (onClick)="createDeliveryPoint()" size="small"></p-button>
       </div>
     </div>
   </div>
 
-  <div class="delivery-points-layout">
+  <div class="delivery-points-layout" *ngIf="viewMode === 'map'">
     <section class="delivery-map-panel">
+      <!-- Map content remains same -->
       <div *ngIf="!mapLoaded" class="delivery-map-loading">
         <div class="text-center">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-3"></div>
-          <span class="text-gray-600 font-medium text-sm">Loading map...</span>
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-3"></div>
+          <span class="text-gray-400 font-medium text-xs">Initializing map system...</span>
         </div>
       </div>
 
       <div #deliveryPointsMap class="delivery-map-canvas"></div>
+
+      <!-- ... rest of map overlays ... -->
 
       <!-- Drawing toolbar -->
       <div class="delivery-draw-toolbar" *ngIf="mapLoaded">
@@ -125,13 +145,13 @@
       </div>
     </section>
 
-    <section class="delivery-list-panel bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between gap-4">
+    <section class="delivery-list-panel">
+      <div class="px-6 py-4 border-b border-gray-100 bg-white flex items-center justify-between gap-4">
         <div>
-          <h2 class="text-lg font-semibold text-gray-900">Delivery Point List</h2>
-          <p class="text-sm text-gray-500">{{ filteredDeliveryPoints.length }} warehouses</p>
+          <h2 class="text-sm font-bold text-gray-800 uppercase tracking-wider">Inventory List</h2>
+          <p class="text-[10px] text-gray-400 font-medium uppercase tracking-widest">{{ filteredDeliveryPoints.length }} points registered</p>
         </div>
-        <div class="text-xs text-gray-500 text-right">Click row to focus map</div>
+        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Active Focus</div>
       </div>
 
       <div class="delivery-list-toolbar">
@@ -217,6 +237,129 @@
         </p-table>
       </div>
     </section>
+  </div>
+
+  <!-- TABLE VIEW MODE -->
+  <div class="delivery-table-layout px-6 pb-6" *ngIf="viewMode === 'table'">
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 mt-4">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between">
+        <div>
+          <p class="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-1">Total Locations</p>
+          <p class="text-3xl font-extrabold text-gray-900">{{ deliveryPoints.length }}</p>
+        </div>
+        <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center border border-blue-100">
+          <i class="pi pi-building text-blue-500 text-xl"></i>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between">
+        <div>
+          <p class="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-1">Active Nodes</p>
+          <p class="text-3xl font-extrabold text-green-600">{{ getActiveDeliveryPointsCount() }}</p>
+        </div>
+        <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center border border-green-100">
+          <i class="pi pi-check-circle text-green-500 text-xl"></i>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between">
+        <div>
+          <p class="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-1">Total Capacity</p>
+          <p class="text-3xl font-extrabold text-purple-600">{{ formatNumber(getTotalCapacity()) }}</p>
+        </div>
+        <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center border border-purple-100">
+          <i class="pi pi-box text-purple-500 text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+      <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-extrabold text-gray-800 uppercase tracking-widest">Global Location Registry</h2>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Unified Warehouse & Delivery Point Data</p>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <span class="p-input-icon-left">
+            <i class="pi pi-search text-gray-400"></i>
+            <input 
+              pInputText 
+              [(ngModel)]="searchTerm" 
+              (input)="onSearch()" 
+              placeholder="Search registry..." 
+              class="w-64 p-inputtext-sm border-gray-200" />
+          </span>
+          <p-dropdown
+            [(ngModel)]="selectedStatus"
+            [options]="statusOptions"
+            optionLabel="label"
+            optionValue="value"
+            (onChange)="onStatusChange()"
+            class="p-inputtext-sm"
+            [style]="{'min-width': '140px'}"></p-dropdown>
+        </div>
+      </div>
+
+      <p-table
+        [value]="filteredDeliveryPoints"
+        styleClass="p-datatable-sm"
+        [paginator]="true"
+        [rows]="15"
+        [rowsPerPageOptions]="[15, 30, 50]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records">
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="name">Warehouse <p-sortIcon field="name"></p-sortIcon></th>
+            <th pSortableColumn="location">Region <p-sortIcon field="location"></p-sortIcon></th>
+            <th pSortableColumn="city">Province <p-sortIcon field="city"></p-sortIcon></th>
+            <th pSortableColumn="district">District <p-sortIcon field="district"></p-sortIcon></th>
+            <th>Address</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td>
+              <div class="text-sm font-bold text-gray-900 leading-none">{{ item.name }}</div>
+              <div class="text-[10px] text-gray-400 font-mono mt-1">ID: {{ item.warehouseId || '-' }}</div>
+            </td>
+            <td class="text-xs font-semibold text-gray-600">{{ item.location || '-' }}</td>
+            <td class="text-xs font-semibold text-gray-600">{{ item.city || '-' }}</td>
+            <td class="text-xs text-gray-500">{{ item.district || '-' }}</td>
+            <td class="text-xs text-gray-500 max-w-[200px] truncate">{{ item.address || '-' }}</td>
+            <td>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200 uppercase tracking-wider">
+                {{ item.type || 'N/A' }}
+              </span>
+            </td>
+            <td>
+              <p-badge [value]="getStatusLabel(item.isActive)" [severity]="getStatusSeverity(item.isActive)"></p-badge>
+            </td>
+            <td>
+              <div class="flex gap-1">
+                <button (click)="viewDeliveryPoint(item)" class="p-1 hover:bg-blue-50 text-blue-500 rounded transition-colors" title="View Details">
+                  <i class="pi pi-eye"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="8" class="text-center py-16 text-gray-400">
+              <i class="pi pi-search text-4xl mb-3 opacity-20"></i>
+              <p class="font-bold">No records matching your filters</p>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
   </div>
 
   <p-dialog [(visible)]="showDeliveryPointDialog" [header]="dialogMode === 'create' ? 'Add New Delivery Point' : 'Delivery Point Detail'" [modal]="true" [style]="{width: '760px'}" [closable]="!saving">

@@ -27,7 +27,8 @@ export const INVENTORY_ROUTES: Routes = [
             },
             { 
                 path: 'warehouses', 
-                loadComponent: () => import('./pages/warehouses/warehouses.component').then(m => m.WarehousesComponent) 
+                redirectTo: 'delivery-points',
+                pathMatch: 'full'
             },
             { 
                 path: 'suppliers', 

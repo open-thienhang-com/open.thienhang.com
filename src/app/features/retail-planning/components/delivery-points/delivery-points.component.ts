@@ -66,6 +66,7 @@ export class DeliveryPointsComponent implements OnInit, AfterViewInit, OnDestroy
   deliveryPoints: DeliveryPointItem[] = [];
   filteredDeliveryPoints: DeliveryPointItem[] = [];
   selectedDeliveryPoint: DeliveryPointItem | null = null;
+  viewMode: 'map' | 'table' = 'map';
 
   searchTerm = '';
   selectedStatus = '';

@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { ApiService, ApiResponse } from './api.service';
+import { getApiBase } from '../../../core/config/api-config';
 
 export interface Dataset {
     id: string;
@@ -66,7 +68,10 @@ export interface Warehouse {
 })
 export class DatasetService {
 
-    constructor(private api: ApiService) { }
+    constructor(
+        private api: ApiService,
+        private http: HttpClient
+    ) { }
 
     /**
      * Get list of datasets with pagination and filtering
@@ -121,7 +126,31 @@ export class DatasetService {
      * Get warehouses by region with optional search and pagination
      */
     getWarehouses(params: WarehouseQueryParams): Observable<ApiResponse<Warehouse[]>> {
-        return this.api.post<Warehouse[]>('/routing-deviation/internal/dataset/get-warehouses', params);
+        const baseUrl = getApiBase();
+        const url = `${baseUrl}/data-mesh/domains/retail/warehouses`;
+        
+        let httpParams = new HttpParams()
+            .set('keyword', params.search || '')
+            .set('skip', (params.offset || 0).toString())
+            .set('limit', (params.size || 50).toString());
+        
+        if (params.region_shortname) {
+            httpParams = httpParams.set('region_shortname', params.region_shortname);
+        }
+
+        console.log(`[DatasetService] GET ${url}`, httpParams.toString());
+
+        return this.http.get<any>(url, { params: httpParams }).pipe(
+            map(response => {
+                // Wrap in ApiResponse format expected by components
+                return {
+                    ok: true,
+                    status: 200,
+                    data: response,
+                    message: 'Success'
+                } as ApiResponse<any>;
+            })
+        );
     }
 
     /**

@@ -1,15 +1,20 @@
 <!-- Planning - Create Plan Page -->
-<div class="planning-page planning-governance-shell" id="planning-create-plan">
+<div class="planning-page" id="planning-create-plan">
+
+  <!-- Host style override to make header flush -->
+  <style>
+    :host ::ng-deep .page-header { margin-bottom: 0 !important; border-bottom: none !important; }
+  </style>
 
   <!-- Page Header -->
   <app-page-header
-    title="Auto Planning"
-    subtitle="Automatic route planning - Please fill in the parameters below to create a plan"
+    title="Plan Selection"
+    subtitle="Strategic route optimization engine"
     icon="🗺️">
   </app-page-header>
 
-  <!-- Stepper Container -->
-  <div class="planning-stepper-container planning-governance-frame">
+  <!-- Main Dashboard Grid -->
+  <div class="planning-governance-frame">
 
     <!-- Left: Stepper Navigation -->
     <div class="planning-stepper-nav">
@@ -96,9 +101,9 @@
               <div class="planning-sidebar-stack">
 
                 <!-- Region Selection: Nằm trên Search warehouse -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 flex-shrink-0">
-                  <label class="block text-xs font-semibold text-gray-700 mb-2">
-                    🌍 Region to plan <span class="text-red-500">*</span>
+                <div class="p-4 border-b border-gray-100 flex-shrink-0 bg-white">
+                  <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                    🌍 Targeting Region <span class="text-red-500">*</span>
                   </label>
                   <button
                     type="button"
@@ -120,8 +125,8 @@
                 </div>
 
                 <!-- Warehouse Search Section -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 flex-shrink-0">
-                  <label class="block text-xs font-semibold text-gray-700 mb-2">🔍 Search warehouse</label>
+                <div class="p-4 border-b border-gray-100 flex-shrink-0 bg-white">
+                  <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">🔍 Node Search</label>
                   <div class="relative">
                     <p-autoComplete
                       [(ngModel)]="warehouseSearchQuery"
@@ -157,7 +162,7 @@
                 </div>
 
                 <!-- Timeline Section: Stops -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 flex-shrink-0" style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
+                <div class="p-4 flex-1 min-height-0 flex flex-col bg-white">
                   <div class="flex items-center justify-between mb-3 flex-shrink-0">
                     <div class="flex items-center gap-2">
                       <div class="w-6 h-6 rounded bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
@@ -441,136 +446,105 @@
           </div>
 
           <!-- Data Table Section -->
-          <div class="mb-6">
-            <div>
+          <div class="flex-1 min-h-0 flex flex-col">
               <!-- Header Section -->
-              <div class="bg-white border-b-2 border-orange-200 p-6">
-                <div class="flex items-center gap-4 mb-4">
-                  <div class="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center shadow-sm border border-orange-200">
-                    <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-                    </svg>
-                  </div>
-                  <div class="flex-1">
-                    <h3 class="text-2xl font-bold mb-1 text-orange-600">Chi tiết Demand theo Bưu cục</h3>
-                    <p class="text-gray-600 text-sm">Detailed pickup and delivery demand analysis for each warehouse</p>
-                  </div>
-                </div>
-                <!-- Color Legend and Summary Info -->
-                <div class="flex items-center justify-between mt-4 pt-4 border-t border-orange-200">
-                  <div class="flex items-center gap-3 text-xs">
-                    <div class="flex items-center gap-1.5">
-                      <div class="w-4 h-4 rounded bg-green-100 border border-green-300"></div>
-                      <span class="text-gray-700">Above average</span>
+              <div class="bg-gray-50 border-b border-gray-100 p-4">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm border border-gray-100">
+                      <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                      </svg>
                     </div>
-                    <div class="flex items-center gap-1.5">
-                      <div class="w-4 h-4 rounded bg-red-100 border border-red-300"></div>
-                      <span class="text-gray-700">Below average</span>
+                    <div>
+                      <h3 class="text-sm font-bold text-gray-900 leading-tight">Warehouse Demand Detail</h3>
+                      <p class="text-[10px] text-gray-400 font-medium uppercase tracking-widest mt-0.5">Pickup and delivery analysis per node</p>
                     </div>
                   </div>
-                  <div class="text-sm text-gray-700 font-medium">
-                    Total: <span class="text-orange-600 font-bold">{{ demands.length }}</span> bưu cục
-                    <span *ngIf="demandSearchQuery" class="ml-2 text-gray-600">
-                      (Hiển thị: <span class="font-bold text-orange-600">{{ filteredDemands.length }}</span>)
-                    </span>
+
+                  <!-- Summary Info -->
+                  <div class="text-right">
+                    <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Total Payload</div>
+                    <div class="text-sm font-bold text-gray-900">{{ demands.length }} <span class="text-gray-400 font-normal">Nodes</span></div>
                   </div>
                 </div>
               </div>
 
-              <div class="p-6">
-                <!-- Loading -->
-                <div *ngIf="loadingDemands" class="flex items-center justify-center py-20">
-                  <div class="text-center">
-                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-                    <span class="text-sm text-gray-600 font-medium">Đang tải dữ liệu demands...</span>
-                  </div>
-                </div>
-
-                <!-- Demands Table -->
-                <div *ngIf="!loadingDemands && demands.length > 0" class="overflow-hidden">
-                  <p-table [value]="filteredDemands" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
-                           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} warehouses"
-                           [rowsPerPageOptions]="[5,10,25,50]"
-                           styleClass="p-datatable-sm"
-                           [tableStyle]="{'min-width': '100%'}"
-                           [responsiveLayout]="'scroll'">
-                    <ng-template pTemplate="header">
-                      <tr>
-                        <th class="text-left font-bold text-gray-800 py-4 px-6 bg-gradient-to-r from-orange-50 to-orange-100 border-b-2 border-orange-300">
-                          <button (click)="sortDemands('warehouse_name')" class="flex items-center gap-2 hover:text-orange-700 transition-colors text-gray-800 font-bold">
-                            Bưu cục
-                            <svg *ngIf="demandSortField === 'warehouse_name'" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet">
-                              <path *ngIf="demandSortOrder === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                              <path *ngIf="demandSortOrder === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
+              <!-- Demands Table -->
+              <div class="flex-1 min-height-0 bg-white" *ngIf="!loadingDemands && demands.length > 0">
+                <p-table [value]="filteredDemands" [paginator]="true" [rows]="15" [showCurrentPageReport]="true"
+                         currentPageReportTemplate="{first}-{last} / {totalRecords}"
+                         [rowsPerPageOptions]="[15,30,50,100]"
+                         styleClass="p-datatable-sm p-datatable-striped"
+                         [scrollable]="true"
+                         scrollHeight="flex">
+                  <ng-template pTemplate="header">
+                    <tr>
+                      <th class="p-3 bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-gray-100">
+                        <button (click)="sortDemands('warehouse_name')" class="flex items-center gap-2 hover:text-orange-500 transition-colors uppercase">
+                          Node
+                          <i class="pi" [ngClass]="demandSortField === 'warehouse_name' ? (demandSortOrder === 'asc' ? 'pi-sort-amount-up' : 'pi-sort-amount-down') : 'pi-sort-alt'"></i>
+                        </button>
+                      </th>
+                      <th class="p-3 bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-gray-100 text-right">
+                        <button (click)="sortDemands('total_pick')" class="flex items-center justify-end gap-2 hover:text-orange-500 transition-colors w-full uppercase">
+                          Total Pickup
+                          <i class="pi" [ngClass]="demandSortField === 'total_pick' ? (demandSortOrder === 'asc' ? 'pi-sort-amount-up' : 'pi-sort-amount-down') : 'pi-sort-alt'"></i>
+                        </button>
+                      </th>
+                      <th class="p-3 bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-gray-100 text-right">
+                        <button (click)="sortDemands('total_deliver')" class="flex items-center justify-end gap-2 hover:text-orange-500 transition-colors w-full uppercase">
+                          Total Delivery
+                          <i class="pi" [ngClass]="demandSortField === 'total_deliver' ? (demandSortOrder === 'asc' ? 'pi-sort-amount-up' : 'pi-sort-amount-down') : 'pi-sort-alt'"></i>
+                        </button>
+                      </th>
+                      <th class="p-3 bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-gray-100 text-center">
+                        <div class="flex items-center justify-center gap-2 uppercase">
+                          Shift
+                          <button (click)="openShiftEditorModal()" class="p-1 hover:bg-gray-200 rounded transition-colors" title="Configure work shifts">
+                            <i class="pi pi-cog text-gray-400"></i>
                           </button>
-                        </th>
-                        <th class="text-right font-bold text-gray-800 py-4 px-6 bg-gradient-to-r from-orange-50 to-orange-100 border-b-2 border-orange-300">
-                          <button (click)="sortDemands('total_pick')" class="flex items-center justify-end gap-2 hover:text-orange-700 transition-colors w-full text-gray-800 font-bold">
-                            Total pickup
-                            <svg *ngIf="demandSortField === 'total_pick'" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet">
-                              <path *ngIf="demandSortOrder === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                              <path *ngIf="demandSortOrder === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                          </button>
-                        </th>
-                        <th class="text-right font-bold text-gray-800 py-4 px-6 bg-gradient-to-r from-orange-50 to-orange-100 border-b-2 border-orange-300">
-                          <button (click)="sortDemands('total_deliver')" class="flex items-center justify-end gap-2 hover:text-orange-700 transition-colors w-full text-gray-800 font-bold">
-                            Total delivery
-                            <svg *ngIf="demandSortField === 'total_deliver'" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet">
-                              <path *ngIf="demandSortOrder === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                              <path *ngIf="demandSortOrder === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                          </button>
-                        </th>
-                        <th class="text-center font-bold text-gray-800 py-4 px-6 bg-gradient-to-r from-orange-50 to-orange-100 border-b-2 border-orange-300">
-                          <div class="flex items-center justify-center gap-2">
-                            <span>Ca</span>
-                            <button (click)="openShiftEditorModal()" class="p-1 hover:bg-orange-200 rounded transition-colors" title="Configure work shifts">
-                              <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                              </svg>
-                            </button>
-                          </div>
-                        </th>
-                        <th class="text-right font-bold text-gray-800 py-4 px-6 bg-gradient-to-r from-orange-50 to-orange-100 border-b-2 border-orange-300">
-                          Tỉ lệ (Lấy/Giao)
-                        </th>
-                      </tr>
-                    </ng-template>
+                        </div>
+                      </th>
+                      <th class="p-3 bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-gray-100 text-right uppercase">
+                        Ratio
+                      </th>
+                    </tr>
+                  </ng-template>
                     <ng-template pTemplate="body" let-demand let-rowIndex="rowIndex">
                       <tr (click)="selectDemand(demand)"
                           [ngClass]="{
-                            'bg-orange-50 border-l-4 border-l-orange-500': isDemandSelected(demand),
-                            'bg-white hover:bg-orange-50/50': !isDemandSelected(demand) && rowIndex % 2 === 0,
-                            'bg-gray-50/50 hover:bg-orange-50/50': !isDemandSelected(demand) && rowIndex % 2 === 1
+                            'bg-blue-50/50 border-l-4 border-l-blue-500': isDemandSelected(demand),
+                            'bg-white hover:bg-gray-50': !isDemandSelected(demand)
                           }"
-                          class="cursor-pointer transition-all duration-150 border-b border-gray-200">
-                        <td class="py-4 px-6">
-                          <div>
-                            <div class="text-gray-900 font-semibold text-sm">{{ demand.warehouse_name || '—' }}</div>
-                            <div class="text-xs text-gray-500 mt-1 font-medium">ID: {{ demand.warehouse_id }}</div>
+                          class="cursor-pointer transition-all duration-150 border-b border-gray-100">
+                        <td class="p-3">
+                          <div class="flex flex-col">
+                            <span class="text-sm font-bold text-gray-900">{{ demand.warehouse_name || '—' }}</span>
+                            <span class="text-[10px] text-gray-400 font-medium tracking-wider">ID: {{ demand.warehouse_id }}</span>
                           </div>
                         </td>
-                        <td class="text-right py-4 px-6">
-                          <span class="text-gray-800 font-semibold">{{ demand.total_pick | number }}</span>
+                        <td class="text-right p-3 font-semibold text-gray-700">
+                          {{ demand.total_pick | number }}
                         </td>
-                        <td class="text-right py-4 px-6">
-                          <span class="text-gray-800 font-semibold">{{ demand.total_deliver | number }}</span>
+                        <td class="text-right p-3 font-semibold text-gray-700">
+                          {{ demand.total_deliver | number }}
                         </td>
-                        <td class="text-center py-4 px-6" (click)="$event.stopPropagation()">
+                        <td class="text-center p-3" (click)="$event.stopPropagation()">
                           <select
                             [value]="demandShiftAssignment.get(demand.warehouse_id || demand.id)"
                             (change)="setDemandShift(demand, +$any($event.target).value)"
-                            class="text-sm font-semibold px-3 py-1.5 border border-gray-300 rounded-lg bg-white hover:border-orange-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors cursor-pointer">
+                            class="text-xs font-bold px-2 py-1 border border-gray-200 rounded-lg bg-white hover:border-blue-400 focus:border-blue-500 transition-all cursor-pointer">
                             <option [value]="undefined">—</option>
                             <option *ngFor="let shift of shifts; let i = index" [value]="i">
-                              {{ shift.name }} ({{ shift.start_hour }}:00 - {{ shift.end_hour }}:00)
+                              {{ shift.name }}
                             </option>
                           </select>
                         </td>
-                        <td class="text-right py-4 px-6">
-                          <span class="text-orange-600 font-bold">{{ formatRatio(getDemandRatio(demand)) }}</span>
+                        <td class="text-right p-3">
+                          <span class="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-md">
+                            {{ formatRatio(getDemandRatio(demand)) }}
+                          </span>
                         </td>
                       </tr>
                     </ng-template>
@@ -606,19 +580,17 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
                     </svg>
                     <p class="text-gray-600 font-medium">No demand data available</p>
-                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div class="planning-step-footer">
-          <button type="button" class="planning-btn planning-btn-secondary" (click)="goToCreatePlanStep(1)">← Previous</button>
-          <button type="button" class="planning-btn planning-btn-primary" (click)="goToCreatePlanStep(3)" [disabled]="demands.length === 0">
-            Next: Vehicles →
-          </button>
-        </div>
+            <div class="planning-step-footer">
+              <button type="button" class="planning-btn planning-btn-secondary" (click)="goToCreatePlanStep(1)">← Previous</button>
+              <button type="button" class="planning-btn planning-btn-primary" (click)="goToCreatePlanStep(3)" [disabled]="demands.length === 0">
+                Next: Vehicles →
+              </button>
+            </div>
+          </div>
       </div>
 
 
@@ -626,8 +598,25 @@
       <!-- STEP 3: FLEET (Vehicles) -->
       <div class="planning-step-panel" [class.active]="currentStep === 3" id="create-plan-step-3">
         <div class="planning-step-header">
-          <h3>🚛 Cấu hình Vehicles</h3>
-          <p>Load vehicles from retail truck API and choose the fleet for this plan</p>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm border border-gray-100">
+                <i class="pi pi-truck text-xl text-blue-500"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-gray-900 leading-tight">Fleet Configuration</h3>
+                <p class="text-[10px] text-gray-400 font-medium uppercase tracking-widest mt-0.5">Select and configure available vehicles</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" class="px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-100" (click)="loadTrucks()">
+                <i class="pi pi-refresh mr-1"></i> Refresh Trucks
+              </button>
+              <button type="button" class="px-3 py-1.5 text-xs font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-100" (click)="clearSelectedTrucks()">
+                Clear All
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="planning-step-body">
@@ -653,37 +642,44 @@
               <p>No vehicles returned</p>
               <span>The truck API did not return any rows</span>
             </div>
-            <div *ngIf="!loadingTrucks && !trucksError && trucks.length > 0" class="overflow-auto">
-              <table class="min-w-full text-sm">
+            <div *ngIf="!loadingTrucks && !trucksError && trucks.length > 0" class="flex-1 overflow-auto border-t border-gray-100">
+              <table class="min-w-full text-xs">
                 <thead>
-                  <tr class="border-b border-gray-200">
-                    <th class="text-left py-3 px-3 w-12"></th>
-                    <th class="text-left py-3 px-3">Vehicle code</th>
-                    <th class="text-left py-3 px-3">License plate</th>
-                    <th class="text-left py-3 px-3">Type</th>
-                    <th class="text-left py-3 px-3">Warehouse</th>
-                    <th class="text-left py-3 px-3">Driver</th>
-                    <th class="text-left py-3 px-3">Status</th>
-                    <th class="text-right py-3 px-3">Max weight</th>
-                    <th class="text-right py-3 px-3">Max volume</th>
+                  <tr class="bg-gray-50/50 sticky top-0 z-10">
+                    <th class="py-2 px-3 border-b border-gray-100 w-8"></th>
+                    <th class="text-left py-2 px-3 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Code</th>
+                    <th class="text-left py-2 px-3 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Plate</th>
+                    <th class="text-left py-2 px-3 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Type</th>
+                    <th class="text-left py-2 px-3 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Driver</th>
+                    <th class="text-right py-2 px-3 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Payload</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let truck of trucks" class="border-b border-gray-100 hover:bg-orange-50/40">
-                    <td class="py-3 px-3">
-                      <input type="checkbox" [checked]="isTruckSelected(truck)" (change)="toggleTruckSelection(truck)" />
+                  <tr *ngFor="let truck of trucks" 
+                      class="border-b border-gray-50 hover:bg-blue-50/30 transition-colors"
+                      [ngClass]="{'bg-blue-50/20': isTruckSelected(truck)}">
+                    <td class="py-2 px-3">
+                      <div class="flex items-center justify-center">
+                        <input type="checkbox" 
+                               [checked]="isTruckSelected(truck)" 
+                               (change)="toggleTruckSelection(truck)"
+                               class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                      </div>
                     </td>
-                    <td class="py-3 px-3 font-semibold text-gray-900">{{ truck.vehicle_code }}</td>
-                    <td class="py-3 px-3">{{ truck.license_plate }}</td>
-                    <td class="py-3 px-3">{{ truck.vehicle_type }}</td>
-                    <td class="py-3 px-3">{{ truck.warehouse_id }}</td>
-                    <td class="py-3 px-3">
-                      <div>{{ truck.driver_name || '-' }}</div>
-                      <div class="text-xs text-gray-500">{{ truck.driver_phone || '-' }}</div>
+                    <td class="py-2 px-3 font-bold text-gray-900">{{ truck.vehicle_code }}</td>
+                    <td class="py-2 px-3 text-gray-600">{{ truck.license_plate }}</td>
+                    <td class="py-2 px-3">
+                      <span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] font-bold uppercase">{{ truck.vehicle_type }}</span>
                     </td>
-                    <td class="py-3 px-3">{{ truck.is_active ? truck.status : 'inactive' }}</td>
-                    <td class="py-3 px-3 text-right">{{ truck.max_weight | number }}</td>
-                    <td class="py-3 px-3 text-right">{{ truck.max_volume | number }}</td>
+                    <td class="py-2 px-3">
+                      <div class="flex flex-col">
+                        <span class="font-medium text-gray-800">{{ truck.driver_name || '-' }}</span>
+                        <span class="text-[9px] text-gray-400">{{ truck.driver_phone || '-' }}</span>
+                      </div>
+                    </td>
+                    <td class="py-2 px-3 text-right">
+                      <span class="font-bold text-gray-700">{{ truck.max_weight | number }} <span class="text-[9px] text-gray-400 font-normal">kg</span></span>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -716,39 +712,46 @@
       <!-- STEP 4: SETTINGS (Settings) -->
       <div class="planning-step-panel" [class.active]="currentStep === 4" id="create-plan-step-4">
         <div class="planning-step-header">
-          <h3>⚙️ Settings Nâng cao</h3>
-          <p>Configure routing parameters and constraints</p>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm border border-gray-100">
+              <i class="pi pi-sliders-h text-xl text-indigo-500"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-gray-900 leading-tight">Advanced Settings</h3>
+              <p class="text-[10px] text-gray-400 font-medium uppercase tracking-widest mt-0.5">Solver constraints and engine parameters</p>
+            </div>
+          </div>
         </div>
 
         <div class="planning-step-body">
           <div class="planning-settings-grid">
             <div class="planning-setting-group">
               <label>Vehicle speed (km/h)</label>
-              <input type="number" id="cp_vehicle_speed" class="planning-input" value="40">
+              <input type="number" id="cp_vehicle_speed" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none" value="40">
             </div>
             <div class="planning-setting-group">
               <label>Maximum vehicle time (s)</label>
-              <input type="number" id="cp_vehicle_max_time" class="planning-input" value="86400">
+              <input type="number" id="cp_vehicle_max_time" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none" value="86400">
             </div>
             <div class="planning-setting-group">
-              <label>Average light parcel weight (g)</label>
-              <input type="number" id="cp_avg_light_weight" class="planning-input" value="1000">
+              <label>Avg light parcel (g)</label>
+              <input type="number" id="cp_avg_light_weight" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none" value="1000">
             </div>
             <div class="planning-setting-group">
-              <label>Average heavy parcel weight (g)</label>
-              <input type="number" id="cp_avg_heavy_weight" class="planning-input" value="29000">
+              <label>Avg heavy parcel (g)</label>
+              <input type="number" id="cp_avg_heavy_weight" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none" value="29000">
             </div>
             <div class="planning-setting-group">
               <label>Solver time limit (s)</label>
-              <input type="number" id="cp_solve_time_limit" class="planning-input" value="60">
+              <input type="number" id="cp_solve_time_limit" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none" value="60">
             </div>
             <div class="planning-setting-group">
-              <label>Route start time (minutes)</label>
-              <input type="number" id="cp_start_route_time" class="planning-input" value="240">
+              <label>Route start (min)</label>
+              <input type="number" id="cp_start_route_time" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none" value="240">
             </div>
             <div class="planning-setting-group">
-              <label>Travel time limit (minutes)</label>
-              <input type="number" id="cp_limit_duration_time" class="planning-input" value="180">
+              <label>Travel limit (min)</label>
+              <input type="number" id="cp_limit_duration_time" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none" value="180">
             </div>
             <div class="planning-setting-group">
               <label>Warehouse capacity</label>
@@ -787,37 +790,65 @@
 
             <div class="planning-summary-section">
               <div class="summary-section-header">
-                <span>Region information</span>
-                <button type="button" class="planning-btn-icon small" (click)="goToCreatePlanStep(1)">✏️</button>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-map text-orange-500"></i>
+                  <span>Region information</span>
+                </div>
+                <button type="button" class="planning-btn-icon small border-none bg-transparent hover:bg-gray-100 transition-colors" (click)="goToCreatePlanStep(1)">
+                  <i class="pi pi-pencil text-xs text-gray-400"></i>
+                </button>
               </div>
-              <div class="summary-row"><span>Region to plan</span><span>{{ warehouseRegionShortname }} - {{ getRegionName(warehouseRegionShortname) }}</span></div>
-              <div class="summary-row"><span>Selected points</span><span>{{ timelineWarehouses.length }} điểm</span></div>
+              <div class="summary-row"><span>Region</span><span class="text-orange-600">{{ warehouseRegionShortname }} - {{ getRegionName(warehouseRegionShortname) }}</span></div>
+              <div class="summary-row"><span>Nodes</span><span>{{ timelineWarehouses.length }}</span></div>
             </div>
 
             <div class="planning-summary-section">
               <div class="summary-section-header">
-                <span>Điểm Giao hàng</span>
-                <button type="button" class="planning-btn-icon small" (click)="goToCreatePlanStep(1)">✏️</button>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-map-marker text-red-500"></i>
+                  <span>Delivery Points</span>
+                </div>
+                <button type="button" class="planning-btn-icon small border-none bg-transparent hover:bg-gray-100 transition-colors" (click)="goToCreatePlanStep(1)">
+                  <i class="pi pi-pencil text-xs text-gray-400"></i>
+                </button>
               </div>
-              <div class="summary-row"><span>Total points</span><span>{{ timelineWarehouses.length }}</span></div>
-              <div class="summary-row"><span>Total demand</span><span>{{ getFormattedTotalDemandWeight() }} kg</span></div>
+              <div class="summary-row"><span>Total Nodes</span><span>{{ timelineWarehouses.length }}</span></div>
+              <div class="summary-row"><span>Total Load</span><span>{{ getFormattedTotalDemandWeight() }} kg</span></div>
             </div>
 
             <div class="planning-summary-section">
               <div class="summary-section-header">
-                <span>Vehicles</span>
-                <button type="button" class="planning-btn-icon small" (click)="goToCreatePlanStep(3)">✏️</button>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-truck text-blue-500"></i>
+                  <span>Fleet selection</span>
+                </div>
+                <button type="button" class="planning-btn-icon small border-none bg-transparent hover:bg-gray-100 transition-colors" (click)="goToCreatePlanStep(3)">
+                  <i class="pi pi-pencil text-xs text-gray-400"></i>
+                </button>
               </div>
-              <div class="summary-row"><span>Vehicles đã chọn</span><span>{{ selectedTruckCount }}</span></div>
-              <div class="summary-row"><span>Total capacity</span><span>{{ totalTruckCapacity | number }} kg</span></div>
+              <div class="summary-row"><span>Total Vehicles</span><span>{{ selectedTruckCount }}</span></div>
+              <div class="summary-row"><span>Total Payload</span><span>{{ totalTruckCapacity | number }} kg</span></div>
+            </div>
+
+            <div class="planning-summary-section">
+              <div class="summary-section-header">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-cog text-indigo-500"></i>
+                  <span>Constraints</span>
+                </div>
+                <button type="button" class="planning-btn-icon small border-none bg-transparent hover:bg-gray-100 transition-colors" (click)="goToCreatePlanStep(4)">
+                  <i class="pi pi-pencil text-xs text-gray-400"></i>
+                </button>
+              </div>
+              <div class="summary-row"><span>Speed Limit</span><span>40 km/h</span></div>
+              <div class="summary-row"><span>Solve Time</span><span>60s</span></div>
             </div>
 
             <div class="planning-summary-estimate">
-              <div class="estimate-title">Estimated route status</div>
-              <div class="estimate-value">{{ timelineWarehouses.length > 0 ? 'Ready' : 'Insufficient data' }}</div>
-              <div class="estimate-label">Based on the current configuration</div>
+              <div class="estimate-title text-[10px] font-bold uppercase tracking-widest opacity-70">Engine Status</div>
+              <div class="estimate-value text-3xl font-black">{{ timelineWarehouses.length > 0 ? 'READY' : 'INCOMPLETE' }}</div>
+              <div class="estimate-label text-[10px] opacity-70 mt-1">Ready to start route optimization engine</div>
             </div>
-
           </div>
         </div>
 

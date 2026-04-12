@@ -1,30 +1,37 @@
 .delivery-points-page {
-  min-height: 100%;
-  padding: 1.5rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   background: #f9fafb;
+  overflow: hidden;
+}
+
+.delivery-points-header {
+  flex-shrink: 0;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
 }
 
 .delivery-points-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(360px, 0.9fr);
-  gap: 1.5rem;
-  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .delivery-map-panel {
   position: relative;
-  min-height: 720px;
-  border-radius: 1rem;
+  height: 100%;
   overflow: hidden;
-  border: 1px solid #dbe1ea;
+  border-right: 1px solid #dbe1ea;
   background: linear-gradient(180deg, #eff6ff 0%, #f8fafc 100%);
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
 }
 
 .delivery-map-canvas {
   width: 100%;
   height: 100%;
-  min-height: 720px;
 }
 
 .delivery-map-loading {
@@ -105,8 +112,9 @@
 .delivery-list-panel {
   display: flex;
   flex-direction: column;
-  min-height: 720px;
-  max-height: 720px;
+  height: 100%;
+  background: #ffffff;
+  border-left: 1px solid #e5e7eb;
 }
 
 .delivery-list-toolbar {
@@ -117,6 +125,7 @@
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #e5e7eb;
   background: linear-gradient(180deg, rgba(248, 250, 252, 0.95), rgba(248, 250, 252, 0.78));
+  flex-shrink: 0;
 }
 
 .delivery-list-search {
@@ -135,10 +144,13 @@
 .delivery-list-table {
   flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 
 :host ::ng-deep .delivery-list-datatable {
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 :host ::ng-deep .delivery-list-datatable .p-datatable-wrapper {
@@ -270,6 +282,9 @@
 @media (max-width: 1280px) {
   .delivery-points-layout {
     grid-template-columns: minmax(0, 1fr);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
   }
 
   .delivery-list-toolbar {
@@ -277,16 +292,22 @@
   }
 
   .delivery-map-panel,
-  .delivery-list-panel,
   .delivery-map-canvas {
-    min-height: 560px;
-    max-height: none;
+    height: 560px;
+    flex-shrink: 0;
+  }
+  
+  .delivery-list-panel {
+    height: 600px;
+    flex-shrink: 0;
   }
 }
 
 @media (max-width: 768px) {
   .delivery-points-page {
     padding: 1rem;
+    overflow-y: auto;
+    height: auto;
   }
 
   .delivery-map-focus {
@@ -309,8 +330,56 @@
   }
 
   .delivery-map-panel,
-  .delivery-list-panel,
   .delivery-map-canvas {
-    min-height: 480px;
+    height: 480px;
   }
+  
+  .delivery-list-panel {
+    height: 500px;
+  }
+}
+
+/* ── Unified Table View Styles ────────────────────────────── */
+.delivery-table-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  background: #f9fafb;
+}
+
+:host ::ng-deep .delivery-table-layout .p-datatable {
+  background: white;
+}
+
+:host ::ng-deep .delivery-table-layout .p-datatable .p-datatable-header {
+  background: #f8fafc;
+  padding: 1rem 1.5rem;
+}
+
+:host ::ng-deep .delivery-table-layout .p-datatable .p-paginator {
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  padding: 0.5rem 1rem;
+}
+
+:host ::ng-deep .delivery-table-layout .p-datatable .p-datatable-thead > tr > th {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+:host ::ng-deep .delivery-table-layout .p-datatable .p-datatable-tbody > tr > td {
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+:host ::ng-deep .delivery-table-layout .p-datatable .p-datatable-tbody > tr:hover {
+  background-color: #f8fafc;
 }

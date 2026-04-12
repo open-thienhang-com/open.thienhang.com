@@ -87,15 +87,13 @@ export const menu: MenuItem[] = [
                     { label: 'Categories', url: '/inventory/categories', icon: 'pi pi-list' },
                     { label: 'Suppliers', url: '/inventory/suppliers', icon: 'pi pi-truck' },
                     { label: 'Partners', url: '/inventory/partners', icon: 'pi pi-users' },
-                    { label: 'Delivery Points', url: '/inventory/delivery-points', icon: 'pi pi-map-marker' },
+                    { label: 'Warehouses', url: '/inventory/delivery-points', icon: 'pi pi-map-marker' },
                 ]
             },
             {
                 label: 'Inventory',
                 icon: 'pi pi-box',
                 children: [
-                    { label: 'Warehouses', url: '/inventory/warehouses', icon: 'pi pi-building' },
-                    { label: 'Stock & Products', url: '/inventory/overview', icon: 'pi pi-box' },
                     { label: 'Stock Analytics', url: '/inventory/analytics', icon: 'pi pi-chart-bar' },
                 ]
             },
@@ -113,8 +111,9 @@ export const menu: MenuItem[] = [
                 label: 'Fleet & Routes',
                 icon: 'pi pi-truck',
                 children: [
-                    { label: 'Fleet Management', url: '/inventory/fleet', icon: 'pi pi-truck' },
-                    { label: 'Auto Planning', url: '/planning/auto-planning', icon: 'pi pi-directions' },
+                    { label: 'Truck', url: '/inventory/fleet', icon: 'pi pi-truck' },
+                    { label: 'Vehicles', url: '/planning/vehicles', icon: 'pi pi-list' },
+                    { label: 'Planning', url: '/planning/auto-planning', icon: 'pi pi-directions' },
                 ]
             },
         ]
