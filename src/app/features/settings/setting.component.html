@@ -1,3 +1,5 @@
+<!-- Hidden file input for avatar upload -->
+<input #avatarInput type="file" accept="image/*" style="display:none" (change)="onFileSelected($event)">
 
 <div class="settings-main">
   <div class="settings-content-wrapper">
@@ -96,15 +98,19 @@
                     <div class="profile-grid">
                       <div class="avatar-section">
                         <div class="avatar-wrapper">
-                          <img *ngIf="profile.avatar" [src]="profile.avatar" alt="Profile" class="avatar-image">
-                          <div *ngIf="!profile.avatar" class="avatar-placeholder">
+                          <img *ngIf="avatarPreview" [src]="avatarPreview" alt="Profile" class="avatar-image">
+                          <div *ngIf="!avatarPreview && !uploadingAvatar" class="avatar-placeholder">
                             <i class="pi pi-user"></i>
+                          </div>
+                          <div *ngIf="uploadingAvatar" class="avatar-loading">
+                            <p-progressSpinner [style]="{width: '50px', height: '50px'}"></p-progressSpinner>
                           </div>
                         </div>
                         <h3 class="avatar-name">{{ profile.firstName || 'N/A' }} {{ profile.lastName || '' }}</h3>
                         <p class="avatar-role">{{ profile.role || 'N/A' }}</p>
                         <button pButton type="button" label="Change Photo"
                                 icon="pi pi-upload" class="p-button-sm mt-3"
+                                [disabled]="uploadingAvatar"
                                 (click)="openPhotoUpload()"></button>
                       </div>
 
@@ -148,9 +154,9 @@
 
                           <div class="form-actions">
                             <button pButton type="button" label="Cancel" severity="secondary"
-                                    class="p-button-sm p-button-outlined"></button>
-                            <button pButton type="submit" label="Save"
-                                    class="p-button-sm" [disabled]="profileForm.invalid"></button>
+                                    class="p-button-sm p-button-outlined" (click)="fetchLocalProfile()"></button>
+                            <button pButton type="submit" label="Save" icon="pi pi-check"
+                                    class="p-button-sm" [disabled]="profileForm.invalid" [loading]="profileSaving"></button>
                           </div>
                         </form>
                       </div>
@@ -168,7 +174,7 @@
                       <p class="card-subtitle">Manage your login sessions</p>
                     </div>
                     <button pButton type="button" icon="pi pi-refresh" class="p-button-sm p-button-text"
-                            (click)="refreshData()" [loading]="localLoading"></button>
+                            (click)="refreshSessions()" [loading]="localLoading"></button>
                   </div>
                   <div class="card-body">
                     <div *ngIf="!localLoading && sessions?.length > 0" class="sessions-list">
@@ -277,8 +283,8 @@
                       <div class="form-actions">
                         <button pButton type="button" label="Cancel" severity="secondary"
                                 class="p-button-sm p-button-outlined" (click)="passwordForm.reset()"></button>
-                        <button pButton type="submit" label="Update"
-                                class="p-button-sm" [disabled]="passwordForm.invalid"></button>
+                        <button pButton type="submit" label="Update Password" icon="pi pi-check"
+                                class="p-button-sm" [disabled]="passwordForm.invalid" [loading]="passwordSaving"></button>
                       </div>
                     </form>
                   </div>
@@ -438,9 +444,123 @@
 
                     <div class="card-actions mt-6">
                       <button pButton type="button" label="Cancel" severity="secondary"
-                              class="p-button-sm p-button-outlined"></button>
-                      <button pButton type="button" label="Save Preferences"
-                              class="p-button-sm" (click)="saveNotificationSettings()"></button>
+                              class="p-button-sm p-button-outlined" (click)="loadNotificationSettings()"></button>
+                      <button pButton type="button" label="Save Preferences" icon="pi pi-check"
+                              class="p-button-sm" (click)="saveNotificationSettings()" [loading]="notifSaving"></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- ── Access & Roles ── -->
+            <ng-container *ngIf="activeSection === 'access'">
+              <div class="settings-section">
+                <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon security-icon"><i class="pi pi-shield"></i></div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">Your Access Snapshot</h2>
+                      <p class="card-subtitle">Live governance view from /authentication/me/permissions</p>
+                    </div>
+                    <button pButton type="button" icon="pi pi-refresh" class="p-button-sm p-button-text"
+                            (click)="loadMyPermissions()" [loading]="permissionsLoading"></button>
+                  </div>
+                  <div class="card-body">
+                    <div *ngIf="permissionsLoading" class="empty-state">
+                      <i class="pi pi-spin pi-spinner" style="font-size:2rem;color:var(--accent)"></i>
+                      <p>Loading permissions…</p>
+                    </div>
+
+                    <div *ngIf="!permissionsLoading && myPermissions">
+
+                      <!-- Roles -->
+                      <div class="access-block">
+                        <div class="access-block-title"><i class="pi pi-tag"></i> Roles</div>
+                        <div class="chips-row" *ngIf="myPermissions.roles?.length; else noRoles">
+                          <span *ngFor="let r of myPermissions.roles" class="access-chip chip-role">
+                            {{ r.name || r.code || r }}
+                          </span>
+                        </div>
+                        <ng-template #noRoles><p class="empty-text">No roles assigned</p></ng-template>
+                      </div>
+
+                      <!-- Permissions -->
+                      <div class="access-block">
+                        <div class="access-block-title"><i class="pi pi-key"></i> Permissions</div>
+                        <div class="chips-row" *ngIf="myPermissions.permissions?.length; else noPerms">
+                          <span *ngFor="let p of myPermissions.permissions" class="access-chip chip-perm">
+                            {{ p.code || p.name || p }}
+                          </span>
+                        </div>
+                        <ng-template #noPerms><p class="empty-text">No permissions</p></ng-template>
+                      </div>
+
+                      <!-- Policies -->
+                      <div class="access-block">
+                        <div class="access-block-title"><i class="pi pi-lock"></i> Policies</div>
+                        <div class="chips-row" *ngIf="myPermissions.policies?.length; else noPolicies">
+                          <span *ngFor="let p of myPermissions.policies" class="access-chip chip-policy">
+                            {{ p.name || p.code || p }}
+                          </span>
+                        </div>
+                        <ng-template #noPolicies><p class="empty-text">No policies</p></ng-template>
+                      </div>
+
+                      <!-- Teams -->
+                      <div class="access-block">
+                        <div class="access-block-title"><i class="pi pi-users"></i> Teams</div>
+                        <div class="chips-row" *ngIf="myPermissions.teams?.length; else noTeams">
+                          <span *ngFor="let t of myPermissions.teams" class="access-chip chip-team">
+                            {{ t.name || t }}
+                          </span>
+                        </div>
+                        <ng-template #noTeams><p class="empty-text">No teams</p></ng-template>
+                      </div>
+
+                      <!-- Casbin Rules -->
+                      <div class="access-block" *ngIf="myPermissions.casbin_rules?.length">
+                        <div class="access-block-title"><i class="pi pi-list"></i> RBAC Rules ({{ myPermissions.casbin_rules.length }})</div>
+                        <div class="casbin-table">
+                          <table>
+                            <thead><tr><th>Subject</th><th>Domain</th><th>Object</th><th>Action</th></tr></thead>
+                            <tbody>
+                              <tr *ngFor="let rule of myPermissions.casbin_rules">
+                                <td><code>{{ rule.v0 || rule.sub || '—' }}</code></td>
+                                <td><code>{{ rule.v1 || rule.dom || '—' }}</code></td>
+                                <td><code>{{ rule.v2 || rule.obj || '—' }}</code></td>
+                                <td><code>{{ rule.v3 || rule.act || '—' }}</code></td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      <!-- Account info -->
+                      <div class="access-block" *ngIf="myPermissions.account">
+                        <div class="access-block-title"><i class="pi pi-id-card"></i> Account</div>
+                        <div class="account-meta-grid">
+                          <div><span class="meta-label">ID</span><code class="meta-value">{{ myPermissions.account._id || myPermissions.account.kid || '—' }}</code></div>
+                          <div><span class="meta-label">Email</span><span class="meta-value">{{ myPermissions.account.email || '—' }}</span></div>
+                          <div><span class="meta-label">Active</span>
+                            <span class="meta-value">
+                              <i [class]="myPermissions.account.is_active ? 'pi pi-check-circle text-green-500' : 'pi pi-times-circle text-red-400'"></i>
+                            </span>
+                          </div>
+                          <div><span class="meta-label">Verified</span>
+                            <span class="meta-value">
+                              <i [class]="myPermissions.account.is_verified ? 'pi pi-check-circle text-green-500' : 'pi pi-times-circle text-red-400'"></i>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div *ngIf="!permissionsLoading && !myPermissions" class="empty-state">
+                      <i class="pi pi-shield"></i>
+                      <p>Click refresh to load your access data</p>
+                      <button pButton type="button" label="Load Permissions" icon="pi pi-refresh" class="p-button-sm mt-4"
+                              (click)="loadMyPermissions()"></button>
                     </div>
                   </div>
                 </div>

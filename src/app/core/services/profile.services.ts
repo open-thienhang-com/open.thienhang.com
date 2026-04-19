@@ -51,34 +51,60 @@ export class ProfileServices {
 
   getProfile(): Observable<ApiResponse<UserProfile>> {
     const url = `${this.baseUrl}/authentication/me`;
-    return this.http.get<UserProfile>(url, { headers: { accept: 'application/json' } })
-      .pipe(map(response => this.wrapResponse(response)));
+    return this.http.get<any>(url, { headers: { accept: 'application/json' } })
+      .pipe(map(response => {
+        const data = response?.data ?? response;
+        return this.wrapResponse(data as UserProfile);
+      }));
   }
 
-  updateProfile(data: Partial<UserProfile>): Observable<ApiResponse<UserProfile>> {
-    const url = `${this.baseUrl}/profile`;
-    return this.http.put<UserProfile>(url, data)
-      .pipe(map(response => this.wrapResponse(response)));
+  /** PATCH /authentication/me — update full_name / image */
+  updateAccount(data: { full_name?: string; image?: string }): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/authentication/me`;
+    return this.http.patch<any>(url, data)
+      .pipe(map(response => this.wrapResponse(response?.data ?? response)));
   }
 
-  updatePassword(data: { current_password: string, new_password: string }): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/profile/password`;
-    return this.http.put<any>(url, data)
-      .pipe(map(response => this.wrapResponse(response)));
+  /** PATCH /authentication/me/profile — update first_name / last_name / company */
+  updateProfileDetails(data: { first_name?: string; last_name?: string; company?: string }): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/authentication/me/profile`;
+    return this.http.patch<any>(url, data)
+      .pipe(map(response => this.wrapResponse(response?.data ?? response)));
   }
 
-  updateAvatar(file: File): Observable<ApiResponse<UserProfile>> {
-    const url = `${this.baseUrl}/profile/avatar`;
-    const formData = new FormData();
-    formData.append('avatar', file);
-    return this.http.post<UserProfile>(url, formData)
-      .pipe(map(response => this.wrapResponse(response)));
+  /** DELETE /authentication/me — delete own account */
+  deleteAccount(): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/authentication/me`;
+    return this.http.delete<any>(url)
+      .pipe(map(response => this.wrapResponse(response?.data ?? response)));
   }
 
-  removeAvatar(): Observable<ApiResponse<UserProfile>> {
-    const url = `${this.baseUrl}/profile/avatar`;
-    return this.http.delete<UserProfile>(url)
-      .pipe(map(response => this.wrapResponse(response)));
+  /** GET /authentication/me/sessions */
+  getSessions(): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/authentication/me/sessions`;
+    return this.http.get<any>(url)
+      .pipe(map(response => this.wrapResponse(response?.data ?? response)));
+  }
+
+  /** DELETE /authentication/me/sessions — revoke ALL sessions */
+  revokeAllSessions(): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/authentication/me/sessions`;
+    return this.http.delete<any>(url)
+      .pipe(map(response => this.wrapResponse(response?.data ?? response)));
+  }
+
+  /** DELETE /authentication/sessions/{sessionId} */
+  revokeSession(sessionId: string): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/authentication/sessions/${sessionId}`;
+    return this.http.delete<any>(url)
+      .pipe(map(response => this.wrapResponse(response?.data ?? response)));
+  }
+
+  /** GET /authentication/me/permissions — full governance snapshot */
+  getMyPermissions(): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/authentication/me/permissions`;
+    return this.http.get<any>(url)
+      .pipe(map(response => this.wrapResponse(response?.data ?? response)));
   }
 
   updatePreferences(preferences: Partial<UserPreferences>): Observable<ApiResponse<UserPreferences>> {
@@ -101,16 +127,16 @@ export class ProfileServices {
       .pipe(map(response => this.wrapArrayResponse(response)));
   }
 
-  getSessions(): Observable<ApiResponse<any[]>> {
-    const url = `${this.baseUrl}/profile/sessions`;
-    return this.http.get<any[]>(url)
-      .pipe(map(response => this.wrapArrayResponse(response)));
-  }
-
-  revokeSession(sessionId: string): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/profile/sessions/${sessionId}`;
-    return this.http.delete<any>(url)
-      .pipe(map(response => this.wrapResponse(response)));
+  updateAvatar(file: File): Observable<ApiResponse<any>> {
+    const uploadUrl = `${this.baseUrl}/data-mesh/domains/files/upload/supabase`;
+    const form = new FormData();
+    form.append('file', file, file.name);
+    return this.http.post<any>(uploadUrl, form).pipe(
+      map(res => {
+        const url = res?.url || res?.data?.url || null;
+        return this.wrapResponse({ image: url });
+      })
+    );
   }
 
   enableTwoFactorAuth(): Observable<ApiResponse<any>> {

@@ -449,8 +449,8 @@ export class RoleComponent extends AppBaseComponent {
     // Use createRoleWithPermissions for creation so the API endpoint is /governance/role
     // which accepts a role payload including permissions array (kids)
     const saveObservable = (this.role._id ?
-      this.governanceServices.updateRole(this.role._id, payload) :
-      this.governanceServices.createRoleWithPermissions(payload as any)) as any;
+      this.governanceServices.updateRole(this.role._id, payload as any) :
+      this.governanceServices.createRole(payload as any)) as any;
     // Call real API
     this.saving = true;
     (saveObservable as any).subscribe({

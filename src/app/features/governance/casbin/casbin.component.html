@@ -1,0 +1,190 @@
+<p-toast></p-toast>
+
+<div class="p-4">
+  <div class="flex align-items-center justify-content-between mb-4">
+    <div>
+      <h2 class="text-2xl font-bold text-900 m-0">RBAC Engine</h2>
+      <p class="text-500 mt-1 mb-0">Manage Casbin policy rules, role assignments, and permission checks</p>
+    </div>
+    <p-button label="Reload Policies" icon="pi pi-refresh" severity="secondary" pTooltip="Force-reload all Casbin policies from MongoDB" (onClick)="reloadPolicies()"></p-button>
+  </div>
+
+  <p-tabView>
+
+    <!-- Tab 1: Policy Rules -->
+    <p-tabPanel header="Policy Rules" leftIcon="pi pi-list">
+      <p-card>
+        <!-- Filters -->
+        <div class="flex gap-3 align-items-center flex-wrap mb-3">
+          <input pInputText [(ngModel)]="filterTenantId" placeholder="Filter by tenant_id (* for global)"
+            style="width:220px" (keyup.enter)="loadRules()" />
+          <input pInputText [(ngModel)]="filterSub" placeholder="Filter by subject"
+            style="width:200px" (keyup.enter)="loadRules()" />
+          <p-button label="Filter" icon="pi pi-search" severity="secondary" (onClick)="loadRules()"></p-button>
+          <p-button label="Add Rule" icon="pi pi-plus" (onClick)="showAddRuleForm=!showAddRuleForm"></p-button>
+        </div>
+
+        <!-- Add Rule Form -->
+        <div *ngIf="showAddRuleForm" class="surface-100 border-round p-3 mb-3">
+          <div class="text-sm font-semibold mb-2 text-600">New p-type rule: (sub, dom, obj, act)</div>
+          <div class="flex gap-2 flex-wrap align-items-end">
+            <div class="flex flex-column gap-1">
+              <label class="text-xs text-500">Subject (role/user)</label>
+              <input pInputText [(ngModel)]="newRule.sub" placeholder="e.g. admin" style="width:160px" />
+            </div>
+            <div class="flex flex-column gap-1">
+              <label class="text-xs text-500">Domain (tenant_id)</label>
+              <input pInputText [(ngModel)]="newRule.dom" placeholder="e.g. * or tenant-id" style="width:160px" />
+            </div>
+            <div class="flex flex-column gap-1">
+              <label class="text-xs text-500">Object (path)</label>
+              <input pInputText [(ngModel)]="newRule.obj" placeholder="e.g. /governance/roles" style="width:180px" />
+            </div>
+            <div class="flex flex-column gap-1">
+              <label class="text-xs text-500">Action</label>
+              <p-dropdown [options]="methodOptions" [(ngModel)]="newRule.act" optionLabel="label" optionValue="value" styleClass="w-8rem"></p-dropdown>
+            </div>
+            <p-button label="Add" icon="pi pi-check" [loading]="addingRule" (onClick)="addRule()"></p-button>
+            <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="showAddRuleForm=false"></p-button>
+          </div>
+        </div>
+
+        <!-- Rules Table -->
+        <p-table [value]="rules" [loading]="rulesLoading" responsiveLayout="scroll" styleClass="p-datatable-sm">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Subject</th>
+              <th>Domain</th>
+              <th>Object</th>
+              <th>Action</th>
+              <th style="width:70px"></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-rule>
+            <tr>
+              <td><code class="text-sm">{{ getRuleSub(rule) }}</code></td>
+              <td><code class="text-sm">{{ getRuleDom(rule) }}</code></td>
+              <td><code class="text-sm">{{ getRuleObj(rule) }}</code></td>
+              <td>
+                <p-tag [value]="getRuleAct(rule)" severity="info"></p-tag>
+              </td>
+              <td>
+                <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" pTooltip="Remove rule" (onClick)="removeRule(rule)"></p-button>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="5" class="text-center py-4 text-500">No rules found</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </p-tabPanel>
+
+    <!-- Tab 2: Role Assignments -->
+    <p-tabPanel header="Role Assignments" leftIcon="pi pi-users">
+      <div class="grid">
+        <!-- Lookup user roles -->
+        <div class="col-12 md:col-6">
+          <p-card header="Lookup User Roles">
+            <div class="flex flex-column gap-3">
+              <div class="flex flex-column gap-1">
+                <label class="font-medium">User TID</label>
+                <input pInputText [(ngModel)]="lookupTid" placeholder="User account TID" />
+              </div>
+              <div class="flex flex-column gap-1">
+                <label class="font-medium">Tenant ID (optional)</label>
+                <input pInputText [(ngModel)]="lookupTenantId" placeholder="Scope to specific tenant" />
+              </div>
+              <p-button label="Lookup Roles" icon="pi pi-search" (onClick)="lookupUserRoles()" [loading]="userRolesLoading" [disabled]="!lookupTid.trim()"></p-button>
+            </div>
+
+            <p-divider *ngIf="userRoles.length > 0"></p-divider>
+            <div *ngIf="userRoles.length > 0">
+              <div class="font-semibold mb-2">Assigned roles:</div>
+              <div class="flex gap-2 flex-wrap">
+                <p-chip *ngFor="let r of userRoles" [label]="r.role || r" icon="pi pi-user"></p-chip>
+              </div>
+            </div>
+            <div *ngIf="!userRolesLoading && userRoles.length === 0 && lookupTid" class="text-500 text-sm mt-2">
+              No roles assigned
+            </div>
+          </p-card>
+        </div>
+
+        <!-- Assign / Unassign -->
+        <div class="col-12 md:col-6">
+          <p-card header="Assign / Unassign Role">
+            <div class="flex flex-column gap-3">
+              <div class="flex flex-column gap-1">
+                <label class="font-medium">User TID <span class="text-red-500">*</span></label>
+                <input pInputText [(ngModel)]="assignForm.user" placeholder="User TID" />
+              </div>
+              <div class="flex flex-column gap-1">
+                <label class="font-medium">Role Name <span class="text-red-500">*</span></label>
+                <input pInputText [(ngModel)]="assignForm.role" placeholder="e.g. tenant_admin" />
+              </div>
+              <div class="flex flex-column gap-1">
+                <label class="font-medium">Tenant ID <span class="text-red-500">*</span></label>
+                <input pInputText [(ngModel)]="assignForm.tenant_id" placeholder="Tenant domain" />
+              </div>
+              <div class="flex gap-2">
+                <p-button label="Assign" icon="pi pi-plus" class="flex-1" (onClick)="assignRole()" [loading]="assigning"></p-button>
+                <p-button label="Unassign" icon="pi pi-minus" severity="danger" class="flex-1" (onClick)="unassignRole()" [loading]="unassigning"></p-button>
+              </div>
+            </div>
+          </p-card>
+        </div>
+      </div>
+    </p-tabPanel>
+
+    <!-- Tab 3: Permission Checker -->
+    <p-tabPanel header="Permission Checker" leftIcon="pi pi-shield">
+      <div class="grid">
+        <div class="col-12 md:col-6">
+          <p-card header="Check Permission">
+            <div class="flex flex-column gap-3">
+              <div class="flex flex-column gap-1">
+                <label class="font-medium">User TID <span class="text-red-500">*</span></label>
+                <input pInputText [(ngModel)]="checkForm.user" placeholder="User account TID" />
+              </div>
+              <div class="flex flex-column gap-1">
+                <label class="font-medium">Tenant ID <span class="text-red-500">*</span></label>
+                <input pInputText [(ngModel)]="checkForm.tenant_id" placeholder="Tenant domain" />
+              </div>
+              <div class="flex flex-column gap-1">
+                <label class="font-medium">Resource Path <span class="text-red-500">*</span></label>
+                <input pInputText [(ngModel)]="checkForm.path" placeholder="e.g. /governance/roles" />
+              </div>
+              <div class="flex flex-column gap-1">
+                <label class="font-medium">HTTP Method <span class="text-red-500">*</span></label>
+                <p-dropdown [options]="methodOptions" [(ngModel)]="checkForm.method"
+                  optionLabel="label" optionValue="value" styleClass="w-full"></p-dropdown>
+              </div>
+              <p-button label="Check Permission" icon="pi pi-search" [loading]="checking" (onClick)="checkPermission()"></p-button>
+            </div>
+          </p-card>
+        </div>
+
+        <!-- Result -->
+        <div class="col-12 md:col-6" *ngIf="checkResult !== null">
+          <p-card header="Result">
+            <div class="flex flex-column align-items-center gap-3 py-4">
+              <div *ngIf="isAllowed()" class="flex flex-column align-items-center gap-2">
+                <i class="pi pi-check-circle text-6xl text-green-500"></i>
+                <span class="text-2xl font-bold text-green-600">ALLOWED</span>
+              </div>
+              <div *ngIf="!isAllowed()" class="flex flex-column align-items-center gap-2">
+                <i class="pi pi-times-circle text-6xl text-red-500"></i>
+                <span class="text-2xl font-bold text-red-600">DENIED</span>
+              </div>
+              <pre class="surface-100 border-round p-3 w-full text-sm overflow-auto">{{ checkResult | json }}</pre>
+            </div>
+          </p-card>
+        </div>
+      </div>
+    </p-tabPanel>
+
+  </p-tabView>
+</div>

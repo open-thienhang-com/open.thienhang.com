@@ -146,7 +146,7 @@ export class ApplicationsComponent implements OnInit {
       blogger: '/blogger',
       hotel: '/hotel',
       admanager: '/ad-manager',
-      support: '/chat',
+      support: '/cmc/workspace',
       chat: '/chat',
       files: '/files',
       travel: '/travel',

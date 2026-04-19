@@ -1,20 +1,22 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { ChatService } from '../../services/chat.service';
-import { TelegramBotProfile, TelegramSettings } from '../../models/chat.model';
+import { TelegramBotProfile, TelegramSettings, TelegramWebhook } from '../../models/chat.model';
 import { CHAT_WORKSPACE_LINKS } from '../shared/chat-workspace.config';
 
 @Component({
   selector: 'app-chat-bot-settings',
   standalone: true,
-  imports: [CommonModule, RouterModule, ButtonModule, SkeletonModule, TagModule, ToastModule],
+  imports: [CommonModule, FormsModule, RouterModule, ButtonModule, InputTextModule, SkeletonModule, TagModule, ToastModule],
   templateUrl: './chat-bot-settings.component.html',
   styleUrl: './chat-bot-settings.component.scss',
   providers: [MessageService]
@@ -27,6 +29,10 @@ export class ChatBotSettingsComponent implements OnInit {
   loading = false;
   profile: TelegramBotProfile | null = null;
   settings: TelegramSettings | null = null;
+  webhook: TelegramWebhook | null = null;
+  webhookUrl = '';
+  secretToken = '';
+  settingWebhook = false;
 
   readonly workspaceLinks = CHAT_WORKSPACE_LINKS;
   readonly nativeMediaEndpoints = [
@@ -113,11 +119,14 @@ export class ChatBotSettingsComponent implements OnInit {
     this.loading = true;
     forkJoin({
       profile: this.chatService.getTelegramProfile(),
-      settings: this.chatService.getTelegramSettings()
+      settings: this.chatService.getTelegramSettings(),
+      webhook: this.chatService.getTelegramWebhookStatus()
     }).subscribe({
-      next: ({ profile, settings }) => {
+      next: ({ profile, settings, webhook }) => {
         this.profile = profile.data;
         this.settings = settings.data;
+        this.webhook = webhook.data;
+        this.webhookUrl = webhook.data?.url || '';
         this.loading = false;
       },
       error: (error) => {
@@ -128,9 +137,32 @@ export class ChatBotSettingsComponent implements OnInit {
     });
   }
 
+  setWebhook(): void {
+    if (!this.webhookUrl.trim()) {
+      this.messageService.add({ severity: 'warn', summary: 'Invalid URL', detail: 'Please enter a valid webhook URL' });
+      return;
+    }
+    this.settingWebhook = true;
+    this.chatService.setTelegramWebhook(this.webhookUrl.trim(), this.secretToken.trim() || undefined).subscribe({
+      next: (response) => {
+        if (response.data) {
+          this.webhook = response.data;
+          this.messageService.add({ severity: 'success', summary: 'Webhook Set', detail: 'Telegram webhook has been updated successfully' });
+        } else {
+          this.messageService.add({ severity: 'error', summary: 'Failed', detail: response.message || 'Unable to set webhook' });
+        }
+        this.settingWebhook = false;
+      },
+      error: (error) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Server error while setting webhook' });
+        this.settingWebhook = false;
+      }
+    });
+  }
+
   isWorkspaceLinkActive(route: string): boolean {
     if (route === '/chat') {
-      return this.router.url === '/chat' || this.router.url === '/chat/telegram-workspace';
+      return this.router.url === '/cmc' || this.router.url === '/cmc/telegram-workspace';
     }
     return this.router.url === route;
   }

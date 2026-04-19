@@ -57,13 +57,37 @@ export const menu: MenuItem[] = [
         type: 'item',
         expanded: false,
         children: [
-            { label: 'Teams', url: '/governance/teams', icon: 'pi pi-users' },
-            { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
-            { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building' },
-            { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' },
-            { label: 'Permissions', url: '/governance/permissions', icon: 'pi pi-key' },
-            { label: 'Roles', url: '/governance/roles', icon: 'pi pi-users' },
-            { label: 'Policies', url: '/governance/policies', icon: 'pi pi-lock' }
+            {
+                label: 'Identity',
+                icon: 'pi pi-id-card',
+                expanded: false,
+                children: [
+                    { label: 'Tenants', url: '/governance/tenants', icon: 'pi pi-sitemap' },
+                    { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
+                    { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building' },
+                    { label: 'Teams', url: '/governance/teams', icon: 'pi pi-users' },
+                ]
+            },
+            {
+                label: 'Access Control',
+                icon: 'pi pi-lock',
+                expanded: false,
+                children: [
+                    { label: 'Roles', url: '/governance/roles', icon: 'pi pi-tag' },
+                    { label: 'Permissions', url: '/governance/permissions', icon: 'pi pi-key' },
+                    { label: 'Policies', url: '/governance/policies', icon: 'pi pi-lock' },
+                    { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' },
+                ]
+            },
+            {
+                label: 'RBAC & Admin',
+                icon: 'pi pi-cog',
+                expanded: false,
+                children: [
+                    { label: 'RBAC Engine', url: '/governance/casbin', icon: 'pi pi-shield' },
+                    { label: 'Admin Tools', url: '/governance/admin', icon: 'pi pi-wrench' },
+                ]
+            },
         ]
     },
     {
@@ -130,10 +154,10 @@ export const menu: MenuItem[] = [
                 type: 'item',
                 expanded: false,
                 children: [
-                    { label: 'Overview',        url: '/loyalty/overview',  icon: 'pi pi-home' },
-                    { label: 'Members',         url: '/loyalty/members',   icon: 'pi pi-users' },
-                    { label: 'Customers',       url: '/retail/customers',  icon: 'pi pi-user' },
-                    { label: 'Channels',        url: '/loyalty/channels',  icon: 'pi pi-share-alt' },
+                    { label: 'Overview', url: '/loyalty/overview', icon: 'pi pi-home' },
+                    { label: 'Members', url: '/loyalty/members', icon: 'pi pi-users' },
+                    { label: 'Customers', url: '/retail/customers', icon: 'pi pi-user' },
+                    { label: 'Channels', url: '/loyalty/channels', icon: 'pi pi-share-alt' },
                 ]
             },
             {
@@ -142,10 +166,10 @@ export const menu: MenuItem[] = [
                 type: 'item',
                 expanded: false,
                 children: [
-                    { label: 'Rewards Catalog', url: '/loyalty/rewards',    icon: 'pi pi-gift' },
-                    { label: 'Campaigns',        url: '/loyalty/campaigns',  icon: 'pi pi-megaphone' },
-                    { label: 'Segments',         url: '/loyalty/segments',   icon: 'pi pi-filter' },
-                    { label: 'Automation',       url: '/loyalty/automation', icon: 'pi pi-bolt' },
+                    { label: 'Rewards Catalog', url: '/loyalty/rewards', icon: 'pi pi-gift' },
+                    { label: 'Campaigns', url: '/loyalty/campaigns', icon: 'pi pi-megaphone' },
+                    { label: 'Segments', url: '/loyalty/segments', icon: 'pi pi-filter' },
+                    { label: 'Automation', url: '/loyalty/automation', icon: 'pi pi-bolt' },
                 ]
             },
             {
@@ -154,8 +178,8 @@ export const menu: MenuItem[] = [
                 type: 'item',
                 expanded: false,
                 children: [
-                    { label: 'Loyalty Strategy', url: '/loyalty/strategy',  icon: 'pi pi-sitemap' },
-                    { label: 'Analytics',        url: '/loyalty/analytics', icon: 'pi pi-chart-bar' },
+                    { label: 'Loyalty Strategy', url: '/loyalty/strategy', icon: 'pi pi-sitemap' },
+                    { label: 'Analytics', url: '/loyalty/analytics', icon: 'pi pi-chart-bar' },
                 ]
             },
         ]
@@ -172,7 +196,7 @@ export const menu: MenuItem[] = [
             { label: 'Ecommerce', url: '/retail/ecommerce', icon: 'pi pi-shopping-cart' },
             { label: 'POS', url: '/retail/pos', icon: 'pi pi-desktop' },
             { label: 'Payment', url: '/retail/payment', icon: 'pi pi-credit-card' },
-            { label: 'Support', url: '/chat/conversations', icon: 'pi pi-comments' },
+            { label: 'Support', url: '/cmc/workspace', icon: 'pi pi-comments' },
         ]
     },
     {
@@ -181,56 +205,26 @@ export const menu: MenuItem[] = [
         type: 'item',
         expanded: true,
         children: [
-            { label: 'Overview', url: '/chat/overview', icon: 'pi pi-home' },
+            { label: 'Overview', url: '/cmc/overview', icon: 'pi pi-home' },
             {
-                label: '1. Messaging',
-                icon: 'pi pi-send',
-                children: [
-                    { label: 'Conversations', url: '/chat/conversations', icon: 'pi pi-comments' },
-                    { label: 'Composer', url: '/notification/composer', icon: 'pi pi-pencil' },
-                    { label: 'Explorer', url: '/notification/explorer', icon: 'pi pi-list' },
-                ]
-            },
-            {
-                label: '2. Templates',
+                label: 'Templates',
                 icon: 'pi pi-copy',
                 children: [
-                    { label: 'Manage Templates', url: '/chat/templates', icon: 'pi pi-list' },
-                    { label: 'Create Template', url: '/notification/templates/create', icon: 'pi pi-plus' },
+                    { label: 'Templates Explorer', url: '/cmc/explore', icon: 'pi pi-search' },
+                    { label: 'Manage Templates', url: '/cmc/templates', icon: 'pi pi-list' },
                 ]
             },
             {
-                label: '3. Automation',
+                label: 'Automation',
                 icon: 'pi pi-bolt',
                 children: [
-                    { label: 'Workflows', url: '/chat/automation', icon: 'pi pi-directions' },
-                    { label: 'Bot Settings', url: '/chat/bot-settings', icon: 'pi pi-cog' },
-                ]
-            },
-            {
-                label: '4. Channels',
-                icon: 'pi pi-share-alt',
-                children: [
+                    { label: 'Workflows', url: '/cmc/automation', icon: 'pi pi-directions' },
+                    { label: 'Bot Settings', url: '/cmc/bot-settings', icon: 'pi pi-cog' },
                     { label: 'Omni-channel', url: '/retail/omni-channel', icon: 'pi pi-sync' },
+                    { label: 'Telegram', url: '/cmc/telegram-workspace', icon: 'pi pi-telegram' },
+                    { label: 'Facebook', url: '/cmc/workspace', icon: 'pi pi-facebook' },
                 ]
             },
-            {
-                label: '5. Monitoring',
-                icon: 'pi pi-chart-line',
-                children: [
-                    { label: 'Delivery Health', url: '/chat/delivery-health', icon: 'pi pi-heart' },
-                    { label: 'Reliability', url: '/notification/reliability', icon: 'pi pi-shield' },
-                    { label: 'Performance', url: '/notification/scheduling', icon: 'pi pi-clock' },
-                ]
-            },
-            {
-                label: '6. System',
-                icon: 'pi pi-code',
-                children: [
-                    { label: 'Audit Log', url: '/notification/audit', icon: 'pi pi-history' },
-                    { label: 'API Playground', url: '/notification/api', icon: 'pi pi-terminal' },
-                ]
-            }
         ]
     },
 

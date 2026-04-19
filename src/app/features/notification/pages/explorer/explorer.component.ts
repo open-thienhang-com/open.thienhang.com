@@ -86,7 +86,7 @@ export class NotificationExplorerComponent implements OnInit {
   }
 
   onEdit(template: NotificationTemplate): void {
-    this.router.navigate(['/notification/templates/edit', template.code, template.locale, template.channel]);
+    this.router.navigate(['/notification/templates/create'], { queryParams: { code: template.code, locale: template.locale, channel: template.channel, view: 'detail' } });
   }
 
   applySettings(): void {

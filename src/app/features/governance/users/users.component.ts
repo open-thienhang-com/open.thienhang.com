@@ -2,13 +2,11 @@ import { Component, Injector, OnInit, ViewChild } from '@angular/core';
 import { UserComponent } from './user/user.component';
 import { Button } from 'primeng/button';
 import { TableModule } from 'primeng/table';
-import { TitleComponent } from '../../../shared/component/title/title.component';
 import { AppBaseComponent } from '../../../core/base/app-base.component';
 import { GovernanceServices } from '../../../core/services/governance.services';
-import { DataTableComponent } from "../../../shared/component/data-table/data-table.component";
-import { DataTableFilterComponent } from '../../../shared/component/data-table-filter/data-table-filter.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { BadgeModule } from 'primeng/badge';
@@ -83,7 +81,8 @@ export class UsersComponent extends AppBaseComponent implements OnInit {
 
   constructor(
     private injector: Injector,
-    private governanceServices: GovernanceServices
+    private governanceServices: GovernanceServices,
+    private router: Router
   ) {
     super(injector)
   }
@@ -157,13 +156,12 @@ export class UsersComponent extends AppBaseComponent implements OnInit {
   }
 
   viewUser(user: any) {
-    console.log('Viewing user:', user);
-    // Implement user detail view
+    const id = user.kid || user._id || user.id;
+    if (id) this.router.navigate(['/governance/users', id]);
   }
 
   managePermissions(user: any) {
-    console.log('Managing permissions for user:', user);
-    // Implement permissions management
+    this.viewUser(user);
   }
 
   deleteUser(user: any) {

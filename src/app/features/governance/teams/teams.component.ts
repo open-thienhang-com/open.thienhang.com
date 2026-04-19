@@ -1,5 +1,4 @@
-import { Component, Injector, OnInit, ViewChild } from '@angular/core';
-import { TeamComponent } from '../teams/team/team.component';
+import { Component, Injector, OnInit } from '@angular/core';
 import { Button } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { AppBaseComponent } from '../../../core/base/app-base.component';
@@ -20,7 +19,6 @@ import { Router } from '@angular/router';
   imports: [
     CommonModule,
     FormsModule,
-    TeamComponent,
     Button,
     TableModule,
     InputTextModule,
@@ -34,7 +32,6 @@ import { Router } from '@angular/router';
   templateUrl: './teams.component.html',
 })
 export class TeamsComponent extends AppBaseComponent implements OnInit {
-  @ViewChild('teamDetail') teamDetail!: TeamComponent;
 
   teams: any[] = [];
   filteredTeams: any[] = [];
@@ -179,18 +176,16 @@ export class TeamsComponent extends AppBaseComponent implements OnInit {
   }
 
   viewTeam(team: any) {
-    console.log('Viewing team:', team);
-    // Implement team detail view
+    const id = team.kid || team._id || team.id;
+    if (id) this.router.navigate(['/governance/teams', id]);
   }
 
   manageMembers(team: any) {
-    console.log('Managing members for team:', team);
-    // Implement member management
+    this.viewTeam(team);
   }
 
   managePermissions(team: any) {
-    console.log('Managing permissions for team:', team);
-    // Implement permissions management
+    this.viewTeam(team);
   }
 
   deleteTeam(team: any) {
@@ -228,9 +223,9 @@ export class TeamsComponent extends AppBaseComponent implements OnInit {
 
   openTeamModal(team?: any) {
     if (team) {
-      this.teamDetail.edit(team);
+      this.viewTeam(team);
     } else {
-      this.teamDetail.show();
+      this.createTeam();
     }
   }
 }

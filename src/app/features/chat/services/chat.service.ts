@@ -35,7 +35,7 @@ export class ChatService {
 
     // Base URL for chat domain
     private get chatBaseUrl(): string {
-        return `${getApiBase()}/data-mesh/domains/chat`;
+        return `${getApiBase()}/data-mesh/domains/cmc`;
     }
 
     getChatDataProducts(): Observable<ApiResponse<ChatDataProducts>> {
@@ -172,6 +172,10 @@ export class ChatService {
         return this.http.get<ApiResponse<TelegramWebhook>>(`${this.chatBaseUrl}/telegram/webhook/status`);
     }
 
+    setTelegramWebhook(url: string, secretToken?: string): Observable<ApiResponse<TelegramWebhook>> {
+        return this.http.post<ApiResponse<TelegramWebhook>>(`${this.chatBaseUrl}/telegram/webhook/set`, { url, secret_token: secretToken });
+    }
+
     getTelegramBroadcasts(): Observable<ApiResponse<TelegramBroadcast[]>> {
         return this.http.get<ApiResponse<TelegramBroadcast[]>>(`${this.chatBaseUrl}/telegram/broadcasts`);
     }
@@ -235,5 +239,37 @@ export class ChatService {
             ...template,
             id: template.id || template.template_id || template._id
         };
+    }
+
+    private get cmcBaseUrl(): string {
+        return `${getApiBase()}/data-mesh/domains/cmc`;
+    }
+
+    getCmcTelegramTemplates(skip: number = 0, limit: number = 50): Observable<ApiResponse<TelegramTemplate[]>> {
+        const params = new HttpParams()
+            .set('skip', skip.toString())
+            .set('limit', limit.toString());
+        return this.http.get<ApiResponse<TelegramTemplate[]>>(`${this.cmcBaseUrl}/telegram/templates`, { params });
+    }
+
+    getCmcFacebookTemplates(skip: number = 0, limit: number = 50): Observable<ApiResponse<any[]>> {
+        const params = new HttpParams()
+            .set('skip', skip.toString())
+            .set('limit', limit.toString());
+        return this.http.get<ApiResponse<any[]>>(`${this.cmcBaseUrl}/facebook/templates`, { params });
+    }
+
+    getCmcEmailTemplates(skip: number = 0, limit: number = 50): Observable<ApiResponse<any[]>> {
+        const params = new HttpParams()
+            .set('skip', skip.toString())
+            .set('limit', limit.toString());
+        return this.http.get<ApiResponse<any[]>>(`${this.cmcBaseUrl}/email/templates`, { params });
+    }
+
+    getCmcSmsTemplates(skip: number = 0, limit: number = 50): Observable<ApiResponse<any[]>> {
+        const params = new HttpParams()
+            .set('skip', skip.toString())
+            .set('limit', limit.toString());
+        return this.http.get<ApiResponse<any[]>>(`${this.cmcBaseUrl}/sms/templates`, { params });
     }
 }

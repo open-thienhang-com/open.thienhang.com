@@ -126,10 +126,10 @@ export class RolesComponent implements OnInit {
 
   ngOnInit(): void {
     // Initial load is triggered by p-table's onLazyLoad event (fires on mount).
-    // Do NOT call loadRoles() here — that would double-call and cause an infinite
-    // loop when the API errors: loading=false → *ngIf re-mounts table → onLazyLoad → loop.
+    // Do NOT call loadRoles() here — causes infinite loop when API errors.
     this.currentPage = 0;
     this.pageSize = 10;
+    this.loadStats();
   }
 
   loadRoles(): void {
@@ -186,8 +186,16 @@ export class RolesComponent implements OnInit {
   }
 
   loadStats(): void {
-    // Stats will be calculated from the loaded roles
-    this.updateStats();
+    this.governanceServices.getRoleStatistics().subscribe({
+      next: (res) => {
+        const data = (res as any)?.data ?? {};
+        this.stats.totalRoles = data.total ?? data.totalRoles ?? this.totalRecords;
+        this.stats.activeRoles = data.active ?? data.activeRoles ?? this.roles.filter(r => r.is_active !== false).length;
+        this.stats.systemRoles = data.system ?? data.systemRoles ?? this.roles.filter(r => r.type === 'system').length;
+        this.stats.businessRoles = data.business ?? data.businessRoles ?? this.roles.filter(r => r.type === 'business').length;
+      },
+      error: () => this.updateStats()
+    });
   }
 
   updateStats(): void {
@@ -280,7 +288,7 @@ export class RolesComponent implements OnInit {
     const newStatus = !role.is_active;
     const action = newStatus ? 'activate' : 'deactivate';
 
-    this.governanceServices.updateRole(role.kid, { is_active: newStatus }).subscribe({
+    this.governanceServices.updateRole(role.kid, { is_active: newStatus } as any).subscribe({
       next: (response) => {
         if (response.success) {
           role.is_active = newStatus;

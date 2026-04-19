@@ -158,11 +158,11 @@ export class UserService {
       );
   }
 
-  // Change password
+  // Change password — API expects old_password / new_password
   changePassword(currentPassword: string, newPassword: string): Observable<ApiResponse<any>> {
     return this.http.post<any>(`${this.baseUrl}/authentication/change-password`, {
-      currentPassword,
-      newPassword
+      old_password: currentPassword,
+      new_password: newPassword
     })
       .pipe(
         map(response => {

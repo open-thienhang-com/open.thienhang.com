@@ -1,0 +1,124 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="p-4">
+  <!-- Back + Header -->
+  <div class="flex align-items-center gap-3 mb-4">
+    <p-button icon="pi pi-arrow-left" [text]="true" [rounded]="true" (onClick)="goBack()" pTooltip="Back to Tenants"></p-button>
+    <div *ngIf="tenant" class="flex align-items-center gap-3 flex-1">
+      <h2 class="text-2xl font-bold text-900 m-0">{{ tenant.name }}</h2>
+      <p-tag [value]="tenant.status | titlecase" [severity]="getStatusSeverity(tenant.status)"></p-tag>
+    </div>
+    <div *ngIf="loading" class="flex align-items-center gap-2">
+      <p-progressSpinner styleClass="w-2rem h-2rem"></p-progressSpinner>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && tenant">
+    <p-tabView>
+      <!-- Overview Tab -->
+      <p-tabPanel header="Overview" leftIcon="pi pi-info-circle">
+        <p-card>
+          <div class="flex justify-content-end mb-3">
+            <p-button *ngIf="!editMode" label="Edit" icon="pi pi-pencil" severity="secondary" (onClick)="editMode=true"></p-button>
+            <div *ngIf="editMode" class="flex gap-2">
+              <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="cancelEdit()" [disabled]="saving"></p-button>
+              <p-button label="Save" icon="pi pi-check" (onClick)="saveChanges()" [loading]="saving"></p-button>
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="col-12 md:col-6">
+              <div class="flex flex-column gap-1 mb-3">
+                <label class="font-medium text-500 text-sm">Name</label>
+                <input *ngIf="editMode" pInputText [(ngModel)]="editForm.name" class="w-full" />
+                <span *ngIf="!editMode" class="text-900">{{ tenant.name }}</span>
+              </div>
+              <div class="flex flex-column gap-1 mb-3">
+                <label class="font-medium text-500 text-sm">Description</label>
+                <input *ngIf="editMode" pInputText [(ngModel)]="editForm.description" class="w-full" />
+                <span *ngIf="!editMode" class="text-900">{{ tenant.description || '—' }}</span>
+              </div>
+              <div class="flex flex-column gap-1 mb-3">
+                <label class="font-medium text-500 text-sm">Status</label>
+                <p-dropdown *ngIf="editMode" [options]="statusOptions" [(ngModel)]="editForm.status"
+                  optionLabel="label" optionValue="value" styleClass="w-full"></p-dropdown>
+                <p-tag *ngIf="!editMode" [value]="tenant.status | titlecase" [severity]="getStatusSeverity(tenant.status)"></p-tag>
+              </div>
+            </div>
+            <div class="col-12 md:col-6">
+              <div class="flex flex-column gap-1 mb-3">
+                <label class="font-medium text-500 text-sm">Owner</label>
+                <span class="text-900">{{ tenant.owner || '—' }}</span>
+              </div>
+              <div class="flex flex-column gap-1 mb-3">
+                <label class="font-medium text-500 text-sm">Created</label>
+                <span class="text-900">{{ formatDate(tenant.created_at) }}</span>
+              </div>
+              <div class="flex flex-column gap-1 mb-3">
+                <label class="font-medium text-500 text-sm">Last Updated</label>
+                <span class="text-900">{{ formatDate(tenant.updated_at) }}</span>
+              </div>
+            </div>
+          </div>
+        </p-card>
+      </p-tabPanel>
+
+      <!-- Members Tab -->
+      <p-tabPanel header="Members" leftIcon="pi pi-users">
+        <p-card>
+          <div class="flex justify-content-between align-items-center mb-3">
+            <span class="font-semibold">{{ totalMembers }} members</span>
+            <p-button label="Invite Member" icon="pi pi-plus" (onClick)="openInviteDialog()"></p-button>
+          </div>
+
+          <p-table [value]="members" [loading]="membersLoading" responsiveLayout="scroll" styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th style="width:80px">Actions</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-member>
+              <tr>
+                <td>
+                  <div class="font-medium">{{ member.name || member.email || member.user_id || member._id }}</div>
+                  <div class="text-500 text-sm" *ngIf="member.email && member.name">{{ member.email }}</div>
+                </td>
+                <td>{{ member.role || '—' }}</td>
+                <td>
+                  <p-button icon="pi pi-times" [text]="true" [rounded]="true" severity="danger" pTooltip="Remove"
+                    (onClick)="removeMember(member.user_id || member._id, member.name || member.email)"></p-button>
+                </td>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="3" class="text-center py-4 text-500">No members yet</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </p-card>
+      </p-tabPanel>
+    </p-tabView>
+  </div>
+</div>
+
+<!-- Invite Dialog -->
+<p-dialog header="Invite Member" [(visible)]="showInviteDialog" [modal]="true" [style]="{width:'420px'}">
+  <div class="flex flex-column gap-3 pt-2">
+    <div class="flex flex-column gap-1">
+      <label class="font-medium">User ID <span class="text-red-500">*</span></label>
+      <input pInputText [(ngModel)]="inviteData.user_id" placeholder="User TID or ID" />
+    </div>
+    <div class="flex flex-column gap-1">
+      <label class="font-medium">Role</label>
+      <input pInputText [(ngModel)]="inviteData.role" placeholder="e.g. tenant_admin, viewer" />
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="showInviteDialog=false" [disabled]="inviting"></p-button>
+    <p-button label="Invite" icon="pi pi-send" (onClick)="inviteMember()" [loading]="inviting" [disabled]="!inviteData.user_id?.trim()"></p-button>
+  </ng-template>
+</p-dialog>

@@ -247,10 +247,19 @@
               (click)="toggleViewMode()"
               [pTooltip]="viewMode === 'list' ? 'Card View' : 'List View'">
             </p-button>
-            <p-button 
-              icon="pi pi-refresh" 
-              [rounded]="true" 
-              [text]="true" 
+            <p-button
+              [label]="showWithAssets ? 'With Assets' : 'Basic'"
+              icon="pi pi-database"
+              [severity]="showWithAssets ? 'info' : 'secondary'"
+              [outlined]="!showWithAssets"
+              size="small"
+              (click)="toggleAssetsView()"
+              [pTooltip]="showWithAssets ? 'Switch to basic view' : 'Load permissions with asset details'">
+            </p-button>
+            <p-button
+              icon="pi pi-refresh"
+              [rounded]="true"
+              [text]="true"
               severity="secondary"
               (click)="refreshPermissions()"
               pTooltip="Refresh">
@@ -327,14 +336,22 @@
               
               <!-- Assets -->
               <td>
-                <div class="flex items-center gap-2">
-                  <p-tag 
-                    [value]="permission.asset_total || 0" 
-                    severity="info" 
-                    icon="pi pi-database">
-                  </p-tag>
-                  <span class="text-xs text-gray-500">assets</span>
+                <div *ngIf="showWithAssets && permission.assets?.length; else assetCount" class="flex flex-wrap gap-1">
+                  <p-chip *ngFor="let a of permission.assets?.slice(0,3)"
+                    [label]="a.name || a.kid" icon="pi pi-database" styleClass="text-xs"></p-chip>
+                  <p-chip *ngIf="permission.assets?.length > 3"
+                    [label]="'+' + (permission.assets.length - 3)" styleClass="text-xs"></p-chip>
                 </div>
+                <ng-template #assetCount>
+                  <div class="flex items-center gap-2">
+                    <p-tag
+                      [value]="permission.asset_total || 0"
+                      severity="info"
+                      icon="pi pi-database">
+                    </p-tag>
+                    <span class="text-xs text-gray-500">assets</span>
+                  </div>
+                </ng-template>
               </td>
               
               <!-- Status -->
@@ -427,9 +444,15 @@
                 </p-tag>
               </div>
               
-              <div class="flex items-center gap-2" *ngIf="permission.asset_total">
+              <div class="flex items-center gap-2" *ngIf="permission.asset_total || permission.assets?.length">
                 <i class="pi pi-database text-gray-400"></i>
-                <span class="text-sm text-gray-600">{{ permission.asset_total }} assets</span>
+                <span class="text-sm text-gray-600">{{ permission.asset_total || permission.assets?.length || 0 }} assets</span>
+              </div>
+              <div *ngIf="showWithAssets && permission.assets?.length" class="flex flex-wrap gap-1 mt-1">
+                <p-chip *ngFor="let a of permission.assets?.slice(0,3)"
+                  [label]="a.name || a.kid" icon="pi pi-database" styleClass="text-xs"></p-chip>
+                <p-chip *ngIf="permission.assets?.length > 3"
+                  [label]="'+' + (permission.assets.length - 3)" styleClass="text-xs"></p-chip>
               </div>
               
               <div *ngIf="permission.description">

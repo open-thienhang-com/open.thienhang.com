@@ -1,17 +1,19 @@
-﻿<div class="chat-main">
-  <div class="chat-content-wrapper">
-    <div class="chat-content-inner">
+<div class="bg-gray-50 min-h-screen p-6">
+    <div class="w-full max-w-[1600px] mx-auto">
       <ng-container *ngIf="loading">
-        <section class="chat-hero omni-hero">
-          <div class="chat-hero-copy">
-            <div class="chat-hero-badge"><i class="pi pi-share-alt"></i></div>
-            <div>
-              <p class="chat-eyebrow">Omni channel governance</p>
-              <h1 class="chat-title">Unified Support Inbox</h1>
-              <p class="chat-subtitle">Loading workspace data for the shared inbox.</p>
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                <i class="pi pi-share-alt text-white text-xl"></i>
+              </div>
+              <div>
+                <h1 class="text-3xl font-bold text-gray-900">Unified Support Inbox</h1>
+                <p class="text-gray-600">Loading workspace data for the shared inbox...</p>
+              </div>
             </div>
           </div>
-        </section>
+        </div>
 
         <section class="chat-overview-grid">
           <article *ngFor="let item of [1,2,3,4]" class="summary-card">
@@ -26,24 +28,26 @@
       </ng-container>
 
       <ng-container *ngIf="!loading && profile && dashboard && settings">
-        <section class="chat-hero omni-hero">
-          <div class="chat-hero-copy">
-            <div class="chat-hero-badge"><i class="pi pi-share-alt"></i></div>
-            <div>
-              <p class="chat-eyebrow">Omni channel governance</p>
-              <h1 class="chat-title">Unified Support Inbox</h1>
-              <p class="chat-subtitle">One chat UI for every connected channel. This workspace now uses the same live APIs as `/chat`, so queue, detail, reply, and template flows stay consistent.</p>
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                <i class="pi pi-share-alt text-white text-xl"></i>
+              </div>
+              <div>
+                <h1 class="text-3xl font-bold text-gray-900">Unified Support Inbox</h1>
+                <p class="text-gray-600">One chat UI for every connected channel. This workspace uses the live APIs.</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+              <p-button icon="pi pi-chart-bar" label="Overview" severity="secondary" [outlined]="true" [rounded]="true" (onClick)="openOverviewDialog()"></p-button>
+              <p-button icon="pi pi-refresh" label="Refresh" severity="info" [outlined]="true" [rounded]="true" (onClick)="loadWorkspace()"></p-button>
+              <div class="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium border border-blue-100 flex items-center gap-2">
+                 <i class="pi pi-comments"></i> {{ filteredConversations.length }} visible threads
+              </div>
             </div>
           </div>
-          <div class="hero-actions">
-            <button type="button" class="hero-utility-btn" (click)="openOverviewDialog()">
-              <i class="pi pi-chart-bar"></i>
-              <span>Overview</span>
-            </button>
-            <button pButton type="button" icon="pi pi-refresh" label="Refresh" class="p-button-sm p-button-outlined" (click)="loadWorkspace()"></button>
-            <div class="panel-chip omni-chip"><i class="pi pi-comments"></i><span>{{ filteredConversations.length }} visible threads</span></div>
-          </div>
-        </section>
+        </div>
 
         <div class="omni-layout">
           <aside class="queue-column">
@@ -220,7 +224,6 @@
         </div>
       </ng-container>
     </div>
-  </div>
 </div>
 
 <div class="quick-popup-backdrop" *ngIf="filterDialogVisible" (click)="closeFilterDialog()">

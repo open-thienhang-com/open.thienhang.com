@@ -19,7 +19,7 @@ export const chatRoutes: Routes = [
     loadComponent: () => import('./pages/dashboard/chat-dashboard.component').then(m => m.ChatDashboardComponent),
   },
   {
-    path: 'facebook-workspace',
+    path: 'workspace',
     loadComponent: () => import('./pages/facebook-workspace/facebook-workspace.component').then(m => m.FacebookWorkspaceComponent),
   },
   {
@@ -39,7 +39,7 @@ export const chatRoutes: Routes = [
     loadComponent: () => import('./pages/delivery-health/chat-delivery-health.component').then(m => m.ChatDeliveryHealthComponent),
   },
   {
-    path: 'conversations',
+    path: 'explore',
     loadComponent: () => import('./pages/conversations/chat-conversations.component').then(m => m.ChatConversationsComponent),
   },
 

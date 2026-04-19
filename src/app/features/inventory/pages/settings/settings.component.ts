@@ -194,7 +194,7 @@ export class SettingsComponent implements OnInit {
     this.uploadService.uploadImage(file).subscribe({
       next: (resp) => {
         const key = resp.metadata.key;
-        this.profileService.updateProfile({ avatar: key }).subscribe({
+        (this.profileService as any).updateAccount({ image: key }).subscribe({
           next: () => {
             this.uploadingAvatar = false;
             this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Avatar updated' });

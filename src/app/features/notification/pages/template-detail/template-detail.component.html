@@ -9,11 +9,16 @@
                 [outlined]="true" [rounded]="true" severity="secondary" 
                 (click)="onBack()"></button>
         <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100">
-          <i [class]="isEditMode ? 'pi pi-pencil text-white text-xl' : 'pi pi-plus text-white text-xl'"></i>
+          <i [class]="isViewMode ? 'pi pi-eye text-white text-xl' : (isEditMode ? 'pi pi-pencil text-white text-xl' : 'pi pi-plus text-white text-xl')"></i>
         </div>
         <div>
-          <h1 class="text-2xl font-bold text-gray-900">{{isEditMode ? 'Edit Template' : 'Create New Template'}}</h1>
-          <p class="text-gray-500 text-sm">Design and configure multi-channel notification templates with dynamic variables</p>
+          <h1 class="text-2xl font-bold text-gray-900">
+            {{isViewMode ? 'Template Details' : (isEditMode ? 'Edit Template' : 'Create New Template')}}
+          </h1>
+          <p class="text-gray-500 text-sm">
+            <span *ngIf="isViewMode">View template configuration and content</span>
+            <span *ngIf="!isViewMode">Design and configure multi-channel notification templates with dynamic variables</span>
+          </p>
         </div>
       </div>
       
@@ -21,7 +26,10 @@
         <button pButton label="Cancel" icon="pi pi-times" 
                 [outlined]="true" [rounded]="true" severity="secondary" 
                 (click)="onBack()"></button>
-        <button pButton [label]="isEditMode ? 'Update Template' : 'Create Template'" 
+        <button *ngIf="isViewMode" pButton label="Edit Template" icon="pi pi-pencil" 
+                [rounded]="true" severity="primary" class="px-6"
+                (click)="onEdit()"></button>
+        <button *ngIf="!isViewMode" pButton [label]="isEditMode ? 'Update Template' : 'Create Template'" 
                 [icon]="saving ? 'pi pi-spin pi-spinner' : 'pi pi-check'" 
                 [rounded]="true" severity="primary" class="px-6"
                 [disabled]="templateForm.invalid || saving" 
@@ -48,13 +56,13 @@
                 <label for="code" class="text-sm font-bold text-gray-600">Template Code <span class="text-rose-500">*</span></label>
                 <input pInputText id="code" formControlName="code" placeholder="WELCOME_EMAIL" 
                        [class.p-invalid]="templateForm.get('code')?.invalid && templateForm.get('code')?.touched"
-                       class="w-full" />
+                       class="w-full" [readonly]="isViewMode" />
                 <small class="text-gray-400">Unique identifier for this template (A-Z, 0-9, _, -)</small>
               </div>
               <div class="flex flex-col gap-2">
                 <label for="description" class="text-sm font-bold text-gray-600">Description</label>
                 <input pInputText id="description" formControlName="description" placeholder="Sent when user registers" 
-                       class="w-full" />
+                       class="w-full" [readonly]="isViewMode" />
               </div>
             </div>
 
@@ -62,12 +70,12 @@
               <div class="flex flex-col gap-2">
                 <label class="text-sm font-bold text-gray-600">Locale</label>
                 <p-dropdown [options]="locales" formControlName="locale" 
-                           styleClass="w-full" appendTo="body"></p-dropdown>
+                           styleClass="w-full" appendTo="body" [disabled]="isViewMode"></p-dropdown>
               </div>
               <div class="flex flex-col gap-2">
                 <label class="text-sm font-bold text-gray-600">Channel</label>
                 <p-dropdown [options]="channels" formControlName="channel" 
-                           styleClass="w-full" appendTo="body">
+                           styleClass="w-full" appendTo="body" [disabled]="isViewMode">
                   <ng-template pTemplate="selectedItem">
                     <div class="flex items-center gap-2" *ngIf="templateForm.get('channel')?.value">
                       <i [class]="getChannelIcon(templateForm.get('channel')?.value)"></i>
@@ -78,7 +86,7 @@
               </div>
               <div class="flex items-center gap-6 pt-8">
                 <div class="flex items-center gap-2">
-                  <p-checkbox formControlName="is_builtin" [binary]="true"></p-checkbox>
+                  <p-checkbox formControlName="is_builtin" [binary]="true" [disabled]="isViewMode"></p-checkbox>
                   <label class="text-sm font-semibold text-gray-600">System Built-in</label>
                 </div>
               </div>
@@ -99,7 +107,7 @@
             <div class="flex flex-col gap-2" *ngIf="templateForm.get('channel')?.value === 'email' || templateForm.get('channel')?.value === 'webhook'">
               <label for="subject" class="text-sm font-bold text-gray-600">Subject / Header</label>
               <input pInputText id="subject" formControlName="subject" placeholder="Enter email subject" 
-                     class="w-full font-medium" />
+                     class="w-full font-medium" [readonly]="isViewMode" />
             </div>
 
             <div class="flex flex-col gap-2">
@@ -109,7 +117,8 @@
               </div>
               <textarea pInputTextarea id="body" formControlName="body" 
                         [rows]="15" placeholder="Enter your template content here..."
-                        class="w-full font-mono text-sm leading-relaxed border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200"></textarea>
+                        class="w-full font-mono text-sm leading-relaxed border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200"
+                        [readonly]="isViewMode"></textarea>
             </div>
           </div>
         </p-card>
@@ -137,14 +146,14 @@
               <span class="text-[10px] font-bold text-indigo-500 uppercase mb-2">{{variable}}</span>
               <input pInputText [(ngModel)]="previewVariables[variable]" 
                      class="p-inputtext-sm border-0 bg-transparent focus:ring-0 font-mono text-xs p-0" 
-                     placeholder="Enter test value..." />
+                     placeholder="Enter test value..." [readonly]="isViewMode" />
             </div>
           </div>
         </div>
         <div class="p-4 bg-gray-50 border-t border-gray-100">
           <button pButton label="Refresh Preview" icon="pi pi-refresh" 
                   class="w-full" severity="secondary" [outlined]="true"
-                  (click)="onPreview()"></button>
+                  [disabled]="isViewMode" (click)="onPreview()"></button>
         </div>
       </p-card>
 

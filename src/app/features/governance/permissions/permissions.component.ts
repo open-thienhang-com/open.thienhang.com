@@ -60,6 +60,9 @@ export class PermissionsComponent extends AppBaseComponent implements OnInit {
   // View mode
   viewMode: 'list' | 'card' = 'list';
 
+  // Assets view toggle
+  showWithAssets = false;
+
   // Stats
   stats = {
     totalPermissions: 0,
@@ -121,10 +124,12 @@ export class PermissionsComponent extends AppBaseComponent implements OnInit {
     this.isTableLoading = true;
     this.loading = true;
 
-    this.governanceServices.getPermissions({
-      offset: page * this.tableRowsPerPage,
-      size: this.tableRowsPerPage
-    }).subscribe({
+    const params = { offset: page * this.tableRowsPerPage, size: this.tableRowsPerPage };
+    const obs = this.showWithAssets
+      ? this.governanceServices.getPermissionsWithAssets(params)
+      : this.governanceServices.getPermissions(params);
+
+    obs.subscribe({
       next: (res) => {
         this.permissions = res;
         this.updateStats();
@@ -136,13 +141,14 @@ export class PermissionsComponent extends AppBaseComponent implements OnInit {
         this.permissions = { data: [], total: 0 };
         this.isTableLoading = false;
         this.loading = false;
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load permissions'
-        });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load permissions' });
       }
     });
+  }
+
+  toggleAssetsView(): void {
+    this.showWithAssets = !this.showWithAssets;
+    this.getPermissions(0);
   }
 
   updateStats() {

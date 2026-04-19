@@ -287,6 +287,10 @@ export class AuthServices {
     // identify: support various possible keys from backend
     u.identify = u.identify || u.tid || u.id || u.identifier || u.identification || u.user_id || u.userId || '';
 
+    // first_name + last_name preservation (from split of full_name or direct)
+    u.first_name = u.first_name || u.firstName || u.full_name?.split(' ')[0] || '';
+    u.last_name = u.last_name || u.lastName || u.full_name?.split(' ').slice(1).join(' ') || '';
+
     // full_name normalization - build from first_name + last_name if not available
     if (!u.full_name && !u.fullName) {
       if (u.first_name || u.last_name) {

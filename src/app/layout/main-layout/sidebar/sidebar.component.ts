@@ -89,6 +89,11 @@ export class SidebarComponent implements OnInit, OnChanges {
   currentUser = signal<any>(null);
   userFullName = computed(() => {
     const user = this.currentUser();
+    const firstName = user?.first_name || user?.firstName || '';
+    const lastName = user?.last_name || user?.lastName || '';
+    if (firstName || lastName) {
+      return `${firstName} ${lastName}`.trim();
+    }
     return user?.full_name || user?.fullName || user?.name || user?.email?.split('@')[0] || 'User';
   });
   userEmail = computed(() => this.currentUser()?.email || '');
@@ -327,12 +332,18 @@ export class SidebarComponent implements OnInit, OnChanges {
       this.onPresetChange(this.themeState().preset);
     }
 
-    // Do not auto-call /authentication/me here to avoid hard redirects on environments
-    // that don't expose authentication endpoints (e.g. local travel API).
+    // Load user from sessionStorage or fetch from /me API
     try {
       const raw = sessionStorage.getItem('currentUser');
       if (raw) {
         this.currentUser.set(JSON.parse(raw));
+      } else if (this.authServices.isLoggedIn()) {
+        // Fetch from /me if logged in but no session data
+        this.authServices.getCurrentUser().subscribe({
+          next: (res) => {
+            if (res.success) this.currentUser.set(res.data);
+          }
+        });
       }
     } catch (err) {
       console.warn('Failed to restore user from session storage:', err);
@@ -380,13 +391,37 @@ export class SidebarComponent implements OnInit, OnChanges {
         type: 'item',
         expanded: false,
         children: [
-          { label: 'Permissions', url: '/governance/permissions', icon: 'pi pi-key' },
-          { label: 'Teams', url: '/governance/teams', icon: 'pi pi-users' },
-          { label: 'Policies', url: '/governance/policies', icon: 'pi pi-lock' },
-          { label: 'Roles', url: '/governance/roles', icon: 'pi pi-id-card' },
-          { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building' },
-          { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
-          { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' }
+          {
+            label: 'Identity',
+            icon: 'pi pi-id-card',
+            expanded: false,
+            children: [
+              { label: 'Tenants', url: '/governance/tenants', icon: 'pi pi-sitemap' },
+              { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
+              { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building' },
+              { label: 'Teams', url: '/governance/teams', icon: 'pi pi-users' },
+            ]
+          },
+          {
+            label: 'Access Control',
+            icon: 'pi pi-lock',
+            expanded: false,
+            children: [
+              { label: 'Roles', url: '/governance/roles', icon: 'pi pi-tag' },
+              { label: 'Permissions', url: '/governance/permissions', icon: 'pi pi-key' },
+              { label: 'Policies', url: '/governance/policies', icon: 'pi pi-lock' },
+              { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' },
+            ]
+          },
+          {
+            label: 'RBAC & Admin',
+            icon: 'pi pi-cog',
+            expanded: false,
+            children: [
+              { label: 'RBAC Engine', url: '/governance/casbin', icon: 'pi pi-shield' },
+              { label: 'Admin Tools', url: '/governance/admin', icon: 'pi pi-wrench' },
+            ]
+          },
         ]
       },
       // Settings removed from global sidebar to make it a standalone app (top-right selector)
@@ -952,17 +987,22 @@ export class SidebarComponent implements OnInit, OnChanges {
       return;
     }
 
-    // Special-case: for Governance app - render its child menu items directly (no parent header)
+    // Special-case: for Governance app - render sub-groups with section headers
     if (key === 'governance') {
       const governanceGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('governance'));
       if (governanceGroup) {
-        // Promote children into a pseudo-group without header
-        const items: any[] = this.getFlattenedItems((governanceGroup as any).items || []);
-        const pseudo = { label: '', icon: '', expanded: false, _noHeader: true, items } as any;
-        pseudo._flattened = items;
-
-        this.visibleGroups = [pseudo];
-        this.visibleGroups.forEach(g => (g as any)._flattened = (g as any)._flattened || this.getFlattenedItems((g as any).items || []));
+        const subGroups = (governanceGroup as any).items || [];
+        const groups: any[] = subGroups.map((sub: any) => {
+          const sourceItems = sub.children || sub.items || [];
+          return {
+            label: sub.label,
+            icon: sub.icon,
+            expanded: true,
+            items: sourceItems,
+            _flattened: this.getFlattenedItems(sourceItems)
+          };
+        });
+        this.visibleGroups = groups;
         return;
       }
     }
@@ -1225,7 +1265,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       blogger: '/blogger',
       hotel: '/hotel',
       admanager: '/ad-manager',
-      support: '/chat',
+      support: '/cmc/workspace',
       chat: '/chat',
       files: '/files',
       travel: '/travel',

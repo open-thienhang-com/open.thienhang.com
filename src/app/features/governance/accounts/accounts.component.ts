@@ -218,13 +218,11 @@ export class AccountsComponent extends AppBaseComponent implements OnInit {
   }
 
   viewAccount(account: any) {
-    // Implementation for viewing account details
-    console.log('Viewing account:', account);
+    this.accountDetail.view(account);
   }
 
   manageAccess(account: any) {
-    // Implementation for managing account access
-    console.log('Managing access for account:', account);
+    this.accountDetail.view(account);
   }
 
   onPageChange(event: any) {

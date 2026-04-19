@@ -30,8 +30,6 @@ export class MessagingOverviewComponent implements OnInit {
       desc: 'Direct interaction and message lifecycle tracking.',
       links: [
         { label: 'Conversations',   icon: 'pi pi-comments',    route: 'conversations',     desc: 'Active chat queue'        },
-        { label: 'Composer',        icon: 'pi pi-pencil',      route: '/notification/composer', desc: 'Manual blast tool'       },
-        { label: 'Message Explorer',icon: 'pi pi-search',      route: '/notification/explorer', desc: 'Message delivery logs'   },
       ]
     },
     {
@@ -40,7 +38,7 @@ export class MessagingOverviewComponent implements OnInit {
       desc: 'Reusable content for chat and notifications.',
       links: [
         { label: 'Manage Templates',icon: 'pi pi-list',        route: 'templates',         desc: 'Centralized catalog'      },
-        { label: 'Create New',      icon: 'pi pi-plus',        route: '/notification/templates/create', desc: 'New template tool' },
+        { label: 'Create New',      icon: 'pi pi-plus',        route: '/notification/explorer', desc: 'New template tool' },
       ]
     },
     {

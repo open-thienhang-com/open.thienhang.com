@@ -100,7 +100,7 @@ export class ChatTemplatesComponent implements OnInit {
 
   isWorkspaceLinkActive(route: string): boolean {
     if (route === '/chat') {
-      return this.router.url === '/chat' || this.router.url === '/chat/telegram-workspace';
+      return this.router.url === '/cmc' || this.router.url === '/cmc/telegram-workspace';
     }
     return this.router.url === route;
   }

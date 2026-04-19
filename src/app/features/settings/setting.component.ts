@@ -1,5 +1,5 @@
 import { Router } from '@angular/router';
-import { Component, Injector, OnInit } from '@angular/core';
+import { Component, ElementRef, Injector, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { AppBaseComponent } from '../../core/base/app-base.component';
@@ -31,9 +31,13 @@ import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { BadgeModule } from 'primeng/badge';
 import { AccordionModule } from 'primeng/accordion';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { PasswordModule } from 'primeng/password';
+import { DialogModule } from 'primeng/dialog';
 import { UserService } from '../../core/services/user.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { getApiBase } from '../../core/config/api-config';
+import { UploadService } from '../../features/inventory/services/upload.service';
 import { forkJoin } from 'rxjs';
 
 interface UserProfile {
@@ -107,22 +111,28 @@ interface AppearanceSettings {
     TagModule,
     TooltipModule,
     BadgeModule,
-    AccordionModule
-    , ConfirmDialogModule
+    AccordionModule,
+    MultiSelectModule,
+    PasswordModule,
+    DialogModule,
+    ConfirmDialogModule
   ],
   templateUrl: './setting.component.html',
   styleUrls: ['./setting.component.scss'],
   providers: [MessageService, ConfirmationService]
 })
 export class SettingsComponent implements OnInit {
+  @ViewChild('avatarInput') avatarInput!: ElementRef<HTMLInputElement>;
+
   // Non-collapsing sidebar sections for stable two-column layout
   settingSections = [
-    { key: 'profile', label: 'Profile', icon: 'pi pi-user', description: 'Identity, avatar, and active sessions' },
-    { key: 'security', label: 'Security & Password', icon: 'pi pi-lock', description: 'Authentication and access protection' },
-    { key: 'users', label: 'User Management', icon: 'pi pi-users', description: 'Workspace members, roles, and status' },
-    { key: 'data', label: 'Data & Privacy', icon: 'pi pi-database', description: 'Export, retention, and destructive actions' },
-    { key: 'notifications', label: 'Notifications', icon: 'pi pi-bell', description: 'Channels, alerts, and preferences' },
-    { key: 'appearance', label: 'Appearance', icon: 'pi pi-palette', description: 'Theme, layout, and visual behavior' }
+    { key: 'profile',       label: 'Profile',            icon: 'pi pi-user',     description: 'Identity, avatar, and active sessions' },
+    { key: 'security',      label: 'Security',           icon: 'pi pi-lock',     description: 'Password, 2FA, and session management' },
+    { key: 'notifications', label: 'Notifications',      icon: 'pi pi-bell',     description: 'Channels, alerts, and preferences' },
+    { key: 'access',        label: 'Access & Roles',     icon: 'pi pi-shield',   description: 'Your governance roles, permissions and policies' },
+    { key: 'users',         label: 'User Management',    icon: 'pi pi-users',    description: 'Workspace members, roles, and status' },
+    { key: 'appearance',    label: 'Appearance',         icon: 'pi pi-palette',  description: 'Theme, layout, and visual behavior' },
+    { key: 'data',          label: 'Data & Privacy',     icon: 'pi pi-database', description: 'Export, retention, and destructive actions' },
   ];
   activeSection: string = 'profile';
 
@@ -130,27 +140,55 @@ export class SettingsComponent implements OnInit {
   switchSection(sectionKey: string) {
     if (!sectionKey) return;
     this.activeSection = sectionKey;
-    // Keep tab index in sync for any existing deep-links
-    switch (sectionKey) {
-      case 'profile':
-      case 'security':
-      case 'users':
-      case 'data':
-        this.activeTabIndex = 0;
-        break;
-      case 'notifications':
-        this.activeTabIndex = 1;
-        break;
-      case 'appearance':
-        this.activeTabIndex = 2;
-        break;
-      default:
-        this.activeTabIndex = 0;
-    }
-    // If user opened the User Management section, fetch users from API
-    if (sectionKey === 'users') {
-      this.fetchUsersForManagement();
-    }
+    if (sectionKey === 'users') this.fetchUsersForManagement();
+    if (sectionKey === 'access' && !this.myPermissions) this.loadMyPermissions();
+    if (sectionKey === 'notifications' && !this.notifLoaded) this.loadNotificationSettings();
+  }
+
+  // Access & Permissions state
+  myPermissions: any = null;
+  permissionsLoading = false;
+
+  loadMyPermissions(): void {
+    this.permissionsLoading = true;
+    this.profileService.getMyPermissions().subscribe({
+      next: (res) => {
+        this.myPermissions = res?.data ?? res;
+        this.permissionsLoading = false;
+      },
+      error: () => {
+        this.permissionsLoading = false;
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load permissions' });
+      }
+    });
+  }
+
+  // Notification settings loaded from API
+  notifLoaded = false;
+  notifLoading = false;
+
+  loadNotificationSettings(): void {
+    this.notifLoading = true;
+    this.profileService.getNotificationSettings().subscribe({
+      next: (res) => {
+        const data = res?.data ?? res;
+        if (data) {
+          this.notificationSettings = {
+            emailNotifications: data.email_notifications ?? data.emailNotifications ?? this.notificationSettings.emailNotifications,
+            pushNotifications:  data.push_notifications  ?? data.pushNotifications  ?? this.notificationSettings.pushNotifications,
+            smsNotifications:   data.sms_notifications   ?? data.smsNotifications   ?? this.notificationSettings.smsNotifications,
+            marketingEmails:    data.marketing_emails    ?? data.marketingEmails    ?? this.notificationSettings.marketingEmails,
+            securityAlerts:     data.security_alerts     ?? data.securityAlerts     ?? this.notificationSettings.securityAlerts,
+          };
+        }
+        this.notifLoaded = true;
+        this.notifLoading = false;
+      },
+      error: () => {
+        this.notifLoading = false;
+        this.notifLoaded = true; // don't retry on error
+      }
+    });
   }
   profileForm: FormGroup;
   passwordForm: FormGroup;
@@ -397,9 +435,13 @@ export class SettingsComponent implements OnInit {
     { field: 'created_at', header: 'profile.users.joinedDate' }
   ];
 
+  uploadingAvatar = false;
+  avatarPreview: string = '';
+
   constructor(
     private injector: Injector,
     private profileService: ProfileServices,
+    private uploadService: UploadService,
     private http: HttpClient,
     private fb: FormBuilder,
     private messageService: MessageService,
@@ -414,37 +456,19 @@ export class SettingsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadUserProfile();
     this.loadThemeSettings();
+    this.fetchLocalProfile();
     this.loadProfileData();
+    this.loadNotificationSettings();
 
-    // Set active tab based on URL parameter
+    // Handle ?tab= deep-links
     this.route.queryParams.subscribe(params => {
       if (params['tab']) {
-        // After merging Security, Users and Data & Privacy into Profile tab, keep older links working
-        switch (params['tab']) {
-          case 'profile':
-          case 'security':
-          case 'users':
-          case 'data-privacy':
-          case 'data&privacy':
-            this.activeTabIndex = 0;
-            break;
-          case 'notifications':
-            this.activeTabIndex = 1;
-            break;
-          case 'appearance':
-            this.activeTabIndex = 2;
-            break;
-          default:
-            this.activeTabIndex = 0;
-        }
+        const valid = this.settingSections.map(s => s.key);
+        this.activeSection = valid.includes(params['tab']) ? params['tab'] : 'profile';
+        this.switchSection(this.activeSection);
       }
     });
-
-    // Only fetch /authentication/me when this Settings component is active
-    this.fetchLocalProfile();
-
   }
 
   private loadThemeSettings(): void {
@@ -495,55 +519,78 @@ export class SettingsComponent implements OnInit {
     }, 500);
   }
 
+  profileSaving = false;
+
   saveProfile(): void {
-    if (this.profileForm.valid) {
-      const formData = this.profileForm.value;
-      this.profile = { ...this.profile, ...formData };
+    if (!this.profileForm.valid) return;
+    this.profileSaving = true;
+    const { firstName, lastName, department } = this.profileForm.value;
 
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Profile updated successfully'
-      });
-    }
-  }
-
-  changePassword(): void {
-    if (this.passwordForm.valid) {
-      const { newPassword, confirmPassword } = this.passwordForm.value;
-
-      if (newPassword !== confirmPassword) {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Passwords do not match'
-        });
-        return;
+    // PATCH /authentication/me/profile — first_name, last_name, company(=department)
+    this.profileService.updateProfileDetails({
+      first_name: firstName,
+      last_name: lastName,
+      company: department
+    }).subscribe({
+      next: () => {
+        this.profile = { ...this.profile, firstName, lastName, department };
+        this.profileSaving = false;
+        this.messageService.add({ severity: 'success', summary: 'Saved', detail: 'Profile updated successfully' });
+      },
+      error: (err) => {
+        this.profileSaving = false;
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.detail || 'Failed to update profile' });
       }
-
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Password changed successfully'
-      });
-
-      this.passwordForm.reset();
-    }
-  }
-
-  saveSecuritySettings(): void {
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'Security settings updated'
     });
   }
 
+  passwordSaving = false;
+
+  changePassword(): void {
+    if (!this.passwordForm.valid) return;
+    const { currentPassword, newPassword, confirmPassword } = this.passwordForm.value;
+    if (newPassword !== confirmPassword) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Passwords do not match' });
+      return;
+    }
+    this.passwordSaving = true;
+    this.userService.changePassword(currentPassword, newPassword).subscribe({
+      next: () => {
+        this.passwordSaving = false;
+        this.messageService.add({ severity: 'success', summary: 'Password Changed', detail: 'Your password has been updated' });
+        this.passwordForm.reset();
+      },
+      error: (err) => {
+        this.passwordSaving = false;
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.detail || 'Failed to change password' });
+      }
+    });
+  }
+
+  saveSecuritySettings(): void {
+    this.messageService.add({ severity: 'success', summary: 'Saved', detail: 'Security settings updated' });
+  }
+
+  notifSaving = false;
+
   saveNotificationSettings(): void {
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'Notification preferences updated'
+    this.notifSaving = true;
+    const payload = {
+      email_notifications: this.notificationSettings.emailNotifications,
+      push_notifications:  this.notificationSettings.pushNotifications,
+      sms_notifications:   this.notificationSettings.smsNotifications,
+      marketing_emails:    this.notificationSettings.marketingEmails,
+      security_alerts:     this.notificationSettings.securityAlerts,
+    };
+    this.profileService.updateNotificationSettings(payload).subscribe({
+      next: () => {
+        this.notifSaving = false;
+        this.messageService.add({ severity: 'success', summary: 'Saved', detail: 'Notification preferences updated' });
+      },
+      error: (err) => {
+        this.notifSaving = false;
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.detail || 'Failed to save notifications' });
+      }
     });
   }
 
@@ -605,6 +652,19 @@ export class SettingsComponent implements OnInit {
     });
   }
 
+  openPhotoUpload(): void {
+    this.avatarInput?.nativeElement?.click();
+  }
+
+  onFileSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) this.uploadAvatar(file);
+  }
+
+  triggerPreviewUpdate(): void {
+    // forces template re-render when color/style changes
+  }
+
   onAvatarUpload(event: any): void {
     const file: File | undefined = (event && event.files && event.files.length) ? event.files[0] : (event instanceof File ? event : undefined);
     if (!file) {
@@ -626,66 +686,77 @@ export class SettingsComponent implements OnInit {
     }
   }
 
+  signAvatar(key: string): void {
+    if (!key) return;
+    if (key.startsWith('http')) {
+      this.avatarPreview = key;
+      return;
+    }
+    this.uploadService.getSignedUrl(key).subscribe(res => {
+      if (res.success) this.avatarPreview = res.signed_url;
+    });
+  }
+
   private uploadAvatar(file: File): void {
-    const uploadUrl = `${this.localProfileSource}/data-mesh/domains/files/upload/supabase`;
-    const form = new FormData();
-    form.append('file', file, file.name);
-
+    this.uploadingAvatar = true;
     this.messageService.add({ severity: 'info', summary: 'Uploading', detail: file.name });
-
-    this.http.post<any>(uploadUrl, form).subscribe({
-      next: (res) => {
-        // API returns a top-level object with url property
-        const publicUrl = res?.url || res?.data?.url || null;
-        if (publicUrl) {
-          // update avatar in-memory and notify user
-          this.profile.avatar = publicUrl;
-          // If profileForm had an avatar control, patch it; otherwise UI binds to profile.avatar
-          try {
-            if (this.profileForm.contains && this.profileForm.contains('avatar')) {
-              this.profileForm.patchValue({ avatar: publicUrl });
-            }
-          } catch (e) {
-            // ignore if no avatar control
+    this.uploadService.uploadImage(file).subscribe({
+      next: (resp) => {
+        const key = resp.metadata.key;
+        this.profileService.updateAccount({ image: key }).subscribe({
+          next: () => {
+            this.uploadingAvatar = false;
+            this.profile.avatar = key;
+            this.signAvatar(key);
+            this.messageService.add({ severity: 'success', summary: 'Avatar Updated', detail: 'Profile picture saved' });
+          },
+          error: (err) => {
+            this.uploadingAvatar = false;
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.detail || 'Failed to update profile' });
           }
-
-          this.messageService.add({ severity: 'success', summary: 'Uploaded', detail: 'Avatar updated' });
-        } else {
-          console.warn('Upload response missing url:', res);
-          this.messageService.add({ severity: 'warn', summary: 'Upload finished', detail: 'Upload completed but no URL returned' });
-        }
+        });
       },
       error: (err) => {
-        console.error('Avatar upload failed:', err);
-        this.messageService.add({ severity: 'error', summary: 'Upload failed', detail: 'Failed to upload avatar' });
+        this.uploadingAvatar = false;
+        this.messageService.add({ severity: 'error', summary: 'Upload failed', detail: err?.error?.detail || 'Failed to upload avatar' });
       }
     });
   }
 
   exportData(): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Export Started',
-      detail: 'Your data export will be ready shortly'
+    // Fetch current profile data and export as JSON
+    this.profileService.getProfile().subscribe({
+      next: (res) => {
+        const data = res?.data ?? res;
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'my-profile-data.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        this.messageService.add({ severity: 'success', summary: 'Exported', detail: 'Profile data downloaded' });
+      },
+      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to export data' })
     });
   }
 
   deleteAccount(): void {
     this.confirmationService.confirm({
-      header: 'Confirm Account Deletion',
-      message: 'Are you sure you want to delete your account? This action cannot be undone.',
+      header: 'Delete Account',
+      message: 'This will permanently delete your account and all associated data. This cannot be undone.',
       icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
-        // accepted -> perform deletion request (currently a placeholder)
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'Account Deletion',
-          detail: 'Account deletion request submitted'
+        this.profileService.deleteAccount().subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'warn', summary: 'Account Deleted', detail: 'Your account has been deleted' });
+            setTimeout(() => this.router.navigate(['/login']), 2000);
+          },
+          error: (err) => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.detail || 'Failed to delete account' });
+          }
         });
-      },
-      reject: () => {
-        // user rejected -> optional feedback
-        this.messageService.add({ severity: 'info', summary: 'Cancelled', detail: 'Account deletion cancelled' });
       }
     });
   }
@@ -755,66 +826,77 @@ export class SettingsComponent implements OnInit {
   // --- Local profile & session helpers ---
   fetchLocalProfile() {
     this.localLoading = true;
-    const url = `${this.localProfileSource}/authentication/me`;
-    this.http.get<any>(url).subscribe({
-      next: (res) => {
+    this.profileService.getProfile().subscribe({
+      next: (res: any) => {
         this.localLoading = false;
-        const apiProfile = res?.data || null;
-        if (!apiProfile) {
-          this.messageService.add({ severity: 'warn', summary: 'No profile', detail: 'Local API returned no profile data' });
-          return;
-        }
+        const apiProfile: any = res?.data ?? res;
+        if (!apiProfile) return;
 
-        // helper that converts null/empty/undefined to 'No Information'
-        const normalize = (v: any) => {
-          if (v === null || v === undefined) return 'No Information';
-          if (typeof v === 'string' && v.trim() === '') return 'No Information';
-          return v;
-        };
-
-        // Update the in-memory profile so header and cards reflect API values
-        // Determine avatar: prefer API value when non-empty, otherwise use default
+        const norm = (v: any) => (v === null || v === undefined || v === '') ? '' : v;
         const defaultAvatar = '/assets/images/avatar.jpg';
-        const avatarUrl = (apiProfile.image && typeof apiProfile.image === 'string' && apiProfile.image.trim() !== '') ? apiProfile.image : defaultAvatar;
+        const avatarUrl = apiProfile.image?.trim() || defaultAvatar;
+
+        const firstName = norm(apiProfile.first_name) || norm(apiProfile.full_name)?.split(' ')[0] || '';
+        const lastName  = norm(apiProfile.last_name)  || norm(apiProfile.full_name)?.split(' ').slice(1).join(' ') || '';
 
         this.profile = {
-          firstName: normalize(apiProfile.first_name) === 'No Information' && apiProfile.full_name ? apiProfile.full_name : normalize(apiProfile.first_name),
-          lastName: normalize(apiProfile.last_name) === 'No Information' && apiProfile.full_name ? '' : normalize(apiProfile.last_name),
-          email: normalize(apiProfile.email),
-          phone: normalize(apiProfile.phone),
-          department: normalize(apiProfile.department),
-          role: normalize(apiProfile.job_title || apiProfile.role),
-          avatar: avatarUrl,
-          timezone: normalize(apiProfile.timezone),
-          language: normalize(apiProfile.language || this.profile.language)
+          ...this.profile,
+          firstName,
+          lastName,
+          email:      norm(apiProfile.email),
+          phone:      norm(apiProfile.phone),
+          department: norm(apiProfile.department),
+          role:       norm(apiProfile.job_title || apiProfile.role),
+          avatar:     avatarUrl,
+          timezone:   norm(apiProfile.timezone),
+          language:   norm(apiProfile.language) || this.profile.language,
         } as any;
 
-        // Patch form controls with normalized values (use No Information for missing)
+        if (avatarUrl && avatarUrl !== defaultAvatar) {
+          this.signAvatar(avatarUrl);
+        }
+
         this.profileForm.patchValue({
-          firstName: this.profile.firstName || 'No Information',
-          lastName: this.profile.lastName || 'No Information',
-          email: this.profile.email || 'No Information',
-          phone: this.profile.phone || 'No Information',
-          department: this.profile.department || 'No Information',
-          role: this.profile.role || 'No Information',
-          timezone: this.profile.timezone || 'No Information',
-          language: this.profile.language || 'No Information'
+          firstName:  firstName,
+          lastName:   lastName,
+          email:      this.profile.email,
+          phone:      this.profile.phone,
+          department: this.profile.department,
+          role:       this.profile.role,
+          timezone:   this.profile.timezone,
+          language:   this.profile.language,
         });
 
-        this.sessions = Array.isArray(apiProfile.sessions) ? apiProfile.sessions.map((s: any, i: number) => ({
-          kid: s.kid || `No Information-${i}`,
-          session: s.session || 'No Information',
-          device: s.device || 'No Information',
-          remaining_seconds: (s.remaining_seconds === null || s.remaining_seconds === undefined) ? 0 : s.remaining_seconds
-        })) : [];
-
-        this.messageService.add({ severity: 'success', summary: 'Local profile loaded', detail: `Loaded ${this.sessions.length} sessions` });
+        // Sessions come from AccountInfo.sessions array
+        if (Array.isArray(apiProfile.sessions)) {
+          this.sessions = apiProfile.sessions.map((s: any, i: number) => ({
+            kid:               s.kid || `session-${i}`,
+            session:           s.session || '',
+            device:            s.device || 'Unknown device',
+            remaining_seconds: s.remaining_seconds ?? 0,
+          }));
+        }
       },
       error: (err) => {
         this.localLoading = false;
-        console.error('Error fetching local profile:', err);
-        this.messageService.add({ severity: 'error', summary: 'API error', detail: `Failed to call ${url}` });
+        console.error('Error fetching profile:', err);
       }
+    });
+  }
+
+  refreshSessions(): void {
+    this.localLoading = true;
+    this.profileService.getSessions().subscribe({
+      next: (res) => {
+        const data = res?.data ?? res;
+        if (Array.isArray(data?.sessions)) {
+          this.sessions = data.sessions.map((s: any, i: number) => ({
+            kid: s.kid || `s-${i}`, session: s.session || '', device: s.device || 'Unknown', remaining_seconds: s.remaining_seconds ?? 0
+          }));
+        }
+        this.localLoading = false;
+      },
+      error: () => { this.localLoading = false; }
     });
   }
 
@@ -834,32 +916,32 @@ export class SettingsComponent implements OnInit {
   }
 
   revokeSession(sessionId: string) {
-    if (!confirm('Are you sure you want to revoke this session?')) return;
-    const url = `${this.localProfileSource}/authentication/sessions/${sessionId}`;
-    this.http.delete<any>(url).subscribe({
+    this.profileService.revokeSession(sessionId).subscribe({
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Session revoked', detail: this.maskSession(sessionId) });
-        this.sessions = this.sessions.filter(s => s.session !== sessionId);
+        this.sessions = this.sessions.filter(s => s.session !== sessionId && s.kid !== sessionId);
       },
       error: (err) => {
-        console.error('Error revoking session:', err);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to revoke session' });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.detail || 'Failed to revoke session' });
       }
     });
   }
 
-  revokeOtherSessions(keepSessionId?: string) {
-    if (!confirm('Revoke all other sessions?')) return;
-    const url = `${this.localProfileSource}/authentication/sessions/revoke-others`;
-    this.http.post<any>(url, { keep: keepSessionId || null }).subscribe({
-      next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Other sessions revoked', detail: 'All other sessions removed' });
-        if (keepSessionId) this.sessions = this.sessions.filter(s => s.session === keepSessionId);
-        else this.sessions = [];
-      },
-      error: (err) => {
-        console.error('Error revoking other sessions:', err);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to revoke other sessions' });
+  revokeOtherSessions() {
+    this.confirmationService.confirm({
+      header: 'Revoke All Other Sessions',
+      message: 'This will sign out all other devices. Continue?',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.profileService.revokeAllSessions().subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Done', detail: 'All other sessions revoked' });
+            this.sessions = this.sessions.slice(0, 1); // keep current
+          },
+          error: (err) => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.detail || 'Failed to revoke sessions' });
+          }
+        });
       }
     });
   }

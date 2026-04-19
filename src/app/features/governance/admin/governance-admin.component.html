@@ -1,0 +1,102 @@
+<p-toast></p-toast>
+
+<div class="p-4">
+  <div class="mb-4">
+    <h2 class="text-2xl font-bold text-900 m-0">Governance Admin Tools</h2>
+    <p class="text-500 mt-1 mb-0">Initialize and synchronize governance data. All operations are idempotent.</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- 1. Init Permissions -->
+    <div class="col-12 md:col-4">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="flex align-items-center gap-2 p-3 pb-0">
+            <i class="pi pi-key text-2xl text-primary"></i>
+            <span class="text-lg font-semibold">Auto-generate Permissions</span>
+          </div>
+        </ng-template>
+        <p class="text-500 text-sm mb-3">Scans FastAPI routes and upserts Permission documents + Casbin policies. Safe to run multiple times.</p>
+
+        <div class="flex flex-column gap-3">
+          <div class="flex flex-column gap-1">
+            <label class="font-medium text-sm">Tenant ID (optional)</label>
+            <input pInputText [(ngModel)]="permTenantId" placeholder="Leave empty for global" />
+          </div>
+          <div class="flex align-items-center gap-2">
+            <p-inputSwitch [(ngModel)]="permDryRun"></p-inputSwitch>
+            <label class="font-medium text-sm">Dry Run (preview only)</label>
+          </div>
+          <p-button [label]="permDryRun ? 'Preview' : 'Run'" icon="pi pi-play" [loading]="permRunning"
+            (onClick)="initPermissions()" styleClass="w-full"></p-button>
+        </div>
+
+        <div *ngIf="permResult" class="mt-3">
+          <p-divider></p-divider>
+          <pre class="surface-100 border-round p-2 text-xs overflow-auto" style="max-height:150px">{{ permResult | json }}</pre>
+        </div>
+      </p-card>
+    </div>
+
+    <!-- 2. Init Roles -->
+    <div class="col-12 md:col-4">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="flex align-items-center gap-2 p-3 pb-0">
+            <i class="pi pi-users text-2xl text-orange-500"></i>
+            <span class="text-lg font-semibold">Initialize Default Roles</span>
+          </div>
+        </ng-template>
+        <p class="text-500 text-sm mb-3">Creates default system roles (tenant_admin, editor, viewer) and registers Casbin grouping policies.</p>
+
+        <div class="flex flex-column gap-3">
+          <div class="flex flex-column gap-1">
+            <label class="font-medium text-sm">Tenant ID (optional)</label>
+            <input pInputText [(ngModel)]="rolesTenantId" placeholder="Leave empty for global" />
+          </div>
+          <div class="flex flex-column gap-1">
+            <label class="font-medium text-sm">Custom Role Names (optional)</label>
+            <p-chips [(ngModel)]="rolesNames" placeholder="Press Enter to add" styleClass="w-full"></p-chips>
+            <span class="text-500 text-xs">Leave empty to use defaults: tenant_admin, editor, viewer</span>
+          </div>
+          <p-button label="Initialize" icon="pi pi-play" [loading]="rolesRunning"
+            (onClick)="initRoles()" styleClass="w-full"></p-button>
+        </div>
+
+        <div *ngIf="rolesResult" class="mt-3">
+          <p-divider></p-divider>
+          <pre class="surface-100 border-round p-2 text-xs overflow-auto" style="max-height:150px">{{ rolesResult | json }}</pre>
+        </div>
+      </p-card>
+    </div>
+
+    <!-- 3. Casbin Sync -->
+    <div class="col-12 md:col-4">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="flex align-items-center gap-2 p-3 pb-0">
+            <i class="pi pi-sync text-2xl text-green-500"></i>
+            <span class="text-lg font-semibold">Sync Casbin Policies</span>
+          </div>
+        </ng-template>
+        <p class="text-500 text-sm mb-3">Re-syncs all Casbin policies from MongoDB roles/permissions data. Use after manual DB edits.</p>
+
+        <div class="flex flex-column gap-3">
+          <div class="surface-50 border-round p-3 text-sm text-500">
+            <i class="pi pi-info-circle mr-1"></i>
+            This operation reads all roles and permissions from MongoDB and rebuilds the Casbin enforcer in-memory. Idempotent.
+          </div>
+          <p-button label="Sync Now" icon="pi pi-sync" severity="success" [loading]="syncRunning"
+            (onClick)="syncCasbin()" styleClass="w-full"></p-button>
+        </div>
+
+        <div *ngIf="syncResult" class="mt-3">
+          <p-divider></p-divider>
+          <pre class="surface-100 border-round p-2 text-xs overflow-auto" style="max-height:150px">{{ syncResult | json }}</pre>
+        </div>
+      </p-card>
+    </div>
+
+  </div>
+</div>

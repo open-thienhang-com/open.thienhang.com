@@ -1,0 +1,118 @@
+<p-toast></p-toast>
+
+<div class="p-4">
+  <div class="flex align-items-center gap-3 mb-4">
+    <p-button icon="pi pi-arrow-left" [text]="true" [rounded]="true" (onClick)="goBack()" pTooltip="Back to Users"></p-button>
+    <div *ngIf="user" class="flex align-items-center gap-3 flex-1">
+      <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 border-round-xl flex align-items-center justify-content-center surface-overlay">
+        <i class="pi pi-user text-white"></i>
+      </div>
+      <div>
+        <h2 class="text-2xl font-bold text-900 m-0">{{ getUserName() }}</h2>
+        <span class="text-500 text-sm">{{ user.email }}</span>
+      </div>
+      <p-tag *ngIf="user.status" [value]="user.status | titlecase" [severity]="getStatusSeverity(user.status)"></p-tag>
+      <p-tag *ngIf="user.is_verified" value="Verified" severity="success" icon="pi pi-check"></p-tag>
+    </div>
+    <p-progressSpinner *ngIf="loading" styleClass="w-2rem h-2rem"></p-progressSpinner>
+  </div>
+
+  <div *ngIf="!loading && user">
+    <div class="grid">
+      <!-- Profile Card -->
+      <div class="col-12 md:col-6">
+        <p-card header="Profile">
+          <div class="flex justify-content-end mb-3">
+            <p-button *ngIf="!editMode" label="Edit" icon="pi pi-pencil" severity="secondary" (onClick)="editMode=true"></p-button>
+            <div *ngIf="editMode" class="flex gap-2">
+              <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="cancelEdit()" [disabled]="saving"></p-button>
+              <p-button label="Save" icon="pi pi-check" (onClick)="saveChanges()" [loading]="saving"></p-button>
+            </div>
+          </div>
+
+          <div class="flex flex-column gap-3">
+            <div class="flex flex-column gap-1">
+              <label class="font-medium text-500 text-sm">First Name</label>
+              <input *ngIf="editMode" pInputText [(ngModel)]="editForm.first_name" class="w-full" />
+              <span *ngIf="!editMode" class="text-900">{{ user.first_name || '—' }}</span>
+            </div>
+            <div class="flex flex-column gap-1">
+              <label class="font-medium text-500 text-sm">Last Name</label>
+              <input *ngIf="editMode" pInputText [(ngModel)]="editForm.last_name" class="w-full" />
+              <span *ngIf="!editMode" class="text-900">{{ user.last_name || '—' }}</span>
+            </div>
+            <div class="flex flex-column gap-1">
+              <label class="font-medium text-500 text-sm">Email</label>
+              <input *ngIf="editMode" pInputText [(ngModel)]="editForm.email" type="email" class="w-full" />
+              <span *ngIf="!editMode" class="text-900">{{ user.email }}</span>
+            </div>
+            <div class="flex flex-column gap-1">
+              <label class="font-medium text-500 text-sm">Role</label>
+              <input *ngIf="editMode" pInputText [(ngModel)]="editForm.role" class="w-full" />
+              <span *ngIf="!editMode" class="text-900">{{ user.role || '—' }}</span>
+            </div>
+            <div class="flex flex-column gap-1">
+              <label class="font-medium text-500 text-sm">Status</label>
+              <input *ngIf="editMode" pInputText [(ngModel)]="editForm.status" class="w-full" />
+              <p-tag *ngIf="!editMode" [value]="(user.status || 'active') | titlecase" [severity]="getStatusSeverity(user.status)"></p-tag>
+            </div>
+          </div>
+        </p-card>
+      </div>
+
+      <!-- Access Info Card -->
+      <div class="col-12 md:col-6">
+        <p-card header="Access & Governance">
+          <div class="flex flex-column gap-4">
+            <div>
+              <label class="font-medium text-500 text-sm block mb-2">Teams</label>
+              <div *ngIf="user.teams?.length; else noTeams" class="flex gap-2 flex-wrap">
+                <p-chip *ngFor="let t of user.teams" [label]="t.name || t" icon="pi pi-users"></p-chip>
+              </div>
+              <ng-template #noTeams><span class="text-500 text-sm">No teams</span></ng-template>
+            </div>
+
+            <p-divider></p-divider>
+
+            <div>
+              <label class="font-medium text-500 text-sm block mb-2">Governance Roles</label>
+              <div *ngIf="user.governance?.roles?.length; else noRoles" class="flex gap-2 flex-wrap">
+                <p-chip *ngFor="let r of user.governance.roles" [label]="r" icon="pi pi-shield"></p-chip>
+              </div>
+              <ng-template #noRoles><span class="text-500 text-sm">No roles assigned</span></ng-template>
+            </div>
+
+            <p-divider></p-divider>
+
+            <div>
+              <label class="font-medium text-500 text-sm block mb-2">Policies</label>
+              <div *ngIf="user.governance?.policies?.length; else noPolicies" class="flex gap-2 flex-wrap">
+                <p-chip *ngFor="let p of user.governance.policies" [label]="p" icon="pi pi-lock"></p-chip>
+              </div>
+              <ng-template #noPolicies><span class="text-500 text-sm">No policies</span></ng-template>
+            </div>
+
+            <p-divider></p-divider>
+
+            <div class="grid text-sm">
+              <div class="col-6">
+                <span class="text-500">User ID:</span>
+                <span class="ml-2 text-900 font-mono text-xs">{{ user.kid || user._id || '—' }}</span>
+              </div>
+              <div class="col-6">
+                <span class="text-500">Verified:</span>
+                <i class="ml-2" [class]="user.is_verified ? 'pi pi-check text-green-500' : 'pi pi-times text-red-400'"></i>
+              </div>
+            </div>
+          </div>
+        </p-card>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && !user" class="text-center py-8">
+    <i class="pi pi-exclamation-circle text-4xl text-500 mb-3 block"></i>
+    <p class="text-500">User not found.</p>
+    <p-button label="Back to Users" icon="pi pi-arrow-left" severity="secondary" (onClick)="goBack()"></p-button>
+  </div>
+</div>

@@ -117,6 +117,26 @@ export const routes: Routes = [
         loadComponent: () => import('./features/governance/permissions/permissions.component').then(m => m.PermissionsComponent),
       },
       {
+        path: 'governance/tenants',
+        loadComponent: () => import('./features/governance/tenants/tenants.component').then(m => m.TenantsComponent),
+      },
+      {
+        path: 'governance/tenants/:kid',
+        loadComponent: () => import('./features/governance/tenants/tenant-detail/tenant-detail.component').then(m => m.TenantDetailComponent),
+      },
+      {
+        path: 'governance/teams/:id',
+        loadComponent: () => import('./features/governance/teams/team-detail/team-detail.component').then(m => m.TeamDetailComponent),
+      },
+      {
+        path: 'governance/casbin',
+        loadComponent: () => import('./features/governance/casbin/casbin.component').then(m => m.CasbinComponent),
+      },
+      {
+        path: 'governance/admin',
+        loadComponent: () => import('./features/governance/admin/governance-admin.component').then(m => m.GovernanceAdminComponent),
+      },
+      {
         path: 'blogger',
         children: [
           {
@@ -148,7 +168,7 @@ export const routes: Routes = [
         ]
       },
       {
-        path: 'chat',
+        path: 'cmc',
         children: chatRoutes
       },
       {

@@ -83,9 +83,17 @@ export class NotificationTemplateDetailComponent implements OnInit {
     });
   }
 
+  isViewMode = false;
+
   ngOnInit(): void {
     const params = this.route.snapshot.params;
-    if (params['code'] && params['locale'] && params['channel']) {
+    const queryParams = this.route.snapshot.queryParams;
+
+    if (queryParams['view'] === 'detail') {
+      this.isViewMode = true;
+      this.isEditMode = true;
+      this.loadTemplate(queryParams['code'], queryParams['locale'], queryParams['channel']);
+    } else if (params['code'] && params['locale'] && params['channel']) {
       this.isEditMode = true;
       this.loadTemplate(params['code'], params['locale'], params['channel']);
     }
@@ -228,6 +236,13 @@ export class NotificationTemplateDetailComponent implements OnInit {
   getSafeHtml(html: string): SafeHtml {
     if (!html) return '';
     return this.sanitizer.bypassSecurityTrustHtml(html);
+  }
+
+  onEdit(): void {
+    const code = this.templateForm.get('code')?.value;
+    const locale = this.templateForm.get('locale')?.value;
+    const channel = this.templateForm.get('channel')?.value;
+    this.router.navigate(['/notification/templates/edit', code, locale, channel]);
   }
 
   onBack(): void {
