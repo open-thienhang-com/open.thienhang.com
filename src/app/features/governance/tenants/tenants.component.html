@@ -1,123 +1,385 @@
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>
 
-<div class="p-4">
-  <!-- Header -->
-  <div class="flex align-items-center justify-content-between mb-4">
-    <div>
-      <h2 class="text-2xl font-bold text-900 m-0">Tenants</h2>
-      <p class="text-500 mt-1 mb-0">Manage multi-tenant isolation and membership</p>
+<div class="bg-gray-50 min-h-screen p-6">
+    
+    <!-- Header Section -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+            <i class="pi pi-building text-white text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">Tenants Management</h1>
+            <p class="text-gray-600">Manage multi-tenant isolation, plans and membership</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+          <p-button 
+            icon="pi pi-refresh" 
+            severity="info" 
+            [outlined]="true"
+            [rounded]="true"
+            (click)="refreshTenants()"
+            pTooltip="Refresh Data"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <p-button 
+            icon="pi pi-filter" 
+            severity="secondary"
+            [outlined]="!showFilters"
+            [rounded]="true"
+            (click)="toggleFilters()"
+            pTooltip="Toggle Filters"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <p-button 
+            icon="pi pi-list" 
+            severity="secondary"
+            [outlined]="viewMode !== 'list'"
+            [rounded]="true"
+            (click)="setViewMode('list')"
+            pTooltip="List View"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <p-button 
+            icon="pi pi-th-large" 
+            severity="secondary"
+            [outlined]="viewMode !== 'card'"
+            [rounded]="true"
+            (click)="setViewMode('card')"
+            pTooltip="Card View"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <p-button 
+            label="New Tenant" 
+            icon="pi pi-plus" 
+            severity="primary"
+            size="small"
+            (click)="openCreateDialog()"
+            class="sm:hidden">
+          </p-button>
+          <p-button 
+            icon="pi pi-plus" 
+            severity="primary"
+            [rounded]="true"
+            (click)="openCreateDialog()"
+            pTooltip="New Tenant"
+            class="hidden sm:inline-flex">
+          </p-button>
+        </div>
+      </div>
     </div>
-    <p-button label="New Tenant" icon="pi pi-plus" (onClick)="openCreateDialog()"></p-button>
-  </div>
 
-  <!-- Stats -->
-  <div class="grid mb-4">
-    <div class="col-12 md:col-3">
-      <p-card styleClass="text-center">
-        <div class="text-3xl font-bold text-primary">{{ stats.total }}</div>
-        <div class="text-500 mt-1">Total</div>
-      </p-card>
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Total Tenants</p>
+            <p class="text-3xl font-bold text-gray-900">{{ stats.total || 0 }}</p>
+          </div>
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-building text-blue-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Active</p>
+            <p class="text-3xl font-bold text-green-600">{{ stats.active || 0 }}</p>
+          </div>
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-check-circle text-green-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Trial</p>
+            <p class="text-3xl font-bold text-orange-600">{{ stats.trial || 0 }}</p>
+          </div>
+          <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-clock text-orange-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Suspended</p>
+            <p class="text-3xl font-bold text-red-600">{{ stats.suspended || 0 }}</p>
+          </div>
+          <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-ban text-red-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="col-12 md:col-3">
-      <p-card styleClass="text-center">
-        <div class="text-3xl font-bold text-green-500">{{ stats.active }}</div>
-        <div class="text-500 mt-1">Active</div>
-      </p-card>
-    </div>
-    <div class="col-12 md:col-3">
-      <p-card styleClass="text-center">
-        <div class="text-3xl font-bold text-orange-500">{{ stats.trial }}</div>
-        <div class="text-500 mt-1">Trial</div>
-      </p-card>
-    </div>
-    <div class="col-12 md:col-3">
-      <p-card styleClass="text-center">
-        <div class="text-3xl font-bold text-red-500">{{ stats.suspended }}</div>
-        <div class="text-500 mt-1">Suspended</div>
-      </p-card>
-    </div>
-  </div>
 
-  <!-- Filters -->
-  <p-card styleClass="mb-3">
-    <div class="flex gap-3 align-items-center flex-wrap">
-      <span class="p-input-icon-left flex-1" style="min-width:200px">
-        <i class="pi pi-search"></i>
-        <input pInputText type="text" [(ngModel)]="searchTerm" placeholder="Search tenants..." (keyup.enter)="onSearch()" class="w-full" />
-      </span>
-      <p-dropdown [options]="statusOptions" [(ngModel)]="selectedStatus" optionLabel="label" optionValue="value"
-        placeholder="All Status" (onChange)="onStatusFilter()" styleClass="w-10rem"></p-dropdown>
-      <p-button icon="pi pi-refresh" severity="secondary" [text]="true" pTooltip="Refresh" (onClick)="loadTenants()"></p-button>
-    </div>
-  </p-card>
+    <!-- Filters Section -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6" *ngIf="showFilters">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="flex flex-col gap-2">
+          <label for="search" class="text-sm font-medium text-gray-700">Search</label>
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-search"></i>
+            <input 
+              id="search"
+              type="text" 
+              pInputText 
+              placeholder="Search tenants..." 
+              [(ngModel)]="searchTerm"
+              (keyup.enter)="onSearch()"
+              class="w-full" />
+          </span>
+        </div>
+        
+        <div class="flex flex-col gap-2">
+          <label for="status" class="text-sm font-medium text-gray-700">Status</label>
+          <p-dropdown 
+            id="status"
+            [options]="statusOptions" 
+            [(ngModel)]="selectedStatus" 
+            optionLabel="label"
+            optionValue="value"
+            placeholder="All Status"
+            [showClear]="true"
+            (onChange)="onStatusFilter()"
+            class="w-full">
+          </p-dropdown>
+        </div>
 
-  <!-- Table -->
-  <p-card>
-    <p-table [value]="tenants" [loading]="loading" responsiveLayout="scroll"
-      [rowHover]="true" styleClass="p-datatable-sm">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Name</th>
-          <th>Status</th>
-          <th>Owner</th>
-          <th>Created</th>
-          <th style="width:120px">Actions</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-tenant>
-        <tr>
-          <td>
-            <div class="font-semibold text-900 cursor-pointer hover:text-primary" (click)="viewTenant(tenant)">
-              {{ tenant.name }}
+        <div></div>
+        <div></div>
+      </div>
+
+      <!-- Filter Actions -->
+      <div class="flex items-center gap-3 mt-4">
+        <p-button 
+          label="Apply" 
+          icon="pi pi-check"
+          severity="primary"
+          (click)="applyFilters()">
+        </p-button>
+        <p-button 
+          label="Clear" 
+          icon="pi pi-times"
+          severity="secondary"
+          [outlined]="true"
+          (click)="clearFilters()">
+        </p-button>
+      </div>
+    </div>
+
+    <!-- List View -->
+    <div *ngIf="viewMode === 'list'" class="bg-white rounded-lg shadow-sm">
+      <p-table 
+        [value]="tenants" 
+        [loading]="loading"
+        [tableStyle]="{ 'min-width': '50rem' }"
+        styleClass="p-datatable-gridlines">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Tenant Name</th>
+            <th>Slug</th>
+            <th>Plan</th>
+            <th>Status</th>
+            <th class="text-center">Members</th>
+            <th>Created</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-tenant>
+          <tr>
+            <td>
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-building text-white"></i>
+                </div>
+                <div>
+                  <div class="font-semibold text-gray-900 cursor-pointer hover:text-blue-600" (click)="viewTenant(tenant)">{{ tenant.name }}</div>
+                  <div class="text-sm text-gray-500">{{ tenant.description | slice:0:50 }}{{ tenant.description?.length > 50 ? '...' : '' }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="text-sm font-mono text-gray-600">{{ tenant.slug }}</span>
+            </td>
+            <td>
+              <p-badge 
+                [value]="tenant.plan || 'Free'" 
+                severity="info">
+              </p-badge>
+            </td>
+            <td>
+              <p-badge 
+                [value]="tenant.status | titlecase" 
+                [severity]="getStatusSeverity(tenant.status)">
+              </p-badge>
+            </td>
+            <td class="text-center">
+              <span class="text-sm text-gray-600 font-medium">{{ tenant.member_count || 0 }}</span>
+            </td>
+            <td>
+              <span class="text-sm text-gray-600">{{ formatDate(tenant.created_at) }}</span>
+            </td>
+            <td>
+              <div class="flex items-center justify-center gap-1">
+                <p-button 
+                  icon="pi pi-eye" 
+                  [rounded]="true" 
+                  [text]="true" 
+                  severity="info" 
+                  size="small"
+                  (click)="viewTenant(tenant)"
+                  pTooltip="View Details">
+                </p-button>
+                <p-button 
+                  icon="pi pi-ban" 
+                  [rounded]="true" 
+                  [text]="true" 
+                  severity="danger" 
+                  size="small"
+                  (click)="deleteTenant(tenant)"
+                  pTooltip="Suspend Tenant">
+                </p-button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7" class="text-center py-12">
+              <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="pi pi-building text-gray-400 text-2xl"></i>
+              </div>
+              <h3 class="text-lg font-medium text-gray-900 mb-2">No tenants found</h3>
+              <p class="text-gray-500 mb-6">Create your first tenant to start managing your organization.</p>
+              <p-button 
+                label="New Tenant" 
+                icon="pi pi-plus" 
+                severity="primary"
+                (click)="openCreateDialog()">
+              </p-button>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- Tenants Grid (Card View) -->
+    <div *ngIf="viewMode === 'card'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let tenant of tenants" 
+           class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300">
+        
+        <!-- Tenant Header -->
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                <i class="pi pi-building text-white text-lg"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-900 cursor-pointer hover:text-blue-600" (click)="viewTenant(tenant)">{{ tenant.name }}</h3>
+                <p class="text-sm font-mono text-gray-500">{{ tenant.slug }}</p>
+              </div>
             </div>
-            <div class="text-500 text-sm mt-1">{{ tenant.description }}</div>
-          </td>
-          <td>
-            <p-tag [value]="tenant.status | titlecase" [severity]="getStatusSeverity(tenant.status)"></p-tag>
-          </td>
-          <td>{{ tenant.owner || '—' }}</td>
-          <td>{{ formatDate(tenant.created_at) }}</td>
-          <td>
-            <div class="flex gap-2">
-              <p-button icon="pi pi-eye" [text]="true" [rounded]="true" pTooltip="View" (onClick)="viewTenant(tenant)"></p-button>
-              <p-button icon="pi pi-ban" [text]="true" [rounded]="true" severity="danger" pTooltip="Suspend" (onClick)="deleteTenant(tenant)"></p-button>
+            <div class="flex items-center gap-2">
+              <p-badge 
+                [value]="tenant.status | titlecase" 
+                [severity]="getStatusSeverity(tenant.status)"
+                class="text-xs">
+              </p-badge>
             </div>
-          </td>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="emptymessage">
-        <tr>
-          <td colspan="5" class="text-center py-4 text-500">No tenants found</td>
-        </tr>
-      </ng-template>
-    </p-table>
+          </div>
+          
+          <p class="text-sm text-gray-600 mb-4 h-10 overflow-hidden">{{ tenant.description || 'No description available' }}</p>
+          
+          <!-- Tenant Stats -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="text-center p-3 bg-gray-50 rounded-lg">
+              <div class="text-lg font-semibold text-gray-900">{{ tenant.member_count || 0 }}</div>
+              <div class="text-xs text-gray-500">Members</div>
+            </div>
+            <div class="text-center p-3 bg-gray-50 rounded-lg">
+              <div class="text-lg font-semibold text-gray-900">{{ (tenant.plan || 'Free') | titlecase }}</div>
+              <div class="text-xs text-gray-500">Plan</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Metadata -->
+        <div class="p-4 border-b border-gray-200 bg-gray-50/50">
+            <div class="flex items-center justify-between text-xs text-gray-500">
+                <div class="flex items-center gap-1">
+                    <i class="pi pi-calendar text-[10px]"></i>
+                    <span>Created {{ formatDate(tenant.created_at) }}</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <i class="pi pi-id-card text-[10px]"></i>
+                    <span>ID: {{ tenant.kid | slice:0:8 }}...</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tenant Actions -->
+        <div class="p-4">
+          <div class="flex items-center justify-between gap-2">
+            <p-button 
+                label="View Details"
+                icon="pi pi-eye" 
+                [text]="true" 
+                severity="info" 
+                size="small"
+                (click)="viewTenant(tenant)"
+                class="w-full">
+            </p-button>
+            <p-button 
+                icon="pi pi-ban" 
+                [rounded]="true" 
+                [text]="true" 
+                severity="danger" 
+                size="small"
+                (click)="deleteTenant(tenant)"
+                pTooltip="Suspend Tenant">
+            </p-button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Empty State -->
+      <div *ngIf="tenants.length === 0" class="col-span-full">
+        <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="pi pi-building text-gray-400 text-2xl"></i>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No tenants found</h3>
+          <p class="text-gray-500 mb-6">Create your first tenant to start managing your organization.</p>
+          <p-button 
+            label="New Tenant" 
+            icon="pi pi-plus" 
+            severity="primary"
+            (click)="openCreateDialog()">
+          </p-button>
+        </div>
+      </div>
+    </div>
 
-    <p-paginator [rows]="pageSize" [totalRecords]="totalRecords" [rowsPerPageOptions]="[10,20,50]"
-      (onPageChange)="onPageChange($event)" *ngIf="totalRecords > pageSize">
-    </p-paginator>
-  </p-card>
+    <!-- Pagination -->
+    <div class="mt-8 flex justify-center" *ngIf="tenants.length > 0 && totalRecords > pageSize">
+      <p-paginator 
+        [rows]="pageSize" 
+        [totalRecords]="totalRecords"
+        [rowsPerPageOptions]="[10,20,50]"
+        (onPageChange)="onPageChange($event)">
+      </p-paginator>
+    </div>
 </div>
 
-<!-- Create Tenant Dialog -->
-<p-dialog header="New Tenant" [(visible)]="showCreateDialog" [modal]="true" [style]="{width:'480px'}" [closable]="!saving">
-  <div class="flex flex-column gap-3 pt-2">
-    <div class="flex flex-column gap-1">
-      <label class="font-medium">Name <span class="text-red-500">*</span></label>
-      <input pInputText [(ngModel)]="newTenant.name" placeholder="Tenant name" />
-    </div>
-    <div class="flex flex-column gap-1">
-      <label class="font-medium">Description</label>
-      <input pInputText [(ngModel)]="newTenant.description" placeholder="Optional description" />
-    </div>
-    <div class="flex flex-column gap-1">
-      <label class="font-medium">Status</label>
-      <p-dropdown [options]="tenantStatusOptions" [(ngModel)]="newTenant.status"
-        optionLabel="label" optionValue="value" styleClass="w-full"></p-dropdown>
-    </div>
-  </div>
-  <ng-template pTemplate="footer">
-    <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="showCreateDialog=false" [disabled]="saving"></p-button>
-    <p-button label="Create" icon="pi pi-check" (onClick)="createTenant()" [loading]="saving" [disabled]="!newTenant.name?.trim()"></p-button>
-  </ng-template>
-</p-dialog>

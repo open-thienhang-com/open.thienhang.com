@@ -57,6 +57,7 @@ export const menu: MenuItem[] = [
         type: 'item',
         expanded: false,
         children: [
+            { label: 'Overview', url: '/governance/proposal', icon: 'pi pi-th-large' },
             {
                 label: 'Identity',
                 icon: 'pi pi-id-card',
@@ -66,6 +67,7 @@ export const menu: MenuItem[] = [
                     { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
                     { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building' },
                     { label: 'Teams', url: '/governance/teams', icon: 'pi pi-users' },
+                    { label: 'Branches', url: '/governance/branches', icon: 'pi pi-sitemap' },
                 ]
             },
             {
@@ -77,6 +79,7 @@ export const menu: MenuItem[] = [
                     { label: 'Permissions', url: '/governance/permissions', icon: 'pi pi-key' },
                     { label: 'Policies', url: '/governance/policies', icon: 'pi pi-lock' },
                     { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' },
+                    { label: 'Entitlements', url: '/governance/entitlements', icon: 'pi pi-key' },
                 ]
             },
             {

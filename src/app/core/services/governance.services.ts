@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { getApiBase } from '../config/api-config';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Observable, map, tap } from 'rxjs';
 import { CacheService } from './cache.service';
+import { SILENT_ERROR } from '../interceptor/http-context-tokens';
 
 export interface ApiResponse<T> {
   data: T;
@@ -194,20 +195,36 @@ export interface Permission {
 // Tenant management
 export interface Tenant {
   _id?: string;
+  id?: string;
+  telnet?: string | null;
   kid: string;
   name: string;
+  slug?: string;
   description?: string;
   status: 'active' | 'suspended' | 'trial';
+  plan?: string;
   owner?: string;
+  owner_id?: string;
+  owner_email?: string;
   settings?: Record<string, any>;
+  member_count?: number;
+  role_count?: number;
+  policy_count?: number;
   created_at?: string;
   updated_at?: string;
+  created_by?: string;
+  updated_by?: string;
 }
 
 export interface TenantCreate {
+  telnet?: string;
   name: string;
+  slug?: string;
   description?: string;
+  plan?: string;
+  owner_email?: string;
   status?: 'active' | 'suspended' | 'trial';
+  settings?: Record<string, any>;
 }
 
 export interface TenantUpdate {
@@ -217,8 +234,11 @@ export interface TenantUpdate {
 }
 
 export interface TenantMemberCreate {
-  user_id: string;
+  user_id?: string;
+  email?: string;
+  role_id?: string;
   role?: string;
+  telnet?: string;
 }
 
 // Casbin RBAC
@@ -240,6 +260,74 @@ export interface CasbinCheck {
   tenant_id: string;
   path: string;
   method: string;
+}
+
+// Entitlements
+export interface Entitlement {
+  id?: string;
+  code: string;
+  name: string;
+  description?: string;
+  category?: string;
+  tier?: string;
+  is_enabled?: boolean;
+  metadata?: Record<string, any>;
+  created_at?: string;
+  updated_at?: string;
+  telnet?: string;
+}
+
+export interface EntitlementAssignment {
+  id?: string;
+  entity_type: string;
+  entity_id: string;
+  entitlement_code: string;
+  status?: string;
+  value?: string;
+  metadata?: Record<string, any>;
+  created_at?: string;
+}
+
+// Branches
+export interface Branch {
+  id?: string;
+  code: string;
+  name: string;
+  description?: string;
+  branch_type?: string;
+  address?: {
+    city?: string;
+    country?: string;
+    postal_code?: string;
+    street?: string;
+  };
+  contact_info?: {
+    email?: string;
+    phone?: string;
+  };
+  is_active?: boolean;
+  parent_id?: string | null;
+  parent_code?: string | null; // Keep for compatibility
+  status?: string;
+  metadata?: Record<string, any>;
+  created_at?: string;
+  updated_at?: string;
+  created_by?: string;
+}
+
+export interface BranchAssignment {
+  id?: string;
+  entity_type: string;
+  entity_id: string;
+  branch_code: string;
+  status?: string;
+  metadata?: Record<string, any>;
+  created_at?: string;
+}
+
+export interface BranchHierarchy {
+  branch: Branch;
+  children: BranchHierarchy[];
 }
 
 @Injectable({
@@ -610,6 +698,109 @@ export class GovernanceServices {
       .pipe(map(response => this.wrapResponse(response)));
   }
 
+  // ─── Entitlements ─────────────────────────────────────────────────────────────
+
+  getEntitlements(params?: any): Observable<ApiResponse<PaginatedResponse<Entitlement>>> {
+    const httpParams = this.buildHttpParams(params);
+    return this.http.get<any>(`${this.baseUrl}/governance/entitlements`, { params: httpParams })
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  getEntitlement(code: string): Observable<ApiResponse<Entitlement>> {
+    return this.http.get<any>(`${this.baseUrl}/governance/entitlements/${code}`)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  createEntitlement(data: Partial<Entitlement>): Observable<ApiResponse<Entitlement>> {
+    this.cacheService.clear();
+    return this.http.post<Entitlement>(`${this.baseUrl}/governance/entitlements`, data)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  updateEntitlement(code: string, data: Partial<Entitlement>): Observable<ApiResponse<Entitlement>> {
+    this.cacheService.clear();
+    return this.http.patch<Entitlement>(`${this.baseUrl}/governance/entitlements/${code}`, data)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  deleteEntitlement(code: string): Observable<ApiResponse<any>> {
+    this.cacheService.clear();
+    return this.http.delete<any>(`${this.baseUrl}/governance/entitlements/${code}`)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  assignEntitlement(data: Partial<EntitlementAssignment>): Observable<ApiResponse<any>> {
+    this.cacheService.clear();
+    return this.http.post<any>(`${this.baseUrl}/governance/entitlements/assign`, data)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  getEntitlementAssignments(params?: any): Observable<ApiResponse<PaginatedResponse<EntitlementAssignment>>> {
+    const httpParams = this.buildHttpParams(params);
+    return this.http.get<any>(`${this.baseUrl}/governance/entitlements/assignments`, { params: httpParams })
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  deleteEntitlementAssignment(id: string): Observable<ApiResponse<any>> {
+    this.cacheService.clear();
+    return this.http.delete<any>(`${this.baseUrl}/governance/entitlements/assignments/${id}`)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  // ─── Branches ────────────────────────────────────────────────────────────────
+
+  getBranches(params?: any): Observable<ApiResponse<PaginatedResponse<Branch>>> {
+    const httpParams = this.buildHttpParams(params);
+    return this.http.get<any>(`${this.baseUrl}/governance/branches`, { params: httpParams })
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  getBranch(code: string): Observable<ApiResponse<Branch>> {
+    return this.http.get<any>(`${this.baseUrl}/governance/branches/${code}`)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  createBranch(data: Partial<Branch>): Observable<ApiResponse<Branch>> {
+    this.cacheService.clear();
+    return this.http.post<Branch>(`${this.baseUrl}/governance/branches`, data)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  updateBranch(code: string, data: Partial<Branch>): Observable<ApiResponse<Branch>> {
+    this.cacheService.clear();
+    return this.http.patch<Branch>(`${this.baseUrl}/governance/branches/${code}`, data)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  deleteBranch(code: string): Observable<ApiResponse<any>> {
+    this.cacheService.clear();
+    return this.http.delete<any>(`${this.baseUrl}/governance/branches/${code}`)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  assignBranch(data: Partial<BranchAssignment>): Observable<ApiResponse<any>> {
+    this.cacheService.clear();
+    return this.http.post<any>(`${this.baseUrl}/governance/branches/assign`, data)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  getBranchAssignments(params?: any): Observable<ApiResponse<PaginatedResponse<BranchAssignment>>> {
+    const httpParams = this.buildHttpParams(params);
+    return this.http.get<any>(`${this.baseUrl}/governance/branches/assignments`, { params: httpParams })
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  deleteBranchAssignment(id: string): Observable<ApiResponse<any>> {
+    this.cacheService.clear();
+    return this.http.delete<any>(`${this.baseUrl}/governance/branches/assignments/${id}`)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  getBranchHierarchy(code: string): Observable<ApiResponse<BranchHierarchy>> {
+    return this.http.get<any>(`${this.baseUrl}/governance/branches/${code}/hierarchy`)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
   // ─── Casbin RBAC ─────────────────────────────────────────────────────────────
 
   getCasbinRules(params?: { tenant_id?: string; sub?: string }): Observable<ApiResponse<any>> {
@@ -670,6 +861,32 @@ export class GovernanceServices {
 
   syncCasbinPolicies(): Observable<ApiResponse<any>> {
     return this.http.post<any>(`${this.baseUrl}/governance/init/casbin-sync`, {})
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  // ─── Governance Bulk Import ───────────────────────────────────────────────────
+
+  importGovernanceData(file: File, entity: 'users' | 'teams' | 'roles' | 'permissions' | 'policies' | 'branches' | 'tenants'): Observable<ApiResponse<any>> {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    form.append('entity', entity);
+    return this.http.post<any>(`${this.baseUrl}/governance/import/${entity}`, form)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  // ─── Governance Overview & Metrics ───────────────────────────────────────────
+
+  getGovernanceOverview(params?: any): Observable<ApiResponse<any>> {
+    const httpParams = this.buildHttpParams(params);
+    const context = new HttpContext().set(SILENT_ERROR, true);
+    return this.http.get<any>(`${this.baseUrl}/governance/overview`, { params: httpParams, context })
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  getGovernanceMetrics(params?: any): Observable<ApiResponse<any>> {
+    const httpParams = this.buildHttpParams(params);
+    const context = new HttpContext().set(SILENT_ERROR, true);
+    return this.http.get<any>(`${this.baseUrl}/governance/metrics`, { params: httpParams, context })
       .pipe(map(response => this.wrapResponse(response)));
   }
 

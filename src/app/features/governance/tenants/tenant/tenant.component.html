@@ -1,0 +1,173 @@
+<p-toast></p-toast>
+
+<div *ngIf="inline" class="bg-gray-50 min-h-screen p-6">
+  <div class="max-w-5xl mx-auto">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+            <i class="pi pi-building text-white text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
+            <p class="text-gray-600">{{ isEditMode ? 'Update tenant information' : 'Onboard a new tenant' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="bg-white rounded-lg shadow-sm p-8">
+      <ng-container *ngTemplateOutlet="formContent"></ng-container>
+    </div>
+
+    <!-- Actions -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mt-6 flex items-center justify-between">
+      <p-button 
+        label="Cancel" 
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        (click)="cancel()"
+        [disabled]="loading">
+      </p-button>
+      <p-button 
+        [label]="isEditMode ? 'Update Tenant' : 'Create Tenant'" 
+        icon="pi pi-check"
+        severity="primary"
+        (click)="save()"
+        [loading]="loading">
+      </p-button>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog Mode (Popups can use this too) -->
+<p-dialog 
+  *ngIf="!inline"
+  [(visible)]="visible" 
+  [modal]="true" 
+  [style]="{ width: '90vw', maxWidth: '800px' }"
+  [draggable]="false"
+  [resizable]="false">
+  
+  <ng-template #header>
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+        <i class="pi pi-building text-white"></i>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-gray-900">{{ title }}</h2>
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="py-4">
+    <ng-container *ngTemplateOutlet="formContent"></ng-container>
+  </div>
+
+  <ng-template #footer>
+    <div class="flex items-center justify-end gap-2">
+      <p-button 
+        label="Cancel" 
+        [text]="true" 
+        severity="secondary" 
+        (click)="cancel()"
+        [disabled]="loading">
+      </p-button>
+      <p-button 
+        [label]="isEditMode ? 'Update' : 'Create'" 
+        [outlined]="true" 
+        severity="primary" 
+        (click)="save()"
+        [loading]="loading">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Form Content Template -->
+<ng-template #formContent>
+  <div class="flex flex-col gap-8" *ngIf="!loading">
+    
+    <!-- Primary Information -->
+    <section>
+      <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+        <i class="pi pi-info-circle text-blue-500"></i>
+        Primary Information
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <p-floatlabel variant="on">
+          <input class="w-full" pInputText id="tenant-name" [(ngModel)]="tenant.name" autocomplete="off" />
+          <label for="tenant-name">Tenant Name *</label>
+        </p-floatlabel>
+
+        <p-floatlabel variant="on">
+          <input class="w-full" pInputText id="tenant-slug" [(ngModel)]="tenant.slug" placeholder="e.g. acme-corp" autocomplete="off" />
+          <label for="tenant-slug">Slug *</label>
+        </p-floatlabel>
+
+        <p-floatlabel variant="on" class="md:col-span-2">
+          <input class="w-full" pInputText id="owner-email" [(ngModel)]="tenant.owner_email" type="email" autocomplete="off" />
+          <label for="owner-email">Owner Email *</label>
+        </p-floatlabel>
+        
+        <p-floatlabel variant="on" class="md:col-span-2">
+          <textarea pInputTextarea id="description" [(ngModel)]="tenant.description" rows="2" class="w-full resize-none"></textarea>
+          <label for="description">Description</label>
+        </p-floatlabel>
+      </div>
+    </section>
+
+    <p-divider></p-divider>
+
+    <!-- Configuration & Billing -->
+    <section>
+      <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+        <i class="pi pi-cog text-blue-500"></i>
+        Configuration & Billing
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="flex flex-col gap-2">
+          <label class="text-sm font-medium text-gray-700">Billing Plan</label>
+          <p-dropdown [options]="planOptions" [(ngModel)]="tenant.plan" optionLabel="label" optionValue="value" styleClass="w-full"></p-dropdown>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="text-sm font-medium text-gray-700">Initial Status</label>
+          <p-dropdown [options]="statusOptions" [(ngModel)]="tenant.status" optionLabel="label" optionValue="value" styleClass="w-full"></p-dropdown>
+        </div>
+
+        <p-floatlabel variant="on" class="md:col-span-2">
+          <input class="w-full font-mono" pInputText id="telnet" [(ngModel)]="tenant.telnet" autocomplete="off" />
+          <label for="telnet">Telnet String (Optional)</label>
+        </p-floatlabel>
+      </div>
+    </section>
+
+    <p-divider></p-divider>
+
+    <!-- Advanced Settings -->
+    <section>
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <i class="pi pi-code text-blue-500"></i>
+          Advanced Settings
+        </h3>
+        <p-tag value="JSON Format" severity="secondary"></p-tag>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label for="settings" class="text-sm font-medium text-gray-700">Additional Properties</label>
+        <textarea pInputTextarea id="settings" [(ngModel)]="tenant.settings" rows="6" class="w-full font-mono text-sm bg-gray-900 text-green-400 p-4 border-none rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+        <small class="text-gray-500 italic">Enter valid JSON for custom tenant metadata</small>
+      </div>
+    </section>
+  </div>
+
+  <!-- Loading State -->
+  <div class="flex flex-col items-center justify-center p-12 gap-4" *ngIf="loading">
+    <i class="pi pi-spin pi-spinner text-blue-500 text-4xl"></i>
+    <p class="text-gray-500 animate-pulse">Processing request...</p>
+  </div>
+</ng-template>

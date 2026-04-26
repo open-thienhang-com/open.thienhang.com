@@ -1,0 +1,659 @@
+<p-toast></p-toast>
+
+<div class="bg-gray-50 min-h-screen p-6">
+
+  <!-- Header -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+          <i class="pi pi-th-large text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Governance Overview</h1>
+          <p class="text-gray-600">Toàn bộ hệ thống governance trong một trang — Identity, Access Control, Assets &amp; Entitlements</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <p-button icon="pi pi-refresh" severity="info" [outlined]="true" [rounded]="true"
+          (click)="loadAll()" pTooltip="Refresh All">
+        </p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Bar -->
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-3 mb-6">
+    <div *ngFor="let item of [
+      {label:'Tenants',count:stats.tenants,icon:'pi-building',color:'blue',route:'/governance/tenants'},
+      {label:'Users',count:stats.users,icon:'pi-user',color:'indigo',route:'/governance/users'},
+      {label:'Accounts',count:stats.accounts,icon:'pi-building',color:'gray',route:'/governance/accounts'},
+      {label:'Teams',count:stats.teams,icon:'pi-users',color:'violet',route:'/governance/teams'},
+      {label:'Branches',count:stats.branches,icon:'pi-sitemap',color:'cyan',route:'/governance/branches'},
+      {label:'Roles',count:stats.roles,icon:'pi-tag',color:'purple',route:'/governance/roles'},
+      {label:'Perms',count:stats.permissions,icon:'pi-key',color:'orange',route:'/governance/permissions'},
+      {label:'Policies',count:stats.policies,icon:'pi-lock',color:'red',route:'/governance/policies'},
+      {label:'Assets',count:stats.assets,icon:'pi-database',color:'teal',route:'/governance/assets'},
+      {label:'Entitlements',count:stats.entitlements,icon:'pi-star',color:'green',route:'/governance/entitlements'}
+    ]"
+      class="bg-white rounded-lg shadow-sm p-3 text-center cursor-pointer hover:shadow-md hover:scale-105 transition-all"
+      (click)="navigate(item.route)">
+      <ng-container *ngIf="!loading; else statSkel">
+        <div class="text-2xl font-bold text-gray-900">{{ item.count }}</div>
+        <div class="flex items-center justify-center gap-1 mt-1">
+          <i class="pi {{ item.icon }} text-gray-400 text-xs"></i>
+          <span class="text-xs text-gray-500">{{ item.label }}</span>
+        </div>
+      </ng-container>
+      <ng-template #statSkel>
+        <p-skeleton height="2rem" styleClass="mb-1"></p-skeleton>
+        <p-skeleton height="0.75rem" width="70%" styleClass="mx-auto"></p-skeleton>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- System Flow Diagram -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+      <i class="pi pi-share-alt text-purple-500"></i>
+      Governance Flow
+    </h2>
+    <div class="flex flex-wrap items-center gap-2 justify-center">
+      <ng-container *ngFor="let node of flowNodes; let i = index">
+        <div class="flex items-center gap-2">
+          <div class="flex flex-col items-center gap-1 cursor-pointer group" (click)="navigate(node.route)">
+            <div class="w-14 h-14 rounded-xl bg-gradient-to-br shadow-sm flex items-center justify-center group-hover:shadow-md transition-all
+              {{ node.color === 'blue' ? 'from-blue-400 to-blue-600' :
+                 node.color === 'indigo' ? 'from-indigo-400 to-indigo-600' :
+                 node.color === 'violet' ? 'from-violet-400 to-violet-600' :
+                 node.color === 'purple' ? 'from-purple-400 to-purple-600' :
+                 node.color === 'orange' ? 'from-orange-400 to-orange-600' :
+                 node.color === 'red' ? 'from-red-400 to-red-600' :
+                 node.color === 'teal' ? 'from-teal-400 to-teal-600' :
+                 'from-green-400 to-green-600' }}">
+              <i class="pi {{ node.icon }} text-white text-xl"></i>
+            </div>
+            <span class="text-xs font-medium text-gray-700 group-hover:text-purple-600 transition-colors">{{ node.label }}</span>
+            <span class="text-[10px] text-gray-400 text-center max-w-[80px] leading-tight">{{ node.desc }}</span>
+          </div>
+          <i *ngIf="i < flowNodes.length - 1" class="pi pi-arrow-right text-gray-300 text-sm mt-[-20px]"></i>
+        </div>
+      </ng-container>
+    </div>
+    <p-divider></p-divider>
+    <div class="flex flex-wrap gap-4 text-xs text-gray-500 justify-center">
+      <span class="flex items-center gap-1"><i class="pi pi-building text-blue-500"></i> Tenant cô lập dữ liệu và phân quyền</span>
+      <span class="flex items-center gap-1"><i class="pi pi-users text-violet-500"></i> Users/Teams được gán Roles</span>
+      <span class="flex items-center gap-1"><i class="pi pi-tag text-purple-500"></i> Roles gom nhóm Permissions</span>
+      <span class="flex items-center gap-1"><i class="pi pi-lock text-red-500"></i> Policies enforce quy tắc trên Assets</span>
+      <span class="flex items-center gap-1"><i class="pi pi-star text-green-500"></i> Entitlements kiểm soát feature theo tier</span>
+    </div>
+  </div>
+
+  <!-- Main Tabs -->
+  <p-tabView>
+
+    <!-- TAB 1: Identity -->
+    <p-tabPanel header="Identity" leftIcon="pi pi-id-card">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4">
+
+        <!-- Tenants -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between p-4 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="pi pi-building text-blue-600 text-sm"></i>
+              </div>
+              <div>
+                <span class="font-semibold text-gray-800">Tenants</span>
+                <p-badge [value]="stats.tenants.toString()" severity="info" styleClass="ml-2 text-xs"></p-badge>
+              </div>
+            </div>
+            <div class="flex gap-1">
+              <p-button icon="pi pi-plus" [rounded]="true" [text]="true" severity="primary" size="small"
+                pTooltip="New Tenant" (click)="navigate('/governance/tenants/new')"></p-button>
+              <p-button icon="pi pi-arrow-right" [rounded]="true" [text]="true" severity="secondary" size="small"
+                pTooltip="View All" (click)="navigate('/governance/tenants')"></p-button>
+            </div>
+          </div>
+          <div *ngIf="loading" class="p-4 space-y-3">
+            <p-skeleton *ngFor="let i of [1,2,3]" height="2.5rem"></p-skeleton>
+          </div>
+          <div *ngIf="!loading">
+            <div *ngFor="let t of tenants"
+              class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50"
+              (click)="navigate('/governance/tenants/' + t.kid)">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 bg-blue-500 rounded text-white text-xs flex items-center justify-center flex-shrink-0">
+                  {{ t.name?.charAt(0)?.toUpperCase() }}
+                </div>
+                <span class="text-sm text-gray-800 truncate">{{ t.name }}</span>
+              </div>
+              <p-badge [value]="t.status" [severity]="getStatusSeverity(t.status)" styleClass="text-xs"></p-badge>
+            </div>
+            <div *ngIf="tenants.length === 0" class="p-6 text-center text-sm text-gray-400">
+              <i class="pi pi-building text-2xl mb-2 block"></i>Chưa có tenant nào
+            </div>
+            <div class="p-3 text-center border-t border-gray-100">
+              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+                (click)="navigate('/governance/tenants')"></p-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Users -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between p-4 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                <i class="pi pi-user text-indigo-600 text-sm"></i>
+              </div>
+              <div>
+                <span class="font-semibold text-gray-800">Users</span>
+                <p-badge [value]="stats.users.toString()" severity="info" styleClass="ml-2 text-xs"></p-badge>
+              </div>
+            </div>
+            <div class="flex gap-1">
+              <p-button icon="pi pi-plus" [rounded]="true" [text]="true" severity="primary" size="small"
+                pTooltip="New User" (click)="navigate('/governance/users')"></p-button>
+              <p-button icon="pi pi-arrow-right" [rounded]="true" [text]="true" severity="secondary" size="small"
+                pTooltip="View All" (click)="navigate('/governance/users')"></p-button>
+            </div>
+          </div>
+          <div *ngIf="loading" class="p-4 space-y-3">
+            <p-skeleton *ngFor="let i of [1,2,3]" height="2.5rem"></p-skeleton>
+          </div>
+          <div *ngIf="!loading">
+            <div *ngFor="let u of users"
+              class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50"
+              (click)="navigate('/governance/users/' + u.kid)">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 bg-indigo-500 rounded-full text-white text-xs flex items-center justify-center flex-shrink-0">
+                  {{ (u.first_name || u.name || u.email)?.charAt(0)?.toUpperCase() }}
+                </div>
+                <div class="min-w-0">
+                  <div class="text-sm text-gray-800 truncate">{{ u.first_name || u.name || '—' }}</div>
+                  <div class="text-xs text-gray-400 truncate">{{ u.email }}</div>
+                </div>
+              </div>
+              <p-badge [value]="u.is_active ? 'active' : 'inactive'"
+                [severity]="u.is_active ? 'success' : 'danger'" styleClass="text-xs"></p-badge>
+            </div>
+            <div *ngIf="users.length === 0" class="p-6 text-center text-sm text-gray-400">
+              <i class="pi pi-user text-2xl mb-2 block"></i>Chưa có user nào
+            </div>
+            <div class="p-3 text-center border-t border-gray-100">
+              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+                (click)="navigate('/governance/users')"></p-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Teams -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between p-4 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 bg-violet-100 rounded-lg flex items-center justify-center">
+                <i class="pi pi-users text-violet-600 text-sm"></i>
+              </div>
+              <div>
+                <span class="font-semibold text-gray-800">Teams</span>
+                <p-badge [value]="stats.teams.toString()" severity="info" styleClass="ml-2 text-xs"></p-badge>
+              </div>
+            </div>
+            <div class="flex gap-1">
+              <p-button icon="pi pi-plus" [rounded]="true" [text]="true" severity="primary" size="small"
+                pTooltip="New Team" (click)="navigate('/governance/teams/new')"></p-button>
+              <p-button icon="pi pi-arrow-right" [rounded]="true" [text]="true" severity="secondary" size="small"
+                pTooltip="View All" (click)="navigate('/governance/teams')"></p-button>
+            </div>
+          </div>
+          <div *ngIf="loading" class="p-4 space-y-3">
+            <p-skeleton *ngFor="let i of [1,2,3]" height="2.5rem"></p-skeleton>
+          </div>
+          <div *ngIf="!loading">
+            <div *ngFor="let t of teams"
+              class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50"
+              (click)="navigate('/governance/teams/' + (t.id || t.kid))">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 bg-violet-500 rounded text-white text-xs flex items-center justify-center flex-shrink-0">
+                  {{ t.name?.charAt(0)?.toUpperCase() }}
+                </div>
+                <div class="min-w-0">
+                  <div class="text-sm text-gray-800 truncate">{{ t.name }}</div>
+                  <div class="text-xs text-gray-400">{{ (t.members?.length || 0) }} members</div>
+                </div>
+              </div>
+              <p-badge [value]="t.is_active !== false ? 'active' : 'inactive'"
+                [severity]="t.is_active !== false ? 'success' : 'secondary'" styleClass="text-xs"></p-badge>
+            </div>
+            <div *ngIf="teams.length === 0" class="p-6 text-center text-sm text-gray-400">
+              <i class="pi pi-users text-2xl mb-2 block"></i>Chưa có team nào
+            </div>
+            <div class="p-3 text-center border-t border-gray-100">
+              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+                (click)="navigate('/governance/teams')"></p-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Branches -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between p-4 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 bg-cyan-100 rounded-lg flex items-center justify-center">
+                <i class="pi pi-sitemap text-cyan-600 text-sm"></i>
+              </div>
+              <div>
+                <span class="font-semibold text-gray-800">Branches</span>
+                <p-badge [value]="stats.branches.toString()" severity="info" styleClass="ml-2 text-xs"></p-badge>
+              </div>
+            </div>
+            <div class="flex gap-1">
+              <p-button icon="pi pi-plus" [rounded]="true" [text]="true" severity="primary" size="small"
+                pTooltip="New Branch" (click)="navigate('/governance/branches/new')"></p-button>
+              <p-button icon="pi pi-arrow-right" [rounded]="true" [text]="true" severity="secondary" size="small"
+                pTooltip="View All" (click)="navigate('/governance/branches')"></p-button>
+            </div>
+          </div>
+          <div *ngIf="loading" class="p-4 space-y-3">
+            <p-skeleton *ngFor="let i of [1,2,3]" height="2.5rem"></p-skeleton>
+          </div>
+          <div *ngIf="!loading">
+            <div *ngFor="let b of branches"
+              class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50"
+              (click)="navigate('/governance/branches/' + b.code)">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 bg-cyan-500 rounded text-white text-xs flex items-center justify-center flex-shrink-0">
+                  {{ b.name?.charAt(0)?.toUpperCase() }}
+                </div>
+                <div class="min-w-0">
+                  <div class="text-sm text-gray-800 truncate">{{ b.name }}</div>
+                  <div class="text-xs text-gray-400 truncate">{{ b.branch_type || b.code }}</div>
+                </div>
+              </div>
+              <p-badge [value]="b.is_active !== false ? 'active' : 'inactive'"
+                [severity]="b.is_active !== false ? 'success' : 'secondary'" styleClass="text-xs"></p-badge>
+            </div>
+            <div *ngIf="branches.length === 0" class="p-6 text-center text-sm text-gray-400">
+              <i class="pi pi-sitemap text-2xl mb-2 block"></i>Chưa có branch nào
+            </div>
+            <div class="p-3 text-center border-t border-gray-100">
+              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+                (click)="navigate('/governance/branches')"></p-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Accounts -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between p-4 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                <i class="pi pi-building text-gray-600 text-sm"></i>
+              </div>
+              <div>
+                <span class="font-semibold text-gray-800">Accounts</span>
+                <p-badge [value]="stats.accounts.toString()" severity="secondary" styleClass="ml-2 text-xs"></p-badge>
+              </div>
+            </div>
+            <div class="flex gap-1">
+              <p-button icon="pi pi-arrow-right" [rounded]="true" [text]="true" severity="secondary" size="small"
+                pTooltip="View All" (click)="navigate('/governance/accounts')"></p-button>
+            </div>
+          </div>
+          <div *ngIf="loading" class="p-4 space-y-3">
+            <p-skeleton *ngFor="let i of [1,2,3]" height="2.5rem"></p-skeleton>
+          </div>
+          <div *ngIf="!loading">
+            <div *ngFor="let a of accounts"
+              class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 border-b border-gray-50">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 bg-gray-400 rounded text-white text-xs flex items-center justify-center flex-shrink-0">
+                  {{ (a.name || a.username)?.charAt(0)?.toUpperCase() }}
+                </div>
+                <div class="min-w-0">
+                  <div class="text-sm text-gray-800 truncate">{{ a.name || a.full_name || '—' }}</div>
+                  <div class="text-xs text-gray-400 truncate">{{ a.type || a.department }}</div>
+                </div>
+              </div>
+              <p-badge [value]="a.is_active !== false ? 'active' : 'inactive'"
+                [severity]="a.is_active !== false ? 'success' : 'secondary'" styleClass="text-xs"></p-badge>
+            </div>
+            <div *ngIf="accounts.length === 0" class="p-6 text-center text-sm text-gray-400">
+              <i class="pi pi-building text-2xl mb-2 block"></i>Chưa có account nào
+            </div>
+            <div class="p-3 text-center border-t border-gray-100">
+              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+                (click)="navigate('/governance/accounts')"></p-button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </p-tabPanel>
+
+    <!-- TAB 2: Access Control -->
+    <p-tabPanel header="Access Control" leftIcon="pi pi-lock">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4">
+
+        <!-- Roles -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between p-4 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                <i class="pi pi-tag text-purple-600 text-sm"></i>
+              </div>
+              <div>
+                <span class="font-semibold text-gray-800">Roles</span>
+                <p-badge [value]="stats.roles.toString()" severity="info" styleClass="ml-2 text-xs"></p-badge>
+              </div>
+            </div>
+            <div class="flex gap-1">
+              <p-button icon="pi pi-plus" [rounded]="true" [text]="true" severity="primary" size="small"
+                pTooltip="New Role" (click)="navigate('/governance/roles/new')"></p-button>
+              <p-button icon="pi pi-arrow-right" [rounded]="true" [text]="true" severity="secondary" size="small"
+                pTooltip="View All" (click)="navigate('/governance/roles')"></p-button>
+            </div>
+          </div>
+          <div *ngIf="loading" class="p-4 space-y-3">
+            <p-skeleton *ngFor="let i of [1,2,3]" height="2.5rem"></p-skeleton>
+          </div>
+          <div *ngIf="!loading">
+            <div *ngFor="let r of roles"
+              class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50"
+              (click)="navigate('/governance/roles/' + r.kid)">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 bg-purple-500 rounded text-white text-xs flex items-center justify-center flex-shrink-0">
+                  {{ r.name?.charAt(0)?.toUpperCase() }}
+                </div>
+                <div class="min-w-0">
+                  <div class="text-sm text-gray-800 truncate">{{ r.name }}</div>
+                  <div class="text-xs text-gray-400">{{ r.type }}</div>
+                </div>
+              </div>
+              <span class="text-xs text-gray-500">{{ r.permissions || 0 }} perms</span>
+            </div>
+            <div *ngIf="roles.length === 0" class="p-6 text-center text-sm text-gray-400">
+              <i class="pi pi-tag text-2xl mb-2 block"></i>Chưa có role nào
+            </div>
+            <div class="p-3 text-center border-t border-gray-100">
+              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+                (click)="navigate('/governance/roles')"></p-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Permissions -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between p-4 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                <i class="pi pi-key text-orange-600 text-sm"></i>
+              </div>
+              <div>
+                <span class="font-semibold text-gray-800">Permissions</span>
+                <p-badge [value]="stats.permissions.toString()" severity="warning" styleClass="ml-2 text-xs"></p-badge>
+              </div>
+            </div>
+            <div class="flex gap-1">
+              <p-button icon="pi pi-arrow-right" [rounded]="true" [text]="true" severity="secondary" size="small"
+                pTooltip="View All" (click)="navigate('/governance/permissions')"></p-button>
+            </div>
+          </div>
+          <div *ngIf="loading" class="p-4 space-y-3">
+            <p-skeleton *ngFor="let i of [1,2,3]" height="2.5rem"></p-skeleton>
+          </div>
+          <div *ngIf="!loading">
+            <div *ngFor="let p of permissions"
+              class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 border-b border-gray-50">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 bg-orange-500 rounded text-white text-xs flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-key text-[10px]"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="text-sm text-gray-800 truncate">{{ p.name }}</div>
+                  <div class="text-xs text-gray-400 truncate font-mono">{{ p.resource }}.{{ p.action }}</div>
+                </div>
+              </div>
+              <p-badge [value]="p.effect || 'allow'"
+                [severity]="p.effect === 'deny' ? 'danger' : 'success'" styleClass="text-xs"></p-badge>
+            </div>
+            <div *ngIf="permissions.length === 0" class="p-6 text-center text-sm text-gray-400">
+              <i class="pi pi-key text-2xl mb-2 block"></i>Chưa có permission nào
+            </div>
+            <div class="p-3 text-center border-t border-gray-100">
+              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+                (click)="navigate('/governance/permissions')"></p-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Policies -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between p-4 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                <i class="pi pi-lock text-red-600 text-sm"></i>
+              </div>
+              <div>
+                <span class="font-semibold text-gray-800">Policies</span>
+                <p-badge [value]="stats.policies.toString()" severity="danger" styleClass="ml-2 text-xs"></p-badge>
+              </div>
+            </div>
+            <div class="flex gap-1">
+              <p-button icon="pi pi-plus" [rounded]="true" [text]="true" severity="primary" size="small"
+                pTooltip="New Policy" (click)="navigate('/governance/policies/new')"></p-button>
+              <p-button icon="pi pi-arrow-right" [rounded]="true" [text]="true" severity="secondary" size="small"
+                pTooltip="View All" (click)="navigate('/governance/policies')"></p-button>
+            </div>
+          </div>
+          <div *ngIf="loading" class="p-4 space-y-3">
+            <p-skeleton *ngFor="let i of [1,2,3]" height="2.5rem"></p-skeleton>
+          </div>
+          <div *ngIf="!loading">
+            <div *ngFor="let pol of policies"
+              class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50"
+              (click)="navigate('/governance/policies/' + pol.kid)">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 bg-red-500 rounded text-white text-xs flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-lock text-[10px]"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="text-sm text-gray-800 truncate">{{ pol.name }}</div>
+                  <div class="text-xs text-gray-400">{{ pol.type }}</div>
+                </div>
+              </div>
+              <p-badge [value]="pol.effect || 'allow'"
+                [severity]="pol.effect === 'deny' ? 'danger' : 'success'" styleClass="text-xs"></p-badge>
+            </div>
+            <div *ngIf="policies.length === 0" class="p-6 text-center text-sm text-gray-400">
+              <i class="pi pi-lock text-2xl mb-2 block"></i>Chưa có policy nào
+            </div>
+            <div class="p-3 text-center border-t border-gray-100">
+              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+                (click)="navigate('/governance/policies')"></p-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RBAC & Admin shortcuts -->
+        <div class="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="bg-gradient-to-br from-slate-700 to-slate-900 rounded-lg p-5 text-white cursor-pointer hover:opacity-90 transition-opacity"
+            (click)="navigate('/governance/casbin')">
+            <div class="flex items-center gap-3 mb-2">
+              <i class="pi pi-shield text-2xl text-slate-300"></i>
+              <h3 class="text-lg font-semibold">RBAC Engine (Casbin)</h3>
+            </div>
+            <p class="text-sm text-slate-400">Quản lý policy p, g theo model casbin. Kiểm tra quyền trực tiếp trên engine.</p>
+            <div class="mt-3 flex items-center gap-1 text-sm text-slate-300">
+              <span>Mở RBAC Engine</span>
+              <i class="pi pi-arrow-right text-xs"></i>
+            </div>
+          </div>
+          <div class="bg-gradient-to-br from-indigo-700 to-purple-900 rounded-lg p-5 text-white cursor-pointer hover:opacity-90 transition-opacity"
+            (click)="navigate('/governance/admin')">
+            <div class="flex items-center gap-3 mb-2">
+              <i class="pi pi-wrench text-2xl text-indigo-300"></i>
+              <h3 class="text-lg font-semibold">Admin Tools</h3>
+            </div>
+            <p class="text-sm text-indigo-300">Công cụ quản trị: seed data, reset, audit logs và các tiện ích hệ thống.</p>
+            <div class="mt-3 flex items-center gap-1 text-sm text-indigo-200">
+              <span>Mở Admin Tools</span>
+              <i class="pi pi-arrow-right text-xs"></i>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </p-tabPanel>
+
+    <!-- TAB 3: Data & Entitlements -->
+    <p-tabPanel header="Data &amp; Entitlements" leftIcon="pi pi-database">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
+
+        <!-- Assets -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between p-4 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center">
+                <i class="pi pi-database text-teal-600 text-sm"></i>
+              </div>
+              <div>
+                <span class="font-semibold text-gray-800">Assets</span>
+                <p-badge [value]="stats.assets.toString()" severity="info" styleClass="ml-2 text-xs"></p-badge>
+              </div>
+            </div>
+            <div class="flex gap-1">
+              <p-button icon="pi pi-arrow-right" [rounded]="true" [text]="true" severity="secondary" size="small"
+                pTooltip="View All" (click)="navigate('/governance/assets')"></p-button>
+            </div>
+          </div>
+          <div *ngIf="loading" class="p-4 space-y-3">
+            <p-skeleton *ngFor="let i of [1,2,3,4]" height="2.5rem"></p-skeleton>
+          </div>
+          <div *ngIf="!loading">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-gray-50">
+                  <th class="px-4 py-2 text-left text-xs text-gray-500 font-medium">Name</th>
+                  <th class="px-4 py-2 text-left text-xs text-gray-500 font-medium">Type</th>
+                  <th class="px-4 py-2 text-left text-xs text-gray-500 font-medium">Sensitivity</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let a of assets" class="border-t border-gray-50 hover:bg-gray-50">
+                  <td class="px-4 py-3">
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-database text-teal-500 text-xs"></i>
+                      <span class="truncate max-w-[150px]">{{ a.name }}</span>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 text-gray-500 text-xs">{{ a.type }}</td>
+                  <td class="px-4 py-3">
+                    <p-badge [value]="a.sensitivity || 'public'"
+                      [severity]="a.sensitivity === 'high' ? 'danger' : a.sensitivity === 'medium' ? 'warning' : 'secondary'"
+                      styleClass="text-xs"></p-badge>
+                  </td>
+                </tr>
+                <tr *ngIf="assets.length === 0">
+                  <td colspan="3" class="px-4 py-8 text-center text-sm text-gray-400">
+                    <i class="pi pi-database text-2xl mb-2 block"></i>Chưa có asset nào
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="p-3 text-center border-t border-gray-100">
+              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+                (click)="navigate('/governance/assets')"></p-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Entitlements -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between p-4 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="pi pi-star text-green-600 text-sm"></i>
+              </div>
+              <div>
+                <span class="font-semibold text-gray-800">Entitlements</span>
+                <p-badge [value]="stats.entitlements.toString()" severity="success" styleClass="ml-2 text-xs"></p-badge>
+              </div>
+            </div>
+            <div class="flex gap-1">
+              <p-button icon="pi pi-arrow-right" [rounded]="true" [text]="true" severity="secondary" size="small"
+                pTooltip="View All" (click)="navigate('/governance/entitlements')"></p-button>
+            </div>
+          </div>
+          <div *ngIf="loading" class="p-4 space-y-3">
+            <p-skeleton *ngFor="let i of [1,2,3,4]" height="2.5rem"></p-skeleton>
+          </div>
+          <div *ngIf="!loading">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-gray-50">
+                  <th class="px-4 py-2 text-left text-xs text-gray-500 font-medium">Name</th>
+                  <th class="px-4 py-2 text-left text-xs text-gray-500 font-medium">Category</th>
+                  <th class="px-4 py-2 text-left text-xs text-gray-500 font-medium">Tier</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let e of entitlements" class="border-t border-gray-50 hover:bg-gray-50">
+                  <td class="px-4 py-3">
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-star text-green-500 text-xs"></i>
+                      <div>
+                        <div class="truncate max-w-[140px]">{{ e.name }}</div>
+                        <div class="text-xs text-gray-400 font-mono">{{ e.code }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 text-gray-500 text-xs">{{ e.category }}</td>
+                  <td class="px-4 py-3">
+                    <p-badge [value]="e.tier || 'free'" [severity]="getTierSeverity(e.tier)" styleClass="text-xs"></p-badge>
+                  </td>
+                </tr>
+                <tr *ngIf="entitlements.length === 0">
+                  <td colspan="3" class="px-4 py-8 text-center text-sm text-gray-400">
+                    <i class="pi pi-star text-2xl mb-2 block"></i>Chưa có entitlement nào
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="p-3 text-center border-t border-gray-100">
+              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+                (click)="navigate('/governance/entitlements')"></p-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tier breakdown summary -->
+        <div class="lg:col-span-2 bg-white rounded-lg shadow-sm p-5">
+          <h3 class="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <i class="pi pi-chart-bar text-green-500"></i>
+            Entitlement Tiers
+          </h3>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div *ngFor="let tier of [
+              {label:'Free',value:'free',color:'bg-gray-100 text-gray-700',icon:'pi-circle'},
+              {label:'Pro',value:'pro',color:'bg-blue-100 text-blue-700',icon:'pi-star'},
+              {label:'Premium',value:'premium',color:'bg-yellow-100 text-yellow-700',icon:'pi-star-fill'},
+              {label:'Enterprise',value:'enterprise',color:'bg-red-100 text-red-700',icon:'pi-crown'}
+            ]" class="rounded-lg p-4 text-center {{ tier.color }}">
+              <i class="pi {{ tier.icon }} text-2xl mb-2 block"></i>
+              <div class="font-bold text-xl">
+                {{ countTier(tier.value) }}
+              </div>
+              <div class="text-sm font-medium">{{ tier.label }}</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </p-tabPanel>
+
+  </p-tabView>
+
+</div>

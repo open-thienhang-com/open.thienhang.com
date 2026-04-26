@@ -1,749 +1,787 @@
 <!-- Hidden file input for avatar upload -->
 <input #avatarInput type="file" accept="image/*" style="display:none" (change)="onFileSelected($event)">
 
-<div class="settings-main">
-  <div class="settings-content-wrapper">
-    <div class="settings-content-inner">
-      <section class="settings-hero">
-        <div class="settings-hero-copy">
-          <div class="settings-hero-badge">
-            <i class="pi pi-cog"></i>
-          </div>
-          <div>
-            <p class="settings-eyebrow">Workspace governance</p>
-            <h1 class="settings-title">Settings</h1>
-            <p class="settings-subtitle">Manage identity, security, notification policy, and appearance from one governed surface.</p>
-          </div>
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="bg-gray-50 min-h-screen p-6">
+
+  <!-- ── Header ── -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+          <i class="pi pi-user text-white text-xl"></i>
         </div>
-
-        <div class="settings-hero-actions">
-          <button pButton type="button" icon="pi pi-refresh" label="Refresh" class="p-button-sm p-button-outlined"
-                  (click)="refreshData()" [loading]="loading || localLoading"></button>
-          <button pButton type="button" icon="pi pi-palette" label="Appearance" class="p-button-sm"
-                  (click)="switchSection('appearance')"></button>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Profile &amp; Settings</h1>
+          <p class="text-gray-600">Quản lý identity, bảo mật, thông báo và giao diện cá nhân</p>
         </div>
-      </section>
-
-      <section class="settings-overview-grid">
-        <article *ngFor="let card of settingsSummaryCards" class="summary-card" [attr.data-tone]="card.tone">
-          <div>
-            <p class="summary-label">{{ card.label }}</p>
-            <h3 class="summary-value">{{ card.value }}</h3>
-            <p class="summary-caption">{{ card.caption }}</p>
-          </div>
-          <div class="summary-icon">
-            <i [class]="card.icon"></i>
-          </div>
-        </article>
-      </section>
-
-      <section class="settings-workspace">
-        <aside class="settings-sidebar">
-          <div class="settings-sidebar-panel">
-            <p class="sidebar-eyebrow">Governance areas</p>
-            <div class="sidebar-heading">Account controls</div>
-            <nav class="nav-menu">
-              <button
-                *ngFor="let section of settingSections"
-                type="button"
-                (click)="switchSection(section.key)"
-                [class.active]="activeSection === section.key"
-                class="nav-item">
-                <span class="nav-icon"><i [class]="section.icon"></i></span>
-                <span class="nav-content">
-                  <span class="nav-label">{{ section.label }}</span>
-                  <span class="nav-description">{{ section.description }}</span>
-                </span>
-                <i class="pi pi-angle-right nav-chevron"></i>
-              </button>
-            </nav>
-          </div>
-
-          <div class="settings-sidebar-panel sidebar-help">
-            <div class="sidebar-help-icon"><i class="pi pi-shield"></i></div>
-            <div>
-              <div class="sidebar-help-title">Governed updates</div>
-              <p class="sidebar-help-text">Keep high-risk actions isolated, prefer explicit save actions, and maintain clear status feedback.</p>
-            </div>
-          </div>
-        </aside>
-
-        <div class="settings-panel">
-          <div class="settings-panel-header">
-            <div>
-              <p class="panel-eyebrow">Settings module</p>
-              <h2 class="panel-title">{{ activeSectionMeta.label }}</h2>
-              <p class="panel-subtitle">{{ activeSectionMeta.description }}</p>
-            </div>
-            <div class="panel-chip">
-              <i [class]="activeSectionMeta.icon"></i>
-              <span>{{ activeSectionMeta.label }}</span>
-            </div>
-          </div>
-
-          <div class="settings-panel-content">
-            <ng-container *ngIf="activeSection === 'profile'">
-              <div class="settings-section">
-                <div class="flat-card">
-                  <div class="card-header">
-                    <div class="card-icon profile-icon">
-                      <i class="pi pi-user"></i>
-                    </div>
-                    <div class="card-title-group">
-                      <h2 class="card-title">Profile Information</h2>
-                      <p class="card-subtitle">Update your account details</p>
-                    </div>
-                  </div>
-                  <div class="card-body">
-                    <div class="profile-grid">
-                      <div class="avatar-section">
-                        <div class="avatar-wrapper">
-                          <img *ngIf="avatarPreview" [src]="avatarPreview" alt="Profile" class="avatar-image">
-                          <div *ngIf="!avatarPreview && !uploadingAvatar" class="avatar-placeholder">
-                            <i class="pi pi-user"></i>
-                          </div>
-                          <div *ngIf="uploadingAvatar" class="avatar-loading">
-                            <p-progressSpinner [style]="{width: '50px', height: '50px'}"></p-progressSpinner>
-                          </div>
-                        </div>
-                        <h3 class="avatar-name">{{ profile.firstName || 'N/A' }} {{ profile.lastName || '' }}</h3>
-                        <p class="avatar-role">{{ profile.role || 'N/A' }}</p>
-                        <button pButton type="button" label="Change Photo"
-                                icon="pi pi-upload" class="p-button-sm mt-3"
-                                [disabled]="uploadingAvatar"
-                                (click)="openPhotoUpload()"></button>
-                      </div>
-
-                      <div class="form-section">
-                        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="form-grid">
-                          <div class="form-group">
-                            <label>First Name *</label>
-                            <input type="text" pInputText formControlName="firstName"
-                                   placeholder="Enter first name" class="form-input">
-                          </div>
-
-                          <div class="form-group">
-                            <label>Last Name *</label>
-                            <input type="text" pInputText formControlName="lastName"
-                                   placeholder="Enter last name" class="form-input">
-                          </div>
-
-                          <div class="form-group full-width">
-                            <label>Email *</label>
-                            <input type="email" pInputText formControlName="email"
-                                   placeholder="Enter email" class="form-input">
-                          </div>
-
-                          <div class="form-group">
-                            <label>Phone</label>
-                            <input type="tel" pInputText formControlName="phone"
-                                   placeholder="Enter phone" class="form-input">
-                          </div>
-
-                          <div class="form-group">
-                            <label>Department</label>
-                            <p-dropdown [options]="departmentOptions" formControlName="department"
-                                        placeholder="Select Department" class="w-full"></p-dropdown>
-                          </div>
-
-                          <div class="form-group">
-                            <label>Timezone</label>
-                            <p-dropdown [options]="timezoneOptions" formControlName="timezone"
-                                        placeholder="Select Timezone" class="w-full"></p-dropdown>
-                          </div>
-
-                          <div class="form-actions">
-                            <button pButton type="button" label="Cancel" severity="secondary"
-                                    class="p-button-sm p-button-outlined" (click)="fetchLocalProfile()"></button>
-                            <button pButton type="submit" label="Save" icon="pi pi-check"
-                                    class="p-button-sm" [disabled]="profileForm.invalid" [loading]="profileSaving"></button>
-                          </div>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="flat-card">
-                  <div class="card-header">
-                    <div class="card-icon sessions-icon">
-                      <i class="pi pi-clock"></i>
-                    </div>
-                    <div class="card-title-group">
-                      <h2 class="card-title">Active Sessions</h2>
-                      <p class="card-subtitle">Manage your login sessions</p>
-                    </div>
-                    <button pButton type="button" icon="pi pi-refresh" class="p-button-sm p-button-text"
-                            (click)="refreshSessions()" [loading]="localLoading"></button>
-                  </div>
-                  <div class="card-body">
-                    <div *ngIf="!localLoading && sessions?.length > 0" class="sessions-list">
-                      <div *ngFor="let s of sessions" class="session-item">
-                        <div class="session-icon">
-                          <i class="pi pi-desktop"></i>
-                        </div>
-                        <div class="session-info">
-                          <div class="session-name">{{ s.device }}</div>
-                          <div class="session-meta">{{ maskSession(s.session) }}</div>
-                        </div>
-                        <div class="session-expires">
-                          <span class="badge">{{ formatRemaining(s.remaining_seconds) }}</span>
-                        </div>
-                        <button pButton type="button" icon="pi pi-trash" class="p-button-sm p-button-danger p-button-text"
-                                (click)="revokeSession(s.session)"></button>
-                      </div>
-                      <div class="mt-4 pt-4 border-top">
-                        <button pButton type="button" label="Revoke All Other Sessions"
-                                severity="warning" class="p-button-sm p-button-outlined"
-                                (click)="revokeOtherSessions()"></button>
-                      </div>
-                    </div>
-                    <div *ngIf="!localLoading && sessions?.length === 0" class="empty-state">
-                      <i class="pi pi-info-circle"></i>
-                      <p>No active sessions</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </ng-container>
-            <ng-container *ngIf="activeSection === 'security'">
-              <div class="settings-section">
-                <div class="flat-card">
-                  <div class="card-header">
-                    <div class="card-icon security-icon">
-                      <i class="pi pi-shield"></i>
-                    </div>
-                    <div class="card-title-group">
-                      <h2 class="card-title">Security Settings</h2>
-                      <p class="card-subtitle">Manage authentication and security</p>
-                    </div>
-                  </div>
-                  <div class="card-body">
-                    <div class="settings-toggle-list">
-                      <div class="toggle-item">
-                        <div class="toggle-info">
-                          <div class="toggle-label">Two-Factor Authentication</div>
-                          <div class="toggle-desc">Require additional verification step</div>
-                        </div>
-                        <p-inputSwitch [(ngModel)]="securitySettings.twoFactorEnabled"></p-inputSwitch>
-                      </div>
-
-                      <div class="toggle-item">
-                        <div class="toggle-info">
-                          <div class="toggle-label">Login Notifications</div>
-                          <div class="toggle-desc">Get notified of new sign-ins</div>
-                        </div>
-                        <p-inputSwitch [(ngModel)]="securitySettings.loginNotifications"></p-inputSwitch>
-                      </div>
-
-                      <div class="settings-item">
-                        <div class="settings-label">Session Timeout</div>
-                        <p-dropdown [options]="sessionTimeoutOptions" [(ngModel)]="securitySettings.sessionTimeout"
-                                    placeholder="Select timeout" class="w-full md:w-64"></p-dropdown>
-                      </div>
-                    </div>
-                    <div class="card-actions">
-                      <button pButton type="button" label="Save Settings"
-                              class="p-button-sm" (click)="saveSecuritySettings()"></button>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="flat-card">
-                  <div class="card-header">
-                    <div class="card-icon password-icon">
-                      <i class="pi pi-key"></i>
-                    </div>
-                    <div class="card-title-group">
-                      <h2 class="card-title">Change Password</h2>
-                      <p class="card-subtitle">Update your account password</p>
-                    </div>
-                  </div>
-                  <div class="card-body">
-                    <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="form-column">
-                      <div class="form-group">
-                        <label>Current Password *</label>
-                        <input type="password" pInputText formControlName="currentPassword"
-                               placeholder="Enter current password" class="form-input">
-                      </div>
-
-                      <div class="form-group">
-                        <label>New Password *</label>
-                        <input type="password" pInputText formControlName="newPassword"
-                               placeholder="Enter new password" class="form-input">
-                        <small>Minimum 8 characters</small>
-                      </div>
-
-                      <div class="form-group">
-                        <label>Confirm Password *</label>
-                        <input type="password" pInputText formControlName="confirmPassword"
-                               placeholder="Confirm new password" class="form-input">
-                      </div>
-
-                      <div class="form-actions">
-                        <button pButton type="button" label="Cancel" severity="secondary"
-                                class="p-button-sm p-button-outlined" (click)="passwordForm.reset()"></button>
-                        <button pButton type="submit" label="Update Password" icon="pi pi-check"
-                                class="p-button-sm" [disabled]="passwordForm.invalid" [loading]="passwordSaving"></button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </ng-container>
-
-            <ng-container *ngIf="activeSection === 'users'">
-              <div class="settings-section">
-                <div class="flat-card">
-                  <div class="card-header">
-                    <div class="card-icon users-icon">
-                      <i class="pi pi-users"></i>
-                    </div>
-                    <div class="card-title-group">
-                      <h2 class="card-title">User Management</h2>
-                      <p class="card-subtitle">View and manage all users</p>
-                    </div>
-                    <div class="user-count-badge">{{ allUsers.length }} Users</div>
-                  </div>
-                  <div class="card-body">
-                    <div class="search-box mb-4">
-                      <i class="pi pi-search"></i>
-                      <input type="text" [(ngModel)]="userSearchText" (input)="filterUsers()"
-                             placeholder="Search users..." class="search-input">
-                    </div>
-
-                    <div *ngIf="!managementLoading && filteredUsers?.length > 0" class="users-list">
-                      <div *ngFor="let user of filteredUsers" class="user-item">
-                        <div class="user-avatar">
-                          {{ getUserInitials(user) }}
-                        </div>
-                        <div class="user-details">
-                          <div class="user-name">{{ user.first_name || user.last_name ? (user.first_name + ' ' + (user.last_name || '')) : (user.full_name || 'Unknown') }}</div>
-                          <div class="user-email">{{ user.email }}</div>
-                        </div>
-                        <div class="user-meta">
-                          <p-tag [value]="getRoleDisplayText(user.role || 'user')"
-                                 [severity]="getRoleSeverity(user.role || 'user')"></p-tag>
-                          <p-tag [value]="getUserStatus(user)"
-                                 [severity]="getUserStatusSeverity(user)"></p-tag>
-                        </div>
-                        <button pButton type="button" icon="pi pi-eye" class="p-button-sm p-button-text"
-                                (click)="viewUser(user)"></button>
-                      </div>
-                    </div>
-
-                    <div *ngIf="!managementLoading && filteredUsers?.length === 0" class="empty-state">
-                      <i class="pi pi-users"></i>
-                      <p>No users found</p>
-                    </div>
-
-                    <div class="card-actions mt-4">
-                      <button pButton type="button" icon="pi pi-refresh"
-                              class="p-button-sm" (click)="fetchUsersForManagement(true)"
-                              [loading]="managementLoading"></button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </ng-container>
-
-            <ng-container *ngIf="activeSection === 'data'">
-              <div class="settings-section">
-                <div class="grid-2">
-                  <div class="flat-card">
-                    <div class="card-header">
-                      <div class="card-icon export-icon">
-                        <i class="pi pi-download"></i>
-                      </div>
-                      <h2 class="card-title">Export My Data</h2>
-                    </div>
-                    <div class="card-body">
-                      <p class="card-desc">Download a copy of your data including profile and activity history.</p>
-                      <button pButton type="button" label="Export Data" icon="pi pi-download"
-                              class="p-button-sm w-full" (click)="exportData()"></button>
-                    </div>
-                  </div>
-
-                  <div class="flat-card danger">
-                    <div class="card-header">
-                      <div class="card-icon delete-icon">
-                        <i class="pi pi-trash"></i>
-                      </div>
-                      <h2 class="card-title">Delete Account</h2>
-                    </div>
-                    <div class="card-body">
-                      <p class="card-desc">Permanently delete your account and all data. This cannot be undone.</p>
-                      <button pButton type="button" label="Delete Account" icon="pi pi-trash"
-                              severity="danger" class="p-button-sm w-full" (click)="deleteAccount()"></button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </ng-container>
-            <ng-container *ngIf="activeSection === 'notifications'">
-              <div class="settings-section">
-                <div class="flat-card">
-                  <div class="card-header">
-                    <div class="card-icon notifications-icon">
-                      <i class="pi pi-bell"></i>
-                    </div>
-                    <div class="card-title-group">
-                      <h2 class="card-title">Notification Preferences</h2>
-                      <p class="card-subtitle">Choose how you receive notifications</p>
-                    </div>
-                  </div>
-                  <div class="card-body">
-                    <div class="grid-2">
-                      <div>
-                        <h4 class="section-subtitle">Communication</h4>
-                        <div class="settings-toggle-list">
-                          <div class="toggle-item">
-                            <div>
-                              <div class="toggle-label">Email Notifications</div>
-                              <div class="toggle-desc">Receive notifications via email</div>
-                            </div>
-                            <p-inputSwitch [(ngModel)]="notificationSettings.emailNotifications"></p-inputSwitch>
-                          </div>
-                          <div class="toggle-item">
-                            <div>
-                              <div class="toggle-label">Push Notifications</div>
-                              <div class="toggle-desc">Receive browser notifications</div>
-                            </div>
-                            <p-inputSwitch [(ngModel)]="notificationSettings.pushNotifications"></p-inputSwitch>
-                          </div>
-                          <div class="toggle-item">
-                            <div>
-                              <div class="toggle-label">SMS Notifications</div>
-                              <div class="toggle-desc">Receive text messages</div>
-                            </div>
-                            <p-inputSwitch [(ngModel)]="notificationSettings.smsNotifications"></p-inputSwitch>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <h4 class="section-subtitle">Content</h4>
-                        <div class="settings-toggle-list">
-                          <div class="toggle-item">
-                            <div>
-                              <div class="toggle-label">Marketing Emails</div>
-                              <div class="toggle-desc">Product updates and newsletters</div>
-                            </div>
-                            <p-inputSwitch [(ngModel)]="notificationSettings.marketingEmails"></p-inputSwitch>
-                          </div>
-                          <div class="toggle-item">
-                            <div>
-                              <div class="toggle-label">Security Alerts</div>
-                              <div class="toggle-desc">Important security notifications</div>
-                            </div>
-                            <p-inputSwitch [(ngModel)]="notificationSettings.securityAlerts"></p-inputSwitch>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="card-actions mt-6">
-                      <button pButton type="button" label="Cancel" severity="secondary"
-                              class="p-button-sm p-button-outlined" (click)="loadNotificationSettings()"></button>
-                      <button pButton type="button" label="Save Preferences" icon="pi pi-check"
-                              class="p-button-sm" (click)="saveNotificationSettings()" [loading]="notifSaving"></button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </ng-container>
-
-            <!-- ── Access & Roles ── -->
-            <ng-container *ngIf="activeSection === 'access'">
-              <div class="settings-section">
-                <div class="flat-card">
-                  <div class="card-header">
-                    <div class="card-icon security-icon"><i class="pi pi-shield"></i></div>
-                    <div class="card-title-group">
-                      <h2 class="card-title">Your Access Snapshot</h2>
-                      <p class="card-subtitle">Live governance view from /authentication/me/permissions</p>
-                    </div>
-                    <button pButton type="button" icon="pi pi-refresh" class="p-button-sm p-button-text"
-                            (click)="loadMyPermissions()" [loading]="permissionsLoading"></button>
-                  </div>
-                  <div class="card-body">
-                    <div *ngIf="permissionsLoading" class="empty-state">
-                      <i class="pi pi-spin pi-spinner" style="font-size:2rem;color:var(--accent)"></i>
-                      <p>Loading permissions…</p>
-                    </div>
-
-                    <div *ngIf="!permissionsLoading && myPermissions">
-
-                      <!-- Roles -->
-                      <div class="access-block">
-                        <div class="access-block-title"><i class="pi pi-tag"></i> Roles</div>
-                        <div class="chips-row" *ngIf="myPermissions.roles?.length; else noRoles">
-                          <span *ngFor="let r of myPermissions.roles" class="access-chip chip-role">
-                            {{ r.name || r.code || r }}
-                          </span>
-                        </div>
-                        <ng-template #noRoles><p class="empty-text">No roles assigned</p></ng-template>
-                      </div>
-
-                      <!-- Permissions -->
-                      <div class="access-block">
-                        <div class="access-block-title"><i class="pi pi-key"></i> Permissions</div>
-                        <div class="chips-row" *ngIf="myPermissions.permissions?.length; else noPerms">
-                          <span *ngFor="let p of myPermissions.permissions" class="access-chip chip-perm">
-                            {{ p.code || p.name || p }}
-                          </span>
-                        </div>
-                        <ng-template #noPerms><p class="empty-text">No permissions</p></ng-template>
-                      </div>
-
-                      <!-- Policies -->
-                      <div class="access-block">
-                        <div class="access-block-title"><i class="pi pi-lock"></i> Policies</div>
-                        <div class="chips-row" *ngIf="myPermissions.policies?.length; else noPolicies">
-                          <span *ngFor="let p of myPermissions.policies" class="access-chip chip-policy">
-                            {{ p.name || p.code || p }}
-                          </span>
-                        </div>
-                        <ng-template #noPolicies><p class="empty-text">No policies</p></ng-template>
-                      </div>
-
-                      <!-- Teams -->
-                      <div class="access-block">
-                        <div class="access-block-title"><i class="pi pi-users"></i> Teams</div>
-                        <div class="chips-row" *ngIf="myPermissions.teams?.length; else noTeams">
-                          <span *ngFor="let t of myPermissions.teams" class="access-chip chip-team">
-                            {{ t.name || t }}
-                          </span>
-                        </div>
-                        <ng-template #noTeams><p class="empty-text">No teams</p></ng-template>
-                      </div>
-
-                      <!-- Casbin Rules -->
-                      <div class="access-block" *ngIf="myPermissions.casbin_rules?.length">
-                        <div class="access-block-title"><i class="pi pi-list"></i> RBAC Rules ({{ myPermissions.casbin_rules.length }})</div>
-                        <div class="casbin-table">
-                          <table>
-                            <thead><tr><th>Subject</th><th>Domain</th><th>Object</th><th>Action</th></tr></thead>
-                            <tbody>
-                              <tr *ngFor="let rule of myPermissions.casbin_rules">
-                                <td><code>{{ rule.v0 || rule.sub || '—' }}</code></td>
-                                <td><code>{{ rule.v1 || rule.dom || '—' }}</code></td>
-                                <td><code>{{ rule.v2 || rule.obj || '—' }}</code></td>
-                                <td><code>{{ rule.v3 || rule.act || '—' }}</code></td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-
-                      <!-- Account info -->
-                      <div class="access-block" *ngIf="myPermissions.account">
-                        <div class="access-block-title"><i class="pi pi-id-card"></i> Account</div>
-                        <div class="account-meta-grid">
-                          <div><span class="meta-label">ID</span><code class="meta-value">{{ myPermissions.account._id || myPermissions.account.kid || '—' }}</code></div>
-                          <div><span class="meta-label">Email</span><span class="meta-value">{{ myPermissions.account.email || '—' }}</span></div>
-                          <div><span class="meta-label">Active</span>
-                            <span class="meta-value">
-                              <i [class]="myPermissions.account.is_active ? 'pi pi-check-circle text-green-500' : 'pi pi-times-circle text-red-400'"></i>
-                            </span>
-                          </div>
-                          <div><span class="meta-label">Verified</span>
-                            <span class="meta-value">
-                              <i [class]="myPermissions.account.is_verified ? 'pi pi-check-circle text-green-500' : 'pi pi-times-circle text-red-400'"></i>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div *ngIf="!permissionsLoading && !myPermissions" class="empty-state">
-                      <i class="pi pi-shield"></i>
-                      <p>Click refresh to load your access data</p>
-                      <button pButton type="button" label="Load Permissions" icon="pi pi-refresh" class="p-button-sm mt-4"
-                              (click)="loadMyPermissions()"></button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </ng-container>
-
-            <ng-container *ngIf="activeSection === 'appearance'">
-              <div class="settings-section">
-                <div class="flat-card">
-                  <div class="card-header">
-                    <div class="card-icon appearance-icon">
-                      <i class="pi pi-palette"></i>
-                    </div>
-                    <div class="card-title-group">
-                      <h2 class="card-title">Appearance & Theme</h2>
-                      <p class="card-subtitle">Customize how the app looks</p>
-                    </div>
-                  </div>
-                  <div class="card-body">
-                    <div class="settings-group">
-                      <div class="group-title">Color Theme</div>
-                      <p-selectButton [options]="themeOptions" [(ngModel)]="appearanceSettings.theme"
-                                      (onChange)="onThemeChange()" optionLabel="label" optionValue="value"
-                                      class="w-full"></p-selectButton>
-                    </div>
-
-                    <div class="settings-group">
-                      <div class="group-title">UI Style</div>
-                      <div class="style-grid">
-                        <div *ngFor="let style of uiStyleOptions"
-                             class="style-option"
-                             [class.active]="appearanceSettings.uiStyle === style.value"
-                             (click)="appearanceSettings.uiStyle = style.value; onUiStyleChange()">
-                          <div class="style-name">{{ style.label }}</div>
-                          <div class="style-desc">{{ style.description }}</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="settings-group">
-                      <div class="group-title">Colors</div>
-                      <div class="grid-2">
-                        <div>
-                          <label class="setting-label">Primary Color</label>
-                          <div class="color-picker-row">
-                            <p-colorPicker [(ngModel)]="appearanceSettings.primaryColor" format="hex"
-                                           [inline]="false" [showTransparency]="false"
-                                           (ngModelChange)="triggerPreviewUpdate()"></p-colorPicker>
-                            <input type="text" pInputText [(ngModel)]="appearanceSettings.primaryColor"
-                                   placeholder="#000000" class="color-input"
-                                   (ngModelChange)="triggerPreviewUpdate()">
-                          </div>
-                          <div class="color-swatches">
-                            <button *ngFor="let preset of colorPresets" type="button" class="swatch"
-                                    [style.backgroundColor]="preset.value"
-                                    (click)="selectColorPreset(preset.value, 'primary')"
-                                    [title]="preset.name"
-                                    [class.selected]="appearanceSettings.primaryColor === preset.value"></button>
-                          </div>
-                        </div>
-
-                        <div>
-                          <label class="setting-label">Accent Color</label>
-                          <div class="color-picker-row">
-                            <p-colorPicker [(ngModel)]="appearanceSettings.accentColor" format="hex"
-                                           [inline]="false" [showTransparency]="false"
-                                           (ngModelChange)="triggerPreviewUpdate()"></p-colorPicker>
-                            <input type="text" pInputText [(ngModel)]="appearanceSettings.accentColor"
-                                   placeholder="#000000" class="color-input"
-                                   (ngModelChange)="triggerPreviewUpdate()">
-                          </div>
-                          <div class="color-swatches">
-                            <button *ngFor="let preset of colorPresets" type="button" class="swatch"
-                                    [style.backgroundColor]="preset.value"
-                                    (click)="selectColorPreset(preset.value, 'accent')"
-                                    [title]="preset.name"
-                                    [class.selected]="appearanceSettings.accentColor === preset.value"></button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="settings-group">
-                      <div class="group-title">Typography</div>
-                      <div class="grid-2">
-                        <div>
-                          <label class="setting-label">Font Family</label>
-                          <div class="font-chips">
-                            <p-chip *ngFor="let font of fontPresets" [label]="font.name"
-                                    class="cursor-pointer"
-                                    [class.selected]="appearanceSettings.fontFamily === font.value"
-                                    (click)="selectFontPreset(font.value)"></p-chip>
-                          </div>
-                        </div>
-
-                        <div>
-                          <label class="setting-label">Font Size</label>
-                          <p-selectButton [options]="fontSizeOptions" [(ngModel)]="appearanceSettings.fontSize"
-                                          optionLabel="label" optionValue="value" class="w-full"></p-selectButton>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="settings-group">
-                      <div class="group-title">Layout & Behavior</div>
-                      <div class="grid-2">
-                        <div>
-                          <label class="setting-label">Border Radius</label>
-                          <p-selectButton [options]="borderRadiusOptions" [(ngModel)]="appearanceSettings.borderRadius"
-                                          (ngModelChange)="triggerPreviewUpdate()"
-                                          optionLabel="label" optionValue="value" class="w-full"></p-selectButton>
-                        </div>
-
-                        <div>
-                          <label class="setting-label">Layout Style</label>
-                          <p-dropdown [options]="layoutStyleOptions" [(ngModel)]="appearanceSettings.layoutStyle"
-                                      placeholder="Select layout" class="w-full"></p-dropdown>
-                        </div>
-
-                        <div>
-                          <label class="setting-label">Background</label>
-                          <p-dropdown [options]="backgroundPatternOptions" [(ngModel)]="appearanceSettings.backgroundPattern"
-                                      placeholder="Select background" class="w-full"></p-dropdown>
-                        </div>
-
-                        <div>
-                          <label class="setting-label">Language</label>
-                          <p-dropdown [options]="languageOptions" [(ngModel)]="appearanceSettings.language"
-                                      placeholder="Select language" class="w-full"></p-dropdown>
-                        </div>
-                      </div>
-
-                      <div class="settings-toggle-list mt-4">
-                        <div class="toggle-item">
-                          <div class="toggle-label">Animations</div>
-                          <p-inputSwitch [(ngModel)]="appearanceSettings.animationEnabled"></p-inputSwitch>
-                        </div>
-                        <div class="toggle-item">
-                          <div class="toggle-label">Shadows</div>
-                          <p-inputSwitch [(ngModel)]="appearanceSettings.shadowEnabled"></p-inputSwitch>
-                        </div>
-                        <div class="toggle-item">
-                          <div class="toggle-label">Compact Mode</div>
-                          <p-inputSwitch [(ngModel)]="appearanceSettings.compactMode"></p-inputSwitch>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="settings-group">
-                      <div class="group-title">Preview</div>
-                      <div class="preview-box"
-                           [ngStyle]="{'background-color': appearanceSettings.theme === 'dark' ? '#1a1a1a' : '#f5f5f5', 'color': appearanceSettings.theme === 'dark' ? '#e0e0e0' : '#333333', 'font-family': appearanceSettings.fontFamily}">
-                        <div class="preview-header">
-                          <div class="preview-color-swatch" [style.background]="appearanceSettings.primaryColor"></div>
-                          <h4>Preview</h4>
-                        </div>
-                        <div class="preview-content">
-                          <div class="preview-line short"></div>
-                          <div class="preview-line"></div>
-                          <div class="preview-buttons">
-                            <button pButton type="button" label="Primary" class="p-button-sm" [style.background]="appearanceSettings.primaryColor"></button>
-                            <button pButton type="button" label="Accent" class="p-button-sm p-button-outlined" [style.border]="'2px solid ' + appearanceSettings.accentColor" [style.color]="appearanceSettings.accentColor"></button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="card-actions">
-                      <button pButton type="button" label="Reset" severity="secondary"
-                              icon="pi pi-refresh" class="p-button-sm p-button-outlined"
-                              (click)="resetAppearanceSettings()"></button>
-                      <button pButton type="button" label="Save" icon="pi pi-check"
-                              class="p-button-sm" (click)="saveAppearanceSettings()"></button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </ng-container>
-          </div>
-        </div>
-      </section>
+      </div>
+      <div class="flex items-center gap-2">
+        <p-button icon="pi pi-refresh" severity="info" [outlined]="true" [rounded]="true"
+          (click)="refreshData()" [loading]="loading || localLoading" pTooltip="Refresh">
+        </p-button>
+        <p-button icon="pi pi-palette" severity="secondary" [outlined]="true" [rounded]="true"
+          (click)="switchSection('appearance')" pTooltip="Appearance">
+        </p-button>
+      </div>
     </div>
   </div>
 
-  <p-toast></p-toast>
-  <p-confirmDialog></p-confirmDialog>
+  <!-- ── Summary Stats ── -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div *ngFor="let card of settingsSummaryCards"
+      class="bg-white rounded-lg shadow-sm p-5 flex items-center justify-between hover:shadow-md transition-shadow">
+      <div>
+        <p class="text-sm font-medium text-gray-600">{{ card.label }}</p>
+        <p class="text-2xl font-bold text-gray-900 mt-0.5">{{ card.value }}</p>
+        <p class="text-xs text-gray-400 mt-1">{{ card.caption }}</p>
+      </div>
+      <div class="w-11 h-11 rounded-lg flex items-center justify-center flex-shrink-0"
+        [ngClass]="{
+          'bg-blue-100':   card.tone === 'blue',
+          'bg-orange-100': card.tone === 'orange',
+          'bg-purple-100': card.tone === 'purple',
+          'bg-green-100':  card.tone === 'emerald'
+        }">
+        <i [class]="card.icon + ' text-xl'"
+          [ngClass]="{
+            'text-blue-600':   card.tone === 'blue',
+            'text-orange-600': card.tone === 'orange',
+            'text-purple-600': card.tone === 'purple',
+            'text-green-600':  card.tone === 'emerald'
+          }"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Two-column workspace ── -->
+  <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 items-start">
+
+    <!-- Sidebar nav -->
+    <div class="flex flex-col gap-4">
+      <div class="bg-white rounded-lg shadow-sm p-4">
+        <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Governance areas</p>
+        <p class="text-sm font-semibold text-gray-800 mb-3">Account controls</p>
+        <nav class="flex flex-col gap-1">
+          <button
+            *ngFor="let section of settingSections"
+            type="button"
+            (click)="switchSection(section.key)"
+            class="w-full flex items-center gap-3 px-3 py-3 rounded-lg border transition-all text-left group"
+            [ngClass]="activeSection === section.key
+              ? 'bg-blue-50 border-blue-200 text-blue-700'
+              : 'border-transparent hover:bg-gray-50 hover:border-gray-200 text-gray-600'">
+            <span class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 text-sm transition-colors"
+              [ngClass]="activeSection === section.key
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-500 group-hover:bg-gray-200'">
+              <i [class]="section.icon"></i>
+            </span>
+            <span class="flex flex-col flex-1 min-w-0">
+              <span class="text-sm font-semibold leading-tight"
+                [ngClass]="activeSection === section.key ? 'text-blue-700' : 'text-gray-800'">
+                {{ section.label }}
+              </span>
+              <span class="text-xs text-gray-400 truncate leading-tight mt-0.5 hidden sm:block">
+                {{ section.description }}
+              </span>
+            </span>
+            <i class="pi pi-angle-right text-xs"
+              [ngClass]="activeSection === section.key ? 'text-blue-500' : 'text-gray-300'"></i>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Help tip -->
+      <div class="bg-white rounded-lg shadow-sm p-4 flex items-start gap-3">
+        <div class="w-9 h-9 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <i class="pi pi-shield text-yellow-600 text-sm"></i>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-gray-800 mb-1">Governed updates</p>
+          <p class="text-xs text-gray-500 leading-relaxed">
+            Keep high-risk actions isolated, prefer explicit save actions, and maintain clear status feedback.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main panel -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+
+      <!-- Panel header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-white to-blue-50/30">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-widest text-gray-400">Settings module</p>
+          <h2 class="text-xl font-bold text-gray-900">{{ activeSectionMeta.label }}</h2>
+          <p class="text-sm text-gray-500 mt-0.5">{{ activeSectionMeta.description }}</p>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-200 text-blue-700 text-sm font-semibold">
+          <i [class]="activeSectionMeta.icon + ' text-xs'"></i>
+          <span>{{ activeSectionMeta.label }}</span>
+        </div>
+      </div>
+
+      <!-- Panel content -->
+      <div class="p-6">
+
+        <!-- ══ PROFILE ══ -->
+        <ng-container *ngIf="activeSection === 'profile'">
+          <div class="flex flex-col gap-5">
+
+            <!-- Profile info card -->
+            <div class="rounded-lg border border-gray-100 overflow-hidden">
+              <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
+                <div class="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-user text-blue-600 text-sm"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-gray-900">Profile Information</h3>
+                  <p class="text-xs text-gray-500">Update your account details</p>
+                </div>
+              </div>
+              <div class="p-5">
+                <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6">
+
+                  <!-- Avatar -->
+                  <div class="flex flex-col items-center gap-3 py-2">
+                    <div class="w-28 h-28 rounded-full overflow-hidden border-4 border-white ring-2 ring-gray-200 shadow-md bg-gray-100 flex items-center justify-center">
+                      <img *ngIf="avatarPreview" [src]="avatarPreview" alt="Profile" class="w-full h-full object-cover" (error)="onAvatarError($event)">
+                      <i *ngIf="!avatarPreview && !uploadingAvatar" class="pi pi-user text-4xl text-gray-400"></i>
+                      <p-progressSpinner *ngIf="uploadingAvatar" [style]="{width:'48px',height:'48px'}"></p-progressSpinner>
+                    </div>
+                    <div class="text-center">
+                      <p class="text-sm font-bold text-gray-900">{{ profile.firstName || 'N/A' }} {{ profile.lastName || '' }}</p>
+                      <p class="text-xs text-gray-500">{{ profile.role || 'N/A' }}</p>
+                    </div>
+                    <p-button label="Change Photo" icon="pi pi-upload" size="small"
+                      [disabled]="uploadingAvatar" (click)="openPhotoUpload()">
+                    </p-button>
+                  </div>
+
+                  <!-- Form -->
+                  <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div class="flex flex-col gap-1">
+                        <label class="text-xs font-semibold text-gray-600">First Name *</label>
+                        <input type="text" pInputText formControlName="firstName" placeholder="First name" class="w-full">
+                      </div>
+                      <div class="flex flex-col gap-1">
+                        <label class="text-xs font-semibold text-gray-600">Last Name *</label>
+                        <input type="text" pInputText formControlName="lastName" placeholder="Last name" class="w-full">
+                      </div>
+                      <div class="flex flex-col gap-1 sm:col-span-2">
+                        <label class="text-xs font-semibold text-gray-600">Email *</label>
+                        <input type="email" pInputText formControlName="email" placeholder="Email" class="w-full">
+                      </div>
+                      <div class="flex flex-col gap-1">
+                        <label class="text-xs font-semibold text-gray-600">Phone</label>
+                        <input type="tel" pInputText formControlName="phone" placeholder="Phone" class="w-full">
+                      </div>
+                      <div class="flex flex-col gap-1">
+                        <label class="text-xs font-semibold text-gray-600">Department</label>
+                        <p-dropdown [options]="departmentOptions" formControlName="department"
+                          placeholder="Select Department" class="w-full"></p-dropdown>
+                      </div>
+                      <div class="flex flex-col gap-1">
+                        <label class="text-xs font-semibold text-gray-600">Timezone</label>
+                        <p-dropdown [options]="timezoneOptions" formControlName="timezone"
+                          placeholder="Select Timezone" class="w-full"></p-dropdown>
+                      </div>
+                      <div class="flex justify-end gap-2 sm:col-span-2 pt-2 border-t border-gray-100 mt-1">
+                        <p-button label="Cancel" severity="secondary" [outlined]="true" size="small"
+                          (click)="fetchLocalProfile()"></p-button>
+                        <p-button type="submit" label="Save Changes" icon="pi pi-check" size="small"
+                          [disabled]="profileForm.invalid" [loading]="profileSaving"></p-button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <!-- Active sessions card -->
+            <div class="rounded-lg border border-gray-100 overflow-hidden">
+              <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <i class="pi pi-desktop text-purple-600 text-sm"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-sm font-bold text-gray-900">Active Sessions</h3>
+                    <p class="text-xs text-gray-500">Manage your login sessions</p>
+                  </div>
+                </div>
+                <p-button icon="pi pi-refresh" [text]="true" [rounded]="true" size="small"
+                  (click)="refreshSessions()" [loading]="localLoading"></p-button>
+              </div>
+              <div class="p-5">
+                <div *ngIf="sessions?.length > 0" class="flex flex-col gap-3">
+                  <div *ngFor="let s of sessions"
+                    class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors">
+                    <div class="w-9 h-9 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <i class="pi pi-desktop text-gray-600 text-sm"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-semibold text-gray-800 truncate">{{ s.device }}</p>
+                      <p class="text-xs text-gray-400 font-mono">{{ maskSession(s.session) }}</p>
+                    </div>
+                    <span class="text-xs font-bold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">
+                      {{ formatRemaining(s.remaining_seconds) }}
+                    </span>
+                    <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" size="small"
+                      (click)="revokeSession(s.session)"></p-button>
+                  </div>
+                  <div class="pt-3 border-t border-gray-100">
+                    <p-button label="Revoke All Other Sessions" severity="warning" [outlined]="true" size="small"
+                      (click)="revokeOtherSessions()"></p-button>
+                  </div>
+                </div>
+                <div *ngIf="!localLoading && sessions?.length === 0" class="py-8 text-center">
+                  <i class="pi pi-desktop text-3xl text-gray-300 block mb-2"></i>
+                  <p class="text-sm text-gray-400">No active sessions</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </ng-container>
+
+        <!-- ══ SECURITY ══ -->
+        <ng-container *ngIf="activeSection === 'security'">
+          <div class="flex flex-col gap-5">
+
+            <div class="rounded-lg border border-gray-100 overflow-hidden">
+              <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
+                <div class="w-9 h-9 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-shield text-orange-600 text-sm"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-gray-900">Security Settings</h3>
+                  <p class="text-xs text-gray-500">Manage authentication and security</p>
+                </div>
+              </div>
+              <div class="p-5 flex flex-col gap-3">
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100">
+                  <div>
+                    <p class="text-sm font-semibold text-gray-800">Two-Factor Authentication</p>
+                    <p class="text-xs text-gray-500 mt-0.5">Require additional verification step</p>
+                  </div>
+                  <p-inputSwitch [(ngModel)]="securitySettings.twoFactorEnabled"></p-inputSwitch>
+                </div>
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100">
+                  <div>
+                    <p class="text-sm font-semibold text-gray-800">Login Notifications</p>
+                    <p class="text-xs text-gray-500 mt-0.5">Get notified of new sign-ins</p>
+                  </div>
+                  <p-inputSwitch [(ngModel)]="securitySettings.loginNotifications"></p-inputSwitch>
+                </div>
+                <div class="flex flex-col gap-1.5 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                  <p class="text-sm font-semibold text-gray-800">Session Timeout</p>
+                  <p-dropdown [options]="sessionTimeoutOptions" [(ngModel)]="securitySettings.sessionTimeout"
+                    placeholder="Select timeout" class="w-full md:w-64"></p-dropdown>
+                </div>
+                <div class="flex justify-end pt-2 border-t border-gray-100">
+                  <p-button label="Save Settings" icon="pi pi-check" size="small"
+                    (click)="saveSecuritySettings()"></p-button>
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-lg border border-gray-100 overflow-hidden">
+              <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
+                <div class="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-key text-green-600 text-sm"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-gray-900">Change Password</h3>
+                  <p class="text-xs text-gray-500">Update your account password</p>
+                </div>
+              </div>
+              <div class="p-5">
+                <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="flex flex-col gap-4">
+                  <div class="flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-gray-600">Current Password *</label>
+                    <input type="password" pInputText formControlName="currentPassword"
+                      placeholder="Enter current password" class="w-full">
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-gray-600">New Password *</label>
+                    <input type="password" pInputText formControlName="newPassword"
+                      placeholder="Enter new password" class="w-full">
+                    <span class="text-xs text-gray-400">Minimum 8 characters</span>
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-gray-600">Confirm Password *</label>
+                    <input type="password" pInputText formControlName="confirmPassword"
+                      placeholder="Confirm new password" class="w-full">
+                  </div>
+                  <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                    <p-button label="Cancel" severity="secondary" [outlined]="true" size="small"
+                      type="button" (click)="passwordForm.reset()"></p-button>
+                    <p-button type="submit" label="Update Password" icon="pi pi-check" size="small"
+                      [disabled]="passwordForm.invalid" [loading]="passwordSaving"></p-button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+          </div>
+        </ng-container>
+
+        <!-- ══ NOTIFICATIONS ══ -->
+        <ng-container *ngIf="activeSection === 'notifications'">
+          <div class="rounded-lg border border-gray-100 overflow-hidden">
+            <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
+              <div class="w-9 h-9 bg-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <i class="pi pi-bell text-pink-600 text-sm"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-gray-900">Notification Preferences</h3>
+                <p class="text-xs text-gray-500">Choose how you receive notifications</p>
+              </div>
+            </div>
+            <div class="p-5">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Communication</p>
+                  <div class="flex flex-col gap-2">
+                    <div *ngFor="let item of [
+                      {label:'Email Notifications', desc:'Receive notifications via email', key:'emailNotifications'},
+                      {label:'Push Notifications', desc:'Receive browser notifications', key:'pushNotifications'},
+                      {label:'SMS Notifications', desc:'Receive text messages', key:'smsNotifications'}
+                    ]" class="flex items-center justify-between p-3.5 bg-gray-50 rounded-lg border border-gray-100">
+                      <div>
+                        <p class="text-sm font-semibold text-gray-800">{{ item.label }}</p>
+                        <p class="text-xs text-gray-400 mt-0.5">{{ item.desc }}</p>
+                      </div>
+                      <p-inputSwitch [(ngModel)]="notificationSettings[item.key]"></p-inputSwitch>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Content</p>
+                  <div class="flex flex-col gap-2">
+                    <div *ngFor="let item of [
+                      {label:'Marketing Emails', desc:'Product updates and newsletters', key:'marketingEmails'},
+                      {label:'Security Alerts', desc:'Important security notifications', key:'securityAlerts'}
+                    ]" class="flex items-center justify-between p-3.5 bg-gray-50 rounded-lg border border-gray-100">
+                      <div>
+                        <p class="text-sm font-semibold text-gray-800">{{ item.label }}</p>
+                        <p class="text-xs text-gray-400 mt-0.5">{{ item.desc }}</p>
+                      </div>
+                      <p-inputSwitch [(ngModel)]="notificationSettings[item.key]"></p-inputSwitch>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-100">
+                <p-button label="Cancel" severity="secondary" [outlined]="true" size="small"
+                  (click)="loadNotificationSettings()"></p-button>
+                <p-button label="Save Preferences" icon="pi pi-check" size="small"
+                  (click)="saveNotificationSettings()" [loading]="notifSaving"></p-button>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- ══ ACCESS & ROLES ══ -->
+        <ng-container *ngIf="activeSection === 'access'">
+          <div class="rounded-lg border border-gray-100 overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-shield text-orange-600 text-sm"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-gray-900">Your Access Snapshot</h3>
+                  <p class="text-xs text-gray-500">Live governance view from /authentication/me/permissions</p>
+                </div>
+              </div>
+              <p-button icon="pi pi-refresh" [text]="true" [rounded]="true" size="small"
+                (click)="loadMyPermissions()" [loading]="permissionsLoading"></p-button>
+            </div>
+            <div class="p-5">
+              <div *ngIf="permissionsLoading" class="py-10 text-center">
+                <i class="pi pi-spin pi-spinner text-3xl text-blue-500 block mb-2"></i>
+                <p class="text-sm text-gray-500">Loading permissions…</p>
+              </div>
+
+              <div *ngIf="!permissionsLoading && myPermissions" class="flex flex-col divide-y divide-gray-100">
+
+                <div class="py-4">
+                  <p class="text-xs font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 mb-3">
+                    <i class="pi pi-tag"></i> Roles
+                  </p>
+                  <div class="flex flex-wrap gap-2" *ngIf="myPermissions.roles?.length; else noRoles">
+                    <span *ngFor="let r of myPermissions.roles"
+                      class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
+                      {{ r.name || r.code || r }}
+                    </span>
+                  </div>
+                  <ng-template #noRoles><p class="text-sm text-gray-400">No roles assigned</p></ng-template>
+                </div>
+
+                <div class="py-4">
+                  <p class="text-xs font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 mb-3">
+                    <i class="pi pi-key"></i> Permissions
+                  </p>
+                  <div class="flex flex-wrap gap-2" *ngIf="myPermissions.permissions?.length; else noPerms">
+                    <span *ngFor="let p of myPermissions.permissions"
+                      class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200">
+                      {{ p.code || p.name || p }}
+                    </span>
+                  </div>
+                  <ng-template #noPerms><p class="text-sm text-gray-400">No permissions</p></ng-template>
+                </div>
+
+                <div class="py-4">
+                  <p class="text-xs font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 mb-3">
+                    <i class="pi pi-lock"></i> Policies
+                  </p>
+                  <div class="flex flex-wrap gap-2" *ngIf="myPermissions.policies?.length; else noPolicies">
+                    <span *ngFor="let p of myPermissions.policies"
+                      class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 border border-purple-200">
+                      {{ p.name || p.code || p }}
+                    </span>
+                  </div>
+                  <ng-template #noPolicies><p class="text-sm text-gray-400">No policies</p></ng-template>
+                </div>
+
+                <div class="py-4">
+                  <p class="text-xs font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 mb-3">
+                    <i class="pi pi-users"></i> Teams
+                  </p>
+                  <div class="flex flex-wrap gap-2" *ngIf="myPermissions.teams?.length; else noTeams">
+                    <span *ngFor="let t of myPermissions.teams"
+                      class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
+                      {{ t.name || t }}
+                    </span>
+                  </div>
+                  <ng-template #noTeams><p class="text-sm text-gray-400">No teams</p></ng-template>
+                </div>
+
+                <div class="py-4" *ngIf="myPermissions.casbin_rules?.length">
+                  <p class="text-xs font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 mb-3">
+                    <i class="pi pi-list"></i> RBAC Rules ({{ myPermissions.casbin_rules.length }})
+                  </p>
+                  <div class="overflow-x-auto rounded-lg border border-gray-100">
+                    <table class="w-full text-xs">
+                      <thead>
+                        <tr class="bg-gray-50">
+                          <th class="px-3 py-2 text-left font-semibold text-gray-500">Subject</th>
+                          <th class="px-3 py-2 text-left font-semibold text-gray-500">Domain</th>
+                          <th class="px-3 py-2 text-left font-semibold text-gray-500">Object</th>
+                          <th class="px-3 py-2 text-left font-semibold text-gray-500">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let rule of myPermissions.casbin_rules" class="border-t border-gray-50">
+                          <td class="px-3 py-2"><code class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs">{{ rule.v0 || rule.sub || '—' }}</code></td>
+                          <td class="px-3 py-2"><code class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs">{{ rule.v1 || rule.dom || '—' }}</code></td>
+                          <td class="px-3 py-2"><code class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs">{{ rule.v2 || rule.obj || '—' }}</code></td>
+                          <td class="px-3 py-2"><code class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs">{{ rule.v3 || rule.act || '—' }}</code></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="py-4" *ngIf="myPermissions.account">
+                  <p class="text-xs font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 mb-3">
+                    <i class="pi pi-id-card"></i> Account
+                  </p>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-0.5">
+                      <span class="text-xs font-bold text-gray-400 uppercase tracking-wide">ID</span>
+                      <code class="text-xs text-blue-700 bg-blue-50 px-2 py-0.5 rounded">{{ myPermissions.account._id || myPermissions.account.kid || '—' }}</code>
+                    </div>
+                    <div class="flex flex-col gap-0.5">
+                      <span class="text-xs font-bold text-gray-400 uppercase tracking-wide">Email</span>
+                      <span class="text-sm text-gray-700">{{ myPermissions.account.email || '—' }}</span>
+                    </div>
+                    <div class="flex flex-col gap-0.5">
+                      <span class="text-xs font-bold text-gray-400 uppercase tracking-wide">Active</span>
+                      <i [class]="myPermissions.account.is_active ? 'pi pi-check-circle text-green-500' : 'pi pi-times-circle text-red-400'"></i>
+                    </div>
+                    <div class="flex flex-col gap-0.5">
+                      <span class="text-xs font-bold text-gray-400 uppercase tracking-wide">Verified</span>
+                      <i [class]="myPermissions.account.is_verified ? 'pi pi-check-circle text-green-500' : 'pi pi-times-circle text-red-400'"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div *ngIf="!permissionsLoading && !myPermissions" class="py-12 text-center">
+                <i class="pi pi-shield text-4xl text-gray-300 block mb-3"></i>
+                <p class="text-sm text-gray-500 mb-4">Click refresh to load your access data</p>
+                <p-button label="Load Permissions" icon="pi pi-refresh" size="small"
+                  (click)="loadMyPermissions()"></p-button>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- ══ USER MANAGEMENT ══ -->
+        <ng-container *ngIf="activeSection === 'users'">
+          <div class="rounded-lg border border-gray-100 overflow-hidden">
+            <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
+              <div class="w-9 h-9 bg-cyan-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <i class="pi pi-users text-cyan-600 text-sm"></i>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-sm font-bold text-gray-900">User Management</h3>
+                <p class="text-xs text-gray-500">View and manage all users</p>
+              </div>
+              <p-badge [value]="allUsers.length.toString()" severity="info"></p-badge>
+              <p-button icon="pi pi-refresh" [text]="true" [rounded]="true" size="small"
+                (click)="fetchUsersForManagement(true)" [loading]="managementLoading"></p-button>
+            </div>
+            <div class="p-5">
+              <div class="relative mb-4">
+                <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                <input type="text" pInputText [(ngModel)]="userSearchText" (input)="filterUsers()"
+                  placeholder="Search users…" class="w-full pl-9">
+              </div>
+
+              <div *ngIf="!managementLoading && filteredUsers?.length > 0" class="flex flex-col gap-2">
+                <div *ngFor="let user of filteredUsers"
+                  class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors">
+                  <div class="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-blue-700 text-sm">
+                    {{ getUserInitials(user) }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-gray-800 truncate">
+                      {{ user.first_name || user.last_name ? (user.first_name + ' ' + (user.last_name || '')) : (user.full_name || 'Unknown') }}
+                    </p>
+                    <p class="text-xs text-gray-400 truncate">{{ user.email }}</p>
+                  </div>
+                  <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <p-tag [value]="getRoleDisplayText(user.role || 'user')"
+                      [severity]="getRoleSeverity(user.role || 'user')"></p-tag>
+                    <p-tag [value]="getUserStatus(user)"
+                      [severity]="getUserStatusSeverity(user)"></p-tag>
+                  </div>
+                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small"
+                    (click)="viewUser(user)"></p-button>
+                </div>
+              </div>
+
+              <div *ngIf="!managementLoading && filteredUsers?.length === 0" class="py-10 text-center">
+                <i class="pi pi-users text-4xl text-gray-300 block mb-2"></i>
+                <p class="text-sm text-gray-400">No users found</p>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- ══ APPEARANCE ══ -->
+        <ng-container *ngIf="activeSection === 'appearance'">
+          <div class="rounded-lg border border-gray-100 overflow-hidden">
+            <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
+              <div class="w-9 h-9 bg-violet-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <i class="pi pi-palette text-violet-600 text-sm"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-gray-900">Appearance &amp; Theme</h3>
+                <p class="text-xs text-gray-500">Customize how the app looks</p>
+              </div>
+            </div>
+            <div class="p-5 flex flex-col gap-6">
+
+              <div class="flex flex-col gap-2">
+                <p class="text-sm font-bold text-gray-700">Color Theme</p>
+                <p-selectButton [options]="themeOptions" [(ngModel)]="appearanceSettings.theme"
+                  (onChange)="onThemeChange()" optionLabel="label" optionValue="value"></p-selectButton>
+              </div>
+
+              <div class="flex flex-col gap-2 pt-4 border-t border-gray-100">
+                <p class="text-sm font-bold text-gray-700">UI Style</p>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div *ngFor="let style of uiStyleOptions"
+                    class="p-3 rounded-lg border cursor-pointer transition-all"
+                    [ngClass]="appearanceSettings.uiStyle === style.value
+                      ? 'border-blue-400 bg-blue-50'
+                      : 'border-gray-200 bg-gray-50 hover:border-gray-300'"
+                    (click)="appearanceSettings.uiStyle = style.value; onUiStyleChange()">
+                    <p class="text-sm font-bold text-gray-800">{{ style.label }}</p>
+                    <p class="text-xs text-gray-400 mt-0.5 leading-snug">{{ style.description }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-3 pt-4 border-t border-gray-100">
+                <p class="text-sm font-bold text-gray-700">Colors</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div class="flex flex-col gap-2">
+                    <label class="text-xs font-semibold text-gray-600">Primary Color</label>
+                    <div class="flex items-center gap-2">
+                      <p-colorPicker [(ngModel)]="appearanceSettings.primaryColor" format="hex"
+                        [inline]="false" (ngModelChange)="triggerPreviewUpdate()"></p-colorPicker>
+                      <input type="text" pInputText [(ngModel)]="appearanceSettings.primaryColor"
+                        placeholder="#000000" class="flex-1 font-mono text-sm"
+                        (ngModelChange)="triggerPreviewUpdate()">
+                    </div>
+                    <div class="flex gap-1.5 flex-wrap">
+                      <button *ngFor="let p of colorPresets" type="button"
+                        class="w-6 h-6 rounded-full border-2 border-white ring-1 ring-gray-200 cursor-pointer transition-all hover:scale-110"
+                        [style.backgroundColor]="p.value" [title]="p.name"
+                        [class.ring-blue-500]="appearanceSettings.primaryColor === p.value"
+                        (click)="selectColorPreset(p.value, 'primary')"></button>
+                    </div>
+                  </div>
+                  <div class="flex flex-col gap-2">
+                    <label class="text-xs font-semibold text-gray-600">Accent Color</label>
+                    <div class="flex items-center gap-2">
+                      <p-colorPicker [(ngModel)]="appearanceSettings.accentColor" format="hex"
+                        [inline]="false" (ngModelChange)="triggerPreviewUpdate()"></p-colorPicker>
+                      <input type="text" pInputText [(ngModel)]="appearanceSettings.accentColor"
+                        placeholder="#000000" class="flex-1 font-mono text-sm"
+                        (ngModelChange)="triggerPreviewUpdate()">
+                    </div>
+                    <div class="flex gap-1.5 flex-wrap">
+                      <button *ngFor="let p of colorPresets" type="button"
+                        class="w-6 h-6 rounded-full border-2 border-white ring-1 ring-gray-200 cursor-pointer transition-all hover:scale-110"
+                        [style.backgroundColor]="p.value" [title]="p.name"
+                        [class.ring-blue-500]="appearanceSettings.accentColor === p.value"
+                        (click)="selectColorPreset(p.value, 'accent')"></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-3 pt-4 border-t border-gray-100">
+                <p class="text-sm font-bold text-gray-700">Typography</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div class="flex flex-col gap-2">
+                    <label class="text-xs font-semibold text-gray-600">Font Family</label>
+                    <div class="flex flex-wrap gap-2">
+                      <p-chip *ngFor="let font of fontPresets" [label]="font.name"
+                        class="cursor-pointer"
+                        [class.selected]="appearanceSettings.fontFamily === font.value"
+                        (click)="selectFontPreset(font.value)"></p-chip>
+                    </div>
+                  </div>
+                  <div class="flex flex-col gap-2">
+                    <label class="text-xs font-semibold text-gray-600">Font Size</label>
+                    <p-selectButton [options]="fontSizeOptions" [(ngModel)]="appearanceSettings.fontSize"
+                      optionLabel="label" optionValue="value"></p-selectButton>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-3 pt-4 border-t border-gray-100">
+                <p class="text-sm font-bold text-gray-700">Layout &amp; Behavior</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div class="flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-gray-600">Border Radius</label>
+                    <p-selectButton [options]="borderRadiusOptions" [(ngModel)]="appearanceSettings.borderRadius"
+                      (ngModelChange)="triggerPreviewUpdate()" optionLabel="label" optionValue="value"></p-selectButton>
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-gray-600">Layout Style</label>
+                    <p-dropdown [options]="layoutStyleOptions" [(ngModel)]="appearanceSettings.layoutStyle"
+                      placeholder="Select layout" class="w-full"></p-dropdown>
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-gray-600">Background</label>
+                    <p-dropdown [options]="backgroundPatternOptions" [(ngModel)]="appearanceSettings.backgroundPattern"
+                      placeholder="Select background" class="w-full"></p-dropdown>
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-gray-600">Language</label>
+                    <p-dropdown [options]="languageOptions" [(ngModel)]="appearanceSettings.language"
+                      placeholder="Select language" class="w-full"></p-dropdown>
+                  </div>
+                </div>
+                <div class="flex flex-col gap-2 mt-1">
+                  <div *ngFor="let tog of [
+                    {label:'Animations', key:'animationEnabled'},
+                    {label:'Shadows', key:'shadowEnabled'},
+                    {label:'Compact Mode', key:'compactMode'}
+                  ]" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                    <span class="text-sm font-semibold text-gray-700">{{ tog.label }}</span>
+                    <p-inputSwitch [(ngModel)]="appearanceSettings[tog.key]"></p-inputSwitch>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Preview -->
+              <div class="flex flex-col gap-2 pt-4 border-t border-gray-100">
+                <p class="text-sm font-bold text-gray-700">Preview</p>
+                <div class="p-4 rounded-lg border border-gray-200"
+                  [ngStyle]="{'background-color': appearanceSettings.theme === 'dark' ? '#1a1a1a' : '#f5f5f5',
+                    'color': appearanceSettings.theme === 'dark' ? '#e0e0e0' : '#333',
+                    'font-family': appearanceSettings.fontFamily}">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-lg" [style.background]="appearanceSettings.primaryColor"></div>
+                    <h4 class="font-bold text-base m-0">Preview</h4>
+                  </div>
+                  <div class="h-2.5 rounded-full bg-gray-300 mb-2 w-3/5"></div>
+                  <div class="h-2.5 rounded-full bg-gray-300 mb-4"></div>
+                  <div class="flex gap-2">
+                    <button pButton type="button" label="Primary" size="small"
+                      [style.background]="appearanceSettings.primaryColor" [style.border-color]="appearanceSettings.primaryColor"></button>
+                    <button pButton type="button" label="Accent" size="small" class="p-button-outlined"
+                      [style.border]="'2px solid ' + appearanceSettings.accentColor"
+                      [style.color]="appearanceSettings.accentColor"></button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                <p-button label="Reset" severity="secondary" [outlined]="true" icon="pi pi-refresh" size="small"
+                  (click)="resetAppearanceSettings()"></p-button>
+                <p-button label="Save" icon="pi pi-check" size="small"
+                  (click)="saveAppearanceSettings()"></p-button>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- ══ DATA & PRIVACY ══ -->
+        <ng-container *ngIf="activeSection === 'data'">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+            <div class="rounded-lg border border-gray-100 overflow-hidden">
+              <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
+                <div class="w-9 h-9 bg-teal-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-download text-teal-600 text-sm"></i>
+                </div>
+                <h3 class="text-sm font-bold text-gray-900">Export My Data</h3>
+              </div>
+              <div class="p-5">
+                <p class="text-sm text-gray-500 mb-4 leading-relaxed">
+                  Download a copy of your data including profile and activity history.
+                </p>
+                <p-button label="Export Data" icon="pi pi-download" size="small"
+                  styleClass="w-full" (click)="exportData()"></p-button>
+              </div>
+            </div>
+
+            <div class="rounded-lg border border-red-100 overflow-hidden">
+              <div class="flex items-center gap-3 px-5 py-4 border-b border-red-100">
+                <div class="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-trash text-red-600 text-sm"></i>
+                </div>
+                <h3 class="text-sm font-bold text-gray-900">Delete Account</h3>
+              </div>
+              <div class="p-5">
+                <p class="text-sm text-gray-500 mb-4 leading-relaxed">
+                  Permanently delete your account and all data. This cannot be undone.
+                </p>
+                <p-button label="Delete Account" icon="pi pi-trash" severity="danger" size="small"
+                  styleClass="w-full" (click)="deleteAccount()"></p-button>
+              </div>
+            </div>
+
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+
+  </div>
 </div>

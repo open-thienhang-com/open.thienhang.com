@@ -134,8 +134,18 @@
   <div class="sidebar-content" *ngIf="isLoggedIn">
     <nav class="sidebar-nav" [class.collapsed]="collapsed">
 
-      <!-- Quick Access Section -->
-      <!-- Quick Access removed per request -->
+      <!-- Governance Overview — pinned top shortcut -->
+      <div class="standalone-nav-item" style="margin-bottom: 4px;">
+        <a
+          routerLink="/governance/proposal"
+          class="nav-link standalone-link"
+          routerLinkActive="active"
+          [pTooltip]="collapsed ? 'Governance Overview' : ''"
+          tooltipPosition="right">
+          <i class="pi pi-th-large"></i>
+          <span *ngIf="!collapsed">Governance Overview</span>
+        </a>
+      </div>
 
       <!-- Main Navigation Groups -->
       <div class="nav-section" *ngFor="let group of visibleGroups; trackBy: trackByGroup">

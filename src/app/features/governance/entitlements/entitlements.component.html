@@ -1,0 +1,290 @@
+<!-- Entitlements Management - Capabilities & Limits -->
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="bg-gray-50 min-h-screen p-6">
+  <!-- Header Section -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-md">
+          <i class="pi pi-key text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 leading-none">Entitlements</h1>
+          <p class="text-gray-600 mt-1">Manage platform capabilities, feature flags, and usage limits</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+        <p-button icon="pi pi-refresh" severity="info" [outlined]="true" [rounded]="true" (click)="refreshData()" pTooltip="Sync Data" class="hidden sm:inline-flex"></p-button>
+        <p-button icon="pi pi-download" severity="secondary" [outlined]="true" [rounded]="true" (click)="exportData()" pTooltip="Export Entitlements" class="hidden sm:inline-flex"></p-button>
+        <p-button icon="pi pi-filter" severity="secondary" [outlined]="!showFilters" [rounded]="true" (click)="toggleFilters()" pTooltip="Toggle Filters" class="hidden sm:inline-flex"></p-button>
+        <p-button icon="pi pi-list" severity="secondary" [outlined]="viewMode !== 'list'" [rounded]="true" (click)="setViewMode('list')" pTooltip="List View" class="hidden sm:inline-flex"></p-button>
+        <p-button icon="pi pi-th-large" severity="secondary" [outlined]="viewMode !== 'card'" [rounded]="true" (click)="setViewMode('card')" pTooltip="Card View" class="hidden sm:inline-flex"></p-button>
+        <p-button icon="pi pi-plus" severity="primary" [rounded]="true" (click)="createEntitlement()" pTooltip="New Entitlement" class="hidden sm:inline-flex"></p-button>
+        <p-button label="Add" icon="pi pi-plus" severity="primary" size="small" (click)="createEntitlement()" class="sm:hidden"></p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Total Capabilities</p>
+          <p class="text-3xl font-bold text-gray-900">{{ stats.total || 0 }}</p>
+        </div>
+        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-box text-blue-600 text-xl font-bold"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Feature Flags</p>
+          <p class="text-3xl font-bold text-indigo-600">{{ stats.features || 0 }}</p>
+        </div>
+        <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-flag text-indigo-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Active Assignments</p>
+          <p class="text-3xl font-bold text-teal-600">{{ assignments.length || 0 }}</p>
+        </div>
+        <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-link text-teal-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Operating Limits</p>
+          <p class="text-3xl font-bold text-orange-600">{{ stats.limits || 0 }}</p>
+        </div>
+        <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-chart-bar text-orange-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6" *ngIf="showFilters">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="flex flex-col gap-2">
+        <label class="text-sm font-medium text-gray-700">Search</label>
+        <span class="p-input-icon-left w-full">
+          <i class="pi pi-search"></i>
+          <input type="text" pInputText placeholder="Entitlement code..." [(ngModel)]="searchTerm" (input)="onSearch()" class="w-full" />
+        </span>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="text-sm font-medium text-gray-700">Type</label>
+        <p-dropdown [options]="typeOptions" [(ngModel)]="selectedType" optionLabel="label" placeholder="All Types" [showClear]="true" (onChange)="onFilterChange()" class="w-full"></p-dropdown>
+      </div>
+      <div class="flex items-end gap-2">
+        <p-button label="Apply" severity="primary" (click)="applyFilters()"></p-button>
+        <p-button label="Reset" severity="secondary" [outlined]="true" (click)="clearFilters()"></p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Tabs -->
+  <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+    <p-tabView styleClass="modern-tabview">
+      <p-tabPanel header="Capabilities Registry">
+        <div *ngIf="viewMode === 'list'">
+          <p-table [value]="entitlements" [loading]="loading" styleClass="p-datatable-gridlines p-datatable-sm">
+            <ng-template pTemplate="header">
+              <tr class="bg-gray-50">
+                <th class="font-bold text-gray-700 text-[11px] uppercase p-4">Identifier</th>
+                <th class="font-bold text-gray-700 text-[11px] uppercase p-4">Name</th>
+                <th class="font-bold text-gray-700 text-[11px] uppercase p-4">Category</th>
+                <th class="font-bold text-gray-700 text-[11px] uppercase p-4">Description</th>
+                <th class="font-bold text-gray-700 text-[11px] uppercase p-4 text-center">Actions</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-ent>
+              <tr class="hover:bg-gray-50/50">
+                <td class="p-4"><code class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">{{ ent.code }}</code></td>
+                <td class="p-4 font-semibold text-gray-900">{{ ent.name }}</td>
+                <td class="p-4">
+                  <div class="flex flex-col gap-1">
+                    <p-tag [value]="ent.category" [severity]="ent.category === 'limit' ? 'warning' : 'info'" styleClass="text-[9px] font-bold px-2 rounded-full uppercase"></p-tag>
+                    <span *ngIf="ent.tier" class="text-[8px] font-black text-gray-400 uppercase ml-1">{{ ent.tier }} tier</span>
+                  </div>
+                </td>
+                <td class="p-4 text-sm text-gray-500 line-clamp-1 w-[300px]">{{ ent.description || '-' }}</td>
+                <td class="p-4 text-center">
+                  <div class="flex items-center justify-center gap-1">
+                    <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="secondary" size="small" (click)="editEntitlement(ent)" pTooltip="Edit Config"></p-button>
+                    <p-button icon="pi pi-link" [text]="true" [rounded]="true" severity="primary" size="small" (click)="assignEntitlement(ent)" pTooltip="Assign Entity"></p-button>
+                    <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" size="small" (click)="deleteEntitlement(ent)" pTooltip="Remove Entitlement"></p-button>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+
+        <div *ngIf="viewMode === 'card'" class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div *ngFor="let ent of entitlements" class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300">
+            <div class="p-5 border-b border-gray-100 flex items-start justify-between bg-gray-50/30">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm text-blue-500">
+                  <i [class]="ent.type === 'limit' ? 'pi pi-chart-bar' : 'pi pi-flag-fill'"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-gray-900 leading-tight">{{ ent.name }}</h3>
+                  <code class="text-[10px] text-gray-400">{{ ent.code }}</code>
+                </div>
+              </div>
+              <p-tag [value]="ent.type" [severity]="ent.type === 'limit' ? 'warning' : 'info'" styleClass="text-[8px] font-black uppercase"></p-tag>
+            </div>
+            <div class="p-5">
+              <p class="text-xs text-gray-500 h-12 line-clamp-3 mb-4 leading-relaxed">{{ ent.description || 'No specialized configuration description provided for this capability.' }}</p>
+              <div class="flex items-center justify-between border-t border-gray-100 pt-4">
+                <div class="flex items-center gap-1">
+                  <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="secondary" size="small" (click)="editEntitlement(ent)"></p-button>
+                  <p-button icon="pi pi-link" [text]="true" [rounded]="true" severity="primary" size="small" (click)="assignEntitlement(ent)"></p-button>
+                </div>
+                <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" size="small" (click)="deleteEntitlement(ent.code)"></p-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <p-tabPanel header="Active Allocations">
+        <p-table [value]="assignments" [loading]="loading" styleClass="p-datatable-gridlines p-datatable-sm">
+          <ng-template pTemplate="header">
+            <tr class="bg-gray-50">
+              <th class="font-bold text-gray-700 text-[11px] uppercase p-4">Capability</th>
+              <th class="font-bold text-gray-700 text-[11px] uppercase p-4">Assigned To</th>
+              <th class="font-bold text-gray-700 text-[11px] uppercase p-4">Scope</th>
+              <th class="font-bold text-gray-700 text-[11px] uppercase p-4">Value</th>
+              <th class="font-bold text-gray-700 text-[11px] uppercase p-4 text-center">Action</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-a>
+            <tr class="hover:bg-gray-50/50">
+              <td class="p-4 font-bold text-gray-800">{{ a.entitlement_code }}</td>
+              <td class="p-4">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                  <span class="font-semibold text-gray-700">{{ a.entity_id }}</span>
+                </div>
+              </td>
+              <td class="p-4"><p-tag [value]="a.entity_type" severity="secondary" styleClass="text-[9px] uppercase font-bold px-2 rounded-md"></p-tag></td>
+              <td class="p-4 font-mono text-xs">{{ a.value || 'True' }}</td>
+              <td class="p-4 text-center">
+                <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" size="small" (click)="deleteAssignment(a.id)"></p-button>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-tabPanel>
+    </p-tabView>
+  </div>
+
+  <!-- Pagination -->
+  <div class="mt-8 flex justify-center" *ngIf="entitlements.length > 0">
+    <p-paginator [rows]="pageSize" [totalRecords]="totalRecords" (onPageChange)="onPageChange($event)" styleClass="bg-transparent border-none shadow-none"></p-paginator>
+  </div>
+</div>
+
+<!-- Dialogs Modernized -->
+<p-dialog [(visible)]="showDialog" [header]="editMode ? 'Modify Entitlement' : 'Create Entitlement'" [modal]="true" [style]="{width: '500px'}" styleClass="shadow-2xl rounded-2xl overflow-hidden border-none">
+  <div class="p-fluid grid gap-4 pt-4">
+    <div class="grid grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-widest">Platform Code</label>
+            <p-dropdown *ngIf="!editMode" [options]="branches" [editable]="true" [(ngModel)]="entitlement.code" optionLabel="code" optionValue="code" placeholder="Select or type code..."></p-dropdown>
+            <input *ngIf="editMode" pInputText [(ngModel)]="entitlement.code" [disabled]="true" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-widest">Entitlement ID</label>
+            <input pInputText [(ngModel)]="entitlement.id" placeholder="entl123..." class="shadow-sm" />
+        </div>
+    </div>
+    
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-bold text-gray-500 uppercase tracking-widest">Display Name</label>
+      <input pInputText [(ngModel)]="entitlement.name" placeholder="Friendly name..." class="shadow-sm" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-widest">Classification</label>
+            <p-dropdown [options]="categoryOptions" [(ngModel)]="entitlement.category" optionLabel="label" optionValue="value" placeholder="Select Category"></p-dropdown>
+        </div>
+        <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-widest">Service Tier</label>
+            <p-dropdown [options]="tierOptions" [(ngModel)]="entitlement.tier" optionLabel="label" optionValue="value" placeholder="Select Tier"></p-dropdown>
+        </div>
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-bold text-gray-500 uppercase tracking-widest">Description</label>
+      <textarea pInputTextarea [(ngModel)]="entitlement.description" rows="3" placeholder="Context for the capability..." class="shadow-sm"></textarea>
+    </div>
+
+    <div class="bg-gray-50 p-4 rounded-xl flex items-center justify-between border border-gray-100">
+        <div>
+            <p class="text-sm font-bold text-gray-900">Active State</p>
+            <p class="text-[10px] text-gray-400">Toggle whether this entitlement is currently operational.</p>
+        </div>
+        <p-button [icon]="entitlement.is_enabled ? 'pi pi-check' : 'pi pi-times'" 
+                 [label]="entitlement.is_enabled ? 'Enabled' : 'Disabled'" 
+                 [severity]="entitlement.is_enabled ? 'success' : 'danger'"
+                 [outlined]="true" size="small"
+                 (click)="entitlement.is_enabled = !entitlement.is_enabled"></p-button>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <div class="flex gap-2 justify-end pt-4">
+        <p-button label="Cancel" [text]="true" severity="secondary" (click)="showDialog = false"></p-button>
+        <p-button label="Save Configuration" [loading]="saving" (click)="saveEntitlement()" styleClass="shadow-lg"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="showAssignDialog" header="Assign Entitlement" [modal]="true" [style]="{width: '450px'}" styleClass="shadow-2xl rounded-2xl overflow-hidden border-none text-gray-900">
+  <div class="p-fluid grid gap-4 pt-4">
+    <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-center justify-between">
+        <div>
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Capability</p>
+            <p class="font-bold text-blue-600">{{ entitlement.code }}</p>
+        </div>
+        <i class="pi pi-key text-gray-300"></i>
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-bold text-gray-500 uppercase tracking-widest">Target Entity</label>
+      <p-dropdown [options]="entityTypes" [(ngModel)]="assignment.entity_type" optionLabel="label" optionValue="value"></p-dropdown>
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-bold text-gray-500 uppercase tracking-widest">Entity ID</label>
+      <input pInputText [(ngModel)]="assignment.entity_id" placeholder="Copy-paste ID or slug..." />
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-bold text-gray-500 uppercase tracking-widest">Value (Optional)</label>
+      <input pInputText [(ngModel)]="assignment.value" placeholder="Default is true..." />
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <div class="flex gap-2 justify-end pt-4">
+        <p-button label="Cancel" [text]="true" severity="secondary" (click)="showAssignDialog = false"></p-button>
+        <p-button label="Allocate Entitlement" [loading]="assigning" (click)="saveAssignment()" styleClass="shadow-lg"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>

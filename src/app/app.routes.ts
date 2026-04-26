@@ -65,6 +65,10 @@ export const routes: Routes = [
     component: MainLayoutComponent,
     children: [
       {
+        path: 'governance/proposal',
+        loadComponent: () => import('./features/governance/proposal/proposal.component').then(m => m.ProposalComponent),
+      },
+      {
         path: 'governance/assets',
         loadComponent: () => import('./features/governance/assets/assets.component').then(m => m.AssetsComponent),
       },
@@ -121,6 +125,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/governance/tenants/tenants.component').then(m => m.TenantsComponent),
       },
       {
+        path: 'governance/tenants/new',
+        loadComponent: () => import('./features/governance/tenants/tenant-create/tenant-create.component').then(m => m.TenantCreateComponent),
+      },
+      {
         path: 'governance/tenants/:kid',
         loadComponent: () => import('./features/governance/tenants/tenant-detail/tenant-detail.component').then(m => m.TenantDetailComponent),
       },
@@ -135,6 +143,22 @@ export const routes: Routes = [
       {
         path: 'governance/admin',
         loadComponent: () => import('./features/governance/admin/governance-admin.component').then(m => m.GovernanceAdminComponent),
+      },
+      {
+        path: 'governance/entitlements',
+        loadComponent: () => import('./features/governance/entitlements/entitlements.component').then(m => m.EntitlementsComponent),
+      },
+      {
+        path: 'governance/branches',
+        loadComponent: () => import('./features/governance/branches/branches.component').then(m => m.BranchesComponent),
+      },
+      {
+        path: 'governance/branches/new',
+        loadComponent: () => import('./features/governance/branches/branch-create/branch-create.component').then(m => m.BranchCreateComponent),
+      },
+      {
+        path: 'governance/branches/:code',
+        loadComponent: () => import('./features/governance/branches/branch-detail/branch-detail.component').then(m => m.BranchDetailComponent),
       },
       {
         path: 'blogger',

@@ -1,0 +1,142 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-6">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Primary Information -->
+    <div class="space-y-6">
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+          <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Primary Information</h3>
+          <i class="pi pi-info-circle text-gray-400"></i>
+        </div>
+        <div class="p-6 space-y-4">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-sm font-semibold text-gray-600">Branch Code <span class="text-red-500">*</span></label>
+            <input pInputText formControlName="code" placeholder="e.g. branch:hcm:01" 
+                   class="w-full h-11 border-gray-200 rounded-lg shadow-sm font-mono" />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-sm font-semibold text-gray-600">Branch Name <span class="text-red-500">*</span></label>
+            <input pInputText formControlName="name" placeholder="e.g. Ho Chi Minh City Branch" 
+                   class="w-full h-11 border-gray-200 rounded-lg shadow-sm" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-semibold text-gray-600">Branch Type</label>
+              <p-dropdown [options]="branchTypes" formControlName="branch_type" 
+                         styleClass="w-full h-11 border-gray-200 rounded-lg shadow-sm"></p-dropdown>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-semibold text-gray-600">Parent Branch</label>
+              <p-dropdown [options]="allBranches" formControlName="parent_id" 
+                         optionLabel="name" optionValue="id" [showClear]="true"
+                         placeholder="None (Root)"
+                         styleClass="w-full h-11 border-gray-200 rounded-lg shadow-sm"></p-dropdown>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-sm font-semibold text-gray-600">Description</label>
+            <textarea pInputTextarea formControlName="description" rows="3" 
+                      class="w-full border-gray-200 rounded-lg shadow-sm resize-none"
+                      placeholder="Enter branch description..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" formGroupName="contact_info">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+          <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Contact Information</h3>
+          <i class="pi pi-phone text-gray-400"></i>
+        </div>
+        <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-sm font-semibold text-gray-600">Email Address</label>
+            <div class="relative">
+              <i class="pi pi-envelope absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+              <input pInputText formControlName="email" placeholder="branch@company.com" 
+                     class="w-full pl-10 h-11 border-gray-200 rounded-lg shadow-sm" />
+            </div>
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-sm font-semibold text-gray-600">Phone Number</label>
+            <div class="relative">
+              <i class="pi pi-phone absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+              <input pInputText formControlName="phone" placeholder="+84-28-..." 
+                     class="w-full pl-10 h-11 border-gray-200 rounded-lg shadow-sm" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Address & Configuration -->
+    <div class="space-y-6">
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" formGroupName="address">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+          <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Physical Address</h3>
+          <i class="pi pi-map-marker text-gray-400"></i>
+        </div>
+        <div class="p-6 space-y-4">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-sm font-semibold text-gray-600">Street Address</label>
+            <input pInputText formControlName="street" placeholder="e.g. 123 Nguyen Hue" 
+                   class="w-full h-11 border-gray-200 rounded-lg shadow-sm" />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-semibold text-gray-600">City</label>
+              <input pInputText formControlName="city" placeholder="e.g. Ho Chi Minh City" 
+                     class="w-full h-11 border-gray-200 rounded-lg shadow-sm" />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-semibold text-gray-600">Postal Code</label>
+              <input pInputText formControlName="postal_code" placeholder="e.g. 700000" 
+                     class="w-full h-11 border-gray-200 rounded-lg shadow-sm" />
+            </div>
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-sm font-semibold text-gray-600">Country</label>
+            <input pInputText formControlName="country" placeholder="Vietnam" 
+                   class="w-full h-11 border-gray-200 rounded-lg shadow-sm" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Advanced Config -->
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+          <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Configuration</h3>
+          <p-toggleSwitch formControlName="is_active"></p-toggleSwitch>
+        </div>
+        <div class="p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-semibold text-gray-900">Active Status</p>
+              <p class="text-xs text-gray-500">Determines if this branch is currently operational.</p>
+            </div>
+            <p-tag [value]="form.get('is_active')?.value ? 'Active' : 'Inactive'" 
+                   [severity]="form.get('is_active')?.value ? 'success' : 'danger'"></p-tag>
+          </div>
+          
+          <p-divider></p-divider>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-sm font-semibold text-gray-600">Metadata (JSON)</label>
+            <textarea pInputTextarea formControlName="metadata_json" rows="6" 
+                      class="w-full border-gray-200 rounded-lg shadow-sm font-mono text-xs bg-gray-900 text-green-400 p-4 resize-none"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="flex items-center justify-end gap-3 mt-4">
+    <p-button label="Cancel" severity="secondary" [text]="true" (click)="onCancel()" 
+              [disabled]="loading" class="w-32"></p-button>
+    <p-button label="Save Branch" icon="pi pi-check" type="submit" 
+              [loading]="loading" [disabled]="form.invalid" class="w-48 shadow-lg"></p-button>
+  </div>
+</form>

@@ -18,6 +18,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToolbarModule } from 'primeng/toolbar';
 import { TooltipModule } from 'primeng/tooltip';
+import { BadgeModule } from 'primeng/badge';
 
 @Component({
   selector: 'app-tenants',
@@ -26,7 +27,7 @@ import { TooltipModule } from 'primeng/tooltip';
     CommonModule, FormsModule, RouterModule,
     ButtonModule, TableModule, TagModule, InputTextModule, DropdownModule,
     DialogModule, ToastModule, CardModule, PaginatorModule, SkeletonModule,
-    ConfirmDialogModule, ToolbarModule, TooltipModule
+    ConfirmDialogModule, ToolbarModule, TooltipModule, BadgeModule
   ],
   templateUrl: './tenants.component.html',
   providers: [MessageService, ConfirmationService]
@@ -41,9 +42,9 @@ export class TenantsComponent implements OnInit {
   searchTerm = '';
   selectedStatus = '';
 
-  showCreateDialog = false;
-  newTenant: TenantCreate = { name: '', description: '', status: 'active' };
-  saving = false;
+  // UI State
+  viewMode: 'list' | 'card' = 'list';
+  showFilters = false;
 
   stats = { total: 0, active: 0, suspended: 0, trial: 0 };
 
@@ -125,26 +126,30 @@ export class TenantsComponent implements OnInit {
     this.loadTenants();
   }
 
-  openCreateDialog(): void {
-    this.newTenant = { name: '', description: '', status: 'active' };
-    this.showCreateDialog = true;
+  toggleFilters(): void {
+    this.showFilters = !this.showFilters;
   }
 
-  createTenant(): void {
-    if (!this.newTenant.name?.trim()) return;
-    this.saving = true;
-    this.governanceServices.createTenant(this.newTenant).subscribe({
-      next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Tenant created' });
-        this.showCreateDialog = false;
-        this.saving = false;
-        this.loadTenants();
-      },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to create tenant' });
-        this.saving = false;
-      }
-    });
+  setViewMode(mode: 'list' | 'card'): void {
+    this.viewMode = mode;
+  }
+
+  refreshTenants(): void {
+    this.loadTenants();
+  }
+
+  applyFilters(): void {
+    this.onSearch();
+  }
+
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.selectedStatus = '';
+    this.onSearch();
+  }
+
+  openCreateDialog(): void {
+    this.router.navigate(['/governance/tenants/new']);
   }
 
   viewTenant(tenant: Tenant): void {

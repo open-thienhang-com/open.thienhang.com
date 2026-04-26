@@ -18,6 +18,9 @@ import { DialogModule } from 'primeng/dialog';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
+import { DividerModule } from 'primeng/divider';
+import { InputTextarea } from 'primeng/inputtextarea';
+import { BadgeModule } from 'primeng/badge';
 
 @Component({
   selector: 'app-tenant-detail',
@@ -26,7 +29,8 @@ import { TooltipModule } from 'primeng/tooltip';
     CommonModule, FormsModule,
     ButtonModule, CardModule, TabViewModule, ToastModule, TagModule,
     InputTextModule, DropdownModule, TableModule, DialogModule,
-    ProgressSpinnerModule, ConfirmDialogModule, TooltipModule
+    ProgressSpinnerModule, ConfirmDialogModule, TooltipModule,
+    DividerModule, InputTextarea, BadgeModule
   ],
   templateUrl: './tenant-detail.component.html',
   providers: [MessageService, ConfirmationService]
@@ -45,8 +49,15 @@ export class TenantDetailComponent implements OnInit, OnDestroy {
   editMode = false;
 
   showInviteDialog = false;
-  inviteData: TenantMemberCreate = { user_id: '', role: '' };
+  inviteData: TenantMemberCreate = { email: '', role_id: 'role:viewer', telnet: '' };
   inviting = false;
+
+  tenantRoles = [
+    { label: 'Owner', value: 'role:owner' },
+    { label: 'Admin', value: 'role:admin' },
+    { label: 'Editor', value: 'role:editor' },
+    { label: 'Viewer', value: 'role:viewer' }
+  ];
 
   statusOptions = [
     { label: 'Active', value: 'active' },
@@ -143,11 +154,11 @@ export class TenantDetailComponent implements OnInit, OnDestroy {
   }
 
   inviteMember(): void {
-    if (!this.tenant || !this.inviteData.user_id?.trim()) return;
+    if (!this.tenant || !this.inviteData.email?.trim()) return;
     this.inviting = true;
     this.governanceServices.inviteTenantMember(this.tenant.kid, this.inviteData).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Invited', detail: 'Member invited' });
+        this.messageService.add({ severity: 'success', summary: 'Invited', detail: 'Member invited successfully' });
         this.showInviteDialog = false;
         this.inviting = false;
         this.loadMembers(this.tenant!.kid);
@@ -200,6 +211,11 @@ export class TenantDetailComponent implements OnInit, OnDestroy {
 
   formatDate(d?: string): string {
     if (!d) return '—';
-    return new Date(d).toLocaleDateString();
+    return new Date(d).toLocaleString();
+  }
+
+  getSettingsJson(): string {
+    if (!this.tenant?.settings) return '{}';
+    return JSON.stringify(this.tenant.settings, null, 2);
   }
 }
