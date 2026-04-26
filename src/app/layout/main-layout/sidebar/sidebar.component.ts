@@ -203,52 +203,10 @@ export class SidebarComponent implements OnInit, OnChanges {
   showAppMatrix = false;
   apps: { key: AppKey; label: string; icon: string; gradient: string; description?: string }[] = [
     {
-      key: 'explore',
-      label: 'Explore',
-      icon: 'pi pi-compass',
-      gradient: 'linear-gradient(135deg, #0ea5e9 0%, #14b8a6 100%)',
-      description: 'Discover data products and explore assets'
-    },
-    {
-      key: 'retail',
-      label: 'Retail Service',
-      icon: 'pi pi-shopping-bag',
-      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      description: ''
-    },
-    {
-      key: 'loyalty',
-      label: 'CRM & Customers',
-      icon: 'pi pi-users',
-      gradient: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
-      description: 'Customer management, loyalty rewards and campaigns'
-    },
-    {
       key: 'governance',
       label: 'Governance',
       icon: 'pi pi-shield',
       gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      description: ''
-    },
-    {
-      key: 'blogger',
-      label: 'Blogger',
-      icon: 'pi pi-pencil',
-      gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-      description: ''
-    },
-    {
-      key: 'hotel',
-      label: 'Hotel',
-      icon: 'pi pi-building',
-      gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-      description: ''
-    },
-    {
-      key: 'admanager',
-      label: 'Ad Manager',
-      icon: 'pi pi-bullhorn',
-      gradient: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
       description: ''
     },
     {
@@ -271,13 +229,6 @@ export class SidebarComponent implements OnInit, OnChanges {
       icon: 'pi pi-folder',
       gradient: 'linear-gradient(135deg, #4f46e5 0%, #2563eb 100%)',
       description: 'File storage and management'
-    },
-    {
-      key: 'travel',
-      label: 'Travel',
-      icon: 'pi pi-globe',
-      gradient: 'linear-gradient(135deg, #2af598 0%, #009efd 100%)',
-      description: 'Plan and manage your trips'
     },
     {
       key: 'settings',
@@ -358,19 +309,6 @@ export class SidebarComponent implements OnInit, OnChanges {
         expanded: true,
         children: [
           {
-            label: 'Data Products',
-            icon: 'pi pi-shopping-cart',
-            expanded: false,
-            children: [
-              { label: 'Catalog', url: '/data-mesh/data-products/catalog', icon: 'pi pi-list' },
-              { label: 'Discovery', url: '/data-mesh/data-products/discovery', icon: 'pi pi-search' },
-              { label: 'Assets', url: '/data-mesh/data-products/assets', icon: 'pi pi-database' },
-              { label: 'Lineage', url: '/data-mesh/data-products/lineage', icon: 'pi pi-share-alt' },
-              { label: 'Policies', url: '/data-mesh/data-products/policies', icon: 'pi pi-lock' },
-              { label: 'Monitoring', url: '/data-mesh/data-products/monitoring', icon: 'pi pi-chart-line' }
-            ]
-          },
-          {
             label: 'Data Domains',
             icon: 'pi pi-book',
             expanded: false,
@@ -426,7 +364,6 @@ export class SidebarComponent implements OnInit, OnChanges {
           },
         ]
       },
-      // Settings removed from global sidebar to make it a standalone app (top-right selector)
     ];
 
     // Initialize app selection
