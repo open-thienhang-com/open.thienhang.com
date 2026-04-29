@@ -1,4 +1,5 @@
 import { Component, Injector, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { Button } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
@@ -111,7 +112,8 @@ export class AccountsComponent extends AppBaseComponent implements OnInit {
 
   constructor(
     private injector: Injector,
-    private governanceServices: GovernanceServices
+    private governanceServices: GovernanceServices,
+    private router: Router
   ) {
     super(injector)
   }
@@ -218,11 +220,13 @@ export class AccountsComponent extends AppBaseComponent implements OnInit {
   }
 
   viewAccount(account: any) {
-    this.accountDetail.view(account);
+    const id = account.identify || account.id || account._id;
+    if (id) this.router.navigate(['/governance/accounts', id]);
+    else this.accountDetail.view(account);
   }
 
   manageAccess(account: any) {
-    this.accountDetail.view(account);
+    this.viewAccount(account);
   }
 
   onPageChange(event: any) {

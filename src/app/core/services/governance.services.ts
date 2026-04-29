@@ -404,7 +404,7 @@ export class GovernanceServices {
   getAssets(params?: any): Observable<ApiResponse<Asset[]>> {
     const httpParams = this.buildHttpParams(params);
     const cacheKey = `assets_${JSON.stringify(params || {})}`;
-    const httpObservable = this.http.get<any>(`${this.baseUrl}/data-catalog/assets`, { params: httpParams })
+    const httpObservable = this.http.get<any>(`${this.baseUrl}/governance/assets`, { params: httpParams })
       .pipe(map(response => {
         if (response && response.data) {
           return { data: response.data as Asset[], total: response.total, message: response.message, success: true } as ApiResponse<Asset[]>;

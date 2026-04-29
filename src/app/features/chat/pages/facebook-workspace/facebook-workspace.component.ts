@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, OnInit, OnDestroy, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
@@ -36,7 +37,7 @@ import {
   styleUrl: './facebook-workspace.component.scss',
   providers: [MessageService]
 })
-export class FacebookWorkspaceComponent implements OnInit {
+export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
   private chatService = inject(ChatService);
   private messageService = inject(MessageService);
   @ViewChild('messageThread') private messageThread?: ElementRef<HTMLDivElement>;
@@ -77,7 +78,14 @@ export class FacebookWorkspaceComponent implements OnInit {
   ];
 
   loading = false;
+  loadingConversations = false;
+  loadingMoreMessages = false;
   sendingReply = false;
+
+  readonly MESSAGE_PAGE_SIZE = 50;
+  private messageSkip = 0;
+  hasMoreMessages = false;
+  private scrollListener?: () => void;
   sendingTemplate = false;
   sendingMedia = false;
   sendingIcon = false;
@@ -119,43 +127,49 @@ export class FacebookWorkspaceComponent implements OnInit {
 
   loadWorkspace(): void {
     this.loading = true;
+    this.loadingConversations = true;
+    let pending = 4;
 
-    forkJoin({
-      profile: this.chatService.getTelegramProfile(),
-      dashboard: this.chatService.getTelegramDashboard(),
-      conversations: this.chatService.getTelegramConversations(0, 20),
-      settings: this.chatService.getTelegramSettings(),
-      templates: this.chatService.getTelegramSendTemplates()
-    }).subscribe({
-      next: ({ profile, dashboard, conversations, settings, templates }) => {
-        this.profile = profile.data;
-        this.dashboard = dashboard.data;
-        this.settings = settings.data;
-        this.conversations = conversations.data || [];
-        this.templates = (templates.data || [])
-          .filter(item => item.enabled)
-          .map(item => ({
-            label: item.name,
-            value: item.template_id || item.id,
-            template: item
-          }));
+    const done = () => {
+      pending--;
+      if (pending <= 0) this.loading = false;
+    };
 
-        if (!this.getQueueCount(this.activeQueue) && this.conversations.length) {
-          this.activeQueue = this.getQueueCount('pending_human') > 0 ? 'pending_human' : 'all';
-        }
+    this.chatService.getTelegramProfile().pipe(catchError(() => of(null))).subscribe(res => {
+      this.profile = res?.data ?? null;
+      done();
+    });
 
-        const nextConversation = this.filteredConversations[0] || this.conversations[0] || null;
-        if (nextConversation?.id) {
-          this.selectConversation(nextConversation.id);
-        } else {
-          this.selectedConversation = null;
-          this.loading = false;
-        }
-      },
-      error: (error) => {
-        console.error('Error loading omnichannel workspace', error);
-        this.loading = false;
-        this.messageService.add({ severity: 'error', summary: 'Load failed', detail: 'Unable to load workspace data' });
+    this.chatService.getTelegramDashboard().pipe(catchError(() => of(null))).subscribe(res => {
+      this.dashboard = res?.data ?? null;
+      done();
+    });
+
+    this.chatService.getTelegramSettings().pipe(catchError(() => of(null))).subscribe(res => {
+      this.settings = res?.data ?? null;
+      done();
+    });
+
+    this.chatService.getTelegramSendTemplates().pipe(catchError(() => of(null))).subscribe(res => {
+      this.templates = (res?.data || [])
+        .filter((item: any) => item.enabled)
+        .map((item: any) => ({ label: item.name, value: item.template_id || item.id, template: item }));
+      done();
+    });
+
+    this.chatService.getTelegramConversations(0, 20).pipe(catchError(() => of(null))).subscribe(res => {
+      this.conversations = res?.data || [];
+      this.loadingConversations = false;
+
+      if (!this.getQueueCount(this.activeQueue) && this.conversations.length) {
+        this.activeQueue = this.getQueueCount('pending_human') > 0 ? 'pending_human' : 'all';
+      }
+
+      const nextConversation = this.filteredConversations[0] || this.conversations[0] || null;
+      if (nextConversation?.id) {
+        this.selectConversation(nextConversation.id);
+      } else {
+        this.selectedConversation = null;
       }
     });
   }
@@ -216,9 +230,16 @@ export class FacebookWorkspaceComponent implements OnInit {
       return;
     }
 
-    this.chatService.getTelegramConversationDetail(id).subscribe({
+    this.messageSkip = 0;
+    this.hasMoreMessages = false;
+    this.detachScrollListener();
+
+    this.chatService.getTelegramConversationDetail(id, 0, this.MESSAGE_PAGE_SIZE).subscribe({
       next: (response) => {
         this.selectedConversation = response.data;
+        const pagination = (response.data as any)?.message_pagination;
+        this.hasMoreMessages = pagination?.has_more ?? false;
+        this.messageSkip = this.MESSAGE_PAGE_SIZE;
         this.loading = false;
         this.draftReply = '';
         this.resetMediaForm();
@@ -226,6 +247,9 @@ export class FacebookWorkspaceComponent implements OnInit {
         this.closeTemplateDialog();
         this.closeActionPopup();
         this.scheduleScrollToLatest();
+        if (this.hasMoreMessages) {
+          this.attachScrollListener();
+        }
       },
       error: (error) => {
         console.error('Error loading conversation detail', error);
@@ -233,6 +257,71 @@ export class FacebookWorkspaceComponent implements OnInit {
         this.messageService.add({ severity: 'error', summary: 'Detail failed', detail: 'Unable to load conversation detail' });
       }
     });
+  }
+
+  loadMoreMessages(): void {
+    if (!this.selectedConversation?.id || this.loadingMoreMessages || !this.hasMoreMessages) return;
+
+    this.loadingMoreMessages = true;
+    const container = this.messageThread?.nativeElement;
+    const prevScrollHeight = container?.scrollHeight ?? 0;
+
+    this.chatService.getTelegramConversationDetail(
+      this.selectedConversation.id,
+      this.messageSkip,
+      this.MESSAGE_PAGE_SIZE
+    ).subscribe({
+      next: (response) => {
+        const olderMessages = response.data?.messages ?? [];
+        const pagination = (response.data as any)?.message_pagination;
+        this.hasMoreMessages = pagination?.has_more ?? false;
+        this.messageSkip += this.MESSAGE_PAGE_SIZE;
+
+        if (this.selectedConversation) {
+          this.selectedConversation = {
+            ...this.selectedConversation,
+            messages: [...olderMessages, ...(this.selectedConversation.messages || [])]
+          };
+        }
+
+        this.loadingMoreMessages = false;
+        // Restore scroll position so user stays at the same message
+        requestAnimationFrame(() => {
+          if (container) {
+            container.scrollTop = container.scrollHeight - prevScrollHeight;
+          }
+        });
+
+        if (!this.hasMoreMessages) this.detachScrollListener();
+      },
+      error: () => {
+        this.loadingMoreMessages = false;
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.detachScrollListener();
+  }
+
+  private attachScrollListener(): void {
+    this.detachScrollListener();
+    const container = this.messageThread?.nativeElement;
+    if (!container) return;
+    this.scrollListener = () => {
+      if (container.scrollTop === 0 && !this.loadingMoreMessages && this.hasMoreMessages) {
+        this.loadMoreMessages();
+      }
+    };
+    container.addEventListener('scroll', this.scrollListener);
+  }
+
+  private detachScrollListener(): void {
+    const container = this.messageThread?.nativeElement;
+    if (container && this.scrollListener) {
+      container.removeEventListener('scroll', this.scrollListener);
+    }
+    this.scrollListener = undefined;
   }
 
   openInfoPanel(panel: 'customer' | 'context' | 'channel'): void {

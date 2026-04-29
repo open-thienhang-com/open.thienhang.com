@@ -6,6 +6,8 @@ import {Button} from 'primeng/button';
 import {LoginComponent} from './login/login.component';
 import {SignupComponent} from './signup/signup.component';
 import {ForgotPasswordComponent} from './forgot-password/forgot-password.component';
+import {VerifyAccountComponent} from './verify-account/verify-account.component';
+import {ResetPasswordComponent} from './reset-password/reset-password.component';
 import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
@@ -14,7 +16,9 @@ import { trigger, transition, style, animate } from '@angular/animations';
     FormsModule,
     LoginComponent,
     SignupComponent,
-    ForgotPasswordComponent
+    ForgotPasswordComponent,
+    VerifyAccountComponent,
+    ResetPasswordComponent,
   ],
   templateUrl: './auth.component.html',
   styleUrl: './auth.component.scss',
@@ -32,11 +36,16 @@ export class AuthComponent {
     login: 1,
     signup: 2,
     forgotPassword: 3,
+    verifyAccount: 4,
+    resetPassword: 5,
   };
   curMode = this.modes.login;
 
-  setCurMode(mode) {
+  setCurMode(mode: number) {
     this.curMode = mode;
   }
 
+  handleUnverified(data: { email: string }) {
+    this.setCurMode(this.modes.verifyAccount);
+  }
 }

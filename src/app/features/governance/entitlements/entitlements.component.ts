@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { GovernanceServices, Entitlement, EntitlementAssignment } from '../../../core/services/governance.services';
 import { MessageService, ConfirmationService } from 'primeng/api';
 
@@ -105,8 +106,13 @@ export class EntitlementsComponent implements OnInit {
     private governanceServices: GovernanceServices,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
-    private authServices: AuthServices
+    private authServices: AuthServices,
+    private router: Router
   ) {}
+
+  viewEntitlement(ent: Entitlement): void {
+    this.router.navigate(['/governance/entitlements', encodeURIComponent(ent.code)]);
+  }
 
   ngOnInit() {
     this.authServices.getUser().subscribe(user => this.currentUser = user);

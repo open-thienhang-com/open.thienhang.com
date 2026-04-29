@@ -48,6 +48,9 @@ export class AuthServices {
   }
   private userSubject = new BehaviorSubject<UserProfile | null>(null);
 
+  pendingVerificationEmail: string = '';
+  pendingResetEmail: string = '';
+
   constructor(private http: HttpClient, private loadingService: LoadingService) {
     // Initialize user from sessionStorage if present
     try {
@@ -62,22 +65,27 @@ export class AuthServices {
     }
   }
 
-  login(data: LoginRequest): Observable<ApiResponse<AuthResponse>> {
+  login(data: LoginRequest): Observable<ApiResponse<any>> {
     const url = `${this.baseUrl}/authentication/login`;
-    return this.http.post<AuthResponse>(url, data)
+    return this.http.post<any>(url, data)
       .pipe(
         tap(response => {
-          if (this.isWrappedResponse(response)) {
+          // API returns Token shape directly (has access_token) — not wrapped in ApiResponse
+          const isTokenShape = response && ('access_token' in response);
+          if (isTokenShape || this.isWrappedResponse(response)) {
+            localStorage.setItem('isLoggedIn', 'true');
             if (response.data?.user) {
               this.userSubject.next(response.data.user);
-              localStorage.setItem('isLoggedIn', 'true');
             }
-          } else if (response) {
-            // Handle unwrapped response
-            localStorage.setItem('isLoggedIn', 'true');
           }
         }),
-        map(response => this.wrapResponse(response))
+        map(response => {
+          // Normalize Token shape into ApiResponse so callers get consistent .success + .data
+          if (response && 'access_token' in response && !this.isWrappedResponse(response)) {
+            return { success: true, data: response } as ApiResponse<any>;
+          }
+          return this.wrapResponse(response);
+        })
       );
   }
 
@@ -111,7 +119,12 @@ export class AuthServices {
   signUp(data: SignUpRequest): Observable<ApiResponse<AuthResponse>> {
     const url = `${this.baseUrl}/authentication/register`;
     return this.http.post<AuthResponse>(url, data)
-      .pipe(map(response => this.wrapResponse(response)));
+      .pipe(
+        tap(response => {
+          if (response) this.pendingVerificationEmail = data.email;
+        }),
+        map(response => this.wrapResponse(response))
+      );
   }
 
   getCurrentUser(): Observable<ApiResponse<UserProfile | null>> {
@@ -148,24 +161,34 @@ export class AuthServices {
   forgotPassword(email: string): Observable<ApiResponse<any>> {
     const url = `${this.baseUrl}/authentication/forgot-password`;
     return this.http.post<any>(url, { email })
-      .pipe(map(response => this.wrapResponse(response)));
+      .pipe(
+        tap(response => {
+          if (response) this.pendingResetEmail = email;
+        }),
+        map(response => this.wrapResponse(response))
+      );
   }
 
   resetPassword(data: ResetPasswordRequest): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/authentication/reset-password`;
-    return this.http.post<any>(url, data)
-      .pipe(map(response => this.wrapResponse(response)));
+    const url = `${this.baseUrl}/authentication/forgot-password`;
+    return this.http.post<any>(url, { email: data.email })
+      .pipe(
+        tap(response => {
+          if (response) this.pendingResetEmail = data.email;
+        }),
+        map(response => this.wrapResponse(response))
+      );
   }
 
   setNewPassword(data: SetNewPasswordRequest): Observable<ApiResponse<any>> {
     const url = `${this.baseUrl}/authentication/set-password`;
-    return this.http.post<any>(url, data)
+    return this.http.post<any>(url, { otp: data.token, password: data.password })
       .pipe(map(response => this.wrapResponse(response)));
   }
 
-  verifyEmail(token: string): Observable<ApiResponse<any>> {
+  verifyEmail(email: string, otp: string): Observable<ApiResponse<any>> {
     const url = `${this.baseUrl}/authentication/verify-email`;
-    return this.http.post<any>(url, { token })
+    return this.http.post<any>(url, { email, otp })
       .pipe(map(response => this.wrapResponse(response)));
   }
 

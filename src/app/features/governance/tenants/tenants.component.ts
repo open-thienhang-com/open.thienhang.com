@@ -79,6 +79,7 @@ export class TenantsComponent implements OnInit {
       offset: this.currentPage * this.pageSize
     };
     if (this.selectedStatus) params['status'] = this.selectedStatus;
+    if (this.searchTerm) params['search'] = this.searchTerm;
 
     this.governanceServices.getTenants(params).subscribe({
       next: (res) => {
@@ -169,6 +170,25 @@ export class TenantsComponent implements OnInit {
           },
           error: () => {
             this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to suspend tenant' });
+          }
+        });
+      }
+    });
+  }
+
+  activateTenant(tenant: Tenant): void {
+    this.confirmationService.confirm({
+      message: `Activate tenant "${tenant.name}"?`,
+      header: 'Confirm Activate',
+      icon: 'pi pi-question-circle',
+      accept: () => {
+        this.governanceServices.updateTenant(tenant.kid, { status: 'active' }).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Tenant activated' });
+            this.loadTenants();
+          },
+          error: () => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to activate tenant' });
           }
         });
       }

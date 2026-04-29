@@ -109,6 +109,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/governance/accounts/accounts.component').then(m => m.AccountsComponent),
       },
       {
+        path: 'governance/accounts/:id',
+        loadComponent: () => import('./features/governance/accounts/account-detail/account-detail.component').then(m => m.AccountDetailComponent),
+      },
+      {
         path: 'governance/users',
         loadComponent: () => import('./features/governance/users/users.component').then(m => m.UsersComponent),
       },
@@ -147,6 +151,10 @@ export const routes: Routes = [
       {
         path: 'governance/entitlements',
         loadComponent: () => import('./features/governance/entitlements/entitlements.component').then(m => m.EntitlementsComponent),
+      },
+      {
+        path: 'governance/entitlements/:code',
+        loadComponent: () => import('./features/governance/entitlements/entitlement-detail/entitlement-detail.component').then(m => m.EntitlementDetailComponent),
       },
       {
         path: 'governance/branches',

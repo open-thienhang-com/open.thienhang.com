@@ -1,0 +1,140 @@
+<p-toast></p-toast>
+
+<div class="bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-4">
+          <p-button icon="pi pi-arrow-left" [text]="true" [rounded]="true" (click)="goBack()"
+            severity="secondary" pTooltip="Back to Accounts"></p-button>
+          <div *ngIf="account" class="flex items-center gap-3">
+            <div *ngIf="!account.image"
+              class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-md text-white font-bold text-sm">
+              {{ getInitials() }}
+            </div>
+            <img *ngIf="account.image" [src]="account.image" alt="avatar"
+              class="w-10 h-10 rounded-xl object-cover shadow-md" />
+            <div>
+              <h1 class="text-xl font-bold text-gray-900 leading-none mb-1">{{ account.full_name || account.email }}</h1>
+              <div class="flex items-center gap-2">
+                <code class="text-xs font-mono text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                  {{ account.identify || account._id }}
+                </code>
+                <p-tag [value]="account.is_active ? 'Active' : 'Inactive'"
+                  [severity]="account.is_active ? 'success' : 'secondary'"></p-tag>
+                <p-tag *ngIf="account.is_verified" value="Verified" severity="success" icon="pi pi-check"></p-tag>
+                <p-tag *ngIf="!account.is_verified" value="Unverified" severity="warning" icon="pi pi-exclamation-triangle"></p-tag>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p-progressSpinner *ngIf="loading" styleClass="w-2rem h-2rem"></p-progressSpinner>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <div *ngIf="loading" class="flex items-center justify-center py-20">
+      <p-progressSpinner styleClass="w-4rem h-4rem"></p-progressSpinner>
+    </div>
+
+    <div *ngIf="!loading && account" class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <p-tabView>
+
+        <!-- Overview Tab -->
+        <p-tabPanel header="Overview">
+          <div class="p-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Full Name</label>
+                <p class="text-gray-900 font-medium">{{ account.full_name || '—' }}</p>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Email</label>
+                <p class="text-gray-900">{{ account.email || '—' }}</p>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Username</label>
+                <p class="text-gray-900 font-mono text-sm">{{ account.username || '—' }}</p>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Type</label>
+                <p class="text-gray-900 capitalize">{{ account.type || '—' }}</p>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Department</label>
+                <p class="text-gray-900">{{ account.department || '—' }}</p>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Identity (Identify)</label>
+                <div class="flex items-center gap-2">
+                  <code class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-700 font-mono">{{ account.identify || '—' }}</code>
+                  <p-button *ngIf="account.identify" icon="pi pi-copy" [text]="true" [rounded]="true" size="small"
+                    (click)="copyToClipboard(account.identify)" pTooltip="Copy ID"></p-button>
+                </div>
+              </div>
+            </div>
+
+            <p-divider></p-divider>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <div>
+                <span class="text-gray-400">Created:</span>
+                <span class="ml-2 text-gray-700">{{ formatDate(account.createdAt || account.created_at) }}</span>
+              </div>
+              <div>
+                <span class="text-gray-400">Updated:</span>
+                <span class="ml-2 text-gray-700">{{ formatDate(account.updatedAt || account.updated_at) }}</span>
+              </div>
+            </div>
+          </div>
+        </p-tabPanel>
+
+        <!-- Security Tab -->
+        <p-tabPanel header="Security & Preferences">
+          <div class="p-6 space-y-6">
+            <div>
+              <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Notification Preferences</h4>
+              <div *ngIf="account.notifications; else noNotifications" class="space-y-3">
+                <div *ngFor="let entry of getNotifications() | keyvalue"
+                  class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <span class="text-sm text-gray-700 capitalize">{{ entry.key.replace('_', ' ') }}</span>
+                  <p-tag [value]="entry.value ? 'Enabled' : 'Disabled'"
+                    [severity]="entry.value ? 'success' : 'secondary'"></p-tag>
+                </div>
+              </div>
+              <ng-template #noNotifications>
+                <p class="text-sm text-gray-400">No notification preferences configured.</p>
+              </ng-template>
+            </div>
+
+            <p-divider></p-divider>
+
+            <div>
+              <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Security Preferences</h4>
+              <div *ngIf="account.preferences; else noPreferences" class="space-y-3">
+                <div *ngFor="let entry of getPreferences() | keyvalue"
+                  class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <span class="text-sm text-gray-700 capitalize">{{ entry.key.replace('_', ' ') }}</span>
+                  <span class="text-sm font-medium text-gray-900">{{ entry.value }}</span>
+                </div>
+              </div>
+              <ng-template #noPreferences>
+                <p class="text-sm text-gray-400">No security preferences configured.</p>
+              </ng-template>
+            </div>
+          </div>
+        </p-tabPanel>
+
+      </p-tabView>
+    </div>
+
+    <div *ngIf="!loading && !account" class="text-center py-12">
+      <i class="pi pi-exclamation-circle text-4xl text-gray-300 mb-3 block"></i>
+      <p class="text-gray-500">Account not found.</p>
+      <p-button label="Back to Accounts" icon="pi pi-arrow-left" severity="secondary" (click)="goBack()"></p-button>
+    </div>
+  </div>
+</div>

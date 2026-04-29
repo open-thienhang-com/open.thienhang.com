@@ -287,8 +287,7 @@ export class DataMeshServices {
 
   // Domain Catalog - Updated for new API structure
   getDomainCatalog(params?: any): Observable<ApiResponse<Domain[]>> {
-    // Call the /data-mesh/catalog endpoint
-    const url = `${this.baseUrl}/data-mesh/catalog`;
+    const url = `${this.baseUrl}/governance/catalog`;
     const httpParams = this.buildHttpParams(params);
     return this.http.get<DomainCatalogResponse>(url, { params: httpParams })
       .pipe(map(response => {
@@ -310,7 +309,7 @@ export class DataMeshServices {
 
   // Get list of domain names only
   getDomainsList(): Observable<ApiResponse<string[]>> {
-    const url = `${this.baseUrl}/data-mesh/domains`;
+    const url = `${this.baseUrl}/governance/domains`;
     return this.http.get<DomainsListResponse>(url)
       .pipe(map(response => {
         if (response && response.data) {
@@ -331,7 +330,7 @@ export class DataMeshServices {
 
   // Get detailed information about a specific domain
   getDomainDetails(domainKey: string): Observable<ApiResponse<Domain>> {
-    const url = `${this.baseUrl}/data-mesh/domains/${domainKey}`;
+    const url = `${this.baseUrl}/governance/domains/${domainKey}`;
     return this.http.get<DomainDetailsResponse>(url)
       .pipe(map(response => {
         if (response && response.data) {
@@ -351,7 +350,7 @@ export class DataMeshServices {
 
   // Get data products for a specific domain
   getDomainDataProducts(domainKey: string): Observable<ApiResponse<DataProduct[]>> {
-    const url = `${this.baseUrl}/data-mesh/domains/${domainKey}/data-products`;
+    const url = `${this.baseUrl}/governance/data-products/${domainKey}`;
     return this.http.get<{ data: DataProduct[], message: string, total: number }>(url)
       .pipe(map(response => {
         if (response && response.data) {
@@ -372,7 +371,7 @@ export class DataMeshServices {
 
   // Data Products APIs
   getDataProducts(params?: { size?: number; offset?: number; domain?: string }): Observable<ApiResponse<DataProductSummary[]>> {
-    const url = `${this.baseUrl}/data-mesh/data-products`;
+    const url = `${this.baseUrl}/governance/data-products`;
     const httpParams = this.buildHttpParams(params);
     return this.http.get<DataProductsResponse>(url, { params: httpParams })
       .pipe(map(response => {
@@ -394,7 +393,7 @@ export class DataMeshServices {
 
   // Get data products by domain
   getDataProductsByDomain(domain: string): Observable<ApiResponse<DataProductSummary[]>> {
-    const url = `${this.baseUrl}/data-mesh/data-products/${domain}`;
+    const url = `${this.baseUrl}/governance/data-products/${domain}`;
     return this.http.get<DataProductsByDomainResponse>(url)
       .pipe(map(response => {
         if (response && response.data) {
@@ -415,14 +414,14 @@ export class DataMeshServices {
 
   // Get specific data product details
   getDataProductDetails(domain: string, id: string): Observable<ApiResponse<DataProductDetail>> {
-    const url = `${this.baseUrl}/data-mesh/data-products/${domain}/${id}`;
+    const url = `${this.baseUrl}/governance/data-products/${domain}/${id}`;
     return this.http.get<DataProductDetail>(url)
       .pipe(map(response => this.wrapResponse(response)));
   }
 
   // Get specific data product details by name (for the new hotel endpoint)
   getDataProductDetailsByName(name: string): Observable<ApiResponse<DataProductDetail>> {
-    const url = `${this.baseUrl}/data-mesh/data-products/${name}`;
+    const url = `${this.baseUrl}/governance/data-products/${name}`;
     return this.http.get<DataProductDetail>(url)
       .pipe(map(response => this.wrapResponse(response)));
   }
@@ -615,9 +614,9 @@ export class DataMeshServices {
     );
   }
 
-  // Get domain APIs from /data-mesh/domains/{domain}/apis endpoint
+  // Get domain APIs from /governance/domains/{domain}/apis endpoint
   getDomainApis(domain: string): Observable<ApiResponse<DataProduct[]>> {
-    const url = `${this.baseUrl}/data-mesh/domains/${domain}/apis`;
+    const url = `${this.baseUrl}/governance/domains/${domain}/apis`;
     return this.http.get<{ data: DataProduct[], message: string, total: number }>(url)
       .pipe(map(response => {
         if (response && response.data) {

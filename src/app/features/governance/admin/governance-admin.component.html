@@ -6,6 +6,46 @@
     <p class="text-500 mt-1 mb-0">Initialize and synchronize governance data. All operations are idempotent.</p>
   </div>
 
+  <!-- System Health Summary -->
+  <div class="grid mb-4">
+    <div class="col-12 md:col-4">
+      <div class="surface-50 border-round p-3 flex align-items-center gap-3">
+        <i class="pi pi-building text-2xl text-primary"></i>
+        <div>
+          <div class="text-500 text-sm">Tenants</div>
+          <div class="text-2xl font-bold text-900">
+            <i *ngIf="summaryLoading" class="pi pi-spin pi-spinner text-primary"></i>
+            <span *ngIf="!summaryLoading">{{ summaryStats.tenants }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 md:col-4">
+      <div class="surface-50 border-round p-3 flex align-items-center gap-3">
+        <i class="pi pi-users text-2xl text-orange-500"></i>
+        <div>
+          <div class="text-500 text-sm">Roles</div>
+          <div class="text-2xl font-bold text-900">
+            <i *ngIf="summaryLoading" class="pi pi-spin pi-spinner text-primary"></i>
+            <span *ngIf="!summaryLoading">{{ summaryStats.roles }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 md:col-4">
+      <div class="surface-50 border-round p-3 flex align-items-center gap-3">
+        <i class="pi pi-key text-2xl text-green-500"></i>
+        <div>
+          <div class="text-500 text-sm">Permissions</div>
+          <div class="text-2xl font-bold text-900">
+            <i *ngIf="summaryLoading" class="pi pi-spin pi-spinner text-primary"></i>
+            <span *ngIf="!summaryLoading">{{ summaryStats.permissions }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="grid">
 
     <!-- 1. Init Permissions -->
@@ -28,7 +68,8 @@
             <p-inputSwitch [(ngModel)]="permDryRun"></p-inputSwitch>
             <label class="font-medium text-sm">Dry Run (preview only)</label>
           </div>
-          <p-button [label]="permDryRun ? 'Preview' : 'Run'" icon="pi pi-play" [loading]="permRunning"
+          <p-button [label]="permDryRun ? 'Dry Run' : 'Run'" icon="pi pi-play" [loading]="permRunning"
+            [severity]="permDryRun ? 'warning' : 'primary'"
             (onClick)="initPermissions()" styleClass="w-full"></p-button>
         </div>
 

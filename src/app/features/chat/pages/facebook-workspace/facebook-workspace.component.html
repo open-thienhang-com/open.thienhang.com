@@ -27,7 +27,7 @@
         </div>
       </ng-container>
 
-      <ng-container *ngIf="!loading && profile && dashboard && settings">
+      <ng-container *ngIf="!loading">
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div class="flex items-center gap-4">
@@ -76,6 +76,11 @@
                     </div>
                   </div>
                   <div class="queue-list">
+                    <div *ngIf="loadingConversations" class="p-4">
+                      <p-skeleton height="4rem" styleClass="mb-2"></p-skeleton>
+                      <p-skeleton height="4rem" styleClass="mb-2"></p-skeleton>
+                      <p-skeleton height="4rem"></p-skeleton>
+                    </div>
                     <button *ngFor="let conversation of filteredConversations"
                             type="button"
                             class="conversation-row omni-conversation-row"
@@ -152,6 +157,14 @@
                   </div>
 
                   <div #messageThread class="message-thread omni-message-thread">
+                    <div *ngIf="loadingMoreMessages" class="flex justify-center py-3">
+                      <p-skeleton width="12rem" height="1.5rem"></p-skeleton>
+                    </div>
+                    <div *ngIf="hasMoreMessages && !loadingMoreMessages" class="flex justify-center py-2">
+                      <button type="button" class="ghost-action text-xs" (click)="loadMoreMessages()">
+                        <i class="pi pi-arrow-up mr-1"></i>Load earlier messages
+                      </button>
+                    </div>
                     <div *ngFor="let message of conversation.messages" class="message-row" [class.is-agent]="message.sender !== 'user'">
                       <div class="message-bubble">
                         <div class="message-meta">

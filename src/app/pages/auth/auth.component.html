@@ -13,15 +13,28 @@
       @if (curMode === modes.login) {
         <app-login class="block"
                    (onForgotPassword)="setCurMode(modes.forgotPassword)"
-                   (onSignUp)="setCurMode(modes.signup)"></app-login>
+                   (onSignUp)="setCurMode(modes.signup)"
+                   (onUnverified)="handleUnverified($event)"></app-login>
       }
       @if (curMode === modes.signup) {
         <app-signup class="block"
-                    (onLogIn)="setCurMode(modes.login)"></app-signup>
+                    (onLogIn)="setCurMode(modes.login)"
+                    (onVerifyAccount)="setCurMode(modes.verifyAccount)"></app-signup>
       }
       @if (curMode === modes.forgotPassword) {
         <app-forgot-password class="block"
-                             (onLogIn)="setCurMode(modes.login)"></app-forgot-password>
+                             (onLogIn)="setCurMode(modes.login)"
+                             (onResetPassword)="setCurMode(modes.resetPassword)"></app-forgot-password>
+      }
+      @if (curMode === modes.verifyAccount) {
+        <app-verify-account class="block"
+                            (onVerified)="setCurMode(modes.login)"
+                            (onBackToLogin)="setCurMode(modes.login)"></app-verify-account>
+      }
+      @if (curMode === modes.resetPassword) {
+        <app-reset-password class="block"
+                            (onReset)="setCurMode(modes.login)"
+                            (onBackToLogin)="setCurMode(modes.login)"></app-reset-password>
       }
     </div>
   </div>

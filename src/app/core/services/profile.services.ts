@@ -93,10 +93,10 @@ export class ProfileServices {
       .pipe(map(response => this.wrapResponse(response?.data ?? response)));
   }
 
-  /** DELETE /authentication/sessions/{sessionId} */
+  /** POST /authentication/revoke-session?session={sessionId} */
   revokeSession(sessionId: string): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/authentication/sessions/${sessionId}`;
-    return this.http.delete<any>(url)
+    const url = `${this.baseUrl}/authentication/revoke-session?session=${encodeURIComponent(sessionId)}`;
+    return this.http.post<any>(url, {})
       .pipe(map(response => this.wrapResponse(response?.data ?? response)));
   }
 
@@ -139,34 +139,28 @@ export class ProfileServices {
     );
   }
 
-  enableTwoFactorAuth(): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/profile/two-factor/enable`;
-    return this.http.post<any>(url, {})
-      .pipe(map(response => this.wrapResponse(response)));
+  getSecuritySettings(): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/authentication/me/security`;
+    return this.http.get<any>(url)
+      .pipe(map(response => this.wrapResponse(response?.data ?? response)));
   }
 
-  disableTwoFactorAuth(): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/profile/two-factor/disable`;
-    return this.http.post<any>(url, {})
-      .pipe(map(response => this.wrapResponse(response)));
-  }
-
-  verifyTwoFactorToken(token: string): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/profile/two-factor/verify`;
-    return this.http.post<any>(url, { token })
-      .pipe(map(response => this.wrapResponse(response)));
+  updateSecuritySettings(settings: { two_factor_enabled?: boolean; login_notifications?: boolean; session_timeout?: number }): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/authentication/me/security`;
+    return this.http.patch<any>(url, settings)
+      .pipe(map(response => this.wrapResponse(response?.data ?? response)));
   }
 
   getNotificationSettings(): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/profile/notifications/settings`;
+    const url = `${this.baseUrl}/authentication/me/notifications`;
     return this.http.get<any>(url)
-      .pipe(map(response => this.wrapResponse(response)));
+      .pipe(map(response => this.wrapResponse(response?.data ?? response)));
   }
 
   updateNotificationSettings(settings: any): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/profile/notifications/settings`;
-    return this.http.put<any>(url, settings)
-      .pipe(map(response => this.wrapResponse(response)));
+    const url = `${this.baseUrl}/authentication/me/notifications`;
+    return this.http.patch<any>(url, settings)
+      .pipe(map(response => this.wrapResponse(response?.data ?? response)));
   }
 
   // Helper method to wrap a single object response to match the API response format

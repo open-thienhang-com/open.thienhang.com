@@ -98,12 +98,15 @@ export class ChatService {
         });
     }
 
-    getTelegramConversationDetail(id: string): Observable<ApiResponse<TelegramConversation>> {
+    getTelegramConversationDetail(id: string, messageSkip = 0, messageLimit = 50): Observable<ApiResponse<TelegramConversation>> {
         if (!id) {
             return throwError(() => new Error('Telegram conversation id is required'));
         }
+        const params = new HttpParams()
+            .set('message_skip', messageSkip.toString())
+            .set('message_limit', messageLimit.toString());
         return new Observable<ApiResponse<TelegramConversation>>(observer => {
-            this.http.get<ApiResponse<TelegramConversation>>(`${this.chatBaseUrl}/telegram/conversations/${id}`).subscribe({
+            this.http.get<ApiResponse<TelegramConversation>>(`${this.chatBaseUrl}/telegram/conversations/${id}`, { params }).subscribe({
                 next: (response) => {
                     observer.next({
                         ...response,

@@ -77,7 +77,7 @@ export class DataProductServices {
 
   // Data Products
   getDataProducts(params?: any): Observable<ApiResponse<DataProduct[]>> {
-    const url = `${this.baseUrl}/data-mesh/data-products`;
+    const url = `${this.baseUrl}/governance/data-products`;
     const httpParams = this.buildHttpParams(params);
     return this.http.get<any>(url, { params: httpParams })
       .pipe(
@@ -104,7 +104,7 @@ export class DataProductServices {
 
   // Get data products for a specific domain
   getDataProductsByDomain(domain: string): Observable<ApiResponse<DataProduct[]>> {
-    const url = `${this.baseUrl}/data-mesh/data-products/${domain}`;
+    const url = `${this.baseUrl}/governance/data-products/${domain}`;
     return this.http.get<any>(url)
       .pipe(
         map(response => {
@@ -130,8 +130,8 @@ export class DataProductServices {
 
   getDataProductDetail(id: string, domain?: string): Observable<ApiResponse<DataProduct>> {
     const url = domain
-      ? `${this.baseUrl}/data-mesh/data-products/${domain}/${id}`
-      : `${this.baseUrl}/data-mesh/data-products/${id}`;
+      ? `${this.baseUrl}/governance/data-products/${domain}/${id}`
+      : `${this.baseUrl}/governance/data-products/${id}`;
     return this.http.get<DataProduct>(url)
       .pipe(
         map(response => {
@@ -154,7 +154,7 @@ export class DataProductServices {
   }
 
   createDataProduct(domain: string, data: any): Observable<ApiResponse<DataProduct>> {
-    const url = `${this.baseUrl}/data-mesh/data-products/${domain}`;
+    const url = `${this.baseUrl}/governance/data-products/${domain}`;
     return this.http.post<any>(url, data)
       .pipe(
         map(response => {
@@ -175,7 +175,7 @@ export class DataProductServices {
   }
 
   updateDataProduct(id: string, data: Partial<DataProduct>): Observable<ApiResponse<DataProduct>> {
-    const url = `${this.baseUrl}/data-mesh/data-products/${id}`;
+    const url = `${this.baseUrl}/governance/data-products/${id}`;
     return this.http.put<any>(url, data)
       .pipe(
         map(response => {
@@ -196,7 +196,7 @@ export class DataProductServices {
   }
 
   deleteDataProduct(id: string): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/data-mesh/data-products/${id}`;
+    const url = `${this.baseUrl}/governance/data-products/${id}`;
     return this.http.delete<any>(url)
       .pipe(
         map(response => {
@@ -210,55 +210,55 @@ export class DataProductServices {
   }
 
   subscribeToProduct(productId: string): Observable<ApiResponse<DataProductSubscription>> {
-    const url = `${this.baseUrl}/data-mesh/data-products/${productId}/subscribe`;
+    const url = `${this.baseUrl}/governance/data-products/${productId}/subscribe`;
     return this.http.post<any>(url, {})
       .pipe(map(response => this.wrapResponse(response.data || response)));
   }
 
   unsubscribeFromProduct(productId: string): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/data-mesh/data-products/${productId}/unsubscribe`;
+    const url = `${this.baseUrl}/governance/data-products/${productId}/unsubscribe`;
     return this.http.delete<any>(url)
       .pipe(map(response => this.wrapResponse(response.data || response)));
   }
 
   getProductSubscribers(productId: string): Observable<ApiResponse<any[]>> {
-    const url = `${this.baseUrl}/data-mesh/data-products/${productId}/subscribers`;
+    const url = `${this.baseUrl}/governance/data-products/${productId}/subscribers`;
     return this.http.get<any[]>(url)
       .pipe(map(response => this.wrapArrayResponse((response as any).data || response)));
   }
 
   getProductMetrics(productId: string): Observable<ApiResponse<DataProductMetrics>> {
-    const url = `${this.baseUrl}/data-mesh/data-products/${productId}/metrics`;
+    const url = `${this.baseUrl}/governance/data-products/${productId}/metrics`;
     return this.http.get<any>(url)
       .pipe(map(response => this.wrapResponse(response.data || response)));
   }
 
   getProductSchema(productId: string): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/data-mesh/data-products/${productId}/schema`;
+    const url = `${this.baseUrl}/governance/data-products/${productId}/schema`;
     return this.http.get<any>(url)
       .pipe(map(response => this.wrapResponse(response.data || response)));
   }
 
   getProductAPI(productId: string): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/data-mesh/data-products/${productId}/api`;
+    const url = `${this.baseUrl}/governance/data-products/${productId}/api`;
     return this.http.get<any>(url)
       .pipe(map(response => this.wrapResponse(response.data || response)));
   }
 
   validateProductSchema(productId: string, schema: any): Observable<ApiResponse<any>> {
-    const url = `${this.baseUrl}/data-mesh/data-products/${productId}/validate-schema`;
+    const url = `${this.baseUrl}/governance/data-products/${productId}/validate-schema`;
     return this.http.post<any>(url, schema)
       .pipe(map(response => this.wrapResponse(response.data || response)));
   }
 
   publishProduct(productId: string): Observable<ApiResponse<DataProduct>> {
-    const url = `${this.baseUrl}/data-mesh/data-products/${productId}/publish`;
+    const url = `${this.baseUrl}/governance/data-products/${productId}/publish`;
     return this.http.post<any>(url, {})
       .pipe(map(response => this.wrapResponse(response.data || response)));
   }
 
   archiveProduct(productId: string): Observable<ApiResponse<DataProduct>> {
-    const url = `${this.baseUrl}/data-mesh/data-products/${productId}/archive`;
+    const url = `${this.baseUrl}/governance/data-products/${productId}/archive`;
     return this.http.post<any>(url, {})
       .pipe(map(response => this.wrapResponse(response.data || response)));
   }

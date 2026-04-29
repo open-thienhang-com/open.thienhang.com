@@ -143,6 +143,33 @@ export class SettingsComponent implements OnInit {
     if (sectionKey === 'users') this.fetchUsersForManagement();
     if (sectionKey === 'access' && !this.myPermissions) this.loadMyPermissions();
     if (sectionKey === 'notifications' && !this.notifLoaded) this.loadNotificationSettings();
+    if (sectionKey === 'security' && !this.securityLoaded) this.loadSecuritySettings();
+  }
+
+  // Security settings state
+  securityLoaded = false;
+  securityLoading = false;
+
+  loadSecuritySettings(): void {
+    this.securityLoading = true;
+    this.profileService.getSecuritySettings().subscribe({
+      next: (res) => {
+        const data = res?.data ?? res;
+        if (data) {
+          this.securitySettings = {
+            twoFactorEnabled:    data.two_factor_enabled   ?? this.securitySettings.twoFactorEnabled,
+            loginNotifications:  data.login_notifications  ?? this.securitySettings.loginNotifications,
+            sessionTimeout:      data.session_timeout      ?? this.securitySettings.sessionTimeout,
+          };
+        }
+        this.securityLoaded = true;
+        this.securityLoading = false;
+      },
+      error: () => {
+        this.securityLoading = false;
+        this.securityLoaded = true;
+      }
+    });
   }
 
   // Access & Permissions state
@@ -567,8 +594,24 @@ export class SettingsComponent implements OnInit {
     });
   }
 
+  securitySaving = false;
+
   saveSecuritySettings(): void {
-    this.messageService.add({ severity: 'success', summary: 'Saved', detail: 'Security settings updated' });
+    this.securitySaving = true;
+    this.profileService.updateSecuritySettings({
+      two_factor_enabled:  this.securitySettings.twoFactorEnabled,
+      login_notifications: this.securitySettings.loginNotifications,
+      session_timeout:     this.securitySettings.sessionTimeout,
+    }).subscribe({
+      next: () => {
+        this.securitySaving = false;
+        this.messageService.add({ severity: 'success', summary: 'Saved', detail: 'Security settings updated' });
+      },
+      error: (err) => {
+        this.securitySaving = false;
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.detail || 'Failed to save security settings' });
+      }
+    });
   }
 
   notifSaving = false;

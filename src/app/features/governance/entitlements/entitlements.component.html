@@ -127,6 +127,7 @@
                 <td class="p-4 text-sm text-gray-500 line-clamp-1 w-[300px]">{{ ent.description || '-' }}</td>
                 <td class="p-4 text-center">
                   <div class="flex items-center justify-center gap-1">
+                    <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (click)="viewEntitlement(ent)" pTooltip="View Detail"></p-button>
                     <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="secondary" size="small" (click)="editEntitlement(ent)" pTooltip="Edit Config"></p-button>
                     <p-button icon="pi pi-link" [text]="true" [rounded]="true" severity="primary" size="small" (click)="assignEntitlement(ent)" pTooltip="Assign Entity"></p-button>
                     <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" size="small" (click)="deleteEntitlement(ent)" pTooltip="Remove Entitlement"></p-button>
@@ -138,7 +139,7 @@
         </div>
 
         <div *ngIf="viewMode === 'card'" class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div *ngFor="let ent of entitlements" class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300">
+          <div *ngFor="let ent of entitlements" class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer" (click)="viewEntitlement(ent)">
             <div class="p-5 border-b border-gray-100 flex items-start justify-between bg-gray-50/30">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm text-blue-500">

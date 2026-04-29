@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin, catchError, of } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { GovernanceServices } from '../../../core/services/governance.services';
 
@@ -24,7 +25,7 @@ import { TagModule } from 'primeng/tag';
   templateUrl: './governance-admin.component.html',
   providers: [MessageService]
 })
-export class GovernanceAdminComponent {
+export class GovernanceAdminComponent implements OnInit {
   // Init permissions
   permTenantId = '';
   permDryRun = false;
@@ -41,10 +42,32 @@ export class GovernanceAdminComponent {
   syncRunning = false;
   syncResult: any = null;
 
+  // Health summary
+  summaryStats: { tenants: number | string; roles: number | string; permissions: number | string } = {
+    tenants: '—', roles: '—', permissions: '—'
+  };
+  summaryLoading = false;
+
   constructor(
     private governanceServices: GovernanceServices,
     private messageService: MessageService
   ) {}
+
+  ngOnInit(): void {
+    this.summaryLoading = true;
+    forkJoin({
+      tenants: this.governanceServices.getTenants({ limit: 1 }).pipe(catchError(() => of(null))),
+      roles: this.governanceServices.getRoles({ limit: 1 }).pipe(catchError(() => of(null))),
+      permissions: this.governanceServices.getPermissions({ limit: 1 }).pipe(catchError(() => of(null)))
+    }).subscribe(({ tenants, roles, permissions }) => {
+      this.summaryStats.tenants = (tenants as any)?.data?.pagination?.total ?? '—';
+      this.summaryStats.roles = (roles as any)?.data?.pagination?.total ?? '—';
+      this.summaryStats.permissions = Array.isArray((permissions as any)?.data)
+        ? (permissions as any).data.length
+        : ((permissions as any)?.total ?? '—');
+      this.summaryLoading = false;
+    });
+  }
 
   initPermissions(): void {
     this.permRunning = true;

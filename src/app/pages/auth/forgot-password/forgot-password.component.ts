@@ -25,6 +25,7 @@ export class ForgotPasswordComponent extends AppBaseComponent {
   isLoading: boolean = false;
   emailSent: boolean = false;
   @Output() onLogIn: EventEmitter<any> = new EventEmitter();
+  @Output() onResetPassword: EventEmitter<any> = new EventEmitter();
 
   constructor(private injector: Injector, private authServices: AuthServices) {
     super(injector);
@@ -41,7 +42,8 @@ export class ForgotPasswordComponent extends AppBaseComponent {
       next: (res) => {
         if (res.success) {
           this.emailSent = true;
-          this.showSuccess('Password reset link sent to your email');
+          this.showSuccess('OTP sent to your email');
+          this.onResetPassword.emit();
         } else {
           this.showError(res.message || 'Failed to send reset link');
         }

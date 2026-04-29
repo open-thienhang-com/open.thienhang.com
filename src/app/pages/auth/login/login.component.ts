@@ -41,6 +41,7 @@ export class LoginComponent extends AppBaseComponent {
   applyApi = true;
   @Output() onSignUp: EventEmitter<any> = new EventEmitter();
   @Output() onForgotPassword: EventEmitter<any> = new EventEmitter();
+  @Output() onUnverified: EventEmitter<{email: string}> = new EventEmitter();
 
   constructor(
     private injector: Injector,
@@ -75,6 +76,15 @@ export class LoginComponent extends AppBaseComponent {
     }).subscribe({
       next: (res) => {
         if (res.success) {
+          // Check if account is unverified — switch to verify mode instead of navigating
+          if (res.data?.is_verified === false) {
+            this.authService.pendingVerificationEmail = this.email;
+            this.showError('Your email is not verified. Please enter the OTP sent to your email.');
+            this.isLoading = false;
+            this.loadingService.hide();
+            this.onUnverified.emit({ email: this.email });
+            return;
+          }
           // Ensure we fetch current user profile after login so header/menu can show user info
           this.authService.getCurrentUser().subscribe(() => {
             localStorage.setItem('isLoggedIn', 'true');

@@ -31,6 +31,7 @@ export class SignupComponent extends AppBaseComponent {
   acceptTnC: boolean = false;
   isLoading: boolean = false;
   @Output() onLogIn: EventEmitter<any> = new EventEmitter();
+  @Output() onVerifyAccount: EventEmitter<any> = new EventEmitter();
 
   constructor(private injector: Injector, private authServices: AuthServices, private router: Router ) {
     super(injector);
@@ -50,8 +51,8 @@ export class SignupComponent extends AppBaseComponent {
     }).subscribe({
       next: (res) => {
         if (res.success) {
-          this.showSuccess('Account created successfully! Please sign in.');
-          this.onLogIn.emit();
+          this.showSuccess('Account created! Please check your email for the OTP.');
+          this.onVerifyAccount.emit();
         } else {
           this.showError(res.message || 'Sign up failed');
         }

@@ -43,9 +43,9 @@ export class UserService {
 
   constructor(private http: HttpClient) { }
 
-  // Get all users in current account
+  // Get all users in workspace
   getAllUsers(): Observable<ApiResponse<User[]>> {
-    return this.http.get<any>(`${this.baseUrl}/authentication/users`)
+    return this.http.get<any>(`${this.baseUrl}/governance/users?limit=200`)
       .pipe(
         map(response => {
           if (response && response.data && Array.isArray(response.data)) {

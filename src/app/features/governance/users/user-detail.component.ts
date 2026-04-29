@@ -15,6 +15,8 @@ import { ToastModule } from 'primeng/toast';
 import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
+import { TableModule } from 'primeng/table';
+import { TabViewModule } from 'primeng/tabview';
 
 @Component({
   standalone: true,
@@ -22,7 +24,7 @@ import { TooltipModule } from 'primeng/tooltip';
   imports: [
     CommonModule, RouterModule, FormsModule,
     CardModule, ButtonModule, TagModule, DividerModule,
-    ProgressSpinnerModule, ChipModule, ToastModule, InputTextModule, TooltipModule
+    ProgressSpinnerModule, ChipModule, ToastModule, InputTextModule, TooltipModule, TableModule, TabViewModule
   ],
   providers: [MessageService],
   templateUrl: './user-detail.component.html'
@@ -33,6 +35,7 @@ export class UserDetailComponent implements OnInit, OnDestroy {
   editMode = false;
   saving = false;
   editForm: any = {};
+  permissionMatrix: { resource: string; actions: { action: string; grantedByRoles: string[] }[] }[] = [];
 
   private destroy$ = new Subject<void>();
 
@@ -70,6 +73,7 @@ export class UserDetailComponent implements OnInit, OnDestroy {
             role: this.user.role,
             status: this.user.status
           };
+          this.buildPermissionMatrix();
         }
         this.loading = false;
       },
@@ -109,6 +113,56 @@ export class UserDetailComponent implements OnInit, OnDestroy {
       };
     }
     this.editMode = false;
+  }
+
+  buildPermissionMatrix(): void {
+    const permissions: any[] = this.user?.governance?.permissions ?? [];
+    const roles: any[] = this.user?.governance?.roles ?? [];
+    const resourceMap = new Map<string, Map<string, string[]>>();
+
+    for (const perm of permissions) {
+      const code: string = typeof perm === 'string' ? perm : (perm?.code ?? perm?.id ?? '');
+      const parts = code.split(':');
+      if (parts.length < 3) continue;
+      const resource = parts[1];
+      const action = parts[2];
+
+      if (!resourceMap.has(resource)) resourceMap.set(resource, new Map());
+      const actionMap = resourceMap.get(resource)!;
+
+      const grantedBy: string[] = [];
+      for (const role of roles) {
+        const roleName = typeof role === 'string' ? role : (role?.name ?? role?.id ?? '');
+        const rolePerms: any[] = role?.permissions ?? [];
+        const hasIt = rolePerms.some((rp: any) => {
+          const rpCode = typeof rp === 'string' ? rp : (rp?.code ?? rp?.id ?? '');
+          return rpCode === code;
+        });
+        if (hasIt) grantedBy.push(roleName);
+      }
+      actionMap.set(action, grantedBy);
+    }
+
+    this.permissionMatrix = Array.from(resourceMap.entries()).map(([resource, actionMap]) => ({
+      resource,
+      actions: Array.from(actionMap.entries()).map(([action, grantedByRoles]) => ({ action, grantedByRoles }))
+    }));
+  }
+
+  getRoleNames(): string[] {
+    const roles: any[] = this.user?.governance?.roles ?? [];
+    return roles.map(r => typeof r === 'string' ? r : (r?.name ?? r?.id ?? ''));
+  }
+
+  roleGrantsPermission(roleName: string, permCode: string): boolean {
+    for (const group of this.permissionMatrix) {
+      for (const a of group.actions) {
+        if (`perm:${group.resource}:${a.action}` === permCode) {
+          return a.grantedByRoles.includes(roleName);
+        }
+      }
+    }
+    return false;
   }
 
   goBack(): void {

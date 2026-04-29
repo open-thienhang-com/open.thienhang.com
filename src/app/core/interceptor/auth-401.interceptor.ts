@@ -30,10 +30,9 @@ export class Auth401Interceptor implements HttpInterceptor {
 
                     // Navigate to login page; use replaceUrl to avoid back navigation to protected page
                     try {
-                        this.router.navigate(['/auth/login'], { replaceUrl: true });
+                        this.router.navigate(['/login'], { replaceUrl: true });
                     } catch (e) {
-                        // If router not available for any reason, fallback to location assign
-                        try { window.location.href = '/auth/login'; } catch (err) { /* ignore */ }
+                        try { window.location.href = '/login'; } catch (err) { /* ignore */ }
                     }
                 }
 
