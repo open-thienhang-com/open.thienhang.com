@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { GovernanceServices } from '../../../../core/services/governance.services';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -13,6 +13,7 @@ import { TabViewModule } from 'primeng/tabview';
 import { DividerModule } from 'primeng/divider';
 import { TooltipModule } from 'primeng/tooltip';
 import { BadgeModule } from 'primeng/badge';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-account-detail',
@@ -20,14 +21,15 @@ import { BadgeModule } from 'primeng/badge';
   imports: [
     CommonModule,
     ButtonModule, TagModule, ToastModule, ProgressSpinnerModule,
-    TabViewModule, DividerModule, TooltipModule, BadgeModule
+    TabViewModule, DividerModule, TooltipModule, BadgeModule, ConfirmDialogModule
   ],
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './account-detail.component.html'
 })
 export class AccountDetailComponent implements OnInit, OnDestroy {
   account: any = null;
   loading = true;
+  accountId = '';
 
   private destroy$ = new Subject<void>();
 
@@ -35,12 +37,14 @@ export class AccountDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private governanceServices: GovernanceServices,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const id = params['id'];
+      this.accountId = id;
       if (id) this.loadAccount(id);
       else this.loading = false;
     });
@@ -67,6 +71,28 @@ export class AccountDetailComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.router.navigate(['/governance/accounts']);
+  }
+
+  editAccount(): void {
+    this.router.navigate(['/governance/accounts', this.accountId, 'edit']);
+  }
+
+  deleteAccount(): void {
+    this.confirmationService.confirm({
+      message: 'Deactivate this account? This will set the account to inactive.',
+      header: 'Confirm Deactivation',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.governanceServices.deleteAccount(this.accountId).pipe(takeUntil(this.destroy$)).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Deactivated', detail: 'Account deactivated' });
+            setTimeout(() => this.router.navigate(['/governance/accounts']), 800);
+          },
+          error: (err: any) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message || 'Failed to deactivate' })
+        });
+      }
+    });
   }
 
   getInitials(): string {

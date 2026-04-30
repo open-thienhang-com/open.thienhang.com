@@ -1,4 +1,6 @@
 import { Component, Injector, OnInit, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { GovernanceServices } from '../../../core/services/governance.services';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
@@ -53,7 +55,8 @@ import * as XLSX from 'xlsx';
     DividerModule,
     PanelModule,
     ProgressSpinnerModule,
-    ConfirmDialogModule
+    ConfirmDialogModule,
+    RouterModule
   ],
   templateUrl: './assets.component.html',
   styleUrls: ['./assets.component.scss']
@@ -137,7 +140,8 @@ export class AssetsComponent extends AppBaseComponent implements OnInit, OnDestr
   constructor(
     private injector: Injector,
     private governanceServices: GovernanceServices,
-    public messageService: MessageService
+    public messageService: MessageService,
+    public router: Router
   ) {
     super(injector)
   }

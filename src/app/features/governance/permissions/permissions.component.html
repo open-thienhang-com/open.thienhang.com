@@ -69,19 +69,19 @@
             pTooltip="Card View"
             class="hidden sm:inline-flex">
           </p-button>
-          <p-button 
-            label="Add Permission" 
-            icon="pi pi-plus" 
+          <p-button
+            label="Add Permission"
+            icon="pi pi-plus"
             severity="primary"
             size="small"
-            (click)="permissionDetail.show()"
+            (click)="router.navigate(['/governance/permissions/new'])"
             class="sm:hidden">
           </p-button>
-          <p-button 
-            icon="pi pi-plus" 
+          <p-button
+            icon="pi pi-plus"
             severity="primary"
             [rounded]="true"
-            (click)="permissionDetail.show()"
+            (click)="router.navigate(['/governance/permissions/new'])"
             pTooltip="Add Permission"
             class="hidden sm:inline-flex">
           </p-button>
@@ -371,7 +371,7 @@
                     [text]="true" 
                     severity="info" 
                     size="small"
-                    (click)="permissionDetail.view(permission)"
+                    (click)="router.navigate(['/governance/permissions', permission.kid || permission.identify])"
                     pTooltip="View Permission">
                   </p-button>
                   <p-button 
@@ -380,7 +380,7 @@
                     [text]="true" 
                     severity="secondary" 
                     size="small"
-                    (click)="permissionDetail.edit(permission)"
+                    (click)="router.navigate(['/governance/permissions', permission.kid || permission.identify, 'edit'])"
                     pTooltip="Edit Permission">
                   </p-button>
                   <p-button 
@@ -466,7 +466,7 @@
                 [text]="true" 
                 severity="info" 
                 size="small"
-                (click)="permissionDetail.view(permission)"
+                (click)="router.navigate(['/governance/permissions', permission.kid || permission.identify])"
                 pTooltip="View Permission">
               </p-button>
               <p-button 
@@ -474,7 +474,7 @@
                 [text]="true" 
                 severity="secondary" 
                 size="small"
-                (click)="permissionDetail.edit(permission)"
+                (click)="router.navigate(['/governance/permissions', permission.kid || permission.identify, 'edit'])"
                 pTooltip="Edit Permission">
               </p-button>
               <p-button 

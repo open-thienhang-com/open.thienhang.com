@@ -22,6 +22,7 @@ import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { Router, RouterModule } from '@angular/router';
 import { PermissionComponent } from './permission/permission.component';
 
 @Component({
@@ -46,6 +47,7 @@ import { PermissionComponent } from './permission/permission.component';
     TreeModule,
     ToastModule,
     ConfirmDialogModule,
+    RouterModule,
     PermissionComponent
   ],
   providers: [MessageService],
@@ -108,7 +110,8 @@ export class PermissionsComponent extends AppBaseComponent implements OnInit {
   constructor(
     private injector: Injector,
     private governanceServices: GovernanceServices,
-    public messageService: MessageService
+    public messageService: MessageService,
+    public router: Router
   ) {
     super(injector)
   }

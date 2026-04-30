@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { GovernanceServices } from '../../../../core/services/governance.services';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -14,6 +14,7 @@ import { DividerModule } from 'primeng/divider';
 import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
 import { BadgeModule } from 'primeng/badge';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-entitlement-detail',
@@ -21,9 +22,9 @@ import { BadgeModule } from 'primeng/badge';
   imports: [
     CommonModule,
     ButtonModule, TagModule, ToastModule, ProgressSpinnerModule,
-    TabViewModule, DividerModule, TooltipModule, TableModule, BadgeModule
+    TabViewModule, DividerModule, TooltipModule, TableModule, BadgeModule, ConfirmDialogModule
   ],
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './entitlement-detail.component.html'
 })
 export class EntitlementDetailComponent implements OnInit, OnDestroy {
@@ -31,6 +32,7 @@ export class EntitlementDetailComponent implements OnInit, OnDestroy {
   assignments: any[] = [];
   loading = true;
   assignmentsLoading = false;
+  entitlementCode = '';
 
   private destroy$ = new Subject<void>();
 
@@ -38,12 +40,14 @@ export class EntitlementDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private governanceServices: GovernanceServices,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const code = params['code'];
+      this.entitlementCode = code;
       if (code) this.loadEntitlement(decodeURIComponent(code));
       else this.loading = false;
     });
@@ -82,6 +86,28 @@ export class EntitlementDetailComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.router.navigate(['/governance/entitlements']);
+  }
+
+  editEntitlement(): void {
+    this.router.navigate(['/governance/entitlements', this.entitlementCode, 'edit']);
+  }
+
+  deleteEntitlement(): void {
+    this.confirmationService.confirm({
+      message: `Delete entitlement "${this.entitlement?.code}"? This cannot be undone.`,
+      header: 'Confirm Delete',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.governanceServices.deleteEntitlement(this.entitlementCode).pipe(takeUntil(this.destroy$)).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Deleted', detail: 'Entitlement deleted' });
+            setTimeout(() => this.router.navigate(['/governance/entitlements']), 800);
+          },
+          error: (err: any) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message || 'Failed to delete' })
+        });
+      }
+    });
   }
 
   getTierSeverity(tier: string): string {

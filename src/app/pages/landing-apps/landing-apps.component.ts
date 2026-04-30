@@ -23,7 +23,7 @@ export class LandingAppsComponent {
     {
       key: 'retail',
       label: 'Retail Service',
-      description: 'POS, tồn kho, e-commerce cho cửa hàng bán lẻ.',
+      description: 'POS, inventory, and e-commerce for retail stores.',
       icon: 'pi pi-shopping-bag',
       route: '/retail',
       gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -31,7 +31,7 @@ export class LandingAppsComponent {
     {
       key: 'governance',
       label: 'Governance',
-      description: 'Quyền, team, policy & compliance cho dữ liệu.',
+      description: 'Permissions, teams, policies & compliance for data.',
       icon: 'pi pi-shield',
       route: '/governance/policies',
       gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
@@ -39,7 +39,7 @@ export class LandingAppsComponent {
     {
       key: 'planning',
       label: 'Planning',
-      description: 'Lập kế hoạch vận hành & logistics.',
+      description: 'Operations & logistics planning.',
       icon: 'pi pi-truck',
       route: '/planning',
       gradient: 'linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)',
@@ -47,7 +47,7 @@ export class LandingAppsComponent {
     {
       key: 'marketplace',
       label: 'Marketplace',
-      description: 'Data products & data discovery cho toàn tổ chức.',
+      description: 'Data products & data discovery for the organization.',
       icon: 'pi pi-shopping-cart',
       route: '/marketplace',
       gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
@@ -55,7 +55,7 @@ export class LandingAppsComponent {
     {
       key: 'blogger',
       label: 'Blogger',
-      description: 'Quản lý nội dung, bài viết và xuất bản.',
+      description: 'Content management, articles, and publishing.',
       icon: 'pi pi-pencil',
       route: '/blogger',
       gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
@@ -63,7 +63,7 @@ export class LandingAppsComponent {
     {
       key: 'hotel',
       label: 'Hotel',
-      description: 'Đặt phòng, quản lý khách sạn & vận hành.',
+      description: 'Room booking, hotel management & operations.',
       icon: 'pi pi-building',
       route: '/hotel',
       gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
@@ -71,7 +71,7 @@ export class LandingAppsComponent {
     {
       key: 'admanager',
       label: 'Ad Manager',
-      description: 'Quản lý chiến dịch quảng cáo & báo cáo.',
+      description: 'Ad campaign management & reporting.',
       icon: 'pi pi-bullhorn',
       route: '/ad-manager',
       gradient: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
@@ -79,15 +79,15 @@ export class LandingAppsComponent {
     {
       key: 'settings',
       label: 'Settings',
-      description: 'Cấu hình hệ thống & tuỳ chọn cho workspace.',
+      description: 'System configuration & workspace preferences.',
       icon: 'pi pi-cog',
-      route: '/settings',
+      route: '/profile',
       gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
     },
     {
       key: 'notification',
       label: 'Notification Service',
-      description: 'Quản lý mẫu, gửi tin đa kênh và giám sát hiệu năng.',
+      description: 'Template management, multi-channel messaging, and performance monitoring.',
       icon: 'pi pi-bell',
       route: '/notification',
       gradient: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)',

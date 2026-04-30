@@ -1,96 +1,209 @@
-<div class="applications-page premium-theme">
-  <!-- Fluid Ambient Background -->
-  <div class="ambient-background">
-    <div class="mesh-blob blob-1"></div>
-    <div class="mesh-blob blob-2"></div>
-    <div class="mesh-blob blob-3"></div>
-    <div class="mesh-blob blob-4"></div>
-    <div class="mesh-blob blob-5"></div>
-    <div class="noise-overlay"></div>
-  </div>
+<div class="applications-page">
+  <!-- Full Screen Container -->
+  <div class="fullscreen-container">
 
-  <!-- Main Content -->
-  <div class="content-container">
-    
     <!-- Header -->
-    <header class="page-header stagger-in">
-      <div class="header-glass-panel">
-        <div class="header-icon-container">
-          <div class="icon-ring"></div>
-          <i class="pi pi-th-large"></i>
-        </div>
-        <div class="header-text-content">
-          <h1 class="page-title">Application Hub</h1>
-          <p class="page-subtitle">Select a module to launch your workspace</p>
-        </div>
+    <header class="page-header">
+      <div class="header-content">
+        <h1 class="page-title">ThienHang Platform</h1>
+        <p class="page-subtitle">Choose your workspace</p>
+      </div>
+      <div class="header-actions">
+        <button class="search-btn" type="button">
+          <i class="pi pi-search"></i>
+        </button>
+        <button class="profile-btn" type="button">
+          <i class="pi pi-user"></i>
+        </button>
       </div>
     </header>
 
-    <!-- Categories -->
-    <main class="categories-wrapper">
-      <section class="category-section" 
-               *ngFor="let category of categories; let i = index" 
-               [style.animation-delay]="i * 0.1 + 's'">
-               
-        <div class="category-header fade-in-up" *ngIf="category !== 'Platform Core'">
-          <div class="category-indicator"></div>
-          <h2 class="category-title">{{ category }}</h2>
-          <div class="category-line"></div>
+    <!-- Main Grid Layout -->
+    <main class="apps-grid">
+      <!-- Row 1 -->
+      <div class="grid-row">
+        <div class="app-card" (click)="selectApp('inventory')">
+          <div class="card-icon">
+            <i class="pi pi-box"></i>
+          </div>
+          <div class="card-content">
+            <h3>Inventory</h3>
+            <p>Stock & Supply Chain</p>
+          </div>
         </div>
-        
-        <div class="applications-grid">
-          <button 
-            *ngFor="let app of getAppsByCategory(category); let j = index" 
-            type="button"
-            class="app-card glass-card fade-in-up"
-            [class.active]="selectedApp === app.key"
-            (click)="selectApp(app.key)"
-            [attr.aria-label]="app.label"
-            [style.animation-delay]="(i * 0.15) + (j * 0.05) + 's'"
-            [style.--app-gradient]="app.gradient">
 
-            <!-- Animated Edge Glow -->
-            <div class="card-edge-glow" [style.background]="app.gradient"></div>
-            
-            <!-- Card Body / Glass Layer -->
-            <div class="card-content">
-              
-              <!-- Icon Setup -->
-              <div class="app-icon-wrapper">
-                <div class="icon-bg" [style.background]="app.gradient"></div>
-                <!-- Drop shadow that matches the gradient -->
-                <div class="icon-shadow" [style.background]="app.gradient"></div>
-                <i [class]="app.icon"></i>
-              </div>
-              
-              <!-- Text Info -->
-              <div class="app-info">
-                <h3 class="app-name">{{ app.label }}</h3>
-                <p class="app-desc" *ngIf="app.description">{{ app.description }}</p>
-                <p class="app-desc-empty" *ngIf="!app.description">Launch module</p>
-              </div>
-
-              <!-- Action Indicator -->
-              <div class="app-action">
-                <i class="pi pi-arrow-right"></i>
-              </div>
-            </div>
-            
-            <!-- Active State Badge -->
-            <div class="active-badge" *ngIf="selectedApp === app.key">
-              <div class="badge-bg" [style.background]="app.gradient"></div>
-              <div class="badge-content">
-                <i class="pi pi-check-circle"></i>
-                <span>Active</span>
-              </div>
-            </div>
-            
-            <!-- Ambient Hover Glow -->
-            <div class="hover-ambient-glow" [style.background]="app.gradient"></div>
-          </button>
+        <div class="app-card" (click)="selectApp('governance')">
+          <div class="card-icon">
+            <i class="pi pi-shield"></i>
+          </div>
+          <div class="card-content">
+            <h3>Governance</h3>
+            <p>Policy & Assets</p>
+          </div>
         </div>
-      </section>
+
+        <div class="app-card" (click)="selectApp('retail-sales')">
+          <div class="card-icon">
+            <i class="pi pi-shopping-bag"></i>
+          </div>
+          <div class="card-content">
+            <h3>Sales</h3>
+            <p>E-commerce & POS</p>
+          </div>
+        </div>
+
+        <div class="app-card" (click)="selectApp('loyalty')">
+          <div class="card-icon">
+            <i class="pi pi-users"></i>
+          </div>
+          <div class="card-content">
+            <h3>CRM</h3>
+            <p>Customer Management</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="grid-row">
+        <div class="app-card" (click)="selectApp('explore')">
+          <div class="card-icon">
+            <i class="pi pi-compass"></i>
+          </div>
+          <div class="card-content">
+            <h3>Explore</h3>
+            <p>Data Discovery</p>
+          </div>
+        </div>
+
+        <div class="app-card" (click)="selectApp('files')">
+          <div class="card-icon">
+            <i class="pi pi-folder"></i>
+          </div>
+          <div class="card-content">
+            <h3>Files</h3>
+            <p>Document Storage</p>
+          </div>
+        </div>
+
+        <div class="app-card" (click)="selectApp('admanager')">
+          <div class="card-icon">
+            <i class="pi pi-chart-bar"></i>
+          </div>
+          <div class="card-content">
+            <h3>Ad Manager</h3>
+            <p>Campaign Analytics</p>
+          </div>
+        </div>
+
+        <div class="app-card" (click)="selectApp('travel')">
+          <div class="card-icon">
+            <i class="pi pi-globe"></i>
+          </div>
+          <div class="card-content">
+            <h3>Travel</h3>
+            <p>Booking System</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3 -->
+      <div class="grid-row">
+        <div class="app-card" (click)="selectApp('blogger')">
+          <div class="card-icon">
+            <i class="pi pi-pencil"></i>
+          </div>
+          <div class="card-content">
+            <h3>Content</h3>
+            <p>Blog & Media</p>
+          </div>
+        </div>
+
+        <div class="app-card" (click)="selectApp('hotel')">
+          <div class="card-icon">
+            <i class="pi pi-building"></i>
+          </div>
+          <div class="card-content">
+            <h3>Hotel</h3>
+            <p>Property Management</p>
+          </div>
+        </div>
+
+        <div class="app-card" (click)="selectApp('support')">
+          <div class="card-icon">
+            <i class="pi pi-question-circle"></i>
+          </div>
+          <div class="card-content">
+            <h3>Support</h3>
+            <p>Help & Tickets</p>
+          </div>
+        </div>
+
+        <div class="app-card" (click)="selectApp('settings')">
+          <div class="card-icon">
+            <i class="pi pi-cog"></i>
+          </div>
+          <div class="card-content">
+            <h3>Settings</h3>
+            <p>System Config</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 4 -->
+      <div class="grid-row">
+        <div class="app-card placeholder">
+          <div class="card-icon">
+            <i class="pi pi-plus"></i>
+          </div>
+          <div class="card-content">
+            <h3>Add Module</h3>
+            <p>Coming Soon</p>
+          </div>
+        </div>
+
+        <div class="app-card placeholder">
+          <div class="card-icon">
+            <i class="pi pi-chart-line"></i>
+          </div>
+          <div class="card-content">
+            <h3>Analytics</h3>
+            <p>Business Intelligence</p>
+          </div>
+        </div>
+
+        <div class="app-card placeholder">
+          <div class="card-icon">
+            <i class="pi pi-mobile"></i>
+          </div>
+          <div class="card-content">
+            <h3>Mobile</h3>
+            <p>App Management</p>
+          </div>
+        </div>
+
+        <div class="app-card placeholder">
+          <div class="card-icon">
+            <i class="pi pi-cloud"></i>
+          </div>
+          <div class="card-content">
+            <h3>Cloud</h3>
+            <p>Infrastructure</p>
+          </div>
+        </div>
+      </div>
     </main>
+
+    <!-- Footer -->
+    <footer class="page-footer">
+      <div class="footer-content">
+        <p>&copy; 2024 ThienHang Platform. All rights reserved.</p>
+        <div class="footer-links">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+          <a href="#">Support</a>
+        </div>
+      </div>
+    </footer>
 
   </div>
 </div>

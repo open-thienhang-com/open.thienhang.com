@@ -178,21 +178,11 @@ export class EntitlementsComponent implements OnInit {
   }
 
   createEntitlement() {
-    this.entitlement = { 
-        is_enabled: true,
-        category: 'feature',
-        tier: 'free',
-        telnet: this.currentUser?.identify,
-        metadata: {}
-    };
-    this.editMode = false;
-    this.showDialog = true;
+    this.router.navigate(['/governance/entitlements/new']);
   }
 
   editEntitlement(e: Entitlement) {
-    this.entitlement = { ...e, metadata: e.metadata || {} };
-    this.editMode = true;
-    this.showDialog = true;
+    this.router.navigate(['/governance/entitlements', encodeURIComponent(e.code), 'edit']);
   }
 
   assignEntitlement(ent: Entitlement) {

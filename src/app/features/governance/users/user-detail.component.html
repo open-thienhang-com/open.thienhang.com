@@ -1,150 +1,185 @@
 <p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
 
 <div class="bg-gray-50 min-h-screen">
-  <!-- Header -->
-  <div class="bg-white border-b border-gray-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        <div class="flex items-center gap-4">
-          <p-button icon="pi pi-arrow-left" [text]="true" [rounded]="true" (click)="goBack()"
-            severity="secondary" pTooltip="Back to Users"></p-button>
-          <div *ngIf="user" class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
-              <i class="pi pi-user text-white"></i>
-            </div>
-            <div>
-              <h1 class="text-xl font-bold text-gray-900 leading-none mb-1">{{ getUserName() }}</h1>
-              <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500 font-mono">{{ user.email }}</span>
-                <p-tag *ngIf="user.status" [value]="user.status | titlecase" [severity]="getStatusSeverity(user.status)"></p-tag>
-                <p-tag *ngIf="user.is_verified" value="Verified" severity="success" icon="pi pi-check"></p-tag>
-              </div>
-            </div>
-          </div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between gap-4 flex-col sm:flex-row mb-8">
+      <div class="flex items-center gap-4">
+        <p-button icon="pi pi-arrow-left" [text]="true" [rounded]="true" (click)="goBack()" severity="secondary" pTooltip="Back to Users"></p-button>
+        <div>
+          <p class="text-sm text-gray-500 uppercase tracking-[0.3em]">User profile</p>
+          <h1 class="text-3xl font-bold text-gray-900">{{ getUserName() }}</h1>
+          <p class="text-sm text-gray-500 mt-1">Manage profile details, access roles and permissions for this governance user.</p>
         </div>
-        <p-progressSpinner *ngIf="loading" styleClass="w-2rem h-2rem"></p-progressSpinner>
+      </div>
+      <div class="flex items-center gap-3">
+        <p-tag *ngIf="user?.status" [value]="user.status | titlecase" [severity]="getStatusSeverity(user.status)"></p-tag>
+        <p-tag *ngIf="user?.is_verified" value="Verified" severity="success" icon="pi pi-check"></p-tag>
+        <ng-container *ngIf="!loading && user">
+          <p-button label="Edit" icon="pi pi-pencil" severity="secondary" size="small" (click)="editUser()"></p-button>
+          <p-button label="Delete" icon="pi pi-trash" severity="danger" size="small" (click)="deleteUser()"></p-button>
+        </ng-container>
       </div>
     </div>
-  </div>
-
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
     <div *ngIf="loading" class="flex items-center justify-center py-20">
       <p-progressSpinner styleClass="w-4rem h-4rem"></p-progressSpinner>
     </div>
 
-    <div *ngIf="!loading && user" class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      <p-tabView>
+    <div *ngIf="!loading && user" class="grid gap-6 lg:grid-cols-[320px_1fr]">
+      <div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="bg-gradient-to-br from-indigo-600 to-purple-600 p-6 text-white text-center">
+          <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-white/10 mx-auto mb-4">
+            <i class="pi pi-user text-3xl"></i>
+          </div>
+          <h2 class="text-xl font-semibold">{{ getUserName() }}</h2>
+          <p class="text-sm text-indigo-100">{{ user.email }}</p>
+        </div>
 
-        <!-- Profile Tab -->
-        <p-tabPanel header="Profile">
-          <div class="p-6">
-            <div class="flex justify-end mb-4">
-              <p-button *ngIf="!editMode" label="Edit" icon="pi pi-pencil" severity="secondary" [outlined]="true"
-                (click)="editMode = true"></p-button>
-              <div *ngIf="editMode" class="flex gap-2">
-                <p-button label="Cancel" severity="secondary" [text]="true" (click)="cancelEdit()" [disabled]="saving"></p-button>
-                <p-button label="Save" icon="pi pi-check" (click)="saveChanges()" [loading]="saving"></p-button>
+        <div class="p-6 space-y-4">
+          <div class="grid gap-3">
+            <div class="rounded-2xl bg-gray-50 p-4">
+              <p class="text-xs uppercase tracking-[0.2em] text-gray-400 mb-2">User ID</p>
+              <p class="font-medium text-gray-900 break-all">{{ user.kid || user._id || '—' }}</p>
+            </div>
+            <div class="rounded-2xl bg-gray-50 p-4">
+              <p class="text-xs uppercase tracking-[0.2em] text-gray-400 mb-2">Role</p>
+              <p class="font-medium text-gray-900">{{ user.role || '—' }}</p>
+            </div>
+            <div class="rounded-2xl bg-gray-50 p-4">
+              <p class="text-xs uppercase tracking-[0.2em] text-gray-400 mb-2">Account</p>
+              <p class="font-medium text-gray-900">{{ user.account || '—' }}</p>
+            </div>
+          </div>
+
+          <div class="rounded-3xl bg-indigo-50 p-4">
+            <p class="text-sm font-semibold text-indigo-700 mb-2">Quick summary</p>
+            <div class="space-y-2 text-sm text-gray-600">
+              <div class="flex justify-between gap-2">
+                <span>Email</span>
+                <span class="font-medium text-gray-900">{{ user.email }}</span>
+              </div>
+              <div class="flex justify-between gap-2">
+                <span>Status</span>
+                <span class="font-medium text-gray-900">{{ user.status | titlecase }}</span>
+              </div>
+              <div class="flex justify-between gap-2">
+                <span>Verified</span>
+                <span class="font-medium text-gray-900">{{ user.is_verified ? 'Yes' : 'No' }}</span>
+              </div>
+              <div class="flex justify-between gap-2">
+                <span>Created</span>
+                <span class="font-medium text-gray-900">{{ user.created_at ? (user.created_at | date:'mediumDate') : 'Unknown' }}</span>
               </div>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <div>
+              <h2 class="text-lg font-semibold text-gray-900">Profile details</h2>
+              <p class="text-sm text-gray-500 mt-1">Edit basic user information and governance attributes.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-button *ngIf="!editMode" label="Edit profile" icon="pi pi-pencil" severity="secondary" [outlined]="true" (click)="editMode = true"></p-button>
+              <div *ngIf="editMode" class="flex gap-2">
+                <p-button label="Cancel" severity="secondary" [text]="true" (click)="cancelEdit()" [disabled]="saving"></p-button>
+                <p-button label="Save changes" icon="pi pi-check" (click)="saveChanges()" [loading]="saving"></p-button>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-6 space-y-6">
+            <div class="grid gap-4 md:grid-cols-2">
               <div>
-                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">First Name</label>
-                <input *ngIf="editMode" pInputText [(ngModel)]="editForm.first_name" class="w-full" />
+                <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-gray-400 mb-2">First name</label>
+                <div *ngIf="editMode">
+                  <input pInputText [(ngModel)]="editForm.first_name" class="w-full" />
+                </div>
                 <p *ngIf="!editMode" class="text-gray-900">{{ user.first_name || '—' }}</p>
               </div>
               <div>
-                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Last Name</label>
-                <input *ngIf="editMode" pInputText [(ngModel)]="editForm.last_name" class="w-full" />
+                <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-gray-400 mb-2">Last name</label>
+                <div *ngIf="editMode">
+                  <input pInputText [(ngModel)]="editForm.last_name" class="w-full" />
+                </div>
                 <p *ngIf="!editMode" class="text-gray-900">{{ user.last_name || '—' }}</p>
               </div>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
               <div>
-                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Email</label>
-                <input *ngIf="editMode" pInputText [(ngModel)]="editForm.email" type="email" class="w-full" />
+                <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-gray-400 mb-2">Email</label>
+                <div *ngIf="editMode">
+                  <input pInputText [(ngModel)]="editForm.email" type="email" class="w-full" />
+                </div>
                 <p *ngIf="!editMode" class="text-gray-900">{{ user.email }}</p>
               </div>
               <div>
-                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Role</label>
-                <input *ngIf="editMode" pInputText [(ngModel)]="editForm.role" class="w-full" />
+                <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-gray-400 mb-2">Role</label>
+                <div *ngIf="editMode">
+                  <input pInputText [(ngModel)]="editForm.role" class="w-full" />
+                </div>
                 <p *ngIf="!editMode" class="text-gray-900">{{ user.role || '—' }}</p>
               </div>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
               <div>
-                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Status</label>
-                <input *ngIf="editMode" pInputText [(ngModel)]="editForm.status" class="w-full" />
-                <p-tag *ngIf="!editMode" [value]="(user.status || 'active') | titlecase" [severity]="getStatusSeverity(user.status)"></p-tag>
+                <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-gray-400 mb-2">Status</label>
+                <div *ngIf="editMode">
+                  <input pInputText [(ngModel)]="editForm.status" class="w-full" />
+                </div>
+                <p *ngIf="!editMode" class="text-gray-900">{{ user.status | titlecase }}</p>
               </div>
               <div>
-                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">User ID</label>
-                <code class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">{{ user.kid || user._id || '—' }}</code>
+                <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-gray-400 mb-2">User ID</label>
+                <code class="block text-gray-900 bg-gray-100 px-3 py-2 rounded">{{ user.kid || user._id || '—' }}</code>
               </div>
             </div>
           </div>
-        </p-tabPanel>
+        </div>
 
-        <!-- Access & Roles Tab -->
-        <p-tabPanel header="Access & Roles">
+        <div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Access & Roles</h2>
+            <p class="text-sm text-gray-500 mt-1">Assigned governance roles, teams and policies for this user.</p>
+          </div>
           <div class="p-6 space-y-6">
             <div>
-              <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Governance Roles</h4>
-              <div *ngIf="user.governance?.roles?.length; else noRoles" class="flex flex-wrap gap-2">
-                <p-chip *ngFor="let r of user.governance.roles"
-                  [label]="r?.name || r?.id || r"
-                  icon="pi pi-shield"
-                  styleClass="bg-blue-50 border border-blue-100 text-blue-800">
-                </p-chip>
+              <h3 class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-[0.2em]">Roles</h3>
+              <div *ngIf="user.governance?.roles?.length; else noRolesV2" class="flex flex-wrap gap-2">
+                <p-chip *ngFor="let r of user.governance.roles" [label]="r?.name || r?.id || r" icon="pi pi-shield" styleClass="bg-blue-50 border border-blue-100 text-blue-800"></p-chip>
               </div>
-              <ng-template #noRoles>
-                <p class="text-sm text-gray-400">No roles assigned</p>
-              </ng-template>
+              <ng-template #noRolesV2><p class="text-sm text-gray-400">No roles assigned</p></ng-template>
             </div>
-
-            <p-divider></p-divider>
 
             <div>
-              <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Teams</h4>
-              <div *ngIf="user.governance?.teams?.length; else noTeams" class="flex flex-wrap gap-2">
-                <p-chip *ngFor="let t of user.governance.teams"
-                  [label]="t?.name || t?.id || t"
-                  icon="pi pi-users">
-                </p-chip>
+              <h3 class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-[0.2em]">Teams</h3>
+              <div *ngIf="user.governance?.teams?.length; else noTeamsV2" class="flex flex-wrap gap-2">
+                <p-chip *ngFor="let t of user.governance.teams" [label]="t?.name || t?.id || t" icon="pi pi-users"></p-chip>
               </div>
-              <ng-template #noTeams>
-                <p class="text-sm text-gray-400">No teams</p>
-              </ng-template>
+              <ng-template #noTeamsV2><p class="text-sm text-gray-400">No teams</p></ng-template>
             </div>
-
-            <p-divider></p-divider>
 
             <div>
-              <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Policies</h4>
-              <div *ngIf="user.governance?.policies?.length; else noPolicies" class="flex flex-wrap gap-2">
-                <p-chip *ngFor="let p of user.governance.policies"
-                  [label]="p?.name || p?.id || p"
-                  icon="pi pi-lock">
-                </p-chip>
+              <h3 class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-[0.2em]">Policies</h3>
+              <div *ngIf="user.governance?.policies?.length; else noPoliciesV2" class="flex flex-wrap gap-2">
+                <p-chip *ngFor="let p of user.governance.policies" [label]="p?.name || p?.id || p" icon="pi pi-lock"></p-chip>
               </div>
-              <ng-template #noPolicies>
-                <p class="text-sm text-gray-400">No policies</p>
-              </ng-template>
-            </div>
-
-            <p-divider></p-divider>
-
-            <div class="flex items-center gap-4 text-sm">
-              <div>
-                <span class="text-gray-400">Verified:</span>
-                <i class="ml-2" [ngClass]="user.is_verified ? 'pi pi-check text-green-500' : 'pi pi-times text-red-400'"></i>
-              </div>
-              <div>
-                <span class="text-gray-400">Account:</span>
-                <code class="ml-2 text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-600">{{ user.account || '—' }}</code>
-              </div>
+              <ng-template #noPoliciesV2><p class="text-sm text-gray-400">No policies</p></ng-template>
             </div>
           </div>
-        </p-tabPanel>
+        </div>
 
-        <!-- Permission Matrix Tab -->
-        <p-tabPanel header="Permission Matrix">
+        <div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Permission matrix</h2>
+            <p class="text-sm text-gray-500 mt-1">Review permissions grouped by resource and role.</p>
+          </div>
           <div class="p-6">
             <div *ngIf="permissionMatrix.length === 0" class="text-center py-12">
               <i class="pi pi-key text-gray-300 text-3xl mb-3 block"></i>
@@ -152,33 +187,33 @@
             </div>
 
             <div *ngIf="permissionMatrix.length > 0">
-              <p-table [value]="permissionMatrix" [tableStyle]="{'min-width': '50rem'}"
-                styleClass="p-datatable-sm p-datatable-gridlines">
-                <ng-template pTemplate="header">
-                  <tr>
-                    <th class="surface-100 font-semibold" style="width:120px">Resource</th>
-                    <th class="surface-100 font-semibold" style="width:100px">Action</th>
-                    <th *ngFor="let role of getRoleNames()" class="surface-100 font-semibold text-center">{{ role }}</th>
-                  </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-group>
-                  <ng-container *ngFor="let a of group.actions; let i = index">
+              <div class="overflow-auto">
+                <p-table [value]="permissionMatrix" [tableStyle]="{'min-width': '50rem'}" styleClass="p-datatable-sm p-datatable-gridlines">
+                  <ng-template pTemplate="header">
                     <tr>
-                      <td *ngIf="i === 0" [attr.rowspan]="group.actions.length" class="font-medium text-gray-600 capitalize surface-50">{{ group.resource }}</td>
-                      <td class="text-sm text-gray-700 capitalize">{{ a.action }}</td>
-                      <td *ngFor="let role of getRoleNames()" class="text-center">
-                        <i *ngIf="a.grantedByRoles.includes(role)" class="pi pi-check text-green-500"></i>
-                        <i *ngIf="!a.grantedByRoles.includes(role)" class="pi pi-minus text-300"></i>
-                      </td>
+                      <th class="surface-100 font-semibold" style="width:140px">Resource</th>
+                      <th class="surface-100 font-semibold" style="width:140px">Action</th>
+                      <th *ngFor="let role of getRoleNames()" class="surface-100 font-semibold text-center">{{ role }}</th>
                     </tr>
-                  </ng-container>
-                </ng-template>
-              </p-table>
+                  </ng-template>
+                  <ng-template pTemplate="body" let-group>
+                    <ng-container *ngFor="let a of group.actions; let i = index">
+                      <tr>
+                        <td *ngIf="i === 0" [attr.rowspan]="group.actions.length" class="font-medium text-gray-600 capitalize surface-50">{{ group.resource }}</td>
+                        <td class="text-sm text-gray-700 capitalize">{{ a.action }}</td>
+                        <td *ngFor="let role of getRoleNames()" class="text-center">
+                          <i *ngIf="a.grantedByRoles.includes(role)" class="pi pi-check text-green-500"></i>
+                          <i *ngIf="!a.grantedByRoles.includes(role)" class="pi pi-minus text-300"></i>
+                        </td>
+                      </tr>
+                    </ng-container>
+                  </ng-template>
+                </p-table>
+              </div>
             </div>
           </div>
-        </p-tabPanel>
-
-      </p-tabView>
+        </div>
+      </div>
     </div>
 
     <div *ngIf="!loading && !user" class="text-center py-12">

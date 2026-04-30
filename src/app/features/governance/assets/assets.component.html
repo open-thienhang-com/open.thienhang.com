@@ -78,20 +78,20 @@
             class="hidden sm:inline-flex">
           </p-button>
           <!-- 7. Add New Button (Mobile) -->
-          <p-button 
-            label="Add Asset" 
-            icon="pi pi-plus" 
+          <p-button
+            label="Add Asset"
+            icon="pi pi-plus"
             severity="primary"
             size="small"
-            (click)="assetDetail.show()"
+            (click)="router.navigate(['/governance/assets/new'])"
             class="sm:hidden">
           </p-button>
           <!-- 7. Add New Button (Desktop) -->
-          <p-button 
-            icon="pi pi-plus" 
+          <p-button
+            icon="pi pi-plus"
             severity="primary"
             [rounded]="true"
-            (click)="assetDetail.show()"
+            (click)="router.navigate(['/governance/assets/new'])"
             pTooltip="Add Asset"
             class="hidden sm:inline-flex">
           </p-button>
@@ -356,16 +356,16 @@
                       [text]="true" 
                       severity="info" 
                       size="small"
-                      (click)="assetDetail.view(asset)"
+                      (click)="router.navigate(['/governance/assets', asset.identify || asset._id])"
                       pTooltip="View Asset">
                     </p-button>
-                    <p-button 
-                      icon="pi pi-pencil" 
-                      [rounded]="true" 
-                      [text]="true" 
-                      severity="secondary" 
+                    <p-button
+                      icon="pi pi-pencil"
+                      [rounded]="true"
+                      [text]="true"
+                      severity="secondary"
                       size="small"
-                      (click)="assetDetail.edit(asset)"
+                      (click)="router.navigate(['/governance/assets', asset.identify || asset._id, 'edit'])"
                       pTooltip="Edit Asset">
                     </p-button>
                     <p-button 

@@ -9,9 +9,13 @@ export const authGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   // Use local flag to decide authentication without calling /authentication/me
-  if (auth.isLoggedIn()) {
-    return true;
+  if (!auth.isLoggedIn()) {
+    router.navigate(['/login']);
+    return false;
   }
-  router.navigate(['/login']);
-  return false;
+  if (!auth.isVerified()) {
+    router.navigate(['/verify']);
+    return false;
+  }
+  return true;
 };

@@ -98,6 +98,15 @@ export class SidebarComponent implements OnInit, OnChanges {
   });
   userEmail = computed(() => this.currentUser()?.email || '');
   userIdentify = computed(() => this.currentUser()?.identify || '');
+  userInitials = computed(() => {
+    const name = this.userFullName();
+    if (!name || name === 'User') return 'U';
+    const parts = name.trim().split(/\s+/).filter(p => p.length > 0);
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    return (parts[0]?.[0] || 'U').toUpperCase();
+  });
+
+  private readonly HIDDEN_GROUP_LABELS = ['ad manager', 'blogger', 'file', 'travel', 'hotel', 'explore'];
 
   // Theme state
   themeState = signal<ThemeState>(null);
@@ -283,52 +292,28 @@ export class SidebarComponent implements OnInit, OnChanges {
       this.onPresetChange(this.themeState().preset);
     }
 
-    // Load user from sessionStorage or fetch from /me API
-    try {
-      const raw = sessionStorage.getItem('currentUser');
-      if (raw) {
-        this.currentUser.set(JSON.parse(raw));
-      } else if (this.authServices.isLoggedIn()) {
-        // Fetch from /me if logged in but no session data
-        this.authServices.getCurrentUser().subscribe({
-          next: (res) => {
-            if (res.success) this.currentUser.set(res.data);
-          }
-        });
+    // Subscribe to user changes from AuthServices (this ensures we get normalized data)
+    this.authServices.getUser().subscribe(user => {
+      if (user) {
+        this.currentUser.set(user);
       }
-    } catch (err) {
-      console.warn('Failed to restore user from session storage:', err);
+    });
+
+    // If logged in but no user data yet, trigger a fetch
+    if (this.authServices.isLoggedIn() && !this.currentUser()) {
+      this.authServices.getCurrentUser().subscribe();
     }
 
     // Initialize primary menu structure
     this.menu = [
       {
-        label: 'Data Mesh Management',
-        icon: 'pi pi-sitemap',
-        type: 'item',
-        expanded: true,
-        children: [
-          {
-            label: 'Data Domains',
-            icon: 'pi pi-book',
-            expanded: false,
-            children: [
-              { label: 'Catalog', url: '/data-mesh/catalogs/catalog', icon: 'pi pi-list' },
-              { label: 'Discovery', url: '/data-mesh/catalogs/discovery', icon: 'pi pi-search' },
-              { label: 'Assets', url: '/data-mesh/catalogs/assets', icon: 'pi pi-database' },
-              { label: 'Lineage', url: '/data-mesh/catalogs/lineage', icon: 'pi pi-share-alt' },
-              { label: 'Policies', url: '/data-mesh/catalogs/policies', icon: 'pi pi-lock' },
-              { label: 'Monitoring', url: '/data-mesh/catalogs/monitoring', icon: 'pi pi-chart-line' }
-            ]
-          }
-        ]
-      },
-      {
+
         label: 'Governance',
         icon: 'pi pi-shield',
         type: 'item',
         expanded: false,
         children: [
+          { label: 'Overview', url: '/governance/proposal', icon: 'pi pi-th-large' },
           {
             label: 'Identity',
             icon: 'pi pi-id-card',
@@ -565,8 +550,11 @@ export class SidebarComponent implements OnInit, OnChanges {
     }));
 
     if (!this.sidebarGroups || !this.appKey || this.appKey === 'all') {
-      // Ensure all groups are included - no filtering
-      const allGroups = (this.sidebarGroups || []).filter(g => g && g.label);
+      const allGroups = (this.sidebarGroups || []).filter(g => {
+        if (!g || !g.label) return false;
+        const label = g.label.toLowerCase();
+        return !this.HIDDEN_GROUP_LABELS.some(hidden => label.includes(hidden));
+      });
       this.visibleGroups = this.orderGroupsForApp(allGroups, 'all');
       // Close all groups by default to keep sidebar compact
       this.visibleGroups.forEach(g => {
@@ -856,7 +844,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     }
     // Special-case: for Support app (Messaging Platform unified)
     if (key === 'chat' || key === 'support') {
-      const messagingGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('messaging platform'));
+      const messagingGroup = fullMenu.find(g => (g.label || '').toLowerCase() === 'support');
       if (messagingGroup) {
         const sourceItems = (messagingGroup as any).children || (messagingGroup as any).items || [];
         const groups: any[] = [];
@@ -930,17 +918,34 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (key === 'governance') {
       const governanceGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('governance'));
       if (governanceGroup) {
-        const subGroups = (governanceGroup as any).items || [];
-        const groups: any[] = subGroups.map((sub: any) => {
-          const sourceItems = sub.children || sub.items || [];
-          return {
-            label: sub.label,
-            icon: sub.icon,
-            expanded: true,
-            items: sourceItems,
-            _flattened: this.getFlattenedItems(sourceItems)
-          };
+        const sourceItems = (governanceGroup as any).items || [];
+        const groups: any[] = [];
+
+        sourceItems.forEach((item: any) => {
+          if (item.url && !item.children && !item.items) {
+            // Standalone top-level items (like Overview)
+            groups.push({
+              label: '',
+              icon: '',
+              expanded: true,
+              _noHeader: true,
+              _isStandalone: true,
+              items: [item],
+              _flattened: [item]
+            });
+          } else if (item.children || item.items) {
+            // Subgroups (Identity, Access Control, etc.)
+            const sourceItems = item.children || item.items || [];
+            groups.push({
+              label: item.label,
+              icon: item.icon,
+              expanded: true,
+              items: sourceItems,
+              _flattened: this.getFlattenedItems(sourceItems)
+            });
+          }
         });
+
         this.visibleGroups = groups;
         return;
       }
@@ -1002,6 +1007,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (p.startsWith('/planning/delivery-points')) return 'inventory';
     if (p.startsWith('/planning/fleet')) return 'inventory';
     if (p.startsWith('/planning')) return 'inventory';
+    if (p.startsWith('/cmc')) return 'support';
     // Marketplace removed - routes to root now
     // default: nothing to force
     return null;
@@ -1175,16 +1181,10 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   // Surface Logout action from current user component
   doLogout(): void {
-    // Prefer real logout call when available so session is cleared
-    try {
-      if (this.authServices && typeof this.authServices.logout === 'function') {
-        this.authServices.logout().subscribe(() => this.router.navigate(['/login']));
-        return;
-      }
-    } catch (e) {
-      // fall through to navigation-only fallback
-    }
+    try { this.router.navigate(['/logout']); } catch (e) { /* safe fallback */ }
+  }
 
+  navigateToLogin(): void {
     try { this.router.navigate(['/login']); } catch (e) { /* safe fallback */ }
   }
 
@@ -1215,9 +1215,9 @@ export class SidebarComponent implements OnInit, OnChanges {
       'delivery-points': '/planning/delivery-points',
       fleet: '/planning/fleet',
       demand: '/planning/forecast/demand',
-      truck: '/planning/forecast/truck',
-      trip: '/planning/forecast/trip',
-      hub: '/planning/forecast/hub',
+      truck: '/planning/forecast/demand',
+      trip: '/planning/forecast/demand',
+      hub: '/planning/forecast/demand',
       forecast: '/planning/forecast/demand',
       orders: '/retail/orders',
       transactions: '/retail/transactions',

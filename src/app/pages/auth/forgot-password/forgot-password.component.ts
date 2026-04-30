@@ -5,6 +5,7 @@ import {InputText} from "primeng/inputtext";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {Toast} from 'primeng/toast';
 import {CommonModule} from '@angular/common';
+import {Router} from '@angular/router';
 import {AppBaseComponent} from '../../../core/base/app-base.component';
 import {AuthServices} from '../../../core/services/auth.services';
 
@@ -27,7 +28,7 @@ export class ForgotPasswordComponent extends AppBaseComponent {
   @Output() onLogIn: EventEmitter<any> = new EventEmitter();
   @Output() onResetPassword: EventEmitter<any> = new EventEmitter();
 
-  constructor(private injector: Injector, private authServices: AuthServices) {
+  constructor(private injector: Injector, private authServices: AuthServices, private router: Router) {
     super(injector);
   }
 
@@ -43,7 +44,9 @@ export class ForgotPasswordComponent extends AppBaseComponent {
         if (res.success) {
           this.emailSent = true;
           this.showSuccess('OTP sent to your email');
+          this.authServices.pendingResetEmail = this.email;
           this.onResetPassword.emit();
+          this.router.navigate(['/forgot-password'], { queryParams: { step: 'reset' } });
         } else {
           this.showError(res.message || 'Failed to send reset link');
         }

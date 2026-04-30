@@ -3116,10 +3116,15 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
 
   loadDemands(): void {
     if (this.timelineWarehouses.length === 0) {
-      console.log('[Dataset] loadDemands: No warehouses in timeline, skipping');
+      console.log('[Dataset] loadDemands: No warehouses in timeline, using mock demand data');
       this.loadingDemands = false;
-      this.demands = [];
-      this.regionRatios = []; // Clear region ratios when no warehouses
+      this.demandsError = null;
+      this.applyDefaultDemands('No warehouses selected. Showing mock demand data.');
+      this.chartsInitialized = false;
+      setTimeout(() => {
+        this.updateCharts();
+        this.cdr.markForCheck();
+      }, 100);
       this.cdr.markForCheck();
       return;
     }
@@ -3180,20 +3185,30 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
           }
 
           console.log('[Dataset] Parsed demands data:', demandsData);
-          this.demands = demandsData;
-          this.demandsError = null;
-          
-          // Set default selected demand to first item if available and no selection exists
-          if (!this.selectedDemand && demandsData.length > 0) {
-            this.selectedDemand = demandsData[0];
-            // Update charts to show data for selected warehouse
+          if (!demandsData || demandsData.length === 0) {
+            console.warn('[Dataset] No demand data returned, using mock data');
+            this.applyDefaultDemands('No demand data available. Showing mock demand data.');
+            this.chartsInitialized = false;
             setTimeout(() => {
               this.updateCharts();
+              this.cdr.markForCheck();
             }, 100);
-          }
+          } else {
+            this.demands = demandsData;
+            this.demandsError = null;
 
-          // Calculate region ratios after loading demands
-          this.calculateRegionRatios();
+            // Set default selected demand to first item if available and no selection exists
+            if (!this.selectedDemand && demandsData.length > 0) {
+              this.selectedDemand = demandsData[0];
+              // Update charts to show data for selected warehouse
+              setTimeout(() => {
+                this.updateCharts();
+              }, 100);
+            }
+
+            // Calculate region ratios after loading demands
+            this.calculateRegionRatios();
+          }
 
           // Update charts when new demands arrive
           if (demandsData.length > 0) {
@@ -3207,7 +3222,12 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
         } catch (e) {
           console.error('[Dataset] Error parsing demands response:', e);
           this.demandsError = 'API parsing error, using default data';
-          this.applyDefaultDemands();
+          this.applyDefaultDemands('API parsing failed. Showing mock demand data.');
+          this.chartsInitialized = false;
+          setTimeout(() => {
+            this.updateCharts();
+            this.cdr.markForCheck();
+          }, 100);
         }
 
         this.loadingDemands = false;
@@ -3217,7 +3237,12 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
       error: (error) => {
         console.error('[Dataset] getDemandsWithTimeRange error, using fallback:', error);
         this.demandsError = 'Unable to load demands from API, using default data';
-        this.applyDefaultDemands();
+        this.applyDefaultDemands('Demand API unavailable. Showing mock demand data.');
+        this.chartsInitialized = false;
+        setTimeout(() => {
+          this.updateCharts();
+          this.cdr.markForCheck();
+        }, 100);
         this.loadingDemands = false;
         this.cdr.markForCheck();
       }
@@ -3403,7 +3428,9 @@ export class DatasetComponent implements OnInit, OnDestroy, AfterViewInit {
     this.fallbackNotice = message;
   }
 
-  private applyDefaultDemands(): void {
+  private applyDefaultDemands(message?: string): void {
+    this.demandsError = null;
+    this.fallbackNotice = message || 'Showing mock demand data.';
     this.demands = [
       {
         warehouse_id: 1001,

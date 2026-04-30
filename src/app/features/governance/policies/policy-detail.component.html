@@ -1,5 +1,10 @@
 <div class="policy-detail-container">
-  <button pButton type="button" icon="pi pi-arrow-left" label="Back" class="p-button-text mb-3" routerLink="../"></button>
+  <div class="flex items-center justify-between mb-3">
+    <button pButton type="button" icon="pi pi-arrow-left" label="Back" class="p-button-text" routerLink="../"></button>
+    <ng-container *ngIf="!loading && policy">
+      <button pButton type="button" icon="pi pi-pencil" label="Edit" class="p-button-secondary p-button-sm" [routerLink]="['/governance/policies/edit', policy.id]"></button>
+    </ng-container>
+  </div>
 
   <!-- Loading state -->
   <div *ngIf="loading" class="flex justify-center my-8">

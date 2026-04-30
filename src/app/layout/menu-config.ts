@@ -30,28 +30,6 @@ export const sidebarGroups: MenuItem[] = [
 
 export const menu: MenuItem[] = [
     {
-        label: 'Data Mesh Management',
-        icon: 'pi pi-sitemap',
-        type: 'item',
-        expanded: true,
-        children: [
-            {
-                label: 'Data Products',
-                icon: 'pi pi-shopping-cart',
-                expanded: false,
-                children: [
-                    { label: 'Catalog', url: '/data-mesh/data-products/catalog', icon: 'pi pi-list' },
-                    { label: 'Discovery', url: '/data-mesh/data-products/discovery', icon: 'pi pi-search' },
-                    { label: 'Assets', url: '/data-mesh/data-products/assets', icon: 'pi pi-database' },
-                    { label: 'Lineage', url: '/data-mesh/data-products/lineage', icon: 'pi pi-share-alt' },
-                    { label: 'Policies', url: '/data-mesh/data-products/policies', icon: 'pi pi-lock' },
-                    { label: 'Monitoring', url: '/data-mesh/data-products/monitoring', icon: 'pi pi-chart-line' }
-                ]
-            },
-
-        ]
-    },
-    {
         label: 'Governance',
         icon: 'pi pi-shield',
         type: 'item',
@@ -129,9 +107,6 @@ export const menu: MenuItem[] = [
                 icon: 'pi pi-chart-line',
                 children: [
                     { label: 'Demand Forecast', url: '/inventory/forecast/demand', icon: 'pi pi-chart-bar' },
-                    { label: 'Hub Forecast', url: '/inventory/forecast/hub', icon: 'pi pi-building' },
-                    { label: 'Trip Forecast', url: '/inventory/forecast/trip', icon: 'pi pi-map' },
-                    { label: 'Truck Load', url: '/inventory/forecast/truck', icon: 'pi pi-box' },
                 ]
             },
             {
@@ -160,7 +135,6 @@ export const menu: MenuItem[] = [
                     { label: 'Overview', url: '/loyalty/overview', icon: 'pi pi-home' },
                     { label: 'Members', url: '/loyalty/members', icon: 'pi pi-users' },
                     { label: 'Customers', url: '/retail/customers', icon: 'pi pi-user' },
-                    { label: 'Channels', url: '/loyalty/channels', icon: 'pi pi-share-alt' },
                 ]
             },
             {
@@ -203,7 +177,7 @@ export const menu: MenuItem[] = [
         ]
     },
     {
-        label: 'Messaging Platform',
+        label: 'Support',
         icon: 'pi pi-comments',
         type: 'item',
         expanded: true,
@@ -214,7 +188,6 @@ export const menu: MenuItem[] = [
                 icon: 'pi pi-copy',
                 children: [
                     { label: 'Templates Explorer', url: '/cmc/explore', icon: 'pi pi-search' },
-                    { label: 'Manage Templates', url: '/cmc/templates', icon: 'pi pi-list' },
                 ]
             },
             {
@@ -222,9 +195,8 @@ export const menu: MenuItem[] = [
                 icon: 'pi pi-bolt',
                 children: [
                     { label: 'Workflows', url: '/cmc/automation', icon: 'pi pi-directions' },
-                    { label: 'Bot Settings', url: '/cmc/bot-settings', icon: 'pi pi-cog' },
                     { label: 'Omni-channel', url: '/retail/omni-channel', icon: 'pi pi-sync' },
-                    { label: 'Telegram', url: '/cmc/telegram-workspace', icon: 'pi pi-telegram' },
+
                     { label: 'Facebook', url: '/cmc/workspace', icon: 'pi pi-facebook' },
                 ]
             },

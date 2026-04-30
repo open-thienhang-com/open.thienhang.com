@@ -1,8 +1,11 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { authGuard } from './core/guard/auth.guard';
+import { noAuthGuard } from './core/guard/no-auth.guard';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
 import { AuthComponent } from './pages/auth/auth.component';
+import { LogoutPageComponent } from './pages/auth/logout/logout.component';
+import { HelpPageComponent } from './pages/help/help.component';
 import { OfflineComponent } from './pages/error/offline.component';
 import { MaintenanceComponent } from './pages/error/maintenance/maintenance.component';
 import { ForbiddenComponent } from './pages/error/forbidden/forbidden.component';
@@ -73,12 +76,28 @@ export const routes: Routes = [
         loadComponent: () => import('./features/governance/assets/assets.component').then(m => m.AssetsComponent),
       },
       {
+        path: 'governance/assets/new',
+        loadComponent: () => import('./features/governance/assets/asset-create/asset-create.component').then(m => m.AssetCreateComponent),
+      },
+      {
+        path: 'governance/assets/:id/edit',
+        loadComponent: () => import('./features/governance/assets/asset-edit/asset-edit.component').then(m => m.AssetEditComponent),
+      },
+      {
+        path: 'governance/assets/:id',
+        loadComponent: () => import('./features/governance/assets/asset-detail/asset-detail.component').then(m => m.AssetDetailComponent),
+      },
+      {
         path: 'governance/policies',
         loadComponent: () => import('./features/governance/policies/policies.component').then(m => m.PoliciesComponent),
       },
       {
         path: 'governance/policies/new',
         loadComponent: () => import('./features/governance/policies/policy-create/policy-create.component').then(m => m.PolicyCreateComponent),
+      },
+      {
+        path: 'governance/policies/edit/:id',
+        loadComponent: () => import('./features/governance/policies/policy-edit/policy-edit.component').then(m => m.PolicyEditComponent),
       },
       {
         path: 'governance/policies/:id',
@@ -101,12 +120,24 @@ export const routes: Routes = [
         loadComponent: () => import('./features/governance/roles/role-create/role-create.component').then(m => m.RoleCreateComponent),
       },
       {
+        path: 'governance/roles/:id/edit',
+        loadComponent: () => import('./features/governance/roles/role-edit/role-edit.component').then(m => m.RoleEditComponent),
+      },
+      {
         path: 'governance/roles/:id',
         loadComponent: () => import('./features/governance/roles/role-detail/role-detail.component').then(m => m.RoleDetailComponent),
       },
       {
         path: 'governance/accounts',
         loadComponent: () => import('./features/governance/accounts/accounts.component').then(m => m.AccountsComponent),
+      },
+      {
+        path: 'governance/accounts/new',
+        loadComponent: () => import('./features/governance/accounts/account-create/account-create.component').then(m => m.AccountCreateComponent),
+      },
+      {
+        path: 'governance/accounts/:id/edit',
+        loadComponent: () => import('./features/governance/accounts/account-edit/account-edit.component').then(m => m.AccountEditComponent),
       },
       {
         path: 'governance/accounts/:id',
@@ -117,12 +148,28 @@ export const routes: Routes = [
         loadComponent: () => import('./features/governance/users/users.component').then(m => m.UsersComponent),
       },
       {
+        path: 'governance/users/:kid/edit',
+        loadComponent: () => import('./features/governance/users/user-edit/user-edit.component').then(m => m.UserEditComponent),
+      },
+      {
         path: 'governance/users/:kid',
         loadComponent: () => import('./features/governance/users/user-detail.component').then(m => m.UserDetailComponent),
       },
       {
         path: 'governance/permissions',
         loadComponent: () => import('./features/governance/permissions/permissions.component').then(m => m.PermissionsComponent),
+      },
+      {
+        path: 'governance/permissions/new',
+        loadComponent: () => import('./features/governance/permissions/permission-create/permission-create.component').then(m => m.PermissionCreateComponent),
+      },
+      {
+        path: 'governance/permissions/:id/edit',
+        loadComponent: () => import('./features/governance/permissions/permission-edit/permission-edit.component').then(m => m.PermissionEditComponent),
+      },
+      {
+        path: 'governance/permissions/:id',
+        loadComponent: () => import('./features/governance/permissions/permission-detail/permission-detail.component').then(m => m.PermissionDetailComponent),
       },
       {
         path: 'governance/tenants',
@@ -151,6 +198,14 @@ export const routes: Routes = [
       {
         path: 'governance/entitlements',
         loadComponent: () => import('./features/governance/entitlements/entitlements.component').then(m => m.EntitlementsComponent),
+      },
+      {
+        path: 'governance/entitlements/new',
+        loadComponent: () => import('./features/governance/entitlements/entitlement-create/entitlement-create.component').then(m => m.EntitlementCreateComponent),
+      },
+      {
+        path: 'governance/entitlements/:code/edit',
+        loadComponent: () => import('./features/governance/entitlements/entitlement-edit/entitlement-edit.component').then(m => m.EntitlementEditComponent),
       },
       {
         path: 'governance/entitlements/:code',
@@ -212,12 +267,12 @@ export const routes: Routes = [
         children: notificationRoutes
       },
       {
-        path: 'profile',
-        redirectTo: 'settings',
+        path: 'settings',
+        redirectTo: 'profile',
         pathMatch: 'full'
       },
       {
-        path: 'settings',
+        path: 'profile',
         loadComponent: () => import('./features/settings/setting.component').then(m => m.SettingsComponent),
       },
 
@@ -420,7 +475,35 @@ export const routes: Routes = [
   },
   {
     path: 'login',
-    component: AuthComponent
+    component: AuthComponent,
+    canActivate: [noAuthGuard],
+  },
+  {
+    path: 'register',
+    component: AuthComponent,
+    data: { mode: 2 },
+    canActivate: [noAuthGuard],
+  },
+  {
+    path: 'verify',
+    component: AuthComponent,
+    data: { mode: 4 },
+    canActivate: [noAuthGuard],
+  },
+  {
+    path: 'forgot-password',
+    component: AuthComponent,
+    data: { mode: 3 },
+    canActivate: [noAuthGuard],
+  },
+  {
+    path: 'logout',
+    component: LogoutPageComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'help',
+    component: HelpPageComponent,
   },
   // Wildcard route for 404 - must be last
   {

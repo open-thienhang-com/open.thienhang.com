@@ -11,7 +11,7 @@
         </div>
         <div>
           <h1 class="text-3xl font-bold text-gray-900">Governance Overview</h1>
-          <p class="text-gray-600">Toàn bộ hệ thống governance trong một trang — Identity, Access Control, Assets &amp; Entitlements</p>
+          <p class="text-gray-600">Complete governance system on one page — Identity, Access Control, Assets &amp; Entitlements</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -82,11 +82,11 @@
     </div>
     <p-divider></p-divider>
     <div class="flex flex-wrap gap-4 text-xs text-gray-500 justify-center">
-      <span class="flex items-center gap-1"><i class="pi pi-building text-blue-500"></i> Tenant cô lập dữ liệu và phân quyền</span>
-      <span class="flex items-center gap-1"><i class="pi pi-users text-violet-500"></i> Users/Teams được gán Roles</span>
-      <span class="flex items-center gap-1"><i class="pi pi-tag text-purple-500"></i> Roles gom nhóm Permissions</span>
-      <span class="flex items-center gap-1"><i class="pi pi-lock text-red-500"></i> Policies enforce quy tắc trên Assets</span>
-      <span class="flex items-center gap-1"><i class="pi pi-star text-green-500"></i> Entitlements kiểm soát feature theo tier</span>
+      <span class="flex items-center gap-1"><i class="pi pi-building text-blue-500"></i> Tenant isolates data and access control</span>
+      <span class="flex items-center gap-1"><i class="pi pi-users text-violet-500"></i> Users/Teams are assigned Roles</span>
+      <span class="flex items-center gap-1"><i class="pi pi-tag text-purple-500"></i> Roles group Permissions together</span>
+      <span class="flex items-center gap-1"><i class="pi pi-lock text-red-500"></i> Policies enforce rules on Assets</span>
+      <span class="flex items-center gap-1"><i class="pi pi-star text-green-500"></i> Entitlements control features by tier</span>
     </div>
   </div>
 
@@ -132,10 +132,10 @@
               <p-badge [value]="t.status" [severity]="getStatusSeverity(t.status)" styleClass="text-xs"></p-badge>
             </div>
             <div *ngIf="tenants.length === 0" class="p-6 text-center text-sm text-gray-400">
-              <i class="pi pi-building text-2xl mb-2 block"></i>Chưa có tenant nào
+              <i class="pi pi-building text-2xl mb-2 block"></i>No tenants yet
             </div>
             <div class="p-3 text-center border-t border-gray-100">
-              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+              <p-button label="View All" [text]="true" severity="primary" size="small"
                 (click)="navigate('/governance/tenants')"></p-button>
             </div>
           </div>
@@ -180,10 +180,10 @@
                 [severity]="u.is_active ? 'success' : 'danger'" styleClass="text-xs"></p-badge>
             </div>
             <div *ngIf="users.length === 0" class="p-6 text-center text-sm text-gray-400">
-              <i class="pi pi-user text-2xl mb-2 block"></i>Chưa có user nào
+              <i class="pi pi-user text-2xl mb-2 block"></i>No users yet
             </div>
             <div class="p-3 text-center border-t border-gray-100">
-              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+              <p-button label="View All" [text]="true" severity="primary" size="small"
                 (click)="navigate('/governance/users')"></p-button>
             </div>
           </div>
@@ -228,10 +228,10 @@
                 [severity]="t.is_active !== false ? 'success' : 'secondary'" styleClass="text-xs"></p-badge>
             </div>
             <div *ngIf="teams.length === 0" class="p-6 text-center text-sm text-gray-400">
-              <i class="pi pi-users text-2xl mb-2 block"></i>Chưa có team nào
+              <i class="pi pi-users text-2xl mb-2 block"></i>No teams yet
             </div>
             <div class="p-3 text-center border-t border-gray-100">
-              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+              <p-button label="View All" [text]="true" severity="primary" size="small"
                 (click)="navigate('/governance/teams')"></p-button>
             </div>
           </div>
@@ -276,10 +276,10 @@
                 [severity]="b.is_active !== false ? 'success' : 'secondary'" styleClass="text-xs"></p-badge>
             </div>
             <div *ngIf="branches.length === 0" class="p-6 text-center text-sm text-gray-400">
-              <i class="pi pi-sitemap text-2xl mb-2 block"></i>Chưa có branch nào
+              <i class="pi pi-sitemap text-2xl mb-2 block"></i>No branches yet
             </div>
             <div class="p-3 text-center border-t border-gray-100">
-              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+              <p-button label="View All" [text]="true" severity="primary" size="small"
                 (click)="navigate('/governance/branches')"></p-button>
             </div>
           </div>
@@ -321,10 +321,10 @@
                 [severity]="a.is_active !== false ? 'success' : 'secondary'" styleClass="text-xs"></p-badge>
             </div>
             <div *ngIf="accounts.length === 0" class="p-6 text-center text-sm text-gray-400">
-              <i class="pi pi-building text-2xl mb-2 block"></i>Chưa có account nào
+              <i class="pi pi-building text-2xl mb-2 block"></i>No accounts yet
             </div>
             <div class="p-3 text-center border-t border-gray-100">
-              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+              <p-button label="View All" [text]="true" severity="primary" size="small"
                 (click)="navigate('/governance/accounts')"></p-button>
             </div>
           </div>
@@ -375,10 +375,10 @@
               <span class="text-xs text-gray-500">{{ r.permissions || 0 }} perms</span>
             </div>
             <div *ngIf="roles.length === 0" class="p-6 text-center text-sm text-gray-400">
-              <i class="pi pi-tag text-2xl mb-2 block"></i>Chưa có role nào
+              <i class="pi pi-tag text-2xl mb-2 block"></i>No roles yet
             </div>
             <div class="p-3 text-center border-t border-gray-100">
-              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+              <p-button label="View All" [text]="true" severity="primary" size="small"
                 (click)="navigate('/governance/roles')"></p-button>
             </div>
           </div>
@@ -420,10 +420,10 @@
                 [severity]="p.effect === 'deny' ? 'danger' : 'success'" styleClass="text-xs"></p-badge>
             </div>
             <div *ngIf="permissions.length === 0" class="p-6 text-center text-sm text-gray-400">
-              <i class="pi pi-key text-2xl mb-2 block"></i>Chưa có permission nào
+              <i class="pi pi-key text-2xl mb-2 block"></i>No permissions yet
             </div>
             <div class="p-3 text-center border-t border-gray-100">
-              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+              <p-button label="View All" [text]="true" severity="primary" size="small"
                 (click)="navigate('/governance/permissions')"></p-button>
             </div>
           </div>
@@ -468,10 +468,10 @@
                 [severity]="pol.effect === 'deny' ? 'danger' : 'success'" styleClass="text-xs"></p-badge>
             </div>
             <div *ngIf="policies.length === 0" class="p-6 text-center text-sm text-gray-400">
-              <i class="pi pi-lock text-2xl mb-2 block"></i>Chưa có policy nào
+              <i class="pi pi-lock text-2xl mb-2 block"></i>No policies yet
             </div>
             <div class="p-3 text-center border-t border-gray-100">
-              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+              <p-button label="View All" [text]="true" severity="primary" size="small"
                 (click)="navigate('/governance/policies')"></p-button>
             </div>
           </div>
@@ -558,13 +558,13 @@
                 </tr>
                 <tr *ngIf="assets.length === 0">
                   <td colspan="3" class="px-4 py-8 text-center text-sm text-gray-400">
-                    <i class="pi pi-database text-2xl mb-2 block"></i>Chưa có asset nào
+                    <i class="pi pi-database text-2xl mb-2 block"></i>No assets yet
                   </td>
                 </tr>
               </tbody>
             </table>
             <div class="p-3 text-center border-t border-gray-100">
-              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+              <p-button label="View All" [text]="true" severity="primary" size="small"
                 (click)="navigate('/governance/assets')"></p-button>
             </div>
           </div>
@@ -617,13 +617,13 @@
                 </tr>
                 <tr *ngIf="entitlements.length === 0">
                   <td colspan="3" class="px-4 py-8 text-center text-sm text-gray-400">
-                    <i class="pi pi-star text-2xl mb-2 block"></i>Chưa có entitlement nào
+                    <i class="pi pi-star text-2xl mb-2 block"></i>No entitlements yet
                   </td>
                 </tr>
               </tbody>
             </table>
             <div class="p-3 text-center border-t border-gray-100">
-              <p-button label="Xem tất cả" [text]="true" severity="primary" size="small"
+              <p-button label="View All" [text]="true" severity="primary" size="small"
                 (click)="navigate('/governance/entitlements')"></p-button>
             </div>
           </div>

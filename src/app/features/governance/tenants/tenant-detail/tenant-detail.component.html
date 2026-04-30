@@ -31,7 +31,7 @@
         </div>
         <div class="flex items-center gap-2" *ngIf="tenant">
           <p-button label="Edit" icon="pi pi-pencil" [outlined]="true" severity="primary" (click)="editMode = true"></p-button>
-          <p-button label="Suspend" icon="pi pi-ban" [outlined]="true" severity="danger"></p-button>
+          <p-button label="Suspend" icon="pi pi-ban" [outlined]="true" severity="danger" (click)="suspendTenant()"></p-button>
         </div>
       </div>
     </div>

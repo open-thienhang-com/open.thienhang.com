@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { GovernanceServices, RoleDetail } from '../../../../core/services/governance.services';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
@@ -15,6 +15,7 @@ import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
 import { BadgeModule } from 'primeng/badge';
 import { TooltipModule } from 'primeng/tooltip';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-role-detail',
@@ -22,11 +23,11 @@ import { TooltipModule } from 'primeng/tooltip';
   imports: [
     CommonModule, FormsModule, RouterModule,
     ButtonModule, ToastModule, ProgressSpinnerModule,
-    TableModule, TabViewModule, TagModule, DividerModule, BadgeModule, TooltipModule
+    TableModule, TabViewModule, TagModule, DividerModule, BadgeModule, TooltipModule, ConfirmDialogModule
   ],
   templateUrl: './role-detail.component.html',
   styleUrls: ['./role-detail.component.scss'],
-  providers: [MessageService]
+  providers: [MessageService, ConfirmationService]
 })
 export class RoleDetailComponent implements OnInit, OnDestroy {
   role: RoleDetail | null = null;
@@ -42,7 +43,8 @@ export class RoleDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private governanceServices: GovernanceServices,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
@@ -95,6 +97,28 @@ export class RoleDetailComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.router.navigate(['/governance/roles']);
+  }
+
+  editRole(): void {
+    this.router.navigate(['/governance/roles', this.roleId, 'edit']);
+  }
+
+  deleteRole(): void {
+    this.confirmationService.confirm({
+      message: `Delete role "${this.role?.name}"? This cannot be undone.`,
+      header: 'Confirm Delete',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.governanceServices.deleteRole(this.roleId!).pipe(takeUntil(this.destroy$)).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Deleted', detail: 'Role deleted' });
+            setTimeout(() => this.router.navigate(['/governance/roles']), 800);
+          },
+          error: (err: any) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message || 'Failed to delete' })
+        });
+      }
+    });
   }
 
   getActionSeverity(action: string): string {

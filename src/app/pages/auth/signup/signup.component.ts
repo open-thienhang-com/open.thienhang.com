@@ -44,15 +44,17 @@ export class SignupComponent extends AppBaseComponent {
     
     this.isLoading = true;
     this.authServices.signUp({
-      email: this.email, 
-      full_name: this.fullName, 
+      email: this.email,
+      full_name: this.fullName,
       password: this.password,
       terms_accepted: this.acceptTnC
     }).subscribe({
       next: (res) => {
         if (res.success) {
           this.showSuccess('Account created! Please check your email for the OTP.');
+          this.authServices.pendingVerificationEmail = this.email;
           this.onVerifyAccount.emit();
+          this.router.navigate(['/verify'], { queryParams: { email: this.email } });
         } else {
           this.showError(res.message || 'Sign up failed');
         }

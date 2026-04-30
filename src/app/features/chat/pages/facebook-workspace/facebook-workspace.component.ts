@@ -60,6 +60,7 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
   readonly quickActions = [
     { label: 'Text', icon: 'pi pi-pencil', mode: 'text' },
     { label: 'Photo', icon: 'pi pi-image', mode: 'photo' },
+    { label: 'Product', icon: 'pi pi-shopping-bag', mode: 'product' },
     { label: 'GIF', icon: 'pi pi-images', mode: 'gif' },
     { label: 'Document', icon: 'pi pi-file', mode: 'document' },
     { label: 'Template', icon: 'pi pi-file-export', mode: 'template' },
@@ -92,7 +93,7 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
   templateDialogVisible = false;
   overviewDialogVisible = false;
   filterDialogVisible = false;
-  actionPopupMode: 'none' | 'photo' | 'gif' | 'document' | 'template' | 'icon' = 'none';
+  actionPopupMode: 'none' | 'photo' | 'gif' | 'document' | 'template' | 'icon' | 'product' = 'none';
 
   profile: TelegramBotProfile | null = null;
   dashboard: TelegramDashboard | null = null;
@@ -114,6 +115,14 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
   disableNotification = false;
   selectedTemplateId = '';
   templateVariableValues: Record<string, string> = {};
+  
+  // Product card state
+  productName = '';
+  productPrice = '';
+  productDesc = '';
+  productLink = '';
+  productImageUrl = '';
+  sendingProduct = false;
 
   readonly journeySteps = [
     { label: 'Shared history', value: 'Cross-channel continuity', detail: 'The same thread remains visible when the customer moves between web, app, and social entry points.' },
@@ -545,6 +554,52 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
     });
   }
 
+  sendProductCard(): void {
+    const conversation = this.selectedConversation;
+    if (!conversation || !conversation.chat_id || !this.productName || !this.productImageUrl) {
+      return;
+    }
+
+    this.sendingProduct = true;
+    let caption = `🛍️ *${this.productName}*\n`;
+    if (this.productPrice) caption += `💰 Price: ${this.productPrice}\n`;
+    if (this.productDesc) caption += `\n${this.productDesc}\n`;
+    if (this.productLink) caption += `\n🔗 [View Product](${this.productLink})`;
+
+    this.chatService.sendTelegramPhoto({
+      chat_id: conversation.chat_id,
+      photo: this.productImageUrl,
+      caption: caption,
+      disable_notification: this.disableNotification,
+      protect_content: this.protectMediaContent
+    }).subscribe({
+      next: () => {
+        const outboundMessage: TelegramMessage = {
+          id: `product_${Date.now()}`,
+          sender: 'agent',
+          sender_name: conversation.agent || this.profile?.first_name || 'Agent',
+          content: caption,
+          timestamp: new Date().toISOString(),
+          message_type: 'photo',
+          delivery_status: 'sent',
+          media_url: this.productImageUrl,
+          caption: caption
+        };
+
+        this.applyOutboundUpdate(conversation, outboundMessage, caption);
+        this.resetProductForm();
+        this.sendingProduct = false;
+        this.closeActionPopup();
+        this.messageService.add({ severity: 'success', summary: 'Product sent', detail: 'Product card sent successfully' });
+      },
+      error: (error) => {
+        console.error('Error sending product card', error);
+        this.sendingProduct = false;
+        this.messageService.add({ severity: 'error', summary: 'Send failed', detail: 'Unable to send product card' });
+      }
+    });
+  }
+
   sendIcon(): void {
     const conversation = this.selectedConversation;
     const icon = this.selectedIcon.trim();
@@ -768,6 +823,11 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
 
     if (mode === 'icon') {
       this.actionPopupMode = 'icon';
+      return;
+    }
+    
+    if (mode === 'product') {
+      this.actionPopupMode = 'product';
     }
   }
 
@@ -798,6 +858,15 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
   closeActionPopup(): void {
     this.actionPopupMode = 'none';
     this.templateDialogVisible = false;
+    this.resetProductForm();
+  }
+
+  private resetProductForm(): void {
+    this.productName = '';
+    this.productPrice = '';
+    this.productDesc = '';
+    this.productLink = '';
+    this.productImageUrl = '';
   }
 
   private extractUrl(value: string | null | undefined): string | null {

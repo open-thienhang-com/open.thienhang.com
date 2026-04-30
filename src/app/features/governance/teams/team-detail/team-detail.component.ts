@@ -53,16 +53,20 @@ export class TeamDetailComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
+  teamId = '';
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private governanceServices: GovernanceServices,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const id = params['id'] || params['kid'];
+      this.teamId = id;
       if (id) this.loadTeam(id);
     });
   }
@@ -136,6 +140,24 @@ export class TeamDetailComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.router.navigate(['/governance/teams']);
+  }
+
+  deleteTeam(): void {
+    this.confirmationService.confirm({
+      message: `Delete team "${this.team?.name}"? This cannot be undone.`,
+      header: 'Confirm Delete',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.governanceServices.deleteTeam(this.teamId).pipe(takeUntil(this.destroy$)).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Deleted', detail: 'Team deleted' });
+            setTimeout(() => this.router.navigate(['/governance/teams']), 800);
+          },
+          error: (err: any) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message || 'Failed to delete' })
+        });
+      }
+    });
   }
 
   getStatusSeverity(isActive?: boolean): string {

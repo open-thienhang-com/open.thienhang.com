@@ -5,6 +5,7 @@ import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { Toast } from 'primeng/toast';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AppBaseComponent } from '../../../core/base/app-base.component';
 import { AuthServices } from '../../../core/services/auth.services';
 
@@ -24,12 +25,19 @@ export class ResetPasswordComponent extends AppBaseComponent implements OnInit {
   @Output() onReset: EventEmitter<any> = new EventEmitter();
   @Output() onBackToLogin: EventEmitter<any> = new EventEmitter();
 
-  constructor(private injector: Injector, private authServices: AuthServices) {
+  constructor(
+    private injector: Injector,
+    private authServices: AuthServices,
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {
     super(injector);
   }
 
   ngOnInit(): void {
-    this.email = this.authServices.pendingResetEmail || '';
+    const params = this.route.snapshot.queryParams;
+    this.email = params['email'] || this.authServices.pendingResetEmail || '';
+    this.otp = params['otp'] || '';
   }
 
   resetPassword(): void {
@@ -60,7 +68,10 @@ export class ResetPasswordComponent extends AppBaseComponent implements OnInit {
         if (res.success) {
           this.showSuccess('Password reset! Please sign in with your new password.');
           this.authServices.pendingResetEmail = '';
-          setTimeout(() => this.onReset.emit(), 1500);
+          setTimeout(() => {
+            this.onReset.emit();
+            this.router.navigate(['/login']);
+          }, 1500);
         } else {
           this.showError(res.message || 'Failed to reset password');
         }

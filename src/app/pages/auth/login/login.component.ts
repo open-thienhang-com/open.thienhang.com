@@ -6,6 +6,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { PasswordModule } from "primeng/password";
 import { CheckboxModule } from "primeng/checkbox";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { RouterModule } from '@angular/router';
 import { AuthServices } from '../../../core/services/auth.services';
 import { Router } from '@angular/router';
 import { AppBaseComponent } from '../../../core/base/app-base.component';
@@ -22,6 +23,7 @@ import { LoadingService } from '../../../core/services/loading.service';
     CheckboxModule,
     ReactiveFormsModule,
     FormsModule,
+    RouterModule,
     Toast
   ],
   templateUrl: './login.component.html',

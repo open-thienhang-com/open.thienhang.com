@@ -243,4 +243,16 @@ export class ProposalComponent implements OnInit {
   get totalEntities(): number {
     return Object.values(this.stats).reduce((a, b) => a + b, 0);
   }
+
+  get primaryTenant(): Tenant | null {
+    return this.tenants.length ? this.tenants[0] : null;
+  }
+
+  get topUsers(): User[] {
+    return this.users.slice(0, 5);
+  }
+
+  get topAccounts(): Account[] {
+    return this.accounts.slice(0, 5);
+  }
 }

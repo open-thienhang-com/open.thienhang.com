@@ -167,6 +167,26 @@ export class BranchDetailComponent implements OnInit {
     this.router.navigate(['/governance/branches']);
   }
 
+  deleteBranch(): void {
+    const code = this.branch?.code;
+    if (!code) return;
+    this.confirmationService.confirm({
+      message: `Delete branch "${this.branch?.name}"? This cannot be undone.`,
+      header: 'Confirm Delete',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.governanceServices.deleteBranch(code!).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Deleted', detail: 'Branch deleted' });
+            setTimeout(() => this.router.navigate(['/governance/branches']), 800);
+          },
+          error: (err: any) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message || 'Failed to delete' })
+        });
+      }
+    });
+  }
+
   getSettingsJson(): string {
     if (!this.branch?.metadata) return '{}';
     return JSON.stringify(this.branch.metadata, null, 2);

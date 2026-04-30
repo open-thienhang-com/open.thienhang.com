@@ -75,9 +75,12 @@ export class TenantDetailComponent implements OnInit, OnDestroy {
     private confirmationService: ConfirmationService
   ) {}
 
+  tenantKid = '';
+
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const kid = params['kid'];
+      this.tenantKid = kid;
       if (kid) {
         this.loadTenant(kid);
         this.loadMembers(kid);
@@ -198,6 +201,24 @@ export class TenantDetailComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.router.navigate(['/governance/tenants']);
+  }
+
+  suspendTenant(): void {
+    this.confirmationService.confirm({
+      message: `Suspend tenant "${this.tenant?.name}"? Users will lose access until reactivated.`,
+      header: 'Confirm Suspension',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.governanceServices.deleteTenant(this.tenantKid).pipe(takeUntil(this.destroy$)).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Suspended', detail: 'Tenant suspended' });
+            setTimeout(() => this.router.navigate(['/governance/tenants']), 800);
+          },
+          error: (err: any) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message || 'Failed to suspend' })
+        });
+      }
+    });
   }
 
   getStatusSeverity(status: string): string {

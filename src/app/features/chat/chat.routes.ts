@@ -14,10 +14,8 @@ export const chatRoutes: Routes = [
     path: 'dashboard',
     loadComponent: () => import('./pages/dashboard/chat-dashboard.component').then(m => m.ChatDashboardComponent),
   },
-  {
-    path: 'telegram-workspace',
-    loadComponent: () => import('./pages/dashboard/chat-dashboard.component').then(m => m.ChatDashboardComponent),
-  },
+
+
   {
     path: 'workspace',
     loadComponent: () => import('./pages/facebook-workspace/facebook-workspace.component').then(m => m.FacebookWorkspaceComponent),

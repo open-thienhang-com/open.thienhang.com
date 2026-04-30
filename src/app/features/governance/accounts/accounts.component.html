@@ -374,7 +374,7 @@
           label="Create First Account" 
           icon="pi pi-plus" 
           severity="primary"
-          (click)="accountDetail.show()">
+          (click)="router.navigate(['/governance/accounts/new'])">
         </p-button>
       </div>
     </div>
@@ -479,7 +479,7 @@
             label="Add Account"
             icon="pi pi-plus"
             severity="primary"
-            (click)="accountDetail.show()">
+            (click)="router.navigate(['/governance/accounts/new'])">
           </p-button>
         </div>
       </div>
@@ -581,7 +581,7 @@
                     [text]="true" 
                     severity="info" 
                     size="small"
-                    (click)="accountDetail.view(account)"
+                    (click)="router.navigate(['/governance/accounts', account.identify || account._id])"
                     pTooltip="View Account">
                   </p-button>
                   <p-button 
@@ -629,7 +629,7 @@
                     label="Add First Account" 
                     icon="pi pi-plus" 
                     severity="primary"
-                    (click)="accountDetail.show()">
+                    (click)="router.navigate(['/governance/accounts/new'])">
                   </p-button>
                 </div>
               </td>

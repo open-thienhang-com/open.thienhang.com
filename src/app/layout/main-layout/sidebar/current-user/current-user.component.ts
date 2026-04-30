@@ -82,6 +82,6 @@ export class CurrentUserComponent extends AppBaseComponent {
   }
 
   setting() {
-    this.router.navigate(['/settings']);
+    this.router.navigate(['/profile']);
   }
 }

@@ -129,7 +129,7 @@ export class SettingsComponent implements OnInit {
     { key: 'profile',       label: 'Profile',            icon: 'pi pi-user',     description: 'Identity, avatar, and active sessions' },
     { key: 'security',      label: 'Security',           icon: 'pi pi-lock',     description: 'Password, 2FA, and session management' },
     { key: 'notifications', label: 'Notifications',      icon: 'pi pi-bell',     description: 'Channels, alerts, and preferences' },
-    { key: 'access',        label: 'Access & Roles',     icon: 'pi pi-shield',   description: 'Your governance roles, permissions and policies' },
+
     { key: 'users',         label: 'User Management',    icon: 'pi pi-users',    description: 'Workspace members, roles, and status' },
     { key: 'appearance',    label: 'Appearance',         icon: 'pi pi-palette',  description: 'Theme, layout, and visual behavior' },
     { key: 'data',          label: 'Data & Privacy',     icon: 'pi pi-database', description: 'Export, retention, and destructive actions' },
@@ -141,7 +141,7 @@ export class SettingsComponent implements OnInit {
     if (!sectionKey) return;
     this.activeSection = sectionKey;
     if (sectionKey === 'users') this.fetchUsersForManagement();
-    if (sectionKey === 'access' && !this.myPermissions) this.loadMyPermissions();
+
     if (sectionKey === 'notifications' && !this.notifLoaded) this.loadNotificationSettings();
     if (sectionKey === 'security' && !this.securityLoaded) this.loadSecuritySettings();
   }

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { GovernanceServices } from '../../../core/services/governance.services';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -17,6 +17,7 @@ import { FormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
 import { TabViewModule } from 'primeng/tabview';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   standalone: true,
@@ -24,9 +25,9 @@ import { TabViewModule } from 'primeng/tabview';
   imports: [
     CommonModule, RouterModule, FormsModule,
     CardModule, ButtonModule, TagModule, DividerModule,
-    ProgressSpinnerModule, ChipModule, ToastModule, InputTextModule, TooltipModule, TableModule, TabViewModule
+    ProgressSpinnerModule, ChipModule, ToastModule, InputTextModule, TooltipModule, TableModule, TabViewModule, ConfirmDialogModule
   ],
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './user-detail.component.html'
 })
 export class UserDetailComponent implements OnInit, OnDestroy {
@@ -35,6 +36,7 @@ export class UserDetailComponent implements OnInit, OnDestroy {
   editMode = false;
   saving = false;
   editForm: any = {};
+  userId = '';
   permissionMatrix: { resource: string; actions: { action: string; grantedByRoles: string[] }[] }[] = [];
 
   private destroy$ = new Subject<void>();
@@ -43,12 +45,14 @@ export class UserDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private governanceServices: GovernanceServices,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const kid = params['kid'];
+      this.userId = kid;
       if (kid) this.loadUser(kid);
       else this.loading = false;
     });
@@ -167,6 +171,28 @@ export class UserDetailComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.router.navigate(['/governance/users']);
+  }
+
+  editUser(): void {
+    this.router.navigate(['/governance/users', this.userId, 'edit']);
+  }
+
+  deleteUser(): void {
+    this.confirmationService.confirm({
+      message: `Delete user "${this.user?.full_name || this.user?.email}"? This cannot be undone.`,
+      header: 'Confirm Delete',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.governanceServices.deleteUser(this.userId).pipe(takeUntil(this.destroy$)).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Deleted', detail: 'User deleted' });
+            setTimeout(() => this.router.navigate(['/governance/users']), 800);
+          },
+          error: (err: any) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message || 'Failed to delete' })
+        });
+      }
+    });
   }
 
   getStatusSeverity(status: string): string {

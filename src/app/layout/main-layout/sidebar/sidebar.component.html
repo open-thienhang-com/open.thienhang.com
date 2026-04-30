@@ -91,17 +91,6 @@
         </div>
       </div>
 
-      <!-- Logout - only when not collapsed -->
-      <button
-        class="header-btn logout-btn"
-        *ngIf="!collapsed"
-        (click)="doLogout()"
-        type="button"
-        [pTooltip]="'Logout'"
-        tooltipPosition="right">
-        <i class="pi pi-sign-out"></i>
-      </button>
-
       <!-- Collapse toggle — desktop only, always visible -->
       <button
         type="button"
@@ -134,18 +123,7 @@
   <div class="sidebar-content" *ngIf="isLoggedIn">
     <nav class="sidebar-nav" [class.collapsed]="collapsed">
 
-      <!-- Governance Overview — pinned top shortcut -->
-      <div class="standalone-nav-item" style="margin-bottom: 4px;">
-        <a
-          routerLink="/governance/proposal"
-          class="nav-link standalone-link"
-          routerLinkActive="active"
-          [pTooltip]="collapsed ? 'Governance Overview' : ''"
-          tooltipPosition="right">
-          <i class="pi pi-th-large"></i>
-          <span *ngIf="!collapsed">Governance Overview</span>
-        </a>
-      </div>
+
 
       <!-- Main Navigation Groups -->
       <div class="nav-section" *ngFor="let group of visibleGroups; trackBy: trackByGroup">
@@ -206,23 +184,42 @@
     </nav>
   </div>
 
-  <!-- Footer - Fixed at bottom (only when logged in) -->
-  <div class="sidebar-footer" [class.collapsed]="collapsed" *ngIf="isLoggedIn">
+  <!-- Footer - Fixed at bottom -->
+  <div class="sidebar-footer" [class.collapsed]="collapsed">
 
-    <!-- User Info removed per request -->
+    <!-- Logged in: user avatar + name + email + logout -->
+    <ng-container *ngIf="isLoggedIn">
+      <div class="footer-user-row">
+        <button type="button" class="user-profile-btn" (click)="openProfile()"
+                [pTooltip]="collapsed ? userFullName() : ''"
+                tooltipPosition="right">
+          <div class="user-avatar-circle">
+            <span>{{ userInitials() }}</span>
+          </div>
+          <div class="user-details" *ngIf="!collapsed">
+            <span class="user-display-name">{{ userFullName() }}</span>
+            <span class="user-display-email" *ngIf="userEmail()">{{ userEmail() }}</span>
+          </div>
+        </button>
+        <button type="button" class="footer-logout-btn" (click)="doLogout()"
+                pTooltip="Logout" tooltipPosition="right">
+          <i class="pi pi-sign-out"></i>
+        </button>
+      </div>
+    </ng-container>
 
-    <!-- Footer now only contains Profile (logout and app-switcher were moved to header) -->
-    <div class="footer-actions">
-      <button
-        type="button"
-        class="footer-btn profile-btn"
-        (click)="openProfile()"
-        [pTooltip]="collapsed ? userFullName() : ''"
-        tooltipPosition="right">
-        <i class="pi pi-user"></i>
-        <span *ngIf="!collapsed">{{ userFullName() }}</span>
-      </button>
-    </div>
+    <!-- Not logged in: Login button -->
+    <ng-container *ngIf="!isLoggedIn">
+      <div class="footer-login-row">
+        <button type="button" class="footer-login-btn" (click)="navigateToLogin()"
+                [pTooltip]="collapsed ? 'Login' : ''"
+                tooltipPosition="right">
+          <i class="pi pi-sign-in"></i>
+          <span *ngIf="!collapsed">Login</span>
+        </button>
+      </div>
+    </ng-container>
+
   </div>
 </div>
 

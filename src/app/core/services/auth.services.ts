@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { getApiBase } from '../config/api-config';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, catchError, Observable, of, tap, map, finalize } from 'rxjs';
 import { ApiResponse } from './governance.services';
 import { UserProfile } from './profile.services';
@@ -51,7 +52,7 @@ export class AuthServices {
   pendingVerificationEmail: string = '';
   pendingResetEmail: string = '';
 
-  constructor(private http: HttpClient, private loadingService: LoadingService) {
+  constructor(private http: HttpClient, private loadingService: LoadingService, private router: Router) {
     // Initialize user from sessionStorage if present
     try {
       const raw = sessionStorage.getItem('currentUser');
@@ -73,7 +74,11 @@ export class AuthServices {
           // API returns Token shape directly (has access_token) — not wrapped in ApiResponse
           const isTokenShape = response && ('access_token' in response);
           if (isTokenShape || this.isWrappedResponse(response)) {
-            localStorage.setItem('isLoggedIn', 'true');
+            // Only grant isLoggedIn for verified accounts — unverified must go through OTP
+            const isVerified = response.is_verified !== false;
+            if (isVerified) {
+              localStorage.setItem('isLoggedIn', 'true');
+            }
             if (response.data?.user) {
               this.userSubject.next(response.data.user);
             }
@@ -110,6 +115,7 @@ export class AuthServices {
         finalize(() => {
           // Clear client-side session state regardless of request result
           localStorage.removeItem('isLoggedIn');
+          localStorage.removeItem('userVerified');
           try { sessionStorage.removeItem('currentUser'); } catch (e) { }
           this.userSubject.next(null);
         })
@@ -145,13 +151,19 @@ export class AuthServices {
           // ignore session storage errors
         }
         localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userVerified', String((userData as any)?.is_verified !== false));
         this.userSubject.next(normalized as UserProfile);
       }),
-      catchError(() => {
-        // If the /me call fails, remove stored session user and mark logged out state
+      catchError((err: HttpErrorResponse) => {
         localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('userVerified');
         try { sessionStorage.removeItem('currentUser'); } catch (e) { }
         this.userSubject.next(null);
+        // 403 = email not verified — redirect to verify page instead of login
+        if (err?.status === 403) {
+          this.router.navigate(['/verify']);
+          return of({ data: null, success: false, message: 'Email not verified' } as ApiResponse<null>);
+        }
         return of({ data: null, success: false, message: 'Failed to get user data' } as ApiResponse<null>);
       }),
       map(response => this.wrapResponse(response as any))
@@ -200,6 +212,10 @@ export class AuthServices {
 
   isLoggedIn(): boolean {
     return localStorage.getItem('isLoggedIn') === 'true';
+  }
+
+  isVerified(): boolean {
+    return localStorage.getItem('userVerified') !== 'false';
   }
 
   getUser(): Observable<UserProfile | null> {
@@ -299,7 +315,8 @@ export class AuthServices {
 
   // Helper to check if a response is already wrapped in our ApiResponse format
   private isWrappedResponse(response: any): response is ApiResponse<any> {
-    return response && 'data' in response && 'success' in response;
+    // Backend SuccessResponse may not have 'success' field but usually has 'data' and 'message'
+    return response && 'data' in response && ('success' in response || 'message' in response || 'total' in response);
   }
 
   // Normalize user object returned from different API shapes so templates can rely on fields

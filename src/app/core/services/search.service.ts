@@ -108,7 +108,7 @@ export class SearchService {
       title: 'Settings',
       description: 'Application settings and configuration',
       type: 'page',
-      url: '/settings',
+      url: '/profile',
       category: 'System',
       tags: ['settings', 'configuration', 'preferences']
     },

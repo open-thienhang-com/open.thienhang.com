@@ -394,8 +394,19 @@ export class GovernanceServices {
       }));
   }
 
+  createAccount(account: Partial<Account>): Observable<ApiResponse<Account>> {
+    return this.http.post<Account>(`${this.baseUrl}/governance/account`, account)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
   updateAccount(id: string, account: Partial<Account>): Observable<ApiResponse<Account>> {
     return this.http.patch<Account>(`${this.baseUrl}/governance/account/${id}`, account)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  deleteAccount(id: string): Observable<ApiResponse<any>> {
+    // Backend has no DELETE /account endpoint; use PATCH to set is_active=false (soft deactivate)
+    return this.http.patch<any>(`${this.baseUrl}/governance/account/${id}`, { is_active: false })
       .pipe(map(response => this.wrapResponse(response)));
   }
 

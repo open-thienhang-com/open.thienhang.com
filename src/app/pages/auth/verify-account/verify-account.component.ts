@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Toast } from 'primeng/toast';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AppBaseComponent } from '../../../core/base/app-base.component';
 import { AuthServices } from '../../../core/services/auth.services';
 
@@ -24,12 +25,19 @@ export class VerifyAccountComponent extends AppBaseComponent implements OnInit, 
 
   private cooldownTimer: any;
 
-  constructor(private injector: Injector, private authServices: AuthServices) {
+  constructor(
+    private injector: Injector,
+    private authServices: AuthServices,
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {
     super(injector);
   }
 
   ngOnInit(): void {
-    this.email = this.authServices.pendingVerificationEmail || '';
+    // Query param email has priority over in-memory service property
+    const emailFromParam = this.route.snapshot.queryParams['email'];
+    this.email = emailFromParam || this.authServices.pendingVerificationEmail || '';
   }
 
   ngOnDestroy(): void {
@@ -52,7 +60,10 @@ export class VerifyAccountComponent extends AppBaseComponent implements OnInit, 
         if (res.success) {
           this.showSuccess('Email verified! Please sign in.');
           this.authServices.pendingVerificationEmail = '';
-          setTimeout(() => this.onVerified.emit(), 1500);
+          setTimeout(() => {
+            this.onVerified.emit();
+            this.router.navigate(['/login']);
+          }, 1500);
         } else {
           this.showError(res.message || 'Invalid or expired OTP');
         }

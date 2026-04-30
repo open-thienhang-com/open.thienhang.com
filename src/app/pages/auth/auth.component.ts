@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import {FormsModule} from '@angular/forms';
 import {FloatLabel} from 'primeng/floatlabel';
 import {InputText} from 'primeng/inputtext';
@@ -31,7 +32,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
     ])
   ]
 })
-export class AuthComponent {
+export class AuthComponent implements OnInit {
   modes = {
     login: 1,
     signup: 2,
@@ -40,6 +41,20 @@ export class AuthComponent {
     resetPassword: 5,
   };
   curMode = this.modes.login;
+
+  constructor(private route: ActivatedRoute) {}
+
+  ngOnInit(): void {
+    const modeFromData = this.route.snapshot.data['mode'];
+    if (modeFromData) {
+      this.curMode = modeFromData;
+    }
+    // /forgot-password?step=reset — jump directly to reset-password screen
+    const step = this.route.snapshot.queryParams['step'];
+    if (step === 'reset') {
+      this.curMode = this.modes.resetPassword;
+    }
+  }
 
   setCurMode(mode: number) {
     this.curMode = mode;
