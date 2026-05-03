@@ -356,7 +356,7 @@
                       [text]="true" 
                       severity="info" 
                       size="small"
-                      (click)="router.navigate(['/governance/assets', asset.identify || asset._id])"
+                      (click)="router.navigate(['/governance/assets', asset.identify || asset._id || asset.id || asset.kid])"
                       pTooltip="View Asset">
                     </p-button>
                     <p-button
@@ -365,7 +365,7 @@
                       [text]="true"
                       severity="secondary"
                       size="small"
-                      (click)="router.navigate(['/governance/assets', asset.identify || asset._id, 'edit'])"
+                      (click)="router.navigate(['/governance/assets', asset.identify || asset._id || asset.id || asset.kid, 'edit'])"
                       pTooltip="Edit Asset">
                     </p-button>
                     <p-button 
@@ -421,7 +421,7 @@
                     [text]="true" 
                     severity="info" 
                     size="small"
-                    (click)="assetDetail.view(asset)"
+                    (click)="router.navigate(['/governance/assets', asset.identify || asset._id || asset.id || asset.kid])"
                     pTooltip="View">
                   </p-button>
                   <p-button 
@@ -429,7 +429,7 @@
                     [text]="true" 
                     severity="secondary" 
                     size="small"
-                    (click)="assetDetail.edit(asset)"
+                    (click)="router.navigate(['/governance/assets', asset.identify || asset._id || asset.id || asset.kid, 'edit'])"
                     pTooltip="Edit">
                   </p-button>
                   <p-button 
@@ -450,8 +450,8 @@
       <!-- Card View with larger cards and better layout -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" *ngIf="viewMode === 'card' && (assets?.data?.length || 0) > 0">
      <div *ngFor="let asset of (filteredAssets || [])" 
-             class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 hover:border-green-300 hover:scale-[1.02] cursor-pointer"
-       (click)="assetDetail.view(asset)">
+              class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 hover:border-green-300 hover:scale-[1.02] cursor-pointer"
+        (click)="router.navigate(['/governance/assets', asset.identify || asset._id || asset.id || asset.kid])">
           <div class="flex items-start justify-between mb-4">
             <div class="flex items-center gap-3 flex-1 min-w-0">
               <div class="w-14 h-14 bg-gradient-to-br rounded-lg flex items-center justify-center animate-pulse"
@@ -525,7 +525,7 @@
               [text]="true" 
               severity="info" 
               size="small"
-              (click)="assetDetail.view(asset); $event.stopPropagation()"
+              (click)="router.navigate(['/governance/assets', asset.identify || asset._id || asset.id || asset.kid]); $event.stopPropagation()"
               pTooltip="View Asset Details">
             </p-button>
             <p-button 
@@ -533,7 +533,7 @@
               [text]="true" 
               severity="secondary" 
               size="small"
-              (click)="assetDetail.edit(asset); $event.stopPropagation()"
+              (click)="router.navigate(['/governance/assets', asset.identify || asset._id || asset.id || asset.kid, 'edit']); $event.stopPropagation()"
               pTooltip="Edit Asset">
             </p-button>
             <p-button 

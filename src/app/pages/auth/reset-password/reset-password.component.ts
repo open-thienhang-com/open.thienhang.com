@@ -66,7 +66,7 @@ export class ResetPasswordComponent extends AppBaseComponent implements OnInit {
     }).subscribe({
       next: (res) => {
         if (res.success) {
-          this.showSuccess('Password reset! Please sign in with your new password.');
+          this.showSuccess('Password reset successfully! Please sign in with your new password.');
           this.authServices.pendingResetEmail = '';
           setTimeout(() => {
             this.onReset.emit();

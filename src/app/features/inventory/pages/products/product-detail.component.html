@@ -1,4 +1,6 @@
 <div class="bg-gray-50 min-h-screen p-6">
+  <p-toast></p-toast>
+
   <div class="bg-white rounded-lg shadow-sm p-6 mb-6 flex items-center justify-between">
     <div class="flex items-center gap-4">
       <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
@@ -11,6 +13,7 @@
     </div>
     <div class="flex gap-3">
       <p-button label="Back to Products" icon="pi pi-arrow-left" [outlined]="true" (onClick)="goBack()"></p-button>
+      <p-button label="Adjust Stock" icon="pi pi-sort-alt" severity="info" [outlined]="true" (onClick)="openAdjustDialog()" [disabled]="loading || !product"></p-button>
       <p-button label="Edit Product" icon="pi pi-pencil" severity="secondary" (onClick)="editProduct()"></p-button>
     </div>
   </div>
@@ -141,3 +144,102 @@
   </div>
 </div>
 
+<!-- ── Stock Adjustment Dialog ─────────────────────────────────── -->
+<p-dialog header="Adjust Stock" [(visible)]="showAdjustDialog" [modal]="true"
+          [style]="{width: '480px'}" [closable]="true">
+  <div class="adjust-dialog-body" style="display:flex;flex-direction:column;gap:16px;padding:8px 0">
+
+    @if (adjustError) {
+      <div style="background:#fef2f2;border:1px solid #fecaca;padding:10px 14px;border-radius:8px;color:#dc2626;font-size:0.875rem">
+        {{ adjustError }}
+      </div>
+    }
+
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label style="font-size:0.875rem;font-weight:600;color:#374151">Warehouse <span style="color:#ef4444">*</span></label>
+      <p-dropdown [options]="warehouses" [(ngModel)]="adjustForm.warehouse_id"
+                  placeholder="Select warehouse" [style]="{width:'100%'}"></p-dropdown>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label style="font-size:0.875rem;font-weight:600;color:#374151">Movement Type <span style="color:#ef4444">*</span></label>
+      <p-dropdown [options]="movementTypeOptions" [(ngModel)]="adjustForm.movement_type"
+                  [style]="{width:'100%'}"></p-dropdown>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label style="font-size:0.875rem;font-weight:600;color:#374151">Quantity Change <span style="color:#ef4444">*</span></label>
+      <p-inputNumber [(ngModel)]="adjustForm.quantity_change"
+                     [showButtons]="true" [min]="-9999" [max]="9999"
+                     [style]="{width:'100%'}"></p-inputNumber>
+      <small style="color:#9ca3af">Use positive for inbound, negative for outbound.</small>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label style="font-size:0.875rem;font-weight:600;color:#374151">Reason <span style="color:#ef4444">*</span></label>
+      <input pInputText [(ngModel)]="adjustForm.reason" placeholder="Enter reason for adjustment" style="width:100%" />
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button pButton label="Cancel" class="p-button-outlined p-button-secondary" (click)="showAdjustDialog=false"></button>
+      <button pButton label="Submit Adjustment" icon="pi pi-check" [loading]="adjustSubmitting" (click)="submitAdjustment()"></button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- ── Stock Movement History ──────────────────────────────────── -->
+<div class="bg-gray-50 px-6 pb-8">
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+      <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+        <i class="pi pi-history text-indigo-500"></i> Stock Movement History
+      </h2>
+      <button pButton icon="pi pi-refresh" class="p-button-text p-button-sm" (click)="loadMovements()" title="Refresh"></button>
+    </div>
+
+    @if (movementsLoading) {
+      <div class="p-6 text-center text-gray-400">
+        <i class="pi pi-spin pi-spinner text-2xl"></i>
+        <p class="mt-2">Loading history...</p>
+      </div>
+    }
+
+    @if (!movementsLoading && movements.length > 0) {
+      <p-table [value]="movements" [paginator]="true" [rows]="10" styleClass="p-datatable-sm" [rowHover]="true">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Qty Change</th>
+            <th>Warehouse</th>
+            <th>Reason</th>
+            <th>Performed By</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-m>
+          <tr>
+            <td>{{ m.created_at | date:'short' }}</td>
+            <td><p-tag [value]="m.movement_type" [severity]="getMovementSeverity(m.movement_type)"></p-tag></td>
+            <td>
+              <span [style.color]="m.quantity_change > 0 ? '#22c55e' : '#ef4444'" style="font-weight:700">
+                {{ m.quantity_change > 0 ? '+' : '' }}{{ m.quantity_change }}
+              </span>
+            </td>
+            <td style="font-size:0.75rem;font-family:monospace;color:#94a3b8">{{ m.warehouse_id || '—' }}</td>
+            <td>{{ m.reason || '—' }}</td>
+            <td>{{ m.performed_by || '—' }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+
+    @if (!movementsLoading && movements.length === 0) {
+      <div class="p-8 text-center text-gray-400">
+        <i class="pi pi-inbox text-4xl block mb-3"></i>
+        <p>No stock movements recorded for this product.</p>
+      </div>
+    }
+  </div>
+</div>

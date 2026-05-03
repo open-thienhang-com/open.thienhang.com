@@ -78,13 +78,13 @@ export class LoginComponent extends AppBaseComponent {
     }).subscribe({
       next: (res) => {
         if (res.success) {
-          // Check if account is unverified — switch to verify mode instead of navigating
+          // Check if account is unverified — navigate to /verify with email in URL (survives refresh)
           if (res.data?.is_verified === false) {
             this.authService.pendingVerificationEmail = this.email;
-            this.showError('Your email is not verified. Please enter the OTP sent to your email.');
             this.isLoading = false;
             this.loadingService.hide();
             this.onUnverified.emit({ email: this.email });
+            this.router.navigate(['/verify'], { queryParams: { email: this.email } });
             return;
           }
           // Ensure we fetch current user profile after login so header/menu can show user info

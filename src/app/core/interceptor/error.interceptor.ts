@@ -42,10 +42,9 @@ export class ErrorInterceptor implements HttpInterceptor {
         break;
 
       case 403:
-        this.router.navigate(['/forbidden']);
         this.toastService.error(
-          'Access Denied',
-          'You don\'t have permission to access this resource.'
+          'Không có quyền truy cập',
+          error.error?.detail || error.error?.message || 'Bạn không có quyền thực hiện thao tác này.'
         );
         break;
 

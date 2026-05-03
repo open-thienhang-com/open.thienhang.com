@@ -6,7 +6,8 @@ export const noAuthGuard: CanActivateFn = () => {
   const auth = inject(AuthServices);
   const router = inject(Router);
 
-  if (auth.isLoggedIn()) {
+  // Allow through if not logged in, OR if logged in but unverified (needs to reach /verify)
+  if (auth.isLoggedIn() && auth.isVerified()) {
     router.navigate(['/']);
     return false;
   }

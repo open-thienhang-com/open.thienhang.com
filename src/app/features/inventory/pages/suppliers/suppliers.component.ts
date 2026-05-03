@@ -6,51 +6,13 @@ import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
-import { InputTextarea } from 'primeng/inputtextarea';
-import { CardModule } from 'primeng/card';
-import { TabViewModule } from 'primeng/tabview';
+import { TagModule } from 'primeng/tag';
 import { BadgeModule } from 'primeng/badge';
-import { MessageModule } from 'primeng/message';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { InputTextarea } from 'primeng/inputtextarea';
 import { ConfirmationService, MessageService } from 'primeng/api';
-
-interface Supplier {
-  id: string;
-  name: string;
-  contactPerson: string;
-  email: string;
-  phone: string;
-  address: string;
-  city: string;
-  country: string;
-  taxId?: string;
-  paymentTerms: string;
-  status: 'active' | 'inactive';
-  totalOrders: number;
-  totalValue: number;
-  lastOrderDate?: Date;
-  notes?: string;
-}
-
-interface Customer {
-  id: string;
-  name: string;
-  contactPerson: string;
-  email: string;
-  phone: string;
-  address: string;
-  city: string;
-  country: string;
-  customerType: 'retail' | 'wholesale' | 'distributor';
-  status: 'active' | 'inactive';
-  totalOrders: number;
-  totalValue: number;
-  lastOrderDate?: Date;
-  creditLimit: number;
-  currentBalance: number;
-  notes?: string;
-}
+import { SupplierService } from '../../services/inventory.service';
 
 @Component({
   selector: 'app-suppliers',
@@ -63,401 +25,190 @@ interface Customer {
     DialogModule,
     InputTextModule,
     DropdownModule,
-    InputTextarea,
-    CardModule,
-    TabViewModule,
+    TagModule,
     BadgeModule,
-    MessageModule,
+    ToastModule,
     ConfirmDialogModule,
-    ToastModule
+    InputTextarea
   ],
+  providers: [ConfirmationService, MessageService],
   templateUrl: './suppliers.component.html',
-  styleUrl: './suppliers.component.scss',
-  providers: [ConfirmationService, MessageService]
+  styleUrl: './suppliers.component.scss'
 })
 export class SuppliersComponent implements OnInit {
-  activeTabIndex = 0; // 0 for suppliers, 1 for customers
-  showSupplierDialog = false;
-  showCustomerDialog = false;
-  editingSupplier: Supplier | null = null;
-  editingCustomer: Customer | null = null;
-
-  // Filters
+  suppliers: any[] = [];
+  filteredSuppliers: any[] = [];
+  loading = false;
+  total = 0;
   searchTerm = '';
-  selectedStatus = '';
-
-  // Data
-  suppliers: Supplier[] = [];
-  customers: Customer[] = [];
-  filteredSuppliers: Supplier[] = [];
-  filteredCustomers: Customer[] = [];
+  selectedStatus: any = null;
+  showFilters = false;
 
   statusOptions = [
-    { label: 'Active', value: 'active' },
-    { label: 'Inactive', value: 'inactive' }
+    { label: 'All Status', value: null },
+    { label: 'Active', value: true },
+    { label: 'Inactive', value: false }
   ];
 
-  customerTypeOptions = [
-    { label: 'Retail', value: 'retail' },
-    { label: 'Wholesale', value: 'wholesale' },
-    { label: 'Distributor', value: 'distributor' }
-  ];
+  // Create/Edit dialog
+  showSupplierDialog = false;
+  editingSupplier: any = null;
+  createForm = { name: '', contact_name: '', email: '', phone: '', address: '', is_active: true };
+  formSubmitted = false;
+  createSaving = false;
 
-  paymentTermsOptions = [
-    { label: 'Net 30', value: 'net_30' },
-    { label: 'Net 60', value: 'net_60' },
-    { label: 'Net 90', value: 'net_90' },
-    { label: 'Cash on Delivery', value: 'cod' }
-  ];
+  get activeCount(): number {
+    return this.suppliers.filter(s => s.is_active !== false).length;
+  }
+
+  get inactiveCount(): number {
+    return this.suppliers.filter(s => s.is_active === false).length;
+  }
 
   constructor(
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
-  ) { }
+    private messageService: MessageService,
+    private supplierService: SupplierService
+  ) {}
 
   ngOnInit() {
-    this.loadSuppliers();
-    this.loadCustomers();
+    this.load();
   }
 
-  loadSuppliers() {
-    // Mock data - replace with actual API call
-    this.suppliers = [
-      {
-        id: '1',
-        name: 'Global Supplies Inc.',
-        contactPerson: 'John Smith',
-        email: 'john@globalsupplies.com',
-        phone: '+1-555-0123',
-        address: '123 Business St',
-        city: 'New York',
-        country: 'USA',
-        taxId: 'US123456789',
-        paymentTerms: 'net_30',
-        status: 'active',
-        totalOrders: 45,
-        totalValue: 125000.00,
-        lastOrderDate: new Date('2024-09-20'),
-        notes: 'Reliable supplier, good quality products'
+  load() {
+    this.loading = true;
+    this.supplierService.listSuppliers(0, 100, this.searchTerm || undefined).subscribe({
+      next: (res: any) => {
+        this.suppliers = res.data || [];
+        this.total = res.total || this.suppliers.length;
+        this.applyFilters();
+        this.loading = false;
       },
-      {
-        id: '2',
-        name: 'Tech Components Ltd.',
-        contactPerson: 'Sarah Johnson',
-        email: 'sarah@techcomponents.com',
-        phone: '+1-555-0456',
-        address: '456 Tech Ave',
-        city: 'San Francisco',
-        country: 'USA',
-        taxId: 'US987654321',
-        paymentTerms: 'net_60',
-        status: 'active',
-        totalOrders: 32,
-        totalValue: 89000.00,
-        lastOrderDate: new Date('2024-09-18'),
-        notes: 'Specializes in electronic components'
+      error: () => {
+        this.loading = false;
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load suppliers' });
       }
-    ];
-    this.applySupplierFilters();
-  }
-
-  loadCustomers() {
-    // Mock data - replace with actual API call
-    this.customers = [
-      {
-        id: '1',
-        name: 'Retail Store Chain',
-        contactPerson: 'Mike Wilson',
-        email: 'mike@retailchain.com',
-        phone: '+1-555-0789',
-        address: '789 Commerce Blvd',
-        city: 'Chicago',
-        country: 'USA',
-        customerType: 'retail',
-        status: 'active',
-        totalOrders: 67,
-        totalValue: 156000.00,
-        lastOrderDate: new Date('2024-09-25'),
-        creditLimit: 50000.00,
-        currentBalance: 12500.00,
-        notes: 'Large retail chain, regular customer'
-      },
-      {
-        id: '2',
-        name: 'Wholesale Distributors',
-        contactPerson: 'Lisa Brown',
-        email: 'lisa@wholesaledist.com',
-        phone: '+1-555-0321',
-        address: '321 Distribution Way',
-        city: 'Los Angeles',
-        country: 'USA',
-        customerType: 'wholesale',
-        status: 'active',
-        totalOrders: 23,
-        totalValue: 78000.00,
-        lastOrderDate: new Date('2024-09-22'),
-        creditLimit: 100000.00,
-        currentBalance: 0.00,
-        notes: 'Wholesale distributor, pays on time'
-      }
-    ];
-    this.applyCustomerFilters();
-  }
-
-  applySupplierFilters() {
-    this.filteredSuppliers = this.suppliers.filter(supplier => {
-      const matchesSearch = !this.searchTerm ||
-        supplier.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        supplier.contactPerson.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        supplier.email.toLowerCase().includes(this.searchTerm.toLowerCase());
-
-      const matchesStatus = !this.selectedStatus || supplier.status === this.selectedStatus;
-
-      return matchesSearch && matchesStatus;
     });
   }
 
-  applyCustomerFilters() {
-    this.filteredCustomers = this.customers.filter(customer => {
-      const matchesSearch = !this.searchTerm ||
-        customer.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        customer.contactPerson.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        customer.email.toLowerCase().includes(this.searchTerm.toLowerCase());
+  toggleFilters() {
+    this.showFilters = !this.showFilters;
+  }
 
-      const matchesStatus = !this.selectedStatus || customer.status === this.selectedStatus;
+  applyFilters() {
+    this.filteredSuppliers = this.suppliers.filter(s => {
+      const matchesSearch = !this.searchTerm ||
+        s.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        (s.contact_name || '').toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        (s.email || '').toLowerCase().includes(this.searchTerm.toLowerCase());
+
+      const matchesStatus = this.selectedStatus === null || s.is_active === this.selectedStatus;
 
       return matchesSearch && matchesStatus;
     });
-  }
-
-  onSearch() {
-    this.applySupplierFilters();
-    this.applyCustomerFilters();
-  }
-
-  onStatusChange() {
-    this.applySupplierFilters();
-    this.applyCustomerFilters();
   }
 
   clearFilters() {
     this.searchTerm = '';
-    this.selectedStatus = '';
-    this.applySupplierFilters();
-    this.applyCustomerFilters();
+    this.selectedStatus = null;
+    this.filteredSuppliers = [...this.suppliers];
   }
 
-  createSupplier() {
-    this.editingSupplier = {
-      id: '',
-      name: '',
-      contactPerson: '',
-      email: '',
-      phone: '',
-      address: '',
-      city: '',
-      country: '',
-      paymentTerms: 'net_30',
-      status: 'active',
-      totalOrders: 0,
-      totalValue: 0
-    };
-    this.showSupplierDialog = true;
+  getStatusLabel(isActive: boolean): string {
+    return isActive !== false ? 'Active' : 'Inactive';
   }
 
-  createCustomer() {
-    this.editingCustomer = {
-      id: '',
-      name: '',
-      contactPerson: '',
-      email: '',
-      phone: '',
-      address: '',
-      city: '',
-      country: '',
-      customerType: 'retail',
-      status: 'active',
-      totalOrders: 0,
-      totalValue: 0,
-      creditLimit: 0,
-      currentBalance: 0
-    };
-    this.showCustomerDialog = true;
-  }
-
-  editSupplier(supplier: Supplier) {
-    this.editingSupplier = { ...supplier };
-    this.showSupplierDialog = true;
-  }
-
-  editCustomer(customer: Customer) {
-    this.editingCustomer = { ...customer };
-    this.showCustomerDialog = true;
-  }
-
-  saveSupplier() {
-    if (!this.editingSupplier) return;
-
-    if (this.editingSupplier.id) {
-      // Update existing
-      const index = this.suppliers.findIndex(s => s.id === this.editingSupplier!.id);
-      if (index !== -1) {
-        this.suppliers[index] = { ...this.editingSupplier! };
-      }
-    } else {
-      // Add new
-      this.editingSupplier.id = Date.now().toString();
-      this.suppliers.unshift({ ...this.editingSupplier! });
-    }
-
-    this.applySupplierFilters();
-    this.showSupplierDialog = false;
-    this.editingSupplier = null;
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'Supplier saved successfully'
-    });
-  }
-
-  saveCustomer() {
-    if (!this.editingCustomer) return;
-
-    if (this.editingCustomer.id) {
-      // Update existing
-      const index = this.customers.findIndex(c => c.id === this.editingCustomer!.id);
-      if (index !== -1) {
-        this.customers[index] = { ...this.editingCustomer! };
-      }
-    } else {
-      // Add new
-      this.editingCustomer.id = Date.now().toString();
-      this.customers.unshift({ ...this.editingCustomer! });
-    }
-
-    this.applyCustomerFilters();
-    this.showCustomerDialog = false;
-    this.editingCustomer = null;
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'Customer saved successfully'
-    });
-  }
-
-  cancelSupplierEdit() {
-    this.showSupplierDialog = false;
-    this.editingSupplier = null;
-  }
-
-  cancelCustomerEdit() {
-    this.showCustomerDialog = false;
-    this.editingCustomer = null;
-  }
-
-  deleteSupplier(supplier: Supplier) {
-    this.confirmationService.confirm({
-      message: `Are you sure you want to delete supplier "${supplier.name}"?`,
-      header: 'Confirm Deletion',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.suppliers = this.suppliers.filter(s => s.id !== supplier.id);
-        this.applySupplierFilters();
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Supplier deleted successfully'
-        });
-      }
-    });
-  }
-
-  deleteCustomer(customer: Customer) {
-    this.confirmationService.confirm({
-      message: `Are you sure you want to delete customer "${customer.name}"?`,
-      header: 'Confirm Deletion',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.customers = this.customers.filter(c => c.id !== customer.id);
-        this.applyCustomerFilters();
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Customer deleted successfully'
-        });
-      }
-    });
-  }
-
-  getStatusSeverity(status: string): string {
-    return status === 'active' ? 'success' : 'danger';
-  }
-
-  getCustomerTypeSeverity(type: string): string {
-    switch (type) {
-      case 'retail': return 'info';
-      case 'wholesale': return 'warning';
-      case 'distributor': return 'success';
-      default: return 'info';
-    }
-  }
-
-  formatCurrency(value: number): string {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(value);
-  }
-
-  formatDate(date: Date): string {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    }).format(date);
-  }
-
-  exportSuppliers() {
-    // Implement export functionality
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Export',
-      detail: 'Export functionality will be implemented'
-    });
-  }
-
-  exportCustomers() {
-    // Implement export functionality
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Export',
-      detail: 'Export functionality will be implemented'
-    });
+  getStatusSeverity(isActive: boolean): string {
+    return isActive !== false ? 'success' : 'danger';
   }
 
   refreshData() {
-    this.loadSuppliers();
-    this.loadCustomers();
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Refreshed',
-      detail: 'Data refreshed successfully'
+    this.load();
+    this.messageService.add({ severity: 'success', summary: 'Refreshed', detail: 'Data refreshed successfully' });
+  }
+
+  openCreateDialog() {
+    this.editingSupplier = null;
+    this.createForm = { name: '', contact_name: '', email: '', phone: '', address: '', is_active: true };
+    this.formSubmitted = false;
+    this.showSupplierDialog = true;
+  }
+
+  openEditDialog(supplier: any) {
+    this.editingSupplier = supplier;
+    this.createForm = {
+      name: supplier.name || '',
+      contact_name: supplier.contact_name || '',
+      email: supplier.email || '',
+      phone: supplier.phone || '',
+      address: supplier.address || '',
+      is_active: supplier.is_active !== false
+    };
+    this.formSubmitted = false;
+    this.showSupplierDialog = true;
+  }
+
+  saveSupplier() {
+    this.formSubmitted = true;
+    if (!this.createForm.name) return;
+
+    this.createSaving = true;
+
+    if (this.editingSupplier?.id) {
+      this.supplierService.updateSupplier(this.editingSupplier.id, this.createForm).subscribe({
+        next: () => {
+          this.createSaving = false;
+          this.showSupplierDialog = false;
+          this.messageService.add({ severity: 'success', summary: 'Updated', detail: 'Supplier updated successfully' });
+          this.load();
+        },
+        error: (err: any) => {
+          this.createSaving = false;
+          const msg = err?.error?.detail || 'Failed to update supplier';
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
+        }
+      });
+    } else {
+      this.supplierService.createSupplier(this.createForm).subscribe({
+        next: () => {
+          this.createSaving = false;
+          this.showSupplierDialog = false;
+          this.messageService.add({ severity: 'success', summary: 'Created', detail: 'Supplier created successfully' });
+          this.load();
+        },
+        error: (err: any) => {
+          this.createSaving = false;
+          const msg = err?.error?.detail || 'Failed to create supplier';
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
+        }
+      });
+    }
+  }
+
+  cancelEdit() {
+    this.showSupplierDialog = false;
+    this.editingSupplier = null;
+  }
+
+  deleteSupplier(event: Event, supplier: any) {
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: `Are you sure you want to delete supplier "${supplier.name}"?`,
+      header: 'Delete Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger p-button-text',
+      rejectButtonStyleClass: 'p-button-text',
+      accept: () => {
+        this.supplierService.deleteSupplier(supplier.id).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Supplier deleted successfully' });
+            this.load();
+          },
+          error: () => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete supplier' });
+          }
+        });
+      }
     });
-  }
-
-  getActiveSuppliersCount(): number {
-    return this.suppliers.filter(s => s.status === 'active').length;
-  }
-
-  getActiveCustomersCount(): number {
-    return this.customers.filter(c => c.status === 'active').length;
-  }
-
-  getTotalSupplierValue(): number {
-    return this.suppliers.reduce((sum, s) => sum + s.totalValue, 0);
-  }
-
-  getTotalCustomerValue(): number {
-    return this.customers.reduce((sum, c) => sum + c.totalValue, 0);
   }
 }

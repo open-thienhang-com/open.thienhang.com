@@ -11,6 +11,7 @@ import { AuthServices } from './core/services/auth.services';
 import { TimeoutInterceptor } from './core/interceptor/timeout.interceptor';
 import { ErrorInterceptor } from './core/interceptor/error.interceptor';
 import { Auth401Interceptor } from './core/interceptor/auth-401.interceptor';
+import { AuthInterceptor } from './core/interceptor/auth.interceptor';
 
 export function initApp(): () => Promise<void> {
   // No-op initializer: do not call /authentication/me during app bootstrap
@@ -33,6 +34,11 @@ export const appConfig: ApplicationConfig = {
       provide: APP_INITIALIZER,
       useFactory: initApp,
       deps: [],
+      multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
       multi: true
     },
     {

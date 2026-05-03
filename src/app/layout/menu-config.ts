@@ -1,32 +1,6 @@
 import { MenuItem } from './models/menu-item';
 
-export const sidebarGroups: MenuItem[] = [
-    {
-        label: 'Explore',
-        icon: 'pi pi-compass',
-        expanded: false,
-        children: [
-            {
-                label: 'Data Mesh',
-                icon: 'pi pi-sitemap',
-                children: [
-                    { label: 'Data Products', url: '/data-mesh/data-products', icon: 'pi pi-shopping-cart' },
-
-                    { label: 'API Explorer', url: '/data-mesh/api-explorer', icon: 'pi pi-code' },
-                ]
-            },
-            { label: 'Database', url: '/explore/database', icon: 'pi pi-database' },
-            { label: 'Google', url: '/explore/google', icon: 'pi pi-google' },
-            { label: 'Data Warehouse', url: '/explore/data-warehouse', icon: 'pi pi-server' },
-
-            { label: 'Pipelines', url: '/explore/pipelines', icon: 'pi pi-sliders-h' },
-            { label: 'Topics', url: '/explore/topics', icon: 'pi pi-tags' },
-            { label: 'ML Models', url: '/explore/ml-models', icon: 'pi pi-brain' },
-            { label: 'Container', url: '/explore/container', icon: 'pi pi-box' },
-            { label: 'Search', url: '/explore/search', icon: 'pi pi-search' }
-        ]
-    }
-];
+export const sidebarGroups: MenuItem[] = [];
 
 export const menu: MenuItem[] = [
     {
@@ -35,7 +9,7 @@ export const menu: MenuItem[] = [
         type: 'item',
         expanded: false,
         children: [
-            { label: 'Overview', url: '/governance/proposal', icon: 'pi pi-th-large' },
+            { label: 'Onboarding', url: '/governance/proposal', icon: 'pi pi-th-large' },
             {
                 label: 'Identity',
                 icon: 'pi pi-id-card',
@@ -45,7 +19,7 @@ export const menu: MenuItem[] = [
                     { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
                     { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building' },
                     { label: 'Teams', url: '/governance/teams', icon: 'pi pi-users' },
-                    { label: 'Branches', url: '/governance/branches', icon: 'pi pi-sitemap' },
+                    // { label: 'Branches', url: '/governance/branches', icon: 'pi pi-sitemap' },
                 ]
             },
             {
@@ -57,18 +31,18 @@ export const menu: MenuItem[] = [
                     { label: 'Permissions', url: '/governance/permissions', icon: 'pi pi-key' },
                     { label: 'Policies', url: '/governance/policies', icon: 'pi pi-lock' },
                     { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' },
-                    { label: 'Entitlements', url: '/governance/entitlements', icon: 'pi pi-key' },
+                    // { label: 'Entitlements', url: '/governance/entitlements', icon: 'pi pi-key' },
                 ]
             },
-            {
-                label: 'RBAC & Admin',
-                icon: 'pi pi-cog',
-                expanded: false,
-                children: [
-                    { label: 'RBAC Engine', url: '/governance/casbin', icon: 'pi pi-shield' },
-                    { label: 'Admin Tools', url: '/governance/admin', icon: 'pi pi-wrench' },
-                ]
-            },
+            // {
+            //     label: 'RBAC & Admin',
+            //     icon: 'pi pi-cog',
+            //     expanded: false,
+            //     children: [
+            //         { label: 'RBAC Engine', url: '/governance/casbin', icon: 'pi pi-shield' },
+            //         { label: 'Admin Tools', url: '/governance/admin', icon: 'pi pi-wrench' },
+            //     ]
+            // },
         ]
     },
     {
@@ -121,47 +95,6 @@ export const menu: MenuItem[] = [
         ]
     },
     {
-        label: 'CRM & Customers',
-        icon: 'pi pi-users',
-        type: 'item',
-        expanded: false,
-        children: [
-            {
-                label: 'Overview & Members',
-                icon: 'pi pi-home',
-                type: 'item',
-                expanded: false,
-                children: [
-                    { label: 'Overview', url: '/loyalty/overview', icon: 'pi pi-home' },
-                    { label: 'Members', url: '/loyalty/members', icon: 'pi pi-users' },
-                    { label: 'Customers', url: '/retail/customers', icon: 'pi pi-user' },
-                ]
-            },
-            {
-                label: 'Rewards & Campaigns',
-                icon: 'pi pi-megaphone',
-                type: 'item',
-                expanded: false,
-                children: [
-                    { label: 'Rewards Catalog', url: '/loyalty/rewards', icon: 'pi pi-gift' },
-                    { label: 'Campaigns', url: '/loyalty/campaigns', icon: 'pi pi-megaphone' },
-                    { label: 'Segments', url: '/loyalty/segments', icon: 'pi pi-filter' },
-                    { label: 'Automation', url: '/loyalty/automation', icon: 'pi pi-bolt' },
-                ]
-            },
-            {
-                label: 'Strategy & Analytics',
-                icon: 'pi pi-chart-bar',
-                type: 'item',
-                expanded: false,
-                children: [
-                    { label: 'Loyalty Strategy', url: '/loyalty/strategy', icon: 'pi pi-sitemap' },
-                    { label: 'Analytics', url: '/loyalty/analytics', icon: 'pi pi-chart-bar' },
-                ]
-            },
-        ]
-    },
-    {
         label: 'Sales & Commerce',
         icon: 'pi pi-shopping-bag',
         type: 'item',
@@ -173,133 +106,6 @@ export const menu: MenuItem[] = [
             { label: 'Ecommerce', url: '/retail/ecommerce', icon: 'pi pi-shopping-cart' },
             { label: 'POS', url: '/retail/pos', icon: 'pi pi-desktop' },
             { label: 'Payment', url: '/retail/payment', icon: 'pi pi-credit-card' },
-            { label: 'Support', url: '/cmc/workspace', icon: 'pi pi-comments' },
         ]
     },
-    {
-        label: 'Support',
-        icon: 'pi pi-comments',
-        type: 'item',
-        expanded: true,
-        children: [
-            { label: 'Overview', url: '/cmc/overview', icon: 'pi pi-home' },
-            {
-                label: 'Templates',
-                icon: 'pi pi-copy',
-                children: [
-                    { label: 'Templates Explorer', url: '/cmc/explore', icon: 'pi pi-search' },
-                ]
-            },
-            {
-                label: 'Automation',
-                icon: 'pi pi-bolt',
-                children: [
-                    { label: 'Workflows', url: '/cmc/automation', icon: 'pi pi-directions' },
-                    { label: 'Omni-channel', url: '/retail/omni-channel', icon: 'pi pi-sync' },
-
-                    { label: 'Facebook', url: '/cmc/workspace', icon: 'pi pi-facebook' },
-                ]
-            },
-        ]
-    },
-
-    {
-        label: 'Ad Manager',
-        icon: 'pi pi-bullhorn',
-        type: 'item',
-        expanded: false,
-        children: [
-            { label: 'Ad Overview', url: '/ad-manager', icon: 'pi pi-chart-line' },
-            { label: 'Campaigns', url: '/ad-manager/campaigns', icon: 'pi pi-megaphone' },
-            { label: 'Creative Library', url: '/ad-manager/creatives', icon: 'pi pi-images' },
-            { label: 'Ad Placements', url: '/ad-manager/placements', icon: 'pi pi-map-marker' },
-            { label: 'Settings', url: '/ad-manager/settings', icon: 'pi pi-cog' }
-        ]
-    },
-    {
-        label: 'Blogger',
-        icon: 'pi pi-pencil',
-        type: 'item',
-        expanded: false,
-        children: [
-            { label: 'Dashboard', url: '/blogger', icon: 'pi pi-home' },
-            { label: 'Posts', url: '/blogger/posts', icon: 'pi pi-file-edit' },
-            { label: 'Authors', url: '/blogger/authors', icon: 'pi pi-users' },
-            { label: 'Categories', url: '/blogger/categories', icon: 'pi pi-tags' }
-        ]
-    },
-    {
-        label: 'File Manager',
-        icon: 'pi pi-folder',
-        type: 'item',
-        expanded: false,
-        children: [
-            { label: 'My Files', url: '/files', icon: 'pi pi-folder-open' },
-            { label: 'Shared with Me', url: '/files/shared', icon: 'pi pi-users' },
-            { label: 'Recent', url: '/files/recent', icon: 'pi pi-clock' },
-            { label: 'Trash', url: '/files/trash', icon: 'pi pi-trash' }
-        ]
-    },
-    {
-        label: 'Travel',
-        icon: 'pi pi-globe',
-        type: 'item',
-        url: '/travel'
-    },
-    {
-        label: 'Travel Explorer',
-        icon: 'pi pi-globe',
-        type: 'item',
-        expanded: false,
-        children: [
-            { label: 'Travel Overview', url: '/travel', icon: 'pi pi-home' },
-            { label: 'Itineraries', url: '/travel/itineraries', icon: 'pi pi-list' },
-            { label: 'Destinations', url: '/travel/destinations', icon: 'pi pi-map-marker' }
-        ]
-    },
-    {
-        label: 'Hotel Management',
-        icon: 'pi pi-building',
-        type: 'item',
-        expanded: false,
-        children: [
-            {
-                label: 'Property Management',
-                icon: 'pi pi-home',
-                children: [
-                    { label: 'Apartments', url: '/hotel/apartments', icon: 'pi pi-building' },
-                    { label: 'Rooms', url: '/hotel/rooms', icon: 'pi pi-door-open' },
-                    { label: 'Inventory', url: '/hotel/inventory', icon: 'pi pi-box' }
-                ]
-            },
-            {
-                label: 'Reservations & Bookings',
-                icon: 'pi pi-calendar',
-                children: [
-                    { label: 'Bookings', url: '/hotel/bookings', icon: 'pi pi-calendar-check' },
-                    { label: 'Calendar', url: '/hotel/calendar', icon: 'pi pi-calendar' },
-                    { label: 'Check-in', url: '/hotel/checkin', icon: 'pi pi-sign-in' }
-                ]
-            },
-            {
-                label: 'Guest Services',
-                icon: 'pi pi-users',
-                children: [
-                    { label: 'Guests', url: '/hotel/guests', icon: 'pi pi-user' },
-                    { label: 'Reviews', url: '/hotel/reviews', icon: 'pi pi-star' },
-                    { label: 'Support', url: '/hotel/support', icon: 'pi pi-comments' }
-                ]
-            },
-            {
-                label: 'Operations & Staff',
-                icon: 'pi pi-wrench',
-                children: [
-                    { label: 'Maintenance', url: '/hotel/maintenance', icon: 'pi pi-wrench' },
-                    { label: 'Staff Management', url: '/hotel/staff', icon: 'pi pi-users' },
-                    { label: 'Settings', url: '/hotel/settings', icon: 'pi pi-cog' }
-                ]
-            }
-        ]
-    },
-    // Settings intentionally removed from sidebar menu config; Settings is a standalone app
 ];

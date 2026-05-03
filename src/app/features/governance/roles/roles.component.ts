@@ -288,7 +288,7 @@ export class RolesComponent implements OnInit {
     const newStatus = !role.is_active;
     const action = newStatus ? 'activate' : 'deactivate';
 
-    this.governanceServices.updateRole(role.kid, { is_active: newStatus } as any).subscribe({
+    this.governanceServices.updateRole(role.kid || role.id!, { is_active: newStatus } as any).subscribe({
       next: (response) => {
         if (response.success) {
           role.is_active = newStatus;
@@ -317,7 +317,7 @@ export class RolesComponent implements OnInit {
       header: 'Confirm Delete',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        this.governanceServices.deleteRole(role.kid).subscribe({
+        this.governanceServices.deleteRole(role.kid || role.id!).subscribe({
           next: (response) => {
             if (response.success) {
               this.messageService.add({
@@ -342,7 +342,7 @@ export class RolesComponent implements OnInit {
   }
 
   viewRoleDetails(role: Role): void {
-    this.router.navigate(['/governance/roles', role.kid]);
+    this.router.navigate(['/governance/roles', role.kid || role.id]);
   }
 
   getRoleTypeSeverity(type: string): string {

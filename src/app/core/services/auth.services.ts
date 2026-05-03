@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { getApiBase } from '../config/api-config';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, catchError, Observable, of, tap, map, finalize } from 'rxjs';
+import { BehaviorSubject, catchError, Observable, of, tap, map, finalize, switchMap, throwError } from 'rxjs';
 import { ApiResponse } from './governance.services';
 import { UserProfile } from './profile.services';
 import { LoadingService } from './loading.service';
@@ -38,6 +38,7 @@ export interface SetNewPasswordRequest {
   token: string;
   password: string;
   confirm_password: string;
+  otp_token?: string;
 }
 
 @Injectable({
@@ -48,9 +49,18 @@ export class AuthServices {
     return getApiBase();
   }
   private userSubject = new BehaviorSubject<UserProfile | null>(null);
+  private rolesSubject = new BehaviorSubject<string[]>([]);
 
   pendingVerificationEmail: string = '';
   pendingResetEmail: string = '';
+
+  getRoles(): Observable<string[]> {
+    return this.rolesSubject.asObservable();
+  }
+
+  hasRole(role: string): boolean {
+    return this.rolesSubject.getValue().includes(role);
+  }
 
   constructor(private http: HttpClient, private loadingService: LoadingService, private router: Router) {
     // Initialize user from sessionStorage if present
@@ -74,6 +84,11 @@ export class AuthServices {
           // API returns Token shape directly (has access_token) — not wrapped in ApiResponse
           const isTokenShape = response && ('access_token' in response);
           if (isTokenShape || this.isWrappedResponse(response)) {
+            // Store raw access_token for Authorization header injection by interceptor (task 7.4)
+            const token = (response as any).access_token || (response as any).data?.access_token;
+            if (token) {
+              localStorage.setItem('access_token', token);
+            }
             // Only grant isLoggedIn for verified accounts — unverified must go through OTP
             const isVerified = response.is_verified !== false;
             if (isVerified) {
@@ -96,8 +111,24 @@ export class AuthServices {
 
   refreshToken(): Observable<ApiResponse<AuthResponse>> {
     const url = `${this.baseUrl}/authentication/refresh-token`;
-    return this.http.post<AuthResponse>(url, null)
-      .pipe(map(response => this.wrapResponse(response)));
+    return this.http.post<any>(url, null).pipe(
+      tap(response => {
+        const token = (response as any).access_token || (response as any).data?.access_token;
+        if (token) {
+          localStorage.setItem('access_token', token);
+        }
+      }),
+      map(response => this.wrapResponse(response))
+    );
+  }
+
+  clearSession(): void {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('userVerified');
+    localStorage.removeItem('access_token');
+    try { sessionStorage.removeItem('currentUser'); } catch (e) { }
+    this.userSubject.next(null);
+    this.rolesSubject.next([]);
   }
 
   logout(): Observable<ApiResponse<any>> {
@@ -116,8 +147,10 @@ export class AuthServices {
           // Clear client-side session state regardless of request result
           localStorage.removeItem('isLoggedIn');
           localStorage.removeItem('userVerified');
+          localStorage.removeItem('access_token');
           try { sessionStorage.removeItem('currentUser'); } catch (e) { }
           this.userSubject.next(null);
+          this.rolesSubject.next([]);
         })
       );
   }
@@ -153,6 +186,14 @@ export class AuthServices {
         localStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('userVerified', String((userData as any)?.is_verified !== false));
         this.userSubject.next(normalized as UserProfile);
+
+        // Fetch permissions and populate rolesSubject (task 8.2)
+        this.http.get<any>(`${this.baseUrl}/authentication/me/permissions`).pipe(
+          catchError(() => of(null))
+        ).subscribe(perms => {
+          const roles: string[] = perms?.data?.roles || perms?.roles || [];
+          this.rolesSubject.next(roles);
+        });
       }),
       catchError((err: HttpErrorResponse) => {
         localStorage.removeItem('isLoggedIn');
@@ -175,7 +216,14 @@ export class AuthServices {
     return this.http.post<any>(url, { email })
       .pipe(
         tap(response => {
-          if (response) this.pendingResetEmail = email;
+          if (response) {
+            this.pendingResetEmail = email;
+            // Store otp_token in sessionStorage for cookie-less password reset (task 9.3)
+            const otpToken = response?.data?.otp_token || response?.otp_token;
+            if (otpToken) {
+              try { sessionStorage.setItem('otp_reset_token', otpToken); } catch (e) { }
+            }
+          }
         }),
         map(response => this.wrapResponse(response))
       );
@@ -186,7 +234,13 @@ export class AuthServices {
     return this.http.post<any>(url, { email: data.email })
       .pipe(
         tap(response => {
-          if (response) this.pendingResetEmail = data.email;
+          if (response) {
+            this.pendingResetEmail = data.email;
+            const otpToken = response?.data?.otp_token || response?.otp_token;
+            if (otpToken) {
+              try { sessionStorage.setItem('otp_reset_token', otpToken); } catch (e) { }
+            }
+          }
         }),
         map(response => this.wrapResponse(response))
       );
@@ -194,8 +248,18 @@ export class AuthServices {
 
   setNewPassword(data: SetNewPasswordRequest): Observable<ApiResponse<any>> {
     const url = `${this.baseUrl}/authentication/set-password`;
-    return this.http.post<any>(url, { otp: data.token, password: data.password })
-      .pipe(map(response => this.wrapResponse(response)));
+    // Include otp_token from argument or sessionStorage fallback (task 9.4)
+    const otpToken = data.otp_token || ((): string | null => {
+      try { return sessionStorage.getItem('otp_reset_token'); } catch { return null; }
+    })();
+    const body: any = { otp: data.token, password: data.password, confirm_password: data.confirm_password };
+    if (otpToken) body['otp_token'] = otpToken;
+    return this.http.post<any>(url, body).pipe(
+      tap(() => {
+        try { sessionStorage.removeItem('otp_reset_token'); } catch (e) { }
+      }),
+      map(response => this.wrapResponse(response))
+    );
   }
 
   verifyEmail(email: string, otp: string): Observable<ApiResponse<any>> {

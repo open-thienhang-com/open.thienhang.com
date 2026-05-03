@@ -337,7 +337,9 @@
 
       <!-- Card View -->
       <div *ngIf="viewMode === 'card'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div *ngFor="let policy of policies; trackBy: trackByPolicyId" class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+        <div *ngFor="let policy of policies; trackBy: trackByPolicyId" 
+             class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
+             (click)="viewPolicyDetails(policy)">
           <div class="p-6">
             <div class="flex items-start justify-between mb-4">
               <div class="flex-1">

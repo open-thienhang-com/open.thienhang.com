@@ -363,3 +363,65 @@ export interface TelegramCreateBroadcastPayload {
     scheduled_at: string;
     recipient_count_estimate: number;
 }
+
+export interface CustomerSummary {
+    id: string;
+    name: string;
+    phone: string;
+    email?: string;
+    customer_type: string;
+    is_active: boolean;
+}
+
+export interface ConversationPage {
+    items: TelegramConversation[];
+    has_more: boolean;
+    skip: number;
+}
+
+export interface UnifiedTemplate {
+    id: string;
+    _id?: string;
+    name: string;
+    code: string;
+    channel: string;
+    category: string;
+    content: string;
+    enabled: boolean;
+    variables: string[];
+    tags?: string[];
+    created_at?: string;
+    updated_at: string;
+}
+
+export interface UnifiedTemplateCreate {
+    name: string;
+    code: string;
+    channel: string;
+    category: string;
+    content: string;
+    enabled: boolean;
+    variables: string[];
+    tags?: string[];
+}
+
+export interface UnifiedTemplateUpdate {
+    name?: string;
+    category?: string;
+    content?: string;
+    enabled?: boolean;
+    variables?: string[];
+    tags?: string[];
+}
+
+export interface ProductSearchResult {
+    id: string;
+    _id?: string;
+    name: string;
+    sku: string;
+    selling_price: number;
+    cost_price?: number;
+    category?: string;
+    description?: string;
+    image_url?: string;
+}

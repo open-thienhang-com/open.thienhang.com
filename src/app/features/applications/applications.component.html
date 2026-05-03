@@ -1,12 +1,9 @@
 <div class="applications-page">
-  <!-- Full Screen Container -->
   <div class="fullscreen-container">
-
-    <!-- Header -->
     <header class="page-header">
       <div class="header-content">
         <h1 class="page-title">ThienHang Platform</h1>
-        <p class="page-subtitle">Choose your workspace</p>
+        <p class="page-subtitle">Browse applications as a folder tree</p>
       </div>
       <div class="header-actions">
         <button class="search-btn" type="button">
@@ -18,192 +15,61 @@
       </div>
     </header>
 
-    <!-- Main Grid Layout -->
-    <main class="apps-grid">
-      <!-- Row 1 -->
-      <div class="grid-row">
-        <div class="app-card" (click)="selectApp('inventory')">
-          <div class="card-icon">
-            <i class="pi pi-box"></i>
-          </div>
-          <div class="card-content">
-            <h3>Inventory</h3>
-            <p>Stock & Supply Chain</p>
+    <main class="applications-tree-layout">
+      <section class="tree-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Application Tree</h2>
+            <p>Browse platform modules like folders and open the one you need.</p>
           </div>
         </div>
 
-        <div class="app-card" (click)="selectApp('governance')">
-          <div class="card-icon">
-            <i class="pi pi-shield"></i>
-          </div>
-          <div class="card-content">
-            <h3>Governance</h3>
-            <p>Policy & Assets</p>
+        <div class="tree-wrapper">
+          <p-tree
+            [value]="treeData"
+            selectionMode="single"
+            [(selection)]="selectedNode"
+            (onNodeSelect)="onNodeSelect($event)"
+            class="applications-tree"
+          ></p-tree>
+        </div>
+      </section>
+
+      <section class="details-panel">
+        <div class="panel-header">
+          <div>
+            <h2>App details</h2>
+            <p>Selected app information appears here.</p>
           </div>
         </div>
 
-        <div class="app-card" (click)="selectApp('retail-sales')">
-          <div class="card-icon">
-            <i class="pi pi-shopping-bag"></i>
+        <div class="details-content">
+          <div *ngIf="selectedNode?.data?.app; else placeholder" class="details-card">
+            <div class="details-title">
+              <i [ngClass]="selectedNode?.icon"></i>
+              <div>
+                <h3>{{ selectedNode?.label }}</h3>
+                <p>{{ selectedNode?.data?.description }}</p>
+                <p *ngIf="selectedNode?.data?.route" class="details-route">
+                  <strong>Route:</strong> {{ selectedNode?.data?.route }}
+                </p>
+              </div>
+            </div>
+            <div class="details-actions">
+              <button class="open-btn" type="button" [disabled]="!selectedNode?.data?.route" (click)="navigateToRoute(selectedNode?.data?.route || '', selectedNode?.data?.app)">
+                Open
+              </button>
+            </div>
           </div>
-          <div class="card-content">
-            <h3>Sales</h3>
-            <p>E-commerce & POS</p>
-          </div>
-        </div>
 
-        <div class="app-card" (click)="selectApp('loyalty')">
-          <div class="card-icon">
-            <i class="pi pi-users"></i>
-          </div>
-          <div class="card-content">
-            <h3>CRM</h3>
-            <p>Customer Management</p>
-          </div>
+          <ng-template #placeholder>
+            <div class="details-empty">
+              <h3>Select an application</h3>
+              <p>Click a child node in the tree to view details and navigate.</p>
+            </div>
+          </ng-template>
         </div>
-      </div>
-
-      <!-- Row 2 -->
-      <div class="grid-row">
-        <div class="app-card" (click)="selectApp('explore')">
-          <div class="card-icon">
-            <i class="pi pi-compass"></i>
-          </div>
-          <div class="card-content">
-            <h3>Explore</h3>
-            <p>Data Discovery</p>
-          </div>
-        </div>
-
-        <div class="app-card" (click)="selectApp('files')">
-          <div class="card-icon">
-            <i class="pi pi-folder"></i>
-          </div>
-          <div class="card-content">
-            <h3>Files</h3>
-            <p>Document Storage</p>
-          </div>
-        </div>
-
-        <div class="app-card" (click)="selectApp('admanager')">
-          <div class="card-icon">
-            <i class="pi pi-chart-bar"></i>
-          </div>
-          <div class="card-content">
-            <h3>Ad Manager</h3>
-            <p>Campaign Analytics</p>
-          </div>
-        </div>
-
-        <div class="app-card" (click)="selectApp('travel')">
-          <div class="card-icon">
-            <i class="pi pi-globe"></i>
-          </div>
-          <div class="card-content">
-            <h3>Travel</h3>
-            <p>Booking System</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Row 3 -->
-      <div class="grid-row">
-        <div class="app-card" (click)="selectApp('blogger')">
-          <div class="card-icon">
-            <i class="pi pi-pencil"></i>
-          </div>
-          <div class="card-content">
-            <h3>Content</h3>
-            <p>Blog & Media</p>
-          </div>
-        </div>
-
-        <div class="app-card" (click)="selectApp('hotel')">
-          <div class="card-icon">
-            <i class="pi pi-building"></i>
-          </div>
-          <div class="card-content">
-            <h3>Hotel</h3>
-            <p>Property Management</p>
-          </div>
-        </div>
-
-        <div class="app-card" (click)="selectApp('support')">
-          <div class="card-icon">
-            <i class="pi pi-question-circle"></i>
-          </div>
-          <div class="card-content">
-            <h3>Support</h3>
-            <p>Help & Tickets</p>
-          </div>
-        </div>
-
-        <div class="app-card" (click)="selectApp('settings')">
-          <div class="card-icon">
-            <i class="pi pi-cog"></i>
-          </div>
-          <div class="card-content">
-            <h3>Settings</h3>
-            <p>System Config</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Row 4 -->
-      <div class="grid-row">
-        <div class="app-card placeholder">
-          <div class="card-icon">
-            <i class="pi pi-plus"></i>
-          </div>
-          <div class="card-content">
-            <h3>Add Module</h3>
-            <p>Coming Soon</p>
-          </div>
-        </div>
-
-        <div class="app-card placeholder">
-          <div class="card-icon">
-            <i class="pi pi-chart-line"></i>
-          </div>
-          <div class="card-content">
-            <h3>Analytics</h3>
-            <p>Business Intelligence</p>
-          </div>
-        </div>
-
-        <div class="app-card placeholder">
-          <div class="card-icon">
-            <i class="pi pi-mobile"></i>
-          </div>
-          <div class="card-content">
-            <h3>Mobile</h3>
-            <p>App Management</p>
-          </div>
-        </div>
-
-        <div class="app-card placeholder">
-          <div class="card-icon">
-            <i class="pi pi-cloud"></i>
-          </div>
-          <div class="card-content">
-            <h3>Cloud</h3>
-            <p>Infrastructure</p>
-          </div>
-        </div>
-      </div>
+      </section>
     </main>
-
-    <!-- Footer -->
-    <footer class="page-footer">
-      <div class="footer-content">
-        <p>&copy; 2024 ThienHang Platform. All rights reserved.</p>
-        <div class="footer-links">
-          <a href="#">Privacy</a>
-          <a href="#">Terms</a>
-          <a href="#">Support</a>
-        </div>
-      </div>
-    </footer>
-
   </div>
 </div>

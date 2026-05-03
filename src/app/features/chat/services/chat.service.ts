@@ -24,7 +24,13 @@ import {
     TelegramSettings,
     TelegramStatusPayload,
     TelegramTemplate,
-    TelegramWebhook
+    TelegramWebhook,
+    ConversationPage,
+    CustomerSummary,
+    ProductSearchResult,
+    UnifiedTemplate,
+    UnifiedTemplateCreate,
+    UnifiedTemplateUpdate
 } from '../models/chat.model';
 
 @Injectable({
@@ -242,6 +248,75 @@ export class ChatService {
             ...template,
             id: template.id || template.template_id || template._id
         };
+    }
+
+    // ── Paginated conversations ──────────────────────────────────────────────
+
+    getConversationsPage(skip: number = 0, limit: number = 20, platform?: string, status?: string): Observable<ConversationPage> {
+        let params = new HttpParams()
+            .set('skip', skip.toString())
+            .set('limit', limit.toString());
+        if (platform && platform !== 'all') params = params.set('platform', platform);
+        if (status && status !== 'all') params = params.set('status', status);
+        return new Observable<ConversationPage>(observer => {
+            this.http.get<ApiResponse<TelegramConversation[]>>(`${this.chatBaseUrl}/telegram/conversations`, { params }).subscribe({
+                next: (response) => {
+                    const items = (response.data || []).map(item => this.normalizeTelegramConversation(item));
+                    observer.next({ items, has_more: items.length === limit, skip });
+                    observer.complete();
+                },
+                error: (error) => observer.error(error)
+            });
+        });
+    }
+
+    // ── Customer linking ─────────────────────────────────────────────────────
+
+    searchRetailCustomers(keyword: string, limit: number = 8): Observable<ApiResponse<CustomerSummary[]>> {
+        const params = new HttpParams().set('search', keyword).set('limit', limit.toString());
+        return this.http.get<ApiResponse<CustomerSummary[]>>(`${getApiBase()}/retail/customers`, { params });
+    }
+
+    getRetailCustomer(customerId: string): Observable<ApiResponse<CustomerSummary>> {
+        return this.http.get<ApiResponse<CustomerSummary>>(`${getApiBase()}/retail/customers/${customerId}`);
+    }
+
+    linkConversationToCustomer(conversationId: string, customerId: string | null): Observable<ApiResponse<unknown>> {
+        return this.http.patch<ApiResponse<unknown>>(
+            `${this.chatBaseUrl}/conversations/${conversationId}/customer-link`,
+            { customer_id: customerId }
+        );
+    }
+
+    // ── Product search ───────────────────────────────────────────────────────
+
+    searchProductsForChat(keyword: string, limit: number = 10): Observable<ApiResponse<ProductSearchResult[]>> {
+        const params = new HttpParams().set('search', keyword).set('limit', limit.toString()).set('skip', '0');
+        return this.http.get<ApiResponse<ProductSearchResult[]>>(`${getApiBase()}/retail/products`, { params });
+    }
+
+    // ── Unified template management ──────────────────────────────────────────
+
+    getUnifiedTemplates(channel: string = '', skip: number = 0, limit: number = 20): Observable<ApiResponse<UnifiedTemplate[]>> {
+        let params = new HttpParams().set('skip', skip.toString()).set('limit', limit.toString());
+        if (channel) params = params.set('channel', channel);
+        return this.http.get<ApiResponse<UnifiedTemplate[]>>(`${this.cmcBaseUrl}/templates`, { params });
+    }
+
+    createUnifiedTemplate(payload: UnifiedTemplateCreate): Observable<ApiResponse<UnifiedTemplate>> {
+        return this.http.post<ApiResponse<UnifiedTemplate>>(`${this.cmcBaseUrl}/templates`, payload);
+    }
+
+    updateUnifiedTemplate(id: string, payload: UnifiedTemplateUpdate): Observable<ApiResponse<UnifiedTemplate>> {
+        return this.http.put<ApiResponse<UnifiedTemplate>>(`${this.cmcBaseUrl}/templates/${id}`, payload);
+    }
+
+    deleteUnifiedTemplate(id: string): Observable<ApiResponse<unknown>> {
+        return this.http.delete<ApiResponse<unknown>>(`${this.cmcBaseUrl}/templates/${id}`);
+    }
+
+    bulkToggleTemplates(ids: string[], enabled: boolean): Observable<ApiResponse<unknown>> {
+        return this.http.post<ApiResponse<unknown>>(`${this.cmcBaseUrl}/templates/bulk-update`, { template_ids: ids, enabled });
     }
 
     private get cmcBaseUrl(): string {

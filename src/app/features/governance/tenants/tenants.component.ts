@@ -154,7 +154,8 @@ export class TenantsComponent implements OnInit {
   }
 
   viewTenant(tenant: Tenant): void {
-    this.router.navigate(['/governance/tenants', tenant.kid]);
+    const id = tenant.kid || tenant.id;
+    this.router.navigate(['/governance/tenants', id]);
   }
 
   deleteTenant(tenant: Tenant): void {
@@ -163,7 +164,9 @@ export class TenantsComponent implements OnInit {
       header: 'Confirm Suspend',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        this.governanceServices.deleteTenant(tenant.kid).subscribe({
+        const id = tenant.kid || tenant.id;
+        if (!id) return;
+        this.governanceServices.deleteTenant(id).subscribe({
           next: () => {
             this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Tenant suspended' });
             this.loadTenants();
@@ -182,7 +185,9 @@ export class TenantsComponent implements OnInit {
       header: 'Confirm Activate',
       icon: 'pi pi-question-circle',
       accept: () => {
-        this.governanceServices.updateTenant(tenant.kid, { status: 'active' }).subscribe({
+        const id = tenant.kid || tenant.id;
+        if (!id) return;
+        this.governanceServices.updateTenant(id, { status: 'active' }).subscribe({
           next: () => {
             this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Tenant activated' });
             this.loadTenants();

@@ -467,7 +467,7 @@ export class AssetsComponent extends AppBaseComponent implements OnInit, OnDestr
   // View asset details
   viewAsset(asset: any) {
     this.loading = true;
-    this.governanceServices.getAsset(asset._id).subscribe({
+    this.governanceServices.getAsset(asset._id || asset.id || asset.kid).subscribe({
       next: (res) => {
         this.loading = false;
         if (res?.data) {

@@ -1,324 +1,340 @@
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>
 
-<div class="bg-gray-50 min-h-screen">
-  <!-- Top Navigation/Header -->
-  <div class="bg-white border-b border-gray-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        <div class="flex items-center gap-4">
-          <p-button 
-            icon="pi pi-arrow-left" 
-            [text]="true" 
-            [rounded]="true" 
-            (click)="goBack()" 
-            severity="secondary"
-            pTooltip="Back to Tenants">
-          </p-button>
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
-              <i class="pi pi-building text-white"></i>
-            </div>
-            <div *ngIf="tenant">
-              <h1 class="text-2xl font-bold text-gray-900 leading-none mb-1">{{ tenant.name }}</h1>
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-mono text-gray-500">{{ tenant.id || tenant.kid }}</span>
-                <p-tag [value]="tenant.status" [severity]="getStatusSeverity(tenant.status)"></p-tag>
-                <p-badge [value]="tenant.plan || 'Free'" severity="info"></p-badge>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="flex items-center gap-2" *ngIf="tenant">
-          <p-button label="Edit" icon="pi pi-pencil" [outlined]="true" severity="primary" (click)="editMode = true"></p-button>
-          <p-button label="Suspend" icon="pi pi-ban" [outlined]="true" severity="danger" (click)="suspendTenant()"></p-button>
-        </div>
-      </div>
-    </div>
+<div class="tenant-profile-page">
+
+  <!-- ── Loading ──────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="profile-loading">
+    <p-progressSpinner styleClass="w-4rem h-4rem"></p-progressSpinner>
+    <p>Loading tenant profile...</p>
   </div>
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div *ngIf="loading" class="flex flex-col items-center justify-center p-20 gap-4">
-      <p-progressSpinner styleClass="w-3rem h-3rem"></p-progressSpinner>
-      <p class="text-gray-500 animate-pulse">Loading tenant details...</p>
-    </div>
+  <!-- ── Not Found ─────────────────────────────────────────────── -->
+  <div *ngIf="!loading && !tenant" class="profile-not-found">
+    <i class="pi pi-building"></i>
+    <h2>Tenant not found</h2>
+    <p>This tenant may have been removed or the ID is incorrect.</p>
+    <button pButton label="Back to Tenants" icon="pi pi-arrow-left" class="p-button-outlined" (click)="goBack()"></button>
+  </div>
 
-    <div *ngIf="!loading && tenant" class="space-y-8">
-      <!-- Stats Overview -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
-          <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-            <i class="pi pi-users text-blue-600 text-xl"></i>
+  <!-- ── Profile Layout ─────────────────────────────────────────── -->
+  <ng-container *ngIf="!loading && tenant">
+
+    <!-- Cover + Avatar header -->
+    <div class="profile-cover">
+      <div class="cover-gradient"></div>
+      <div class="profile-header-content">
+        <!-- Avatar / Logo -->
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar">
+            <i class="pi pi-building"></i>
           </div>
-          <div>
-            <p class="text-sm font-medium text-gray-500">Total Members</p>
-            <p class="text-2xl font-bold text-gray-900">{{ tenant.member_count || totalMembers }}</p>
+          <span class="profile-status-dot"
+                [class.dot-active]="tenant.status === 'active'"
+                [class.dot-suspended]="tenant.status === 'suspended'"
+                [class.dot-trial]="tenant.status === 'trial'"
+                [pTooltip]="tenant.status | titlecase"></span>
+        </div>
+
+        <!-- Name & Meta -->
+        <div class="profile-hero">
+          <div class="profile-name-row">
+            <h1 class="profile-name">{{ tenant.name }}</h1>
+            <p-tag [value]="tenant.status | titlecase"
+                   [severity]="getStatusSeverity(tenant.status)" styleClass="profile-status-tag"></p-tag>
+            <p-badge [value]="tenant.plan || 'Free'" severity="info"></p-badge>
+          </div>
+          <p class="profile-slug"><i class="pi pi-link"></i> {{ tenant.slug || 'no-slug' }}</p>
+          <div class="profile-meta-chips">
+            <span class="meta-chip"><i class="pi pi-id-card"></i> {{ tenant.owner_id || 'No Owner' }}</span>
+            <span class="meta-chip mono"><i class="pi pi-hashtag"></i> {{ (tenant.kid || tenant.id || '').slice(0,8) }}…</span>
           </div>
         </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
-          <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
-            <i class="pi pi-shield text-purple-600 text-xl"></i>
-          </div>
-          <div>
-            <p class="text-sm font-medium text-gray-500">Active Roles</p>
-            <p class="text-2xl font-bold text-gray-900">{{ tenant.role_count || 0 }}</p>
-          </div>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
-          <div class="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center">
-            <i class="pi pi-book text-emerald-600 text-xl"></i>
-          </div>
-          <div>
-            <p class="text-sm font-medium text-gray-500">Security Policies</p>
-            <p class="text-2xl font-bold text-gray-900">{{ tenant.policy_count || 0 }}</p>
-          </div>
+
+        <!-- Header actions -->
+        <div class="profile-header-actions">
+          <button pButton icon="pi pi-arrow-left" label="Back" class="p-button-text p-button-secondary" (click)="goBack()"></button>
+          <button pButton icon="pi pi-pencil" label="Edit" class="p-button-outlined p-button-secondary" (click)="editMode = true"></button>
+          <button pButton icon="pi pi-ban" label="Suspend" class="p-button-outlined p-button-danger" (click)="suspendTenant()"></button>
         </div>
       </div>
+    </div>
 
-      <!-- Main Content Tabs -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <p-tabView styleClass="custom-tabview">
-          <p-tabPanel header="Overview">
-            <div class="p-6">
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                <!-- Info Section -->
-                <div class="space-y-8">
-                  <header>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-1">General Information</h3>
-                    <p class="text-sm text-gray-500">Core configuration and metadata for this tenant.</p>
-                  </header>
+    <!-- ── Main grid ─────────────────────────────────────────────── -->
+    <div class="profile-body">
 
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-4">
-                    <div>
-                      <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Company Name</label>
-                      <p class="text-gray-900 font-medium">{{ tenant.name }}</p>
+      <!-- LEFT COLUMN -->
+      <aside class="profile-sidebar">
+
+        <!-- Stat cards row -->
+        <div class="stat-cards">
+          <div class="stat-card">
+            <i class="pi pi-users stat-icon"></i>
+            <div class="stat-value">{{ tenant.member_count || totalMembers }}</div>
+            <div class="stat-label">Members</div>
+          </div>
+          <div class="stat-card">
+            <i class="pi pi-shield stat-icon"></i>
+            <div class="stat-value">{{ tenant.role_count || 0 }}</div>
+            <div class="stat-label">Roles</div>
+          </div>
+          <div class="stat-card">
+            <i class="pi pi-book stat-icon"></i>
+            <div class="stat-value">{{ tenant.policy_count || 0 }}</div>
+            <div class="stat-label">Policies</div>
+          </div>
+        </div>
+
+        <!-- Details card -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <i class="pi pi-info-circle"></i>
+            <span>Tenant Info</span>
+          </div>
+          <div class="info-list">
+            <div class="info-row">
+              <span class="info-key">Name</span>
+              <span class="info-val font-semibold">{{ tenant.name }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Plan</span>
+              <span class="info-val">
+                 <p-badge [value]="tenant.plan || 'Free'" severity="info"></p-badge>
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Status</span>
+              <span class="info-val">
+                <p-tag [value]="tenant.status | titlecase" [severity]="getStatusSeverity(tenant.status)" [style]="{'font-size':'0.75rem'}"></p-tag>
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Slug</span>
+              <span class="info-val mono text-xs">{{ tenant.slug || '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Created</span>
+              <span class="info-val">{{ tenant.created_at ? (tenant.created_at | date:'dd MMM yyyy') : '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Telnet card -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <i class="pi pi-server"></i>
+            <span>Deployment</span>
+          </div>
+          <div class="p-4">
+             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Telnet Endpoint</label>
+             <code class="block bg-gray-50 border border-gray-100 rounded p-3 text-xs text-indigo-600 break-all leading-relaxed">
+               {{ tenant.telnet || 'null' }}
+             </code>
+          </div>
+        </div>
+
+        <!-- ID card -->
+        <div class="info-card id-card">
+          <div class="info-card-header">
+            <i class="pi pi-hashtag"></i>
+            <span>Tenant ID</span>
+          </div>
+          <code class="id-code">{{ tenant.kid || tenant.id || '—' }}</code>
+        </div>
+
+      </aside>
+
+      <!-- RIGHT COLUMN -->
+      <main class="profile-main">
+
+        <!-- Tabs card -->
+        <div class="profile-card no-pad">
+          <p-tabView styleClass="profile-tabview">
+            
+            <!-- OVERVIEW PANEL -->
+            <p-tabPanel header="Overview">
+              <div class="p-6 space-y-8">
+                <div>
+                  <h3 class="section-title">General Information</h3>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
+                    <div class="detail-field">
+                      <label>Company Name</label>
+                      <p>{{ tenant.name }}</p>
                     </div>
-                    <div>
-                      <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Slug / Identifier</label>
-                      <code class="px-2 py-1 bg-gray-100 rounded text-sm text-indigo-600">{{ tenant.slug || 'n/a' }}</code>
+                    <div class="detail-field">
+                      <label>Plan</label>
+                      <p class="capitalize">{{ tenant.plan || 'Free' }}</p>
                     </div>
-                    <div>
-                      <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Subscribed Plan</label>
-                      <p class="text-gray-900 font-medium capitalize">{{ tenant.plan || 'Free' }}</p>
+                    <div class="detail-field">
+                      <label>Slug</label>
+                      <p class="mono text-indigo-600">{{ tenant.slug || '—' }}</p>
                     </div>
-                    <div>
-                      <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Owner Account</label>
-                      <p class="text-gray-900 font-medium">{{ tenant.owner_id || 'n/a' }}</p>
+                    <div class="detail-field">
+                      <label>Owner ID</label>
+                      <p class="mono text-gray-500">{{ tenant.owner_id || '—' }}</p>
                     </div>
-                    <div class="sm:col-span-2">
-                      <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Telnet Endpoint</label>
-                      <p class="text-gray-600 font-mono text-sm px-3 py-2 bg-gray-50 rounded border border-gray-100">{{ tenant.telnet || 'null' }}</p>
+                    <div class="sm:col-span-2 detail-field">
+                      <label>Description</label>
+                      <p class="text-gray-600 italic">{{ tenant.description || 'No description provided.' }}</p>
                     </div>
                   </div>
+                </div>
 
-                  <p-divider></p-divider>
+                <p-divider></p-divider>
 
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                   <div>
+                     <h3 class="section-title">Timeline</h3>
+                     <div class="timeline-list mt-4">
+                       <div class="timeline-item">
+                         <span class="label">Created At</span>
+                         <span class="val font-semibold">{{ formatDate(tenant.created_at) }}</span>
+                       </div>
+                       <div class="timeline-item">
+                         <span class="label">Last Updated</span>
+                         <span class="val font-semibold">{{ formatDate(tenant.updated_at) }}</span>
+                       </div>
+                     </div>
+                   </div>
+
+                   <div>
+                     <h3 class="section-title flex items-center justify-between">
+                       <span>Advanced Settings</span>
+                       <button pButton icon="pi pi-copy" class="p-button-text p-button-sm" pTooltip="Copy JSON"></button>
+                     </h3>
+                     <div class="json-box mt-3">
+                       <pre>{{ getSettingsJson() }}</pre>
+                     </div>
+                   </div>
+                </div>
+              </div>
+            </p-tabPanel>
+
+            <!-- MEMBERS PANEL -->
+            <p-tabPanel header="Members">
+              <div class="p-0">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 border-b border-gray-100 bg-gray-50/30">
                   <div>
-                    <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Audit Logs</h4>
-                    <div class="space-y-2">
-                      <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-500">Created At</span>
-                        <span class="text-gray-900 font-medium">{{ formatDate(tenant.created_at) }}</span>
-                      </div>
-                      <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-500">Last Updated</span>
-                        <span class="text-gray-900 font-medium">{{ formatDate(tenant.updated_at) }}</span>
-                      </div>
-                    </div>
+                    <h3 class="card-title" style="font-size: 1.1rem">Members ({{ totalMembers }})</h3>
+                    <p class="card-subtitle">Manage users assigned to this tenant</p>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <button pButton label="Invite Member" icon="pi pi-plus" size="small" (click)="openInviteDialog()"></button>
                   </div>
                 </div>
 
-                <!-- Settings/JSON Section -->
-                <div>
-                  <div class="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 class="text-lg font-semibold text-gray-900 mb-1">Custom Settings</h3>
-                      <p class="text-sm text-gray-500">Advanced JSON configuration and properties.</p>
-                    </div>
-                    <p-button icon="pi pi-copy" [text]="true" [rounded]="true" size="small" pTooltip="Copy JSON"></p-button>
-                  </div>
-                  <div class="bg-gray-900 rounded-lg p-4 font-mono text-xs text-green-400 shadow-inner overflow-auto h-80 border border-gray-800">
-                    <pre>{{ getSettingsJson() }}</pre>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </p-tabPanel>
-
-          <p-tabPanel header="Members">
-            <div class="p-0">
-              <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 border-b border-gray-100">
-                <div>
-                  <h3 class="text-lg font-semibold text-gray-900">Tenant Members</h3>
-                  <p class="text-sm text-gray-500">Manage users and their roles within this tenant.</p>
-                </div>
-                <div class="flex items-center gap-3 w-full sm:w-auto">
-                  <div class="relative flex-1 sm:w-64">
-                    <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                    <input pInputText type="text" placeholder="Search members..." class="w-full pl-10 h-10 border-gray-200 focus:ring-indigo-500 rounded-lg text-sm" />
-                  </div>
-                  <p-button label="Invite Member" icon="pi pi-plus" (click)="openInviteDialog()" severity="primary" size="small"></p-button>
-                </div>
-              </div>
-
-              <p-table 
-                [value]="members" 
-                [loading]="membersLoading" 
-                [rows]="10"
-                styleClass="p-datatable-sm"
-                tableStyleClass="w-full text-left text-sm">
-                <ng-template pTemplate="header">
-                  <tr class="bg-gray-50 border-b border-gray-100">
-                    <th class="px-6 py-4 font-semibold text-gray-700">Member</th>
-                    <th class="px-6 py-4 font-semibold text-gray-700">Role</th>
-                    <th class="px-6 py-4 font-semibold text-gray-700">Invited At</th>
-                    <th class="px-6 py-4 text-right">Actions</th>
-                  </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-member>
-                  <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                    <td class="px-6 py-4">
-                      <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs ring-2 ring-white">
-                          {{ (member.name || member.email || 'U').substring(0, 1).toUpperCase() }}
+                <p-table 
+                  [value]="members" 
+                  [loading]="membersLoading" 
+                  [rows]="10"
+                  styleClass="p-datatable-sm no-border">
+                  <ng-template pTemplate="header">
+                    <tr>
+                      <th style="padding-left: 24px">Member</th>
+                      <th>Role</th>
+                      <th>Joined</th>
+                      <th class="text-right" style="padding-right: 24px">Actions</th>
+                    </tr>
+                  </ng-template>
+                  <ng-template pTemplate="body" let-member>
+                    <tr>
+                      <td style="padding-left: 24px">
+                        <div class="flex items-center gap-3">
+                          <div class="member-avatar">
+                            {{ (member.name || member.email || 'U').substring(0, 1).toUpperCase() }}
+                          </div>
+                          <div>
+                            <p class="member-name">{{ member.name || 'Unknown User' }}</p>
+                            <p class="member-email">{{ member.email || member.id }}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p class="font-medium text-gray-900 leading-none mb-1">{{ member.name || 'Unknown User' }}</p>
-                          <p class="text-xs text-gray-500 font-mono">{{ member.email || member.id }}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4">
-                      <p-tag [value]="member.role || 'Member'" severity="secondary"></p-tag>
-                    </td>
-                    <td class="px-6 py-4 text-gray-500 font-mono text-xs">
-                      {{ formatDate(member.joined_at) }}
-                    </td>
-                    <td class="px-6 py-4 text-right">
-                      <p-button 
-                        icon="pi pi-trash" 
-                        [text]="true" 
-                        [rounded]="true" 
-                        severity="danger" 
-                        size="small" 
-                        (click)="removeMember(member.id, member.name)"
-                        pTooltip="Remove Member">
-                      </p-button>
-                    </td>
-                  </tr>
-                </ng-template>
-                <ng-template pTemplate="emptymessage">
-                  <tr>
-                    <td colspan="4" class="px-6 py-12 text-center text-gray-500">
-                      <div class="flex flex-col items-center gap-2">
-                        <i class="pi pi-users text-3xl opacity-20"></i>
+                      </td>
+                      <td>
+                        <p-tag [value]="member.role || 'Member'" severity="secondary" styleClass="text-[10px] font-bold"></p-tag>
+                      </td>
+                      <td class="text-xs text-gray-500 font-mono">
+                        {{ member.joined_at ? (member.joined_at | date:'dd MMM yyyy') : '—' }}
+                      </td>
+                      <td class="text-right" style="padding-right: 24px">
+                        <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm p-button-rounded" 
+                                (click)="removeMember(member.id, member.name)" pTooltip="Remove Member"></button>
+                      </td>
+                    </tr>
+                  </ng-template>
+                  <ng-template pTemplate="emptymessage">
+                    <tr>
+                      <td colspan="4" class="p-12 text-center text-gray-400">
+                        <i class="pi pi-users text-3xl mb-3 opacity-20"></i>
                         <p>No members found for this tenant.</p>
-                      </div>
-                    </td>
-                  </tr>
-                </ng-template>
-              </p-table>
-            </div>
-          </p-tabPanel>
-        </p-tabView>
-      </div>
+                      </td>
+                    </tr>
+                  </ng-template>
+                </p-table>
+              </div>
+            </p-tabPanel>
+
+          </p-tabView>
+        </div>
+
+      </main>
     </div>
-  </div>
+  </ng-container>
 </div>
 
 <!-- Invite Member Dialog -->
-<p-dialog 
-  header="Invite Member" 
-  [(visible)]="showInviteDialog" 
-  [modal]="true" 
-  [style]="{ width: '450px' }"
-  [draggable]="false"
-  [resizable]="false"
-  styleClass="modern-dialog">
-  
-  <div class="flex flex-col gap-6 pt-4">
-    <div class="flex flex-col gap-2">
-      <label class="text-sm font-bold text-gray-700">Email Address <span class="text-red-500">*</span></label>
-      <div class="relative">
-        <i class="pi pi-envelope absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-        <input pInputText [(ngModel)]="inviteData.email" placeholder="user@example.com" class="w-full pl-10 h-11 border-gray-200 focus:ring-indigo-500 rounded-lg shadow-sm" />
-      </div>
+<p-dialog header="Invite Member" [(visible)]="showInviteDialog" [modal]="true" [style]="{ width: '450px' }" 
+          styleClass="modern-profile-dialog">
+  <div class="p-4 space-y-6">
+    <div class="field-group">
+      <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Email Address *</label>
+      <input pInputText [(ngModel)]="inviteData.email" placeholder="user@example.com" class="w-full" />
     </div>
 
-    <div class="flex flex-col gap-2">
-      <label class="text-sm font-bold text-gray-700">Assigned Role</label>
-      <p-dropdown 
-        [options]="tenantRoles" 
-        [(ngModel)]="inviteData.role_id"
-        optionLabel="label" 
-        optionValue="value" 
-        styleClass="w-full h-11 border-gray-200 shadow-sm"
-        appendTo="body">
-      </p-dropdown>
+    <div class="field-group">
+      <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Tenant Role</label>
+      <p-dropdown [options]="tenantRoles" [(ngModel)]="inviteData.role_id" optionLabel="label" optionValue="value" 
+                  styleClass="w-full" appendTo="body"></p-dropdown>
     </div>
 
-    <div class="flex flex-col gap-2">
-      <label class="text-sm font-bold text-gray-700">Telnet Prefix (Optional)</label>
-      <input pInputText [(ngModel)]="inviteData.telnet" placeholder="e.g. corp_" class="w-full h-11 border-gray-200 focus:ring-indigo-500 rounded-lg font-mono shadow-sm" />
+    <div class="field-group">
+      <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Prefix (Optional)</label>
+      <input pInputText [(ngModel)]="inviteData.telnet" placeholder="e.g. corp_" class="w-full mono" />
     </div>
 
-    <div class="bg-indigo-50/50 p-4 rounded-lg border border-indigo-100">
-      <div class="flex items-start gap-3">
-        <i class="pi pi-info-circle text-indigo-500 mt-0.5"></i>
-        <p class="text-xs text-indigo-700 leading-relaxed">
-          The user will receive an email invitation. Once they accept, they will be granted the specified role within the <strong>{{ tenant?.name }}</strong> tenant.
-        </p>
-      </div>
+    <div class="info-alert">
+      <i class="pi pi-info-circle"></i>
+      <p>Invitation will be sent via email. Users must accept to join <strong>{{ tenant?.name }}</strong>.</p>
     </div>
   </div>
-
   <ng-template pTemplate="footer">
-    <div class="flex items-center justify-end gap-2 border-t border-gray-100 pt-4 mt-2">
-      <p-button 
-        label="Cancel" 
-        severity="secondary" 
-        [text]="true" 
-        (click)="showInviteDialog = false" 
-        [disabled]="inviting">
-      </p-button>
-      <p-button 
-        label="Send Invitation" 
-        icon="pi pi-paper-plane" 
-        (click)="inviteMember()" 
-        [loading]="inviting" 
-        [disabled]="!inviteData.email?.trim()"
-        severity="primary"
-        size="small">
-      </p-button>
+    <div class="p-4 border-t border-gray-100 flex justify-end gap-2">
+      <button pButton label="Cancel" class="p-button-text p-button-secondary" (click)="showInviteDialog = false"></button>
+      <button pButton label="Send Invite" icon="pi pi-paper-plane" (click)="inviteMember()" [loading]="inviting" [disabled]="!inviteData.email"></button>
     </div>
   </ng-template>
 </p-dialog>
 
 <!-- Edit Tenant Dialog -->
-<p-dialog 
-  header="Edit Tenant" 
-  [(visible)]="editMode" 
-  [modal]="true" 
-  [style]="{ width: '500px' }"
-  styleClass="modern-dialog">
-  
-  <div class="flex flex-col gap-4 pt-4">
-    <div class="flex flex-col gap-1">
-      <label class="text-sm font-medium">Tenant Name</label>
+<p-dialog header="Edit Tenant" [(visible)]="editMode" [modal]="true" [style]="{ width: '500px' }" 
+          styleClass="modern-profile-dialog">
+  <div class="p-4 space-y-6">
+    <div class="field-group">
+      <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Tenant Name *</label>
       <input pInputText [(ngModel)]="editForm.name" class="w-full" />
     </div>
-    <div class="flex flex-col gap-1">
-      <label class="text-sm font-medium">Description</label>
-      <textarea pInputTextarea [(ngModel)]="editForm.description" rows="3" class="w-full resize-none"></textarea>
+    <div class="field-group">
+      <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Description</label>
+      <textarea pInputTextarea [(ngModel)]="editForm.description" rows="3" class="w-full"></textarea>
     </div>
-    <div class="flex flex-col gap-1">
-      <label class="text-sm font-medium">Status</label>
+    <div class="field-group">
+      <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Status</label>
       <p-dropdown [options]="statusOptions" [(ngModel)]="editForm.status" appendTo="body" styleClass="w-full"></p-dropdown>
     </div>
   </div>
-
   <ng-template pTemplate="footer">
-    <p-button label="Cancel" severity="secondary" [text]="true" (click)="editMode = false" [disabled]="saving"></p-button>
-    <p-button label="Update" icon="pi pi-check" (click)="saveChanges()" [loading]="saving"></p-button>
+    <div class="p-4 border-t border-gray-100 flex justify-end gap-2">
+      <button pButton label="Cancel" class="p-button-text p-button-secondary" (click)="editMode = false"></button>
+      <button pButton label="Update" icon="pi pi-check" (click)="saveChanges()" [loading]="saving"></button>
+    </div>
   </ng-template>
 </p-dialog>

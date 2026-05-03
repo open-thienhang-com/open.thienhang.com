@@ -208,14 +208,20 @@
       </div>
     </ng-container>
 
-    <!-- Not logged in: Login button -->
+    <!-- Not logged in: Login and Register buttons -->
     <ng-container *ngIf="!isLoggedIn">
-      <div class="footer-login-row">
-        <button type="button" class="footer-login-btn" (click)="navigateToLogin()"
+      <div class="footer-auth-row" [class.collapsed]="collapsed">
+        <button type="button" class="footer-auth-btn login-btn" (click)="navigateToLogin()"
                 [pTooltip]="collapsed ? 'Login' : ''"
                 tooltipPosition="right">
           <i class="pi pi-sign-in"></i>
           <span *ngIf="!collapsed">Login</span>
+        </button>
+        <button type="button" class="footer-auth-btn register-btn" (click)="navigateToRegister()"
+                [pTooltip]="collapsed ? 'Register' : ''"
+                tooltipPosition="right">
+          <i class="pi pi-user-plus"></i>
+          <span *ngIf="!collapsed">Register</span>
         </button>
       </div>
     </ng-container>

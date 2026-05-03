@@ -122,6 +122,7 @@ export interface StockUpdateRequest {
   movement_type: MovementType;
   reference_id?: string;
   notes?: string;
+  reason: string;
 }
 
 // Stock Update Response Model

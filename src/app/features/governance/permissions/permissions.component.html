@@ -371,7 +371,7 @@
                     [text]="true" 
                     severity="info" 
                     size="small"
-                    (click)="router.navigate(['/governance/permissions', permission.kid || permission.identify])"
+                    (click)="router.navigate(['/governance/permissions', permission.kid || permission.identify || permission.id])"
                     pTooltip="View Permission">
                   </p-button>
                   <p-button 
@@ -380,7 +380,7 @@
                     [text]="true" 
                     severity="secondary" 
                     size="small"
-                    (click)="router.navigate(['/governance/permissions', permission.kid || permission.identify, 'edit'])"
+                    (click)="router.navigate(['/governance/permissions', permission.kid || permission.identify || permission.id, 'edit'])"
                     pTooltip="Edit Permission">
                   </p-button>
                   <p-button 
@@ -466,7 +466,7 @@
                 [text]="true" 
                 severity="info" 
                 size="small"
-                (click)="router.navigate(['/governance/permissions', permission.kid || permission.identify])"
+                (click)="router.navigate(['/governance/permissions', permission.kid || permission.identify || permission.id])"
                 pTooltip="View Permission">
               </p-button>
               <p-button 
@@ -474,7 +474,7 @@
                 [text]="true" 
                 severity="secondary" 
                 size="small"
-                (click)="router.navigate(['/governance/permissions', permission.kid || permission.identify, 'edit'])"
+                (click)="router.navigate(['/governance/permissions', permission.kid || permission.identify || permission.id, 'edit'])"
                 pTooltip="Edit Permission">
               </p-button>
               <p-button 

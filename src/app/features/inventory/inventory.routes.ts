@@ -5,55 +5,69 @@ export const INVENTORY_ROUTES: Routes = [
         path: '',
         children: [
             { path: '', redirectTo: 'overview', pathMatch: 'full' },
-            { 
-                path: 'overview', 
-                loadComponent: () => import('./pages/overview/overview.component').then(m => m.InventoryOverviewComponent) 
+            {
+                path: 'overview',
+                loadComponent: () => import('./pages/overview/overview.component').then(m => m.InventoryOverviewComponent)
             },
-            { 
-                path: 'products', 
-                loadComponent: () => import('./pages/products/products.component').then(m => m.ProductsComponent) 
+            {
+                path: 'products',
+                loadComponent: () => import('./pages/products/products.component').then(m => m.ProductsComponent)
             },
-            { 
-                path: 'products/create', 
-                loadComponent: () => import('./pages/products/product-create.component').then(m => m.ProductCreateComponent) 
+            {
+                path: 'products/create',
+                loadComponent: () => import('./pages/products/product-create.component').then(m => m.ProductCreateComponent)
             },
-            { 
-                path: 'products/:id', 
-                loadComponent: () => import('./pages/products/product-detail.component').then(m => m.ProductDetailComponent) 
+            {
+                path: 'products/:id',
+                loadComponent: () => import('./pages/products/product-detail.component').then(m => m.ProductDetailComponent)
             },
-            { 
-                path: 'products/:id/edit', 
-                loadComponent: () => import('./pages/products/product-edit.component').then(m => m.ProductEditComponent) 
+            {
+                path: 'products/:id/edit',
+                loadComponent: () => import('./pages/products/product-edit.component').then(m => m.ProductEditComponent)
             },
-            { 
-                path: 'categories', 
-                loadComponent: () => import('./pages/categories/categories.component').then(m => m.CategoriesComponent) 
+            {
+                path: 'categories',
+                loadComponent: () => import('./pages/categories/categories.component').then(m => m.CategoriesComponent)
             },
-            { 
-                path: 'warehouses', 
-                redirectTo: 'delivery-points',
-                pathMatch: 'full'
+            {
+                path: 'suppliers',
+                loadComponent: () => import('./pages/suppliers/suppliers.component').then(m => m.SuppliersComponent)
             },
-            { 
-                path: 'suppliers', 
-                loadComponent: () => import('./pages/suppliers/suppliers.component').then(m => m.SuppliersComponent) 
+            {
+                path: 'partners',
+                loadComponent: () => import('./pages/partners/partners.component').then(m => m.PartnersComponent)
             },
-            { 
-                path: 'partners', 
-                loadComponent: () => import('./pages/partners/partners.component').then(m => m.PartnersComponent) 
-            },
-            { 
-                path: 'analytics', 
-                loadComponent: () => import('./pages/analytics/analytics.component').then(m => m.AnalyticsComponent) 
+            {
+                path: 'analytics',
+                loadComponent: () => import('./pages/analytics/analytics.component').then(m => m.AnalyticsComponent)
             },
             {
                 path: 'settings',
                 loadComponent: () => import('./pages/settings/settings.component').then(m => m.SettingsComponent)
             },
+            // ── Warehouses ──────────────────────────────────────────
+            {
+                path: 'warehouses',
+                loadComponent: () => import('./pages/warehouses/warehouses.component').then(m => m.WarehousesComponent)
+            },
+            {
+                path: 'warehouses/create',
+                loadComponent: () => import('./pages/warehouses/warehouse-create.component').then(m => m.WarehouseCreateComponent)
+            },
+            {
+                path: 'warehouses/:id',
+                loadComponent: () => import('./pages/warehouses/warehouse-detail.component').then(m => m.WarehouseDetailComponent)
+            },
+            // ── Fleet / Vehicles ─────────────────────────────────────
             {
                 path: 'fleet',
-                loadComponent: () => import('../retail-planning/components/fleet/fleet.component').then(m => m.FleetComponent)
+                loadComponent: () => import('./pages/vehicles/vehicles.component').then(m => m.VehiclesComponent)
             },
+            {
+                path: 'fleet/:id',
+                loadComponent: () => import('./pages/vehicles/vehicle-detail.component').then(m => m.VehicleDetailComponent)
+            },
+            // ── Delivery Points (retail-planning) ────────────────────
             {
                 path: 'delivery-points',
                 loadComponent: () => import('../retail-planning/components/delivery-points/delivery-points.component').then(m => m.DeliveryPointsComponent)

@@ -16,6 +16,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ChipModule } from 'primeng/chip';
 import { DividerModule } from 'primeng/divider';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @Component({
   selector: 'app-casbin',
@@ -24,16 +25,21 @@ import { DividerModule } from 'primeng/divider';
     CommonModule, FormsModule,
     ButtonModule, CardModule, TabViewModule, ToastModule, TableModule,
     InputTextModule, DropdownModule, TagModule, TooltipModule,
-    ProgressSpinnerModule, ChipModule, DividerModule
+    ProgressSpinnerModule, ChipModule, DividerModule, CheckboxModule
   ],
   templateUrl: './casbin.component.html',
   providers: [MessageService]
 })
 export class CasbinComponent implements OnInit {
-  // Tab 1: Policy Rules
+  // Matrix Configuration (will be populated dynamically)
+  matrixResources: string[] = [];
+  matrixActions: string[] = [];
+  
+  // Tab 1: Policy Rules (Matrix View)
   rules: any[] = [];
+  groupedRules: any = {}; // { [sub]: { [obj]: { [act]: boolean } } }
   rulesLoading = false;
-  filterTenantId = '';
+  filterTenantId = '*';
   filterSub = '';
 
   newRule: CasbinRule = { sub: '', dom: '', obj: '', act: '' };
@@ -60,7 +66,8 @@ export class CasbinComponent implements OnInit {
     { label: 'POST', value: 'POST' },
     { label: 'PUT', value: 'PUT' },
     { label: 'PATCH', value: 'PATCH' },
-    { label: 'DELETE', value: 'DELETE' }
+    { label: 'DELETE', value: 'DELETE' },
+    { label: '*', value: '*' }
   ];
 
   constructor(
@@ -72,7 +79,7 @@ export class CasbinComponent implements OnInit {
     this.loadRules();
   }
 
-  // ─── Tab 1: Policy Rules ───────────────────────────────────────────────────
+  // ─── Tab 1: Policy Rules (Matrix) ──────────────────────────────────────────
 
   loadRules(): void {
     this.rulesLoading = true;
@@ -83,15 +90,13 @@ export class CasbinComponent implements OnInit {
     this.governanceServices.getCasbinRules(params).subscribe({
       next: (res) => {
         const data = (res as any)?.data;
-        if (Array.isArray(data)) {
-          this.rules = data;
-        } else if (data?.data) {
-          this.rules = data.data;
-        } else if (data?.rules) {
-          this.rules = data.rules;
-        } else {
-          this.rules = [];
-        }
+        let rawRules: any[] = [];
+        if (Array.isArray(data)) rawRules = data;
+        else if (data?.data) rawRules = data.data;
+        else if (data?.rules) rawRules = data.rules;
+        
+        this.rules = rawRules;
+        this.transformRulesToMatrix(rawRules);
         this.rulesLoading = false;
       },
       error: () => {
@@ -99,6 +104,189 @@ export class CasbinComponent implements OnInit {
         this.rulesLoading = false;
       }
     });
+  }
+
+  private transformRulesToMatrix(rawRules: any[]): void {
+    const matrix: any = {};
+    const resSet = new Set<string>();
+    const actSet = new Set<string>();
+
+    // Initial pass to identify resources and actions, and filter p-rules
+    const pRules = rawRules.filter(r => (r.ptype || r.v0) === 'p');
+
+    pRules.forEach(r => {
+      const obj = r.obj || r.v2 || 'global';
+      const act = r.act || r.v3;
+      if (obj !== '*') resSet.add(obj);
+      if (act !== '*') actSet.add(act);
+    });
+
+    // If data is empty, use defaults
+    if (resSet.size === 0) ['projects', 'reports', 'settings', 'tasks', 'teams'].forEach(r => resSet.add(r));
+    if (actSet.size === 0) ['create', 'read', 'update', 'delete'].forEach(a => actSet.add(a));
+
+    this.matrixResources = Array.from(resSet).sort();
+    this.matrixActions = Array.from(actSet).sort();
+
+    // Secondary pass to build matrix and handle wildcards
+    pRules.forEach(r => {
+      const sub = r.sub || r.v0;
+      const obj = r.obj || r.v2 || 'global';
+      const act = r.act || r.v3;
+
+      if (!matrix[sub]) matrix[sub] = {};
+
+      if (obj === '*' && act === '*') {
+        // Universal permission: All resources, all actions
+        this.matrixResources.forEach(res => {
+          if (!matrix[sub][res]) matrix[sub][res] = {};
+          this.matrixActions.forEach(a => matrix[sub][res][a] = true);
+        });
+        matrix[sub]['*'] = { '*': true }; // Store the wildcard itself
+      } else if (obj === '*') {
+        // Wildcard resource: This action for all resources
+        this.matrixResources.forEach(res => {
+          if (!matrix[sub][res]) matrix[sub][res] = {};
+          matrix[sub][res][act] = true;
+        });
+        if (!matrix[sub]['*']) matrix[sub]['*'] = {};
+        matrix[sub]['*'][act] = true;
+      } else if (act === '*') {
+        // Wildcard action: All actions for this resource
+        if (!matrix[sub][obj]) matrix[sub][obj] = {};
+        this.matrixActions.forEach(a => matrix[sub][obj][a] = true);
+        matrix[sub][obj]['*'] = true;
+      } else {
+        // Specific rule
+        if (!matrix[sub][obj]) matrix[sub][obj] = {};
+        matrix[sub][obj][act] = true;
+      }
+    });
+
+    this.groupedRules = matrix;
+    
+    // Final pass to ensure all cells are initialized
+    Object.keys(this.groupedRules).forEach(sub => {
+      this.matrixResources.forEach(res => {
+        if (!this.groupedRules[sub][res]) this.groupedRules[sub][res] = {};
+        this.matrixActions.forEach(act => {
+          if (this.groupedRules[sub][res][act] === undefined) {
+            this.groupedRules[sub][res][act] = false;
+          }
+        });
+      });
+    });
+  }
+
+  get subjects(): string[] {
+    return Object.keys(this.groupedRules).filter(s => s !== '*' && s !== 'p');
+  }
+
+  // Helper to make tech terms friendly for low-tech users
+  getFriendlyName(id: string): string {
+    if (!id) return 'General';
+    if (id === '*') return 'All System (Full Access)';
+    
+    const mapping: any = {
+      // Roles
+      'role:admin': 'Super Administrator',
+      'role:user': 'Regular Staff',
+      'role:viewer': 'Guest / Observer',
+      'role:editor': 'Content Editor',
+      'role:tenant_admin': 'Tenant Manager',
+      'System Admin': 'System Core Admin',
+      'Standard User': 'Standard Employee',
+      // Resources
+      '/governance/*': 'Governance & Policies',
+      '/data-catalog/*': 'Data Catalog (Search)',
+      '/data-mesh/domains/*': 'Data Mesh & Domains',
+      '/authentication/*': 'Login & Security Settings',
+      'projects': 'Project Management',
+      'reports': 'Analytics & Reports',
+      'settings': 'System Configuration',
+      'tasks': 'Task & Workflow',
+      'teams': 'Team Organization',
+      'global': 'System-wide'
+    };
+    
+    return mapping[id] || id.replace('role:', '').replace(/\//g, ' ').replace(/\*/g, '').trim() || id;
+  }
+
+  getActionLabel(act: string): string {
+    const mapping: any = {
+      'GET': 'View / Read',
+      'view': 'View / Read',
+      'POST': 'Add New',
+      'create': 'Add New',
+      'PUT': 'Edit / Update',
+      'PATCH': 'Edit / Update',
+      'update': 'Edit / Update',
+      'DELETE': 'Delete',
+      'delete': 'Delete',
+      '*': 'Full Control'
+    };
+    return mapping[act] || act;
+  }
+
+  getActionIcon(act: string): string {
+    const mapping: any = {
+      'GET': 'pi pi-eye',
+      'view': 'pi pi-eye',
+      'POST': 'pi pi-plus-circle',
+      'create': 'pi pi-plus-circle',
+      'PUT': 'pi pi-pencil',
+      'PATCH': 'pi pi-pencil',
+      'update': 'pi pi-pencil',
+      'DELETE': 'pi pi-trash',
+      'delete': 'pi pi-trash',
+      '*': 'pi pi-star-fill'
+    };
+    return mapping[act] || 'pi pi-check';
+  }
+
+  isInherited(sub: string, obj: string, act: string): boolean {
+    // Check if permission is granted via *
+    const rules = this.groupedRules[sub];
+    if (!rules) return false;
+    
+    const fromGlobal = rules['*']?.['*'] === true;
+    const fromObjWildcard = rules['*']?.[act] === true;
+    const fromActWildcard = rules[obj]?.['*'] === true;
+    
+    return fromGlobal || fromObjWildcard || fromActWildcard;
+  }
+
+  toggleMatrixPermission(sub: string, obj: string, act: string): void {
+    // Prevent toggling if inherited from wildcard? 
+    // For now, let's just send the specific rule toggle.
+    const isCurrentlySet = this.groupedRules[sub]?.[obj]?.[act];
+    const rule: CasbinRule = {
+      sub,
+      dom: this.filterTenantId || '*',
+      obj: obj === 'global' ? '' : obj,
+      act
+    };
+
+    if (isCurrentlySet) {
+      this.governanceServices.removeCasbinRule(rule).subscribe({
+        next: () => {
+          this.groupedRules[sub][obj][act] = false;
+          this.messageService.add({ severity: 'info', summary: 'Updated', detail: 'Permission removed' });
+          // If it was inherited, the UI might still show it as true if we reload
+          // But here we are just updating local state for UX
+        },
+        error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update' })
+      });
+    } else {
+      this.governanceServices.addCasbinRule(rule).subscribe({
+        next: () => {
+          if (!this.groupedRules[sub][obj]) this.groupedRules[sub][obj] = {};
+          this.groupedRules[sub][obj][act] = true;
+          this.messageService.add({ severity: 'success', summary: 'Updated', detail: 'Permission granted' });
+        },
+        error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update' })
+      });
+    }
   }
 
   addRule(): void {
@@ -143,7 +331,7 @@ export class CasbinComponent implements OnInit {
   reloadPolicies(): void {
     this.governanceServices.reloadCasbinPolicies().subscribe({
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Reloaded', detail: 'Casbin policies reloaded from MongoDB' });
+        this.messageService.add({ severity: 'success', summary: 'Reloaded', detail: 'Casbin policies reloaded' });
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to reload policies' });
@@ -183,7 +371,7 @@ export class CasbinComponent implements OnInit {
     this.assigning = true;
     this.governanceServices.assignRole(this.assignForm).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Assigned', detail: `Role "${this.assignForm.role}" assigned` });
+        this.messageService.add({ severity: 'success', summary: 'Assigned', detail: `Role assigned` });
         this.assigning = false;
         if (this.lookupTid === this.assignForm.user) this.lookupUserRoles();
       },
@@ -202,7 +390,7 @@ export class CasbinComponent implements OnInit {
     this.unassigning = true;
     this.governanceServices.unassignRole(this.assignForm).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Removed', detail: `Role "${this.assignForm.role}" unassigned` });
+        this.messageService.add({ severity: 'success', summary: 'Removed', detail: `Role unassigned` });
         this.unassigning = false;
         if (this.lookupTid === this.assignForm.user) this.lookupUserRoles();
       },

@@ -37,7 +37,7 @@ export class TeamsComponent extends AppBaseComponent implements OnInit {
   filteredTeams: any[] = [];
 
   // View mode
-  viewMode: 'list' | 'card' = 'card';
+  viewMode: 'list' | 'card' = 'list';
 
   // Filters
   showFilters: boolean = false;

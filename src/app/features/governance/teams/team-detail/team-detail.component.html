@@ -1,212 +1,247 @@
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>
 
-<div class="bg-gray-50 min-h-screen">
-  <!-- Header -->
-  <div class="bg-white border-b border-gray-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        <div class="flex items-center gap-4">
-          <p-button icon="pi pi-arrow-left" [text]="true" [rounded]="true" (click)="goBack()"
-            severity="secondary" pTooltip="Back to Teams"></p-button>
-          <div *ngIf="team" class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-md">
-              <i class="pi pi-users text-white"></i>
+<div class="team-profile-page">
+
+  <!-- ── Loading ──────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="profile-loading">
+    <p-progressSpinner styleClass="w-4rem h-4rem"></p-progressSpinner>
+    <p>Loading team profile...</p>
+  </div>
+
+  <!-- ── Not Found ─────────────────────────────────────────────── -->
+  <div *ngIf="!loading && !team" class="profile-not-found">
+    <i class="pi pi-users"></i>
+    <h2>Team not found</h2>
+    <p>This team may have been disbanded or the ID is incorrect.</p>
+    <button pButton label="Back to Teams" icon="pi pi-arrow-left" class="p-button-outlined" (click)="goBack()"></button>
+  </div>
+
+  <!-- ── Profile Layout ─────────────────────────────────────────── -->
+  <ng-container *ngIf="!loading && team">
+
+    <!-- Cover + Avatar header -->
+    <div class="profile-cover">
+      <div class="cover-gradient"></div>
+      <div class="profile-header-content">
+        <!-- Avatar / Icon -->
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar">
+            <i class="pi pi-users"></i>
+          </div>
+          <span class="profile-status-dot"
+                [class.dot-active]="team.is_active !== false"
+                [class.dot-inactive]="team.is_active === false"
+                [pTooltip]="team.is_active !== false ? 'Active' : 'Inactive'"></span>
+        </div>
+
+        <!-- Name & Meta -->
+        <div class="profile-hero">
+          <div class="profile-name-row">
+            <h1 class="profile-name">{{ team.name }}</h1>
+            <p-tag *ngIf="team.type" [value]="team.type | titlecase" severity="info" styleClass="profile-status-tag"></p-tag>
+            <p-tag [value]="team.is_active !== false ? 'Active' : 'Inactive'" 
+                   [severity]="team.is_active !== false ? 'success' : 'secondary'" styleClass="profile-status-tag"></p-tag>
+          </div>
+          <p class="profile-meta-text"><i class="pi pi-info-circle"></i> {{ team.description || 'Collaborative governance team' }}</p>
+          <div class="profile-meta-chips">
+            <span class="meta-chip"><i class="pi pi-building"></i> Tenant: {{ team.tenant_id || 'Global' }}</span>
+            <span class="meta-chip mono"><i class="pi pi-hashtag"></i> {{ (team.kid || '').slice(0,8) }}…</span>
+          </div>
+        </div>
+
+        <!-- Header actions -->
+        <div class="profile-header-actions">
+          <button pButton icon="pi pi-arrow-left" label="Back" class="p-button-text p-button-secondary" (click)="goBack()"></button>
+          <button *ngIf="!editMode" pButton icon="pi pi-pencil" label="Edit Team" class="p-button-outlined p-button-secondary" (click)="editMode = true"></button>
+          <div *ngIf="editMode" class="flex gap-2">
+            <button pButton label="Cancel" class="p-button-text p-button-secondary" (click)="cancelEdit()" [disabled]="saving"></button>
+            <button pButton label="Save" icon="pi pi-check" (click)="saveChanges()" [loading]="saving"></button>
+          </div>
+          <button pButton icon="pi pi-trash" class="p-button-outlined p-button-danger" (click)="deleteTeam()" pTooltip="Delete team"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Main grid ─────────────────────────────────────────────── -->
+    <div class="profile-body">
+
+      <!-- LEFT COLUMN -->
+      <aside class="profile-sidebar">
+
+        <!-- Stat cards row -->
+        <div class="stat-cards">
+          <div class="stat-card">
+            <i class="pi pi-user stat-icon"></i>
+            <div class="stat-value">{{ team.members?.length || 0 }}</div>
+            <div class="stat-label">Members</div>
+          </div>
+          <div class="stat-card highlight">
+            <i class="pi pi-star stat-icon"></i>
+            <div class="stat-value">{{ getOwnersList().length }}</div>
+            <div class="stat-label">Owners</div>
+          </div>
+          <div class="stat-card">
+            <i class="pi pi-sitemap stat-icon"></i>
+            <div class="stat-value">{{ team.parent_team_id ? 1 : 0 }}</div>
+            <div class="stat-label">Parent</div>
+          </div>
+        </div>
+
+        <!-- Team Info card -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <i class="pi pi-info-circle"></i>
+            <span>Team Overview</span>
+          </div>
+          <div class="info-list">
+            <div class="info-row">
+              <span class="info-key">Type</span>
+              <span class="info-val font-semibold text-indigo-600">{{ team.type || 'Standard' }}</span>
             </div>
+            <div class="info-row" *ngIf="team.parent_team_id">
+              <span class="info-key">Parent</span>
+              <span class="info-val"><a [routerLink]="['/governance/teams', team.parent_team_id]" class="text-xs hover:underline">{{ team.parent_team_id.slice(0,8) }}…</a></span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Created</span>
+              <span class="info-val text-xs text-gray-500">{{ formatDate(team.created_at) }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Updated</span>
+              <span class="info-val text-xs text-gray-500">{{ formatDate(team.updated_at) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact card -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <i class="pi pi-phone"></i>
+            <span>Team Contacts</span>
+          </div>
+          <div class="p-3 space-y-2">
+            <div *ngIf="!team.contact?.length" class="text-center py-4 text-xs text-gray-400 italic">No contact info</div>
+            <div *ngFor="let c of team.contact" class="flex items-center gap-3 p-2 bg-gray-50 rounded-lg border border-gray-100">
+              <i class="pi" [ngClass]="{
+                'pi-envelope text-blue-400': c.type === 'email',
+                'pi-slack text-purple-400': c.type === 'slack',
+                'pi-phone text-green-400': c.type === 'phone'
+              }"></i>
+              <div class="min-w-0">
+                <p class="text-[10px] uppercase font-bold text-gray-400 leading-none">{{ c.type }}</p>
+                <p class="text-xs font-medium text-gray-700 truncate mt-1">{{ c.value }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ID card -->
+        <div class="info-card id-card">
+          <div class="info-card-header">
+            <i class="pi pi-hashtag"></i>
+            <span>Technical ID</span>
+          </div>
+          <code class="id-code">{{ team.kid || '—' }}</code>
+        </div>
+
+      </aside>
+
+      <!-- RIGHT COLUMN -->
+      <main class="profile-main">
+
+        <!-- Edit Form Card (if editMode) -->
+        <div class="profile-card" *ngIf="editMode">
+          <div class="card-header">
+            <h2 class="card-title">Edit Team Details</h2>
+          </div>
+          <div class="card-body space-y-6">
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex flex-col gap-2">
+                  <label class="text-xs font-bold text-gray-500 uppercase">Team Name</label>
+                  <input pInputText [(ngModel)]="editForm.name" placeholder="Enter team name" />
+                </div>
+                <div class="flex flex-col gap-2">
+                  <label class="text-xs font-bold text-gray-500 uppercase">Type</label>
+                  <p-tag [value]="team.type" severity="info"></p-tag>
+                </div>
+                <div class="md:col-span-2 flex flex-col gap-2">
+                  <label class="text-xs font-bold text-gray-500 uppercase">Description</label>
+                  <input pInputText [(ngModel)]="editForm.description" placeholder="Short description" />
+                </div>
+             </div>
+
+             <div class="pt-4 border-t border-gray-100">
+               <label class="text-xs font-bold text-gray-500 uppercase mb-3 block">Contact Methods</label>
+               <div class="space-y-3">
+                  <div *ngFor="let c of editContacts; let i = index" class="flex items-center gap-3">
+                    <p-dropdown [options]="contactTypeOptions" [(ngModel)]="c.type"
+                      optionLabel="label" optionValue="value" [style]="{'width':'120px'}"></p-dropdown>
+                    <input pInputText [(ngModel)]="c.value" placeholder="Contact value" class="flex-1" />
+                    <button pButton icon="pi pi-trash" class="p-button-text p-button-danger" (click)="removeContact(i)"></button>
+                  </div>
+                  <button pButton label="Add Contact Method" icon="pi pi-plus" class="p-button-text p-button-sm" (click)="addContact()"></button>
+               </div>
+             </div>
+
+             <div class="pt-6 flex justify-end gap-3 border-t border-gray-100">
+                <button pButton label="Discard Changes" class="p-button-text p-button-secondary" (click)="cancelEdit()"></button>
+                <button pButton label="Save Changes" icon="pi pi-check" (click)="saveChanges()" [loading]="saving"></button>
+             </div>
+          </div>
+        </div>
+
+        <!-- Members Grid Card -->
+        <div class="profile-card" *ngIf="!editMode">
+          <div class="card-header flex justify-between items-center">
             <div>
-              <h1 class="text-xl font-bold text-gray-900 leading-none mb-1">{{ team.name }}</h1>
-              <div class="flex items-center gap-2">
-                <p-tag *ngIf="team.type" [value]="team.type" severity="info"></p-tag>
-                <p-tag [value]="team.is_active !== false ? 'Active' : 'Inactive'"
-                  [severity]="team.is_active !== false ? 'success' : 'secondary'"></p-tag>
-              </div>
+              <h2 class="card-title"><i class="pi pi-users text-purple-500"></i> Team Members</h2>
+              <p class="card-subtitle">Accounts associated with this unit</p>
             </div>
+            <p-badge [value]="(team.members?.length || 0).toString()" severity="info" styleClass="px-2"></p-badge>
           </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <p-progressSpinner *ngIf="loading" styleClass="w-2rem h-2rem"></p-progressSpinner>
-          <ng-container *ngIf="!loading && team">
-            <p-button label="Delete" icon="pi pi-trash" severity="danger" (click)="deleteTeam()"></p-button>
-          </ng-container>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-    <div *ngIf="loading" class="flex items-center justify-center py-20">
-      <p-progressSpinner styleClass="w-4rem h-4rem"></p-progressSpinner>
-    </div>
-
-    <div *ngIf="!loading && team" class="space-y-6">
-
-      <!-- Stats Row -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
-          <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
-            <i class="pi pi-user text-purple-500 text-xl"></i>
-          </div>
-          <div>
-            <p class="text-sm font-medium text-gray-500">Members</p>
-            <p class="text-2xl font-bold text-gray-900">{{ team.members?.length || 0 }}</p>
-          </div>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
-          <div class="w-12 h-12 bg-pink-50 rounded-lg flex items-center justify-center">
-            <i class="pi pi-star text-pink-500 text-xl"></i>
-          </div>
-          <div>
-            <p class="text-sm font-medium text-gray-500">Owners</p>
-            <p class="text-2xl font-bold text-gray-900">{{ getOwnersList().length }}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tabs -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <p-tabView>
-
-          <!-- Details Tab -->
-          <p-tabPanel header="Details">
-            <div class="p-6">
-              <div class="flex justify-end mb-4">
-                <p-button *ngIf="!editMode" label="Edit" icon="pi pi-pencil" severity="secondary" [outlined]="true"
-                  (click)="editMode = true"></p-button>
-                <div *ngIf="editMode" class="flex gap-2">
-                  <p-button label="Cancel" severity="secondary" [text]="true" (click)="cancelEdit()" [disabled]="saving"></p-button>
-                  <p-button label="Save" icon="pi pi-check" (click)="saveChanges()" [loading]="saving"></p-button>
-                </div>
-              </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Name</label>
-                  <input *ngIf="editMode" pInputText [(ngModel)]="editForm.name" class="w-full" />
-                  <p *ngIf="!editMode" class="text-gray-900 font-medium">{{ team.name }}</p>
-                </div>
-                <div>
-                  <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Type</label>
-                  <p class="text-gray-900">{{ team.type || '—' }}</p>
-                </div>
-                <div class="sm:col-span-2">
-                  <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Description</label>
-                  <input *ngIf="editMode" pInputText [(ngModel)]="editForm.description" class="w-full" />
-                  <p *ngIf="!editMode" class="text-gray-700">{{ team.description || '—' }}</p>
-                </div>
-                <div>
-                  <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Tenant</label>
-                  <code class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-700">{{ team.tenant_id || '—' }}</code>
-                </div>
-                <div>
-                  <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Parent Team</label>
-                  <a *ngIf="team.parent_team_id" [routerLink]="['/governance/teams', team.parent_team_id]"
-                    class="text-blue-600 hover:underline text-sm">{{ team.parent_team_id }}</a>
-                  <span *ngIf="!team.parent_team_id" class="text-gray-400">—</span>
-                </div>
-                <div>
-                  <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Created</label>
-                  <p class="text-sm text-gray-600">{{ formatDate(team.created_at) }}</p>
-                </div>
-                <div>
-                  <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Updated</label>
-                  <p class="text-sm text-gray-600">{{ formatDate(team.updated_at) }}</p>
-                </div>
-              </div>
+          <div class="card-body">
+            <div *ngIf="!team.members?.length" class="empty-state">
+              <i class="pi pi-users empty-icon"></i>
+              <p>No members currently assigned to this team.</p>
             </div>
-          </p-tabPanel>
 
-          <!-- Members Tab -->
-          <p-tabPanel header="Members">
-            <div class="p-6">
-              <div *ngIf="getMemberList().length === 0" class="text-center py-12">
-                <i class="pi pi-users text-gray-300 text-3xl mb-3 block"></i>
-                <p class="text-gray-500">No members in this team.</p>
-              </div>
-              <div *ngIf="getMemberList().length > 0"
-                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <ng-container *ngFor="let m of getMemberList()">
-                  <a *ngIf="m.kid" [routerLink]="['/governance/users', m.kid]"
-                    class="flex items-center gap-3 bg-gray-50 hover:bg-purple-50 border border-gray-200 hover:border-purple-200 rounded-xl p-4 cursor-pointer transition-colors no-underline">
-                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white font-bold text-xs shrink-0">
-                      {{ m.label.substring(0,2).toUpperCase() }}
-                    </div>
-                    <span class="font-medium text-gray-900 text-sm truncate">{{ m.label }}</span>
-                    <i class="pi pi-chevron-right text-gray-300 ml-auto shrink-0 text-xs"></i>
-                  </a>
-                  <div *ngIf="!m.kid"
-                    class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl p-4">
-                    <div class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-xs shrink-0">
-                      {{ m.label.substring(0,2).toUpperCase() }}
-                    </div>
-                    <span class="font-medium text-gray-900 text-sm truncate">{{ m.label }}</span>
+            <div *ngIf="team.members?.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <ng-container *ngFor="let m of getMemberList()">
+                <a *ngIf="m.kid" [routerLink]="['/governance/users', m.kid]" class="member-link">
+                  <div class="avatar">{{ m.label.substring(0,2).toUpperCase() }}</div>
+                  <div class="info">
+                    <p class="name">{{ m.label }}</p>
+                    <p class="meta">View Profile</p>
                   </div>
-                </ng-container>
-              </div>
-
-              <!-- Owners section -->
-              <div *ngIf="getOwnersList().length > 0" class="mt-8">
-                <p-divider></p-divider>
-                <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Owners</h4>
-                <div class="flex flex-wrap gap-3">
-                  <div *ngFor="let o of getOwnersList()"
-                    class="flex items-center gap-2 bg-pink-50 border border-pink-100 rounded-full px-4 py-2">
-                    <i class="pi pi-star text-pink-500 text-xs"></i>
-                    <span class="text-sm font-medium text-gray-800">{{ o.label }}</span>
+                  <i class="pi pi-chevron-right"></i>
+                </a>
+                <div *ngIf="!m.kid" class="member-static">
+                  <div class="avatar gray">{{ m.label.substring(0,2).toUpperCase() }}</div>
+                  <div class="info">
+                    <p class="name">{{ m.label }}</p>
+                    <p class="meta italic text-[9px]">External / Legacy</p>
                   </div>
                 </div>
-              </div>
+              </ng-container>
             </div>
-          </p-tabPanel>
 
-          <!-- Contact Tab -->
-          <p-tabPanel header="Contact">
-            <div class="p-6">
-              <div *ngIf="!editMode">
-                <div *ngIf="!team.contact || team.contact.length === 0" class="text-center py-12">
-                  <i class="pi pi-phone text-gray-300 text-3xl mb-3 block"></i>
-                  <p class="text-gray-500">No contact information.</p>
-                </div>
-                <div class="space-y-3">
-                  <div *ngFor="let c of team.contact"
-                    class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                    <i class="pi" [ngClass]="{
-                      'pi-envelope': c.type === 'email',
-                      'pi-slack': c.type === 'slack',
-                      'pi-phone': c.type === 'phone',
-                      'pi-link': !['email','slack','phone'].includes(c.type)
-                    }" class="text-gray-400"></i>
-                    <p-tag [value]="c.type" severity="secondary"></p-tag>
-                    <span class="text-gray-800 text-sm">{{ c.value }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div *ngIf="editMode" class="space-y-4">
-                <div *ngFor="let c of editContacts; let i = index" class="flex items-center gap-3">
-                  <p-dropdown [options]="contactTypeOptions" [(ngModel)]="c.type"
-                    optionLabel="label" optionValue="value" [style]="{'width':'120px'}"></p-dropdown>
-                  <input pInputText [(ngModel)]="c.value" placeholder="Contact value" class="flex-1" />
-                  <p-button icon="pi pi-times" [text]="true" severity="danger" size="small"
-                    (click)="removeContact(i)"></p-button>
-                </div>
-                <div class="flex gap-3">
-                  <p-button label="Add Contact" icon="pi pi-plus" severity="secondary" [outlined]="true"
-                    size="small" (click)="addContact()"></p-button>
-                  <p-button label="Save" icon="pi pi-check" (click)="saveChanges()" [loading]="saving"></p-button>
-                  <p-button label="Cancel" [text]="true" severity="secondary" (click)="cancelEdit()"></p-button>
-                </div>
-              </div>
+            <!-- Owners Section -->
+            <div *ngIf="getOwnersList().length" class="mt-10 pt-6 border-t border-gray-100">
+               <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                 <i class="pi pi-star text-amber-400"></i> Team Owners & Maintainers
+               </h3>
+               <div class="flex flex-wrap gap-3">
+                 <div *ngFor="let o of getOwnersList()" class="owner-chip">
+                   <div class="owner-avatar">{{ o.label.substring(0,1) }}</div>
+                   <span>{{ o.label }}</span>
+                 </div>
+               </div>
             </div>
-          </p-tabPanel>
+          </div>
+        </div>
 
-        </p-tabView>
-      </div>
+      </main>
     </div>
-
-    <div *ngIf="!loading && !team" class="text-center py-12">
-      <i class="pi pi-exclamation-circle text-4xl text-gray-300 mb-3 block"></i>
-      <p class="text-gray-500">Team not found.</p>
-      <p-button label="Back to Teams" icon="pi pi-arrow-left" severity="secondary" (click)="goBack()"></p-button>
-    </div>
-  </div>
+  </ng-container>
 </div>

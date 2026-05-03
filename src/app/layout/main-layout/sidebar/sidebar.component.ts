@@ -212,39 +212,25 @@ export class SidebarComponent implements OnInit, OnChanges {
   showAppMatrix = false;
   apps: { key: AppKey; label: string; icon: string; gradient: string; description?: string }[] = [
     {
-      key: 'governance',
-      label: 'Governance',
-      icon: 'pi pi-shield',
-      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      description: ''
-    },
-    {
-      key: 'support',
-      label: 'Support',
-      icon: 'pi pi-headphones',
-      gradient: 'linear-gradient(135deg, #06b6d4 0%, #6d28d9 100%)',
-      description: 'Omni-channel inbox, team chat, and notification management'
+      key: 'retail',
+      label: 'Retail',
+      icon: 'pi pi-shopping-bag',
+      gradient: 'linear-gradient(135deg, #f97316 0%, #f59e0b 100%)',
+      description: 'Retail operations, orders, ecommerce and payments'
     },
     {
       key: 'inventory',
       label: 'Inventory Management',
       icon: 'pi pi-box',
       gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-      description: 'Stock, products, warehouses, fleet and forecasting'
+      description: 'Stock, warehouses, fleet and forecasting'
     },
     {
-      key: 'files',
-      label: 'Files',
-      icon: 'pi pi-folder',
-      gradient: 'linear-gradient(135deg, #4f46e5 0%, #2563eb 100%)',
-      description: 'File storage and management'
-    },
-    {
-      key: 'settings',
-      label: 'Settings',
-      icon: 'pi pi-cog',
-      gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-      description: ''
+      key: 'governance',
+      label: 'Governance',
+      icon: 'pi pi-shield',
+      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      description: 'Tenant management, roles, permissions and policies'
     },
   ];
 
@@ -323,7 +309,7 @@ export class SidebarComponent implements OnInit, OnChanges {
               { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
               { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building' },
               { label: 'Teams', url: '/governance/teams', icon: 'pi pi-users' },
-              { label: 'Branches', url: '/governance/branches', icon: 'pi pi-sitemap' },
+              // { label: 'Branches', url: '/governance/branches', icon: 'pi pi-sitemap' },
             ]
           },
           {
@@ -335,18 +321,18 @@ export class SidebarComponent implements OnInit, OnChanges {
               { label: 'Permissions', url: '/governance/permissions', icon: 'pi pi-key' },
               { label: 'Policies', url: '/governance/policies', icon: 'pi pi-lock' },
               { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' },
-              { label: 'Entitlements', url: '/governance/entitlements', icon: 'pi pi-key' },
+              // { label: 'Entitlements', url: '/governance/entitlements', icon: 'pi pi-key' },
             ]
           },
-          {
-            label: 'RBAC & Admin',
-            icon: 'pi pi-cog',
-            expanded: false,
-            children: [
-              { label: 'RBAC Engine', url: '/governance/casbin', icon: 'pi pi-shield' },
-              { label: 'Admin Tools', url: '/governance/admin', icon: 'pi pi-wrench' },
-            ]
-          },
+          // {
+          //   label: 'RBAC & Admin',
+          //   icon: 'pi pi-cog',
+          //   expanded: false,
+          //   children: [
+          //     { label: 'RBAC Engine', url: '/governance/casbin', icon: 'pi pi-shield' },
+          //     { label: 'Admin Tools', url: '/governance/admin', icon: 'pi pi-wrench' },
+          //   ]
+          // },
         ]
       },
     ];
@@ -1186,6 +1172,10 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   navigateToLogin(): void {
     try { this.router.navigate(['/login']); } catch (e) { /* safe fallback */ }
+  }
+
+  navigateToRegister(): void {
+    try { this.router.navigate(['/register']); } catch (e) { /* safe fallback */ }
   }
 
   selectAppKey(key: AppKey): void {

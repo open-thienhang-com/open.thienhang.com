@@ -289,8 +289,8 @@ export class PoliciesComponent implements OnInit {
   togglePolicyStatus(policy: Policy): void {
     const action = policy.enabled ? 'disable' : 'enable';
     const serviceCall = policy.enabled ?
-      this.governanceServices.disablePolicy(policy.kid) :
-      this.governanceServices.enablePolicy(policy.kid);
+      this.governanceServices.disablePolicy(policy.kid || policy.id!) :
+      this.governanceServices.enablePolicy(policy.kid || policy.id!);
 
     serviceCall.subscribe({
       next: (response) => {
@@ -321,7 +321,7 @@ export class PoliciesComponent implements OnInit {
       header: 'Confirm Delete',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        this.governanceServices.deletePolicy(policy.kid).subscribe({
+        this.governanceServices.deletePolicy(policy.kid || policy.id!).subscribe({
           next: (response) => {
             if (response.success) {
               this.messageService.add({
@@ -346,7 +346,7 @@ export class PoliciesComponent implements OnInit {
   }
 
   viewPolicyDetails(policy: Policy): void {
-    this.router.navigate(['/governance/policies', policy.kid]);
+    this.router.navigate(['/governance/policies', policy.kid || policy.id]);
   }
 
   getPolicyTypeSeverity(type: string): string {

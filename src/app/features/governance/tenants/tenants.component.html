@@ -197,15 +197,15 @@
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-tenant>
-          <tr>
+          <tr class="cursor-pointer hover:bg-blue-50/30 transition-colors" (click)="viewTenant(tenant)">
             <td>
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
                   <i class="pi pi-building text-white"></i>
                 </div>
                 <div>
-                  <div class="font-semibold text-gray-900 cursor-pointer hover:text-blue-600" (click)="viewTenant(tenant)">{{ tenant.name }}</div>
-                  <div class="text-sm text-gray-500">{{ tenant.description | slice:0:50 }}{{ tenant.description?.length > 50 ? '...' : '' }}</div>
+                  <div class="font-semibold text-gray-900 hover:text-blue-600">{{ tenant.name }}</div>
+                  <div class="text-sm text-gray-500">{{ tenant.slug }}</div>
                 </div>
               </div>
             </td>
@@ -213,14 +213,14 @@
               <span class="text-sm font-mono text-gray-600">{{ tenant.slug }}</span>
             </td>
             <td>
-              <p-badge 
-                [value]="tenant.plan || 'Free'" 
+              <p-badge
+                [value]="tenant.plan || 'Free'"
                 severity="info">
               </p-badge>
             </td>
             <td>
-              <p-badge 
-                [value]="tenant.status | titlecase" 
+              <p-badge
+                [value]="tenant.status | titlecase"
                 [severity]="getStatusSeverity(tenant.status)">
               </p-badge>
             </td>
@@ -230,13 +230,13 @@
             <td>
               <span class="text-sm text-gray-600">{{ formatDate(tenant.created_at) }}</span>
             </td>
-            <td>
+            <td (click)="$event.stopPropagation()">
               <div class="flex items-center justify-center gap-1">
-                <p-button 
-                  icon="pi pi-eye" 
-                  [rounded]="true" 
-                  [text]="true" 
-                  severity="info" 
+                <p-button
+                  icon="pi pi-eye"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="info"
                   size="small"
                   (click)="viewTenant(tenant)"
                   pTooltip="View Details">
@@ -287,8 +287,9 @@
 
     <!-- Tenants Grid (Card View) -->
     <div *ngIf="viewMode === 'card'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div *ngFor="let tenant of tenants" 
-           class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300">
+      <div *ngFor="let tenant of tenants"
+           class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer"
+           (click)="viewTenant(tenant)">
         
         <!-- Tenant Header -->
         <div class="p-6 border-b border-gray-200">
@@ -335,28 +336,28 @@
                 </div>
                 <div class="flex items-center gap-1">
                     <i class="pi pi-id-card text-[10px]"></i>
-                    <span>ID: {{ tenant.kid | slice:0:8 }}...</span>
+                    <span>ID: {{ (tenant.id || tenant.kid) | slice:0:8 }}...</span>
                 </div>
             </div>
         </div>
         
         <!-- Tenant Actions -->
-        <div class="p-4">
+        <div class="p-4" (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between gap-2">
-            <p-button 
+            <p-button
                 label="View Details"
-                icon="pi pi-eye" 
-                [text]="true" 
-                severity="info" 
+                icon="pi pi-eye"
+                [text]="true"
+                severity="info"
                 size="small"
                 (click)="viewTenant(tenant)"
                 class="w-full">
             </p-button>
-            <p-button 
-                icon="pi pi-ban" 
-                [rounded]="true" 
-                [text]="true" 
-                severity="danger" 
+            <p-button
+                icon="pi pi-ban"
+                [rounded]="true"
+                [text]="true"
+                severity="danger"
                 size="small"
                 (click)="deleteTenant(tenant)"
                 pTooltip="Suspend Tenant">

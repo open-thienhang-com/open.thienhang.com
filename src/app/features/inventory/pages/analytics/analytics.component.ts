@@ -26,7 +26,10 @@ export class AnalyticsComponent implements OnInit {
   analyticsData: AnalyticsData | null = null;
   loading = true;
   isTableLoading = false;
+  hasError = false;
   searchTerm = '';
+  stockAlerts: StockAlert[] = [];
+  categoryData: any[] = [];
 
   stats = [
     { label: 'Total Products',   value: '—', sub: 'SKUs tracked',       icon: 'pi pi-box',                  color: 'bg-blue-100',   iconColor: 'text-blue-600'   },
@@ -58,6 +61,7 @@ export class AnalyticsComponent implements OnInit {
   loadData(): void {
     this.loading = true;
     this.isTableLoading = true;
+    this.hasError = false;
     this.analyticsService.getInventoryAnalytics().subscribe({
       next: (resp) => {
         if (resp.success && resp.data) {
@@ -82,7 +86,18 @@ export class AnalyticsComponent implements OnInit {
       error: () => {
         this.loading = false;
         this.isTableLoading = false;
+        this.hasError = true;
       }
+    });
+    // Also fetch stock alerts separately
+    this.analyticsService.getStockAlerts().subscribe({
+      next: (res: any) => { this.stockAlerts = res.data || []; },
+      error: () => {}
+    });
+    // Fetch category analytics
+    this.analyticsService.getCategoryAnalytics().subscribe({
+      next: (res: any) => { this.categoryData = res.data || []; },
+      error: () => {}
     });
   }
 

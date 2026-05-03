@@ -54,6 +54,7 @@ export interface Asset {
   _id?: string | null;
   id?: string;
   kid?: string | null;
+  identify?: string;
   name: string;
   type: string;
   source?: string;
@@ -90,6 +91,7 @@ export interface PolicyRoleDetail {
 
 export interface Policy {
   _id: string | null;
+  id?: string;
   kid: string;
   name: string;
   description: string;
@@ -122,6 +124,7 @@ export interface Policy {
 
 export interface Role {
   _id: string;
+  id?: string;
   kid: string;
   name: string;
   description: string;
@@ -177,7 +180,9 @@ export interface Team {
 
 export interface Permission {
   _id: string;
+  id?: string;
   kid: string;
+  identify?: string;
   name: string;
   description: string;
   code: string;
@@ -197,7 +202,7 @@ export interface Tenant {
   _id?: string;
   id?: string;
   telnet?: string | null;
-  kid: string;
+  kid?: string;
   name: string;
   slug?: string;
   description?: string;
@@ -349,6 +354,11 @@ export class GovernanceServices {
     const httpParams = this.buildHttpParams(params);
     return this.http.get<User[]>(`${this.baseUrl}/governance/users`, { params: httpParams })
       .pipe(map(response => this.wrapArrayResponse(response)));
+  }
+
+  getUserStats(): Observable<ApiResponse<any>> {
+    return this.http.get<any>(`${this.baseUrl}/governance/users/stats`)
+      .pipe(map(response => this.wrapResponse(response)));
   }
 
   getUser(id: string): Observable<ApiResponse<User>> {

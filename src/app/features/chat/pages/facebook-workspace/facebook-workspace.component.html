@@ -1,6 +1,6 @@
 <div class="bg-gray-50 min-h-screen p-6">
     <div class="w-full max-w-[1600px] mx-auto">
-      <ng-container *ngIf="loading">
+      <ng-container *ngIf="loading()">
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div class="flex items-center gap-4">
@@ -27,7 +27,7 @@
         </div>
       </ng-container>
 
-      <ng-container *ngIf="!loading">
+      <ng-container *ngIf="!loading()">
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div class="flex items-center gap-4">
@@ -43,7 +43,7 @@
               <p-button icon="pi pi-chart-bar" label="Overview" severity="secondary" [outlined]="true" [rounded]="true" (onClick)="openOverviewDialog()"></p-button>
               <p-button icon="pi pi-refresh" label="Refresh" severity="info" [outlined]="true" [rounded]="true" (onClick)="loadWorkspace()"></p-button>
               <div class="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium border border-blue-100 flex items-center gap-2">
-                 <i class="pi pi-comments"></i> {{ filteredConversations.length }} visible threads
+                 <i class="pi pi-comments"></i> {{ filteredConversations().length }} visible threads
               </div>
             </div>
           </div>
@@ -61,62 +61,37 @@
                       <i class="pi pi-sliders-h"></i>
                       <span>Filters</span>
                     </button>
-                    <span class="queue-total">{{ filteredConversations.length }}</span>
+                    <span class="queue-total">{{ filteredConversations().length }}</span>
                   </div>
                 </div>
                 <div class="card-body queue-body">
                   <div class="queue-toolbar">
                     <div class="queue-search-box">
                       <i class="pi pi-search"></i>
-                      <input type="text" class="form-input queue-search-input" [(ngModel)]="searchTerm" placeholder="Search customer, category, or tag" />
+                      <input type="text" class="form-input queue-search-input"
+                             [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+                             placeholder="Search customer, category, or tag" />
                     </div>
                     <div class="queue-active-filters">
                       <span class="queue-inline-pill">Queue: {{ getActiveQueueLabel() }}</span>
                       <span class="queue-inline-pill">Channel: {{ getActiveChannelLabel() }}</span>
                     </div>
                   </div>
-                  <div class="queue-list">
-                    <div *ngIf="loadingConversations" class="p-4">
-                      <p-skeleton height="4rem" styleClass="mb-2"></p-skeleton>
-                      <p-skeleton height="4rem" styleClass="mb-2"></p-skeleton>
-                      <p-skeleton height="4rem"></p-skeleton>
-                    </div>
-                    <button *ngFor="let conversation of filteredConversations"
-                            type="button"
-                            class="conversation-row omni-conversation-row"
-                            [class.active]="selectedConversation?.id === conversation.id"
-                            (click)="selectConversation(conversation.id)">
-                      <div class="conversation-row-top">
-                        <div class="conversation-identity">
-                          <span class="conversation-name">{{ conversation.user_name }}</span>
-                          <span class="conversation-handle">{{ '@' + conversation.username }}</span>
-                        </div>
-                        <div class="conversation-time-block">
-                          <span>{{ conversation.last_message_time | date:'shortTime' }}</span>
-                          <span *ngIf="conversation.unread_count > 0" class="unread-badge">{{ conversation.unread_count }}</span>
-                        </div>
-                      </div>
 
-                      <div class="channel-line">
-                        <span class="source-pill"><i [class]="getConversationSourceIcon(conversation)"></i>{{ getConversationSourceLabel(conversation) }}</span>
-                        <span class="audience-pill" [class.group]="isGroupConversation(conversation)">{{ getConversationAudienceLabel(conversation) }}</span>
-                        <p-tag [value]="conversation.status" [severity]="getStatusSeverity(conversation.status)"></p-tag>
-                      </div>
-
-                      <p class="conversation-preview">{{ conversation.last_message }}</p>
-                    </button>
-
-                    <div *ngIf="!filteredConversations.length" class="empty-card">
-                      <i class="pi pi-inbox"></i>
-                      <h3>No conversations</h3>
-                      <p>Adjust queue or channel filters to find another thread.</p>
-                    </div>
-                  </div>
+                  <!-- Conversation list panel -->
+                  <app-conversation-list
+                    [conversations]="filteredConversations()"
+                    [selectedId]="selectedConversation()?.id ?? null"
+                    [loading]="loadingConversations()"
+                    [hasMore]="hasMoreConversations()"
+                    (conversationSelected)="selectConversation($event)"
+                    (loadMore)="loadMoreConversations()">
+                  </app-conversation-list>
                 </div>
               </article>
             </aside>
 
-          <section class="thread-column" *ngIf="selectedConversation as conversation; else emptyConversationState">
+          <section class="thread-column" *ngIf="selectedConversation() as conversation; else emptyConversationState">
               <article class="flat-card thread-card-shell">
                 <div class="card-header thread-card-header">
                   <div class="thread-header-main">
@@ -130,9 +105,11 @@
                   </div>
 
                   <div class="thread-tools">
-                    <button type="button" class="ghost-action" (click)="openInfoPanel('customer')">Customer info</button>
-                    <button type="button" class="ghost-action" (click)="openInfoPanel('context')">Context</button>
-                    <button type="button" class="ghost-action" (click)="openInfoPanel('channel')">Channel info</button>
+                    <button type="button" class="ghost-action" [class.active]="infoPanel() === 'customer'" (click)="openInfoPanel('customer')">Khách hàng</button>
+                    <button type="button" class="ghost-action" [class.active]="infoPanel() === 'product'" (click)="openInfoPanel('product')">Sản phẩm</button>
+                    <button type="button" class="ghost-action" [class.active]="infoPanel() === 'context'" (click)="openInfoPanel('context')">Context</button>
+                    <button type="button" class="ghost-action" [class.active]="infoPanel() === 'channel'" (click)="openInfoPanel('channel')">Kênh</button>
+                    <button type="button" class="close-btn" *ngIf="infoPanel() !== 'none'" (click)="closeInfoPanel()"><i class="pi pi-times"></i></button>
                   </div>
                 </div>
 
@@ -156,39 +133,13 @@
                     </div>
                   </div>
 
-                  <div #messageThread class="message-thread omni-message-thread">
-                    <div *ngIf="loadingMoreMessages" class="flex justify-center py-3">
-                      <p-skeleton width="12rem" height="1.5rem"></p-skeleton>
-                    </div>
-                    <div *ngIf="hasMoreMessages && !loadingMoreMessages" class="flex justify-center py-2">
-                      <button type="button" class="ghost-action text-xs" (click)="loadMoreMessages()">
-                        <i class="pi pi-arrow-up mr-1"></i>Load earlier messages
-                      </button>
-                    </div>
-                    <div *ngFor="let message of conversation.messages" class="message-row" [class.is-agent]="message.sender !== 'user'">
-                      <div class="message-bubble">
-                        <div class="message-meta">
-                          <span>{{ message.sender_name }}</span>
-                          <span>|</span>
-                          <span>{{ message.message_type }}</span>
-                          <span>|</span>
-                          <span>{{ message.timestamp | date:'shortTime' }}</span>
-                        </div>
-                        <div *ngIf="isImageMessage(message)" class="message-media-shell">
-                          <img [src]="getImageUrl(message)!" alt="Shared image" class="message-image" />
-                        </div>
-                        <a *ngIf="getDocumentUrl(message) as documentUrl"
-                           [href]="documentUrl"
-                           target="_blank"
-                           rel="noreferrer"
-                           class="message-document-link">
-                          <i class="pi pi-file"></i>
-                          <span>Open document</span>
-                        </a>
-                        <p *ngIf="getMessageBody(message)">{{ getMessageBody(message) }}</p>
-                      </div>
-                    </div>
-                  </div>
+                  <!-- Message thread panel -->
+                  <app-message-thread
+                    [conversation]="selectedConversation()"
+                    [loadingMore]="loadingMoreMessages()"
+                    [hasMore]="hasMoreMessages()"
+                    (loadOlderMessages)="handleLoadOlderMessages()">
+                  </app-message-thread>
 
                   <div class="composer-card">
                     <div class="composer-head">
@@ -253,7 +204,7 @@
       <div class="filter-popup-section">
         <p class="filter-popup-title">Queue</p>
         <div class="filter-chip-row compact">
-          <button *ngFor="let tab of queueTabs" type="button" class="queue-filter-btn" [class.active]="activeQueue === tab.value" (click)="setActiveQueue(tab.value)">
+          <button *ngFor="let tab of queueTabs" type="button" class="queue-filter-btn" [class.active]="activeQueue() === tab.value" (click)="setActiveQueue(tab.value)">
             <span>{{ tab.label }}</span>
             <span class="pill count-pill">{{ getQueueCount(tab.value) }}</span>
           </button>
@@ -263,7 +214,7 @@
       <div class="filter-popup-section">
         <p class="filter-popup-title">Channel</p>
         <div class="filter-chip-row compact">
-          <button *ngFor="let filter of channelFilters" type="button" class="queue-filter-btn" [class.active]="activeChannel === filter.value" (click)="setActiveChannel(filter.value)">
+          <button *ngFor="let filter of channelFilters" type="button" class="queue-filter-btn" [class.active]="activeChannel() === filter.value" (click)="setActiveChannel(filter.value)">
             <span>{{ filter.label }}</span>
             <span class="pill count-pill">{{ getChannelCount(filter.value) }}</span>
           </button>
@@ -314,14 +265,9 @@
 
     <div class="quick-popup-body" *ngIf="actionPopupMode === 'photo' || actionPopupMode === 'gif' || actionPopupMode === 'document'">
       <div class="media-input-grid">
-        <input type="text"
-               class="form-input"
-               [(ngModel)]="mediaUrl"
+        <input type="text" class="form-input" [(ngModel)]="mediaUrl"
                [placeholder]="actionPopupMode === 'photo' ? 'Paste photo URL' : actionPopupMode === 'gif' ? 'Paste GIF URL' : 'Paste document URL'" />
-        <input type="text"
-               class="form-input"
-               [(ngModel)]="mediaCaption"
-               placeholder="Optional caption" />
+        <input type="text" class="form-input" [(ngModel)]="mediaCaption" placeholder="Optional caption" />
       </div>
 
       <div class="media-preview" *ngIf="(actionPopupMode === 'photo' || actionPopupMode === 'gif') && mediaUrl.trim()">
@@ -347,11 +293,8 @@
         <section *ngFor="let group of iconGroups" class="icon-group-card">
           <div class="icon-group-title">{{ group.label }}</div>
           <div class="icon-grid">
-            <button *ngFor="let icon of group.icons"
-                    type="button"
-                    class="icon-chip"
-                    [class.active]="selectedIcon === icon"
-                    (click)="selectedIcon = icon">
+            <button *ngFor="let icon of group.icons" type="button" class="icon-chip"
+                    [class.active]="selectedIcon === icon" (click)="selectedIcon = icon">
               {{ icon }}
             </button>
           </div>
@@ -408,38 +351,35 @@
   </section>
 </div>
 
-<div class="info-overlay" *ngIf="infoPanel !== 'none'" (click)="closeInfoPanel()">
-  <aside class="info-drawer" (click)="$event.stopPropagation()" *ngIf="selectedConversation as conversation">
+<div class="info-overlay" *ngIf="infoPanel() !== 'none'" (click)="closeInfoPanel()">
+  <aside class="info-drawer" (click)="$event.stopPropagation()" *ngIf="selectedConversation() as conversation">
     <div class="info-drawer-header">
       <div>
         <p class="panel-eyebrow">More details</p>
         <h3 class="panel-title info-title-compact">
-          {{ infoPanel === 'customer' ? 'Customer Information' : infoPanel === 'context' ? 'Conversation Context' : 'Channel Information' }}
+          {{ infoPanel() === 'customer' ? 'Khách hàng' : infoPanel() === 'product' ? 'Sản phẩm' : infoPanel() === 'context' ? 'Conversation Context' : 'Channel Information' }}
         </h3>
       </div>
       <button type="button" class="close-btn" (click)="closeInfoPanel()"><i class="pi pi-times"></i></button>
     </div>
 
-    <div class="info-drawer-body" *ngIf="infoPanel === 'customer'">
-      <div class="detail-card">
-        <span class="detail-label">Customer</span>
-        <strong>{{ conversation.user_name }}</strong>
-      </div>
-      <div class="detail-card">
-        <span class="detail-label">Handle</span>
-        <strong>{{ '@' + conversation.username }}</strong>
-      </div>
-      <div class="detail-card">
-        <span class="detail-label">Assigned agent</span>
-        <strong>{{ conversation.agent || 'Unassigned' }}</strong>
-      </div>
-      <div class="detail-card">
-        <span class="detail-label">Chat ID</span>
-        <strong>{{ conversation.chat_id }}</strong>
-      </div>
+    <!-- Tab: Khách hàng -->
+    <div class="info-drawer-body" *ngIf="infoPanel() === 'customer'">
+      <app-customer-panel
+        [conversation]="selectedConversation()"
+        (customerLinked)="handleCustomerLinked($event)">
+      </app-customer-panel>
     </div>
 
-    <div class="info-drawer-body" *ngIf="infoPanel === 'context'">
+    <!-- Tab: Sản phẩm -->
+    <div class="info-drawer-body" *ngIf="infoPanel() === 'product'">
+      <app-product-panel
+        [conversation]="selectedConversation()"
+        (messageSent)="handleMessageSent($event)">
+      </app-product-panel>
+    </div>
+
+    <div class="info-drawer-body" *ngIf="infoPanel() === 'context'">
       <div class="detail-card">
         <span class="detail-label">Product context</span>
         <strong>{{ getConversationProductContext(conversation) }}</strong>
@@ -462,7 +402,7 @@
       </div>
     </div>
 
-    <div class="info-drawer-body" *ngIf="infoPanel === 'channel'">
+    <div class="info-drawer-body" *ngIf="infoPanel() === 'channel'">
       <div class="detail-card">
         <span class="detail-label">Source</span>
         <strong>{{ getConversationSourceLabel(conversation) }}</strong>

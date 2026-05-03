@@ -88,7 +88,25 @@ export class UsersComponent extends AppBaseComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.getUserStats();
     this.getUsers();
+  }
+
+  getUserStats() {
+    this.governanceServices.getUserStats().subscribe({
+      next: (res) => {
+        if (res && res.data) {
+          this.totalUsers = res.data.total_users || 0;
+          this.activeUsers = res.data.active_users || 0;
+          this.pendingUsers = res.data.pending_users || 0;
+          this.adminUsers = res.data.admin_users || 0;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading user stats:', error);
+        this.showError('Failed to load user statistics');
+      }
+    });
   }
 
   getUsers = (page = 0) => {
@@ -108,7 +126,6 @@ export class UsersComponent extends AppBaseComponent implements OnInit {
           this.users = res.data;
           this.filteredUsers = [...this.users];
           this.totalRecords = res.total || this.users.length;
-          this.calculateStats();
         }
         this.isTableLoading = false;
       },
@@ -118,13 +135,6 @@ export class UsersComponent extends AppBaseComponent implements OnInit {
         this.isTableLoading = false;
       }
     });
-  }
-
-  calculateStats() {
-    this.totalUsers = this.users.length;
-    this.activeUsers = this.users.filter(u => u.status === 'active' || u.is_active).length;
-    this.pendingUsers = this.users.filter(u => u.status === 'pending' || !u.is_verified).length;
-    this.adminUsers = this.users.filter(u => u.role === 'admin').length;
   }
 
   filterUsers() {

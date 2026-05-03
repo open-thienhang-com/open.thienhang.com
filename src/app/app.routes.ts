@@ -22,24 +22,6 @@ import { LOYALTY_ROUTES } from './features/loyalty/loyalty.routes';
 
 
 export const routes: Routes = [
-  // Error pages (outside of auth guard)
-  {
-    path: 'maintenance',
-    loadComponent: () => import('./pages/error/maintenance/maintenance.component').then(m => m.MaintenanceComponent)
-  },
-  {
-    path: 'forbidden',
-    loadComponent: () => import('./pages/error/forbidden/forbidden.component').then(m => m.ForbiddenComponent)
-  },
-  {
-    path: 'not-found',
-    loadComponent: () => import('./pages/error/not-found/not-found.component').then(m => m.NotFoundComponent)
-  },
-  {
-    path: 'offline',
-    loadComponent: () => import('./pages/error/offline.component').then(m => m.OfflineComponent)
-  },
-  // Public retail planning feature (no authentication required, but still uses main layout + sidebar)
   {
     path: '',
     component: MainLayoutComponent,
@@ -60,6 +42,59 @@ export const routes: Routes = [
       {
         path: 'applications',
         loadComponent: () => import('./features/applications/applications.component').then(m => m.ApplicationsComponent),
+      },
+      {
+        path: 'login',
+        component: AuthComponent,
+        canActivate: [noAuthGuard],
+      },
+      {
+        path: 'register',
+        component: AuthComponent,
+        data: { mode: 2 },
+        canActivate: [noAuthGuard],
+      },
+      {
+        path: 'verify',
+        component: AuthComponent,
+        data: { mode: 4 },
+        canActivate: [noAuthGuard],
+      },
+      {
+        path: 'forgot-password',
+        component: AuthComponent,
+        data: { mode: 3 },
+        canActivate: [noAuthGuard],
+      },
+      {
+        path: 'reset-password',
+        component: AuthComponent,
+        data: { mode: 5 },
+      },
+      {
+        path: 'logout',
+        component: LogoutPageComponent,
+        canActivate: [authGuard],
+      },
+      {
+        path: 'help',
+        component: HelpPageComponent,
+      },
+      {
+        path: 'maintenance',
+        loadComponent: () => import('./pages/error/maintenance/maintenance.component').then(m => m.MaintenanceComponent)
+      },
+      {
+        path: 'forbidden',
+        loadComponent: () => import('./pages/error/forbidden/forbidden.component').then(m => m.ForbiddenComponent)
+      },
+      {
+        path: 'not-found',
+        loadComponent: () => import('./pages/error/not-found/not-found.component').then(m => m.NotFoundComponent)
+      },
+      {
+        path: 'offline',
+        loadComponent: () => import('./pages/error/offline.component').then(m => m.OfflineComponent)
       }
     ]
   },
@@ -474,41 +509,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: 'login',
-    component: AuthComponent,
-    canActivate: [noAuthGuard],
-  },
-  {
-    path: 'register',
-    component: AuthComponent,
-    data: { mode: 2 },
-    canActivate: [noAuthGuard],
-  },
-  {
-    path: 'verify',
-    component: AuthComponent,
-    data: { mode: 4 },
-    canActivate: [noAuthGuard],
-  },
-  {
-    path: 'forgot-password',
-    component: AuthComponent,
-    data: { mode: 3 },
-    canActivate: [noAuthGuard],
-  },
-  {
-    path: 'logout',
-    component: LogoutPageComponent,
-    canActivate: [authGuard],
-  },
-  {
-    path: 'help',
-    component: HelpPageComponent,
-  },
-  // Wildcard route for 404 - must be last
-  {
     path: '**',
-    component: NotFoundComponent
+    component: MainLayoutComponent,
+    children: [
+      {
+        path: '',
+        component: NotFoundComponent
+      }
+    ]
   }
 ];
 

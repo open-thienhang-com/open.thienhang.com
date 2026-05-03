@@ -1,147 +1,228 @@
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>
 
-<div class="bg-gray-50 min-h-screen">
-  <!-- Header -->
-  <div class="bg-white border-b border-gray-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        <div class="flex items-center gap-4">
-          <p-button icon="pi pi-arrow-left" [text]="true" [rounded]="true" (click)="goBack()"
-            severity="secondary" pTooltip="Back to Accounts"></p-button>
-          <div *ngIf="account" class="flex items-center gap-3">
-            <div *ngIf="!account.image"
-              class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-md text-white font-bold text-sm">
-              {{ getInitials() }}
-            </div>
-            <img *ngIf="account.image" [src]="account.image" alt="avatar"
-              class="w-10 h-10 rounded-xl object-cover shadow-md" />
-            <div>
-              <h1 class="text-xl font-bold text-gray-900 leading-none mb-1">{{ account.full_name || account.email }}</h1>
-              <div class="flex items-center gap-2">
-                <code class="text-xs font-mono text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
-                  {{ account.identify || account._id }}
-                </code>
-                <p-tag [value]="account.is_active ? 'Active' : 'Inactive'"
-                  [severity]="account.is_active ? 'success' : 'secondary'"></p-tag>
-                <p-tag *ngIf="account.is_verified" value="Verified" severity="success" icon="pi pi-check"></p-tag>
-                <p-tag *ngIf="!account.is_verified" value="Unverified" severity="warning" icon="pi pi-exclamation-triangle"></p-tag>
-              </div>
-            </div>
+<div class="account-profile-page">
+
+  <!-- ── Loading ──────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="profile-loading">
+    <p-progressSpinner styleClass="w-4rem h-4rem"></p-progressSpinner>
+    <p>Loading account profile...</p>
+  </div>
+
+  <!-- ── Not Found ─────────────────────────────────────────────── -->
+  <div *ngIf="!loading && !account" class="profile-not-found">
+    <i class="pi pi-user-slash"></i>
+    <h2>Account not found</h2>
+    <p>This account may have been deleted or the ID is incorrect.</p>
+    <button pButton label="Back to Accounts" icon="pi pi-arrow-left" class="p-button-outlined" (click)="goBack()"></button>
+  </div>
+
+  <!-- ── Profile Layout ─────────────────────────────────────────── -->
+  <ng-container *ngIf="!loading && account">
+
+    <!-- Cover + Avatar header -->
+    <div class="profile-cover">
+      <div class="cover-gradient"></div>
+      <div class="profile-header-content">
+        <!-- Avatar / Icon -->
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar" [class.has-image]="account.image">
+            <img *ngIf="account.image" [src]="account.image" alt="avatar" />
+            <div *ngIf="!account.image" class="initials">{{ getInitials() }}</div>
+          </div>
+          <span class="profile-status-dot"
+                [class.dot-active]="account.is_active"
+                [class.dot-inactive]="!account.is_active"
+                [pTooltip]="account.is_active ? 'Active' : 'Inactive'"></span>
+        </div>
+
+        <!-- Name & Meta -->
+        <div class="profile-hero">
+          <div class="profile-name-row">
+            <h1 class="profile-name">{{ account.full_name || account.email }}</h1>
+            <p-tag [value]="account.is_active ? 'Active' : 'Inactive'"
+                   [severity]="account.is_active ? 'success' : 'secondary'" styleClass="profile-status-tag"></p-tag>
+            <p-tag *ngIf="account.is_verified" value="Verified" severity="success" icon="pi pi-check" styleClass="profile-status-tag"></p-tag>
+          </div>
+          <p class="profile-email"><i class="pi pi-envelope"></i> {{ account.email }}</p>
+          <div class="profile-meta-chips">
+            <span class="meta-chip"><i class="pi pi-briefcase"></i> {{ account.department || 'General' }}</span>
+            <span class="meta-chip"><i class="pi pi-user"></i> {{ account.type || 'Standard' }}</span>
+            <span class="meta-chip mono"><i class="pi pi-hashtag"></i> {{ (account.identify || account._id || '').slice(0,8) }}…</span>
           </div>
         </div>
-        <div class="flex items-center gap-2">
-          <p-progressSpinner *ngIf="loading" styleClass="w-2rem h-2rem"></p-progressSpinner>
-          <ng-container *ngIf="!loading && account">
-            <p-button label="Edit" icon="pi pi-pencil" severity="secondary" (click)="editAccount()"></p-button>
-            <p-button label="Deactivate" icon="pi pi-ban" severity="danger" (click)="deleteAccount()"></p-button>
-          </ng-container>
+
+        <!-- Header actions -->
+        <div class="profile-header-actions">
+          <button pButton icon="pi pi-arrow-left" label="Back" class="p-button-text p-button-secondary" (click)="goBack()"></button>
+          <button pButton icon="pi pi-pencil" label="Edit" class="p-button-outlined p-button-secondary" (click)="editAccount()"></button>
+          <button pButton icon="pi pi-ban" class="p-button-outlined p-button-danger" (click)="deleteAccount()" pTooltip="Deactivate account"></button>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- ── Main grid ─────────────────────────────────────────────── -->
+    <div class="profile-body">
 
-    <div *ngIf="loading" class="flex items-center justify-center py-20">
-      <p-progressSpinner styleClass="w-4rem h-4rem"></p-progressSpinner>
-    </div>
+      <!-- LEFT COLUMN -->
+      <aside class="profile-sidebar">
 
-    <div *ngIf="!loading && account" class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      <p-tabView>
+        <!-- Stat cards row (Optional for accounts, maybe Activity?) -->
+        <div class="stat-cards">
+          <div class="stat-card">
+            <i class="pi pi-shield stat-icon"></i>
+            <div class="stat-value">{{ account.is_verified ? 'Yes' : 'No' }}</div>
+            <div class="stat-label">Verified</div>
+          </div>
+          <div class="stat-card">
+            <i class="pi pi-id-card stat-icon"></i>
+            <div class="stat-value text-lg">{{ account.username || '—' }}</div>
+            <div class="stat-label">Username</div>
+          </div>
+          <div class="stat-card">
+            <i class="pi pi-clock stat-icon"></i>
+            <div class="stat-value text-sm">Active</div>
+            <div class="stat-label">Status</div>
+          </div>
+        </div>
 
-        <!-- Overview Tab -->
-        <p-tabPanel header="Overview">
-          <div class="p-6">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Full Name</label>
-                <p class="text-gray-900 font-medium">{{ account.full_name || '—' }}</p>
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Email</label>
-                <p class="text-gray-900">{{ account.email || '—' }}</p>
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Username</label>
-                <p class="text-gray-900 font-mono text-sm">{{ account.username || '—' }}</p>
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Type</label>
-                <p class="text-gray-900 capitalize">{{ account.type || '—' }}</p>
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Department</label>
-                <p class="text-gray-900">{{ account.department || '—' }}</p>
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Identity (Identify)</label>
-                <div class="flex items-center gap-2">
-                  <code class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-700 font-mono">{{ account.identify || '—' }}</code>
-                  <p-button *ngIf="account.identify" icon="pi pi-copy" [text]="true" [rounded]="true" size="small"
-                    (click)="copyToClipboard(account.identify)" pTooltip="Copy ID"></p-button>
-                </div>
-              </div>
+        <!-- Identity card -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <i class="pi pi-id-card"></i>
+            <span>Identity Details</span>
+          </div>
+          <div class="info-list">
+            <div class="info-row">
+              <span class="info-key">Full Name</span>
+              <span class="info-val font-semibold">{{ account.full_name || '—' }}</span>
             </div>
-
-            <p-divider></p-divider>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-              <div>
-                <span class="text-gray-400">Created:</span>
-                <span class="ml-2 text-gray-700">{{ formatDate(account.createdAt || account.created_at) }}</span>
-              </div>
-              <div>
-                <span class="text-gray-400">Updated:</span>
-                <span class="ml-2 text-gray-700">{{ formatDate(account.updatedAt || account.updated_at) }}</span>
-              </div>
+            <div class="info-row">
+              <span class="info-key">Username</span>
+              <span class="info-val mono">{{ account.username || '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Department</span>
+              <span class="info-val text-blue-600 font-medium">{{ account.department || 'General' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Role Type</span>
+              <span class="info-val capitalize">{{ account.type || 'Standard' }}</span>
             </div>
           </div>
-        </p-tabPanel>
+        </div>
 
-        <!-- Security Tab -->
-        <p-tabPanel header="Security & Preferences">
-          <div class="p-6 space-y-6">
-            <div>
-              <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Notification Preferences</h4>
-              <div *ngIf="account.notifications; else noNotifications" class="space-y-3">
-                <div *ngFor="let entry of getNotifications() | keyvalue"
-                  class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <span class="text-sm text-gray-700 capitalize">{{ entry.key.replace('_', ' ') }}</span>
-                  <p-tag [value]="entry.value ? 'Enabled' : 'Disabled'"
-                    [severity]="entry.value ? 'success' : 'secondary'"></p-tag>
-                </div>
-              </div>
-              <ng-template #noNotifications>
-                <p class="text-sm text-gray-400">No notification preferences configured.</p>
-              </ng-template>
-            </div>
-
-            <p-divider></p-divider>
-
-            <div>
-              <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Security Preferences</h4>
-              <div *ngIf="account.preferences; else noPreferences" class="space-y-3">
-                <div *ngFor="let entry of getPreferences() | keyvalue"
-                  class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <span class="text-sm text-gray-700 capitalize">{{ entry.key.replace('_', ' ') }}</span>
-                  <span class="text-sm font-medium text-gray-900">{{ entry.value }}</span>
-                </div>
-              </div>
-              <ng-template #noPreferences>
-                <p class="text-sm text-gray-400">No security preferences configured.</p>
-              </ng-template>
-            </div>
+        <!-- ID card -->
+        <div class="info-card id-card">
+          <div class="info-card-header">
+            <i class="pi pi-hashtag"></i>
+            <span>Account ID</span>
           </div>
-        </p-tabPanel>
+          <div class="flex items-center gap-2 p-3">
+            <code class="id-code flex-1">{{ account.identify || account._id || '—' }}</code>
+            <button pButton icon="pi pi-copy" class="p-button-text p-button-sm p-button-secondary p-button-rounded" (click)="copyToClipboard(account.identify || account._id)"></button>
+          </div>
+        </div>
 
-      </p-tabView>
-    </div>
+      </aside>
 
-    <div *ngIf="!loading && !account" class="text-center py-12">
-      <i class="pi pi-exclamation-circle text-4xl text-gray-300 mb-3 block"></i>
-      <p class="text-gray-500">Account not found.</p>
-      <p-button label="Back to Accounts" icon="pi pi-arrow-left" severity="secondary" (click)="goBack()"></p-button>
+      <!-- RIGHT COLUMN -->
+      <main class="profile-main">
+
+        <!-- Tabs card -->
+        <div class="profile-card no-pad">
+          <p-tabView styleClass="profile-tabview">
+            
+            <!-- OVERVIEW PANEL -->
+            <p-tabPanel header="Profile Overview">
+              <div class="p-6 space-y-8">
+                
+                <section>
+                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Account Timeline</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                      <p class="text-xs text-gray-400 uppercase font-bold mb-1">Registration Date</p>
+                      <p class="text-gray-700 font-medium">{{ formatDate(account.createdAt || account.created_at) }}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                      <p class="text-xs text-gray-400 uppercase font-bold mb-1">Last Updated</p>
+                      <p class="text-gray-700 font-medium">{{ formatDate(account.updatedAt || account.updated_at) }}</p>
+                    </div>
+                  </div>
+                </section>
+
+                <section>
+                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Verification Status</h3>
+                  <div class="flex items-center gap-4 p-4 rounded-xl border" 
+                       [class.bg-green-50]="account.is_verified" [class.border-green-100]="account.is_verified"
+                       [class.bg-amber-50]="!account.is_verified" [class.border-amber-100]="!account.is_verified">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center text-xl"
+                         [class.bg-green-500]="account.is_verified" [class.text-white]="account.is_verified"
+                         [class.bg-amber-400]="!account.is_verified" [class.text-white]="!account.is_verified">
+                      <i class="pi" [ngClass]="account.is_verified ? 'pi-check-circle' : 'pi-exclamation-triangle'"></i>
+                    </div>
+                    <div>
+                      <p class="font-bold" [class.text-green-800]="account.is_verified" [class.text-amber-800]="!account.is_verified">
+                        {{ account.is_verified ? 'Account Identity Verified' : 'Awaiting Identity Verification' }}
+                      </p>
+                      <p class="text-sm opacity-75">
+                        {{ account.is_verified ? 'This account has completed all security checks.' : 'Some features may be restricted until verified.' }}
+                      </p>
+                    </div>
+                  </div>
+                </section>
+
+              </div>
+            </p-tabPanel>
+
+            <!-- SECURITY PANEL -->
+            <p-tabPanel header="Security & Preferences">
+              <div class="p-6 space-y-8">
+                
+                <div>
+                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Notification Settings</h3>
+                  <div *ngIf="account.notifications; else noNotifications" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div *ngFor="let entry of getNotifications() | keyvalue"
+                      class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100 transition-all hover:bg-white hover:shadow-md">
+                      <span class="text-sm font-semibold text-gray-700 capitalize">{{ entry.key.replace('_', ' ') }}</span>
+                      <p-tag [value]="entry.value ? 'Enabled' : 'Disabled'"
+                        [severity]="entry.value ? 'success' : 'secondary'" styleClass="text-[10px]"></p-tag>
+                    </div>
+                  </div>
+                  <ng-template #noNotifications>
+                    <div class="p-8 text-center bg-gray-50 rounded-xl border border-dashed border-gray-200 text-gray-400">
+                      <i class="pi pi-bell-slash text-2xl mb-2 block"></i>
+                      <p>No notification preferences configured.</p>
+                    </div>
+                  </ng-template>
+                </div>
+
+                <p-divider></p-divider>
+
+                <div>
+                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Account Preferences</h3>
+                  <div *ngIf="account.preferences; else noPreferences" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div *ngFor="let entry of getPreferences() | keyvalue"
+                      class="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+                      <span class="text-sm font-semibold text-gray-500 capitalize">{{ entry.key.replace('_', ' ') }}</span>
+                      <span class="text-sm font-bold text-gray-900">{{ entry.value }}</span>
+                    </div>
+                  </div>
+                  <ng-template #noPreferences>
+                    <div class="p-8 text-center bg-gray-50 rounded-xl border border-dashed border-gray-200 text-gray-400">
+                      <i class="pi pi-cog text-2xl mb-2 block"></i>
+                      <p>No account preferences configured.</p>
+                    </div>
+                  </ng-template>
+                </div>
+
+              </div>
+            </p-tabPanel>
+
+          </p-tabView>
+        </div>
+
+      </main>
     </div>
-  </div>
+  </ng-container>
 </div>

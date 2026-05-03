@@ -122,7 +122,7 @@
           <div *ngIf="!loading">
             <div *ngFor="let t of tenants"
               class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50"
-              (click)="navigate('/governance/tenants/' + t.kid)">
+              (click)="navigate('/governance/tenants/' + (t.kid || t.id))">
               <div class="flex items-center gap-2 min-w-0">
                 <div class="w-7 h-7 bg-blue-500 rounded text-white text-xs flex items-center justify-center flex-shrink-0">
                   {{ t.name?.charAt(0)?.toUpperCase() }}
@@ -307,7 +307,8 @@
           </div>
           <div *ngIf="!loading">
             <div *ngFor="let a of accounts"
-              class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 border-b border-gray-50">
+              class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50"
+              (click)="navigate('/governance/accounts/' + (a.kid || a.id || a._id))">
               <div class="flex items-center gap-2 min-w-0">
                 <div class="w-7 h-7 bg-gray-400 rounded text-white text-xs flex items-center justify-center flex-shrink-0">
                   {{ (a.name || a.username)?.charAt(0)?.toUpperCase() }}
@@ -406,7 +407,8 @@
           </div>
           <div *ngIf="!loading">
             <div *ngFor="let p of permissions"
-              class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 border-b border-gray-50">
+              class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50"
+              (click)="navigate('/governance/permissions/' + (p.kid || p.id || p.identify || p._id))">
               <div class="flex items-center gap-2 min-w-0">
                 <div class="w-7 h-7 bg-orange-500 rounded text-white text-xs flex items-center justify-center flex-shrink-0">
                   <i class="pi pi-key text-[10px]"></i>
@@ -542,11 +544,12 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let a of assets" class="border-t border-gray-50 hover:bg-gray-50">
+                <tr *ngFor="let a of assets" class="border-t border-gray-50 hover:bg-gray-50 cursor-pointer"
+                    (click)="navigate('/governance/assets/' + (a.identify || a._id || a.id))">
                   <td class="px-4 py-3">
                     <div class="flex items-center gap-2">
                       <i class="pi pi-database text-teal-500 text-xs"></i>
-                      <span class="truncate max-w-[150px]">{{ a.name }}</span>
+                      <span class="truncate max-w-[150px] font-medium text-gray-800">{{ a.name }}</span>
                     </div>
                   </td>
                   <td class="px-4 py-3 text-gray-500 text-xs">{{ a.type }}</td>
@@ -600,7 +603,8 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let e of entitlements" class="border-t border-gray-50 hover:bg-gray-50">
+                <tr *ngFor="let e of entitlements" class="border-t border-gray-50 hover:bg-gray-50 cursor-pointer"
+                    (click)="navigate('/governance/entitlements/' + (e.kid || e.id || e._id || e.code))">
                   <td class="px-4 py-3">
                     <div class="flex items-center gap-2">
                       <i class="pi pi-star text-green-500 text-xs"></i>

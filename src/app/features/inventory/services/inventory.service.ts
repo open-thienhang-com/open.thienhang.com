@@ -99,7 +99,7 @@ export class ProductService {
   }
 
   deleteProduct(id: string): Observable<any> {
-    return this.http.delete<any>(`${getApiBase()}/adapters/retail/products/${id}`);
+    return this.http.delete<any>(`${getApiBase()}/retail/products/${id}`);
   }
 }
 
@@ -108,7 +108,7 @@ export class ProductService {
 })
 export class InventoryService {
   private get baseUrl(): string {
-    return `${getApiBase()}/adapters/retail`;
+    return `${getApiBase()}/retail`;
   }
 
   // Signals for state management
@@ -180,6 +180,16 @@ export class InventoryService {
     return this.http.get<ListResponse<any>>(`${this.baseUrl}/warehouses`);
   }
 
+  getWarehouseStocks(warehouseId: string, skip: number = 0, limit: number = 100): Observable<ListResponse<any>> {
+    return this.http.get<ListResponse<any>>(
+      `${this.baseUrl}/warehouses/${warehouseId}/stocks?skip=${skip}&limit=${limit}`
+    );
+  }
+
+  getWarehouseCapacity(warehouseId: string): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/warehouses/${warehouseId}/capacity`);
+  }
+
   // Order methods (moved from RetailService)
   listOrders(skip: number = 0, limit: number = 20): Observable<ListResponse<any>> {
     return this.http.get<ListResponse<any>>(`${getApiBase()}/data-mesh/domains/retail/orders?skip=${skip}&limit=${limit}`);
@@ -201,9 +211,31 @@ export class InventoryService {
 @Injectable({
   providedIn: 'root'
 })
+export class VehicleService {
+  private get baseUrl(): string {
+    return `${getApiBase()}/retail/vehicles`;
+  }
+  constructor(private http: HttpClient) { }
+
+  listVehicles(skip: number = 0, limit: number = 20, status?: string, warehouseId?: string, keyword?: string): Observable<ListResponse<any>> {
+    let url = `${this.baseUrl}?skip=${skip}&limit=${limit}`;
+    if (status) url += `&status=${status}`;
+    if (warehouseId) url += `&warehouse_id=${warehouseId}`;
+    if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+    return this.http.get<ListResponse<any>>(url);
+  }
+
+  getVehicle(id: string): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/${id}`);
+  }
+}
+
+@Injectable({
+  providedIn: 'root'
+})
 export class AnalyticsService {
   private get baseUrl(): string {
-    return `${getApiBase()}/adapters/retail`;
+    return `${getApiBase()}/retail`;
   }
 
   constructor(private http: HttpClient) { }
@@ -273,13 +305,15 @@ export class CategoryService {
 })
 export class WarehouseService {
   private get baseUrl(): string {
-    return `${getApiBase()}/data-mesh/domains/retail/warehouses`;
+    return `${getApiBase()}/retail/warehouses`;
   }
 
   constructor(private http: HttpClient) { }
 
-  listWarehouses(skip: number = 0, limit: number = 50): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}?skip=${skip}&limit=${limit}`);
+  listWarehouses(skip: number = 0, limit: number = 50, keyword?: string): Observable<any> {
+    let url = `${this.baseUrl}?skip=${skip}&limit=${limit}`;
+    if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+    return this.http.get<any>(url);
   }
 
   getWarehouse(id: string): Observable<any> {
@@ -355,10 +389,38 @@ export class PartnerService {
   providedIn: 'root'
 })
 export class SupplierService {
-  // Added stub as per tasks.md requirement for future use
   private get baseUrl(): string {
-    return `${getApiBase()}/data-mesh/domains/retail/suppliers`;
+    return `${getApiBase()}/retail/suppliers`;
   }
   constructor(private http: HttpClient) { }
-  listSuppliers(): Observable<any> { return of([]); }
+
+  listSuppliers(skip: number = 0, limit: number = 20, keyword?: string): Observable<ListResponse<any>> {
+    let url = `${this.baseUrl}?skip=${skip}&limit=${limit}`;
+    if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+    return this.http.get<ListResponse<any>>(url);
+  }
+
+  getSupplier(id: string): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/${id}`);
+  }
+
+  createSupplier(data: {
+    name: string;
+    partner_type?: string;
+    contact_name?: string;
+    phone?: string;
+    email?: string;
+    address?: string;
+    is_active?: boolean;
+  }): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(this.baseUrl, { ...data, partner_type: 'supplier' });
+  }
+
+  updateSupplier(id: string, data: any): Observable<ApiResponse<any>> {
+    return this.http.put<ApiResponse<any>>(`${this.baseUrl}/${id}`, data);
+  }
+
+  deleteSupplier(id: string): Observable<ApiResponse<any>> {
+    return this.http.delete<ApiResponse<any>>(`${this.baseUrl}/${id}`);
+  }
 }

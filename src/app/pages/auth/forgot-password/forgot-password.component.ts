@@ -45,8 +45,8 @@ export class ForgotPasswordComponent extends AppBaseComponent {
           this.emailSent = true;
           this.showSuccess('OTP sent to your email');
           this.authServices.pendingResetEmail = this.email;
-          this.onResetPassword.emit();
-          this.router.navigate(['/forgot-password'], { queryParams: { step: 'reset' } });
+          // Navigate to dedicated reset-password route with email in URL (survives refresh)
+          this.router.navigate(['/reset-password'], { queryParams: { email: this.email } });
         } else {
           this.showError(res.message || 'Failed to send reset link');
         }

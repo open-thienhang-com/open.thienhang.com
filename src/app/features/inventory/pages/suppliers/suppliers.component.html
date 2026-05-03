@@ -1,596 +1,244 @@
-<!-- Suppliers & Customers Management -->
-<div class="suppliers-container">
-  <div class="header-section">
-    <div class="header-content">
-      <h1><i class="pi pi-users"></i> Suppliers & Customers</h1>
-      <p>Manage suppliers and customer relationships</p>
-    </div>
-    <div class="header-actions">
-      <p-button
-        label="Export"
-        icon="pi pi-download"
-        [outlined]="true"
-        (onClick)="exportSuppliers()">
-      </p-button>
-      <p-button
-        label="Refresh"
-        icon="pi pi-refresh"
-        [outlined]="true"
-        (onClick)="refreshData()">
-      </p-button>
-    </div>
-  </div>
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
 
-  <!-- Filters Section -->
-  <div class="filters-section">
-    <div class="filters-grid">
-      <div class="filter-item">
-        <label>Search</label>
-        <input
-          pInputText
-          [(ngModel)]="searchTerm"
-          (input)="onSearch()"
-          placeholder="Search by name, contact, email..."
-          class="search-input">
+<div class="bg-gray-50 min-h-screen p-6">
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+          <i class="pi pi-users text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Inventory Suppliers</h1>
+          <p class="text-gray-600">Manage supplier records and contact information</p>
+        </div>
       </div>
-
-      <div class="filter-item">
-        <label>Status</label>
-        <p-dropdown
-          [(ngModel)]="selectedStatus"
-          [options]="statusOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="All Status"
-          (onChange)="onStatusChange()">
-        </p-dropdown>
-      </div>
-
-      <div class="filter-actions">
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
         <p-button
-          label="Clear Filters"
+          icon="pi pi-filter"
+          severity="secondary"
+          [outlined]="!showFilters"
+          [rounded]="true"
+          (onClick)="toggleFilters()"
+          pTooltip="Toggle Filters"
+          class="hidden sm:inline-flex">
+        </p-button>
+        <p-button
+          icon="pi pi-refresh"
+          severity="info"
           [outlined]="true"
-          size="small"
-          (onClick)="clearFilters()">
+          [rounded]="true"
+          (onClick)="refreshData()"
+          pTooltip="Refresh"
+          class="hidden sm:inline-flex">
+        </p-button>
+        <p-button
+          label="Add Supplier"
+          icon="pi pi-plus"
+          severity="primary"
+          (onClick)="openCreateDialog()">
         </p-button>
       </div>
     </div>
   </div>
 
-  <!-- Summary Cards -->
-  <div class="summary-cards">
-    <p-card class="summary-card">
-      <ng-template pTemplate="header">
-        <div class="card-header">
-          <i class="pi pi-truck card-icon suppliers"></i>
-          <div class="card-title">Active Suppliers</div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Total Suppliers</p>
+          <p class="text-3xl font-bold text-gray-900">{{ total }}</p>
         </div>
-      </ng-template>
-      <div class="card-value">{{ getActiveSuppliersCount() }}</div>
-      <div class="card-subtitle">Total suppliers: {{ suppliers.length }}</div>
-    </p-card>
+        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-users text-blue-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
 
-    <p-card class="summary-card">
-      <ng-template pTemplate="header">
-        <div class="card-header">
-          <i class="pi pi-shopping-cart card-icon customers"></i>
-          <div class="card-title">Active Customers</div>
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Active Suppliers</p>
+          <p class="text-3xl font-bold text-green-600">{{ activeCount }}</p>
         </div>
-      </ng-template>
-      <div class="card-value">{{ getActiveCustomersCount() }}</div>
-      <div class="card-subtitle">Total customers: {{ customers.length }}</div>
-    </p-card>
+        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-check-circle text-green-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
 
-    <p-card class="summary-card">
-      <ng-template pTemplate="header">
-        <div class="card-header">
-          <i class="pi pi-dollar card-icon revenue"></i>
-          <div class="card-title">Total Supplier Value</div>
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Inactive Suppliers</p>
+          <p class="text-3xl font-bold text-red-600">{{ inactiveCount }}</p>
         </div>
-      </ng-template>
-      <div class="card-value">{{ formatCurrency(getTotalSupplierValue()) }}</div>
-      <div class="card-subtitle">From all suppliers</div>
-    </p-card>
-
-    <p-card class="summary-card">
-      <ng-template pTemplate="header">
-        <div class="card-header">
-          <i class="pi pi-chart-line card-icon sales"></i>
-          <div class="card-title">Total Customer Value</div>
+        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-times-circle text-red-600 text-xl"></i>
         </div>
-      </ng-template>
-      <div class="card-value">{{ formatCurrency(getTotalCustomerValue()) }}</div>
-      <div class="card-subtitle">From all customers</div>
-    </p-card>
+      </div>
+    </div>
   </div>
 
-  <!-- Main Content Tabs -->
-  <div class="suppliers-content">
-    <p-tabView [(activeIndex)]="activeTabIndex">
-      <!-- Suppliers Tab -->
-      <p-tabPanel header="Suppliers" leftIcon="pi pi-truck">
-        <div class="tab-header">
+  <div class="bg-white rounded-lg shadow-sm mb-6" *ngIf="showFilters">
+    <div class="p-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-search"></i>
+            <input
+              pInputText
+              [(ngModel)]="searchTerm"
+              (input)="applyFilters()"
+              placeholder="Search by name, contact, email..."
+              class="w-full" />
+          </span>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+          <p-dropdown
+            [(ngModel)]="selectedStatus"
+            [options]="statusOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="All Status"
+            (onChange)="applyFilters()"
+            class="w-full">
+          </p-dropdown>
+        </div>
+
+        <div class="flex items-end">
           <p-button
-            label="Add Supplier"
-            icon="pi pi-plus"
-            (onClick)="createSupplier()">
+            label="Clear Filters"
+            icon="pi pi-times"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="clearFilters()">
           </p-button>
         </div>
-
-        <div class="suppliers-table-section">
-          <p-table
-            [value]="filteredSuppliers"
-            styleClass="p-datatable-sm"
-            [paginator]="true"
-            [rows]="10"
-            [showCurrentPageReport]="true"
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} suppliers">
-            <ng-template pTemplate="header">
-              <tr>
-                <th>Name</th>
-                <th>Contact Person</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Location</th>
-                <th>Total Orders</th>
-                <th>Total Value</th>
-                <th>Last Order</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-supplier>
-              <tr>
-                <td>
-                  <div class="supplier-info">
-                    <div class="supplier-name">{{ supplier.name }}</div>
-                    <div class="supplier-tax" *ngIf="supplier.taxId">{{ supplier.taxId }}</div>
-                  </div>
-                </td>
-                <td>{{ supplier.contactPerson }}</td>
-                <td>{{ supplier.email }}</td>
-                <td>{{ supplier.phone }}</td>
-                <td>
-                  <div class="location-info">
-                    <div>{{ supplier.city }}, {{ supplier.country }}</div>
-                  </div>
-                </td>
-                <td>{{ supplier.totalOrders }}</td>
-                <td>{{ formatCurrency(supplier.totalValue) }}</td>
-                <td>{{ supplier.lastOrderDate ? formatDate(supplier.lastOrderDate) : 'N/A' }}</td>
-                <td>
-                  <p-badge
-                    [value]="supplier.status"
-                    [severity]="getStatusSeverity(supplier.status)">
-                  </p-badge>
-                </td>
-                <td>
-                  <div class="action-buttons">
-                    <p-button
-                      icon="pi pi-pencil"
-                      [outlined]="true"
-                      size="small"
-                      (onClick)="editSupplier(supplier)"
-                      pTooltip="Edit Supplier">
-                    </p-button>
-                    <p-button
-                      icon="pi pi-trash"
-                      [outlined]="true"
-                      severity="danger"
-                      size="small"
-                      (onClick)="deleteSupplier(supplier)"
-                      pTooltip="Delete Supplier">
-                    </p-button>
-                  </div>
-                </td>
-              </tr>
-            </ng-template>
-            <ng-template pTemplate="emptymessage">
-              <tr>
-                <td colspan="10" class="empty-message">
-                  <div class="empty-content">
-                    <i class="pi pi-truck"></i>
-                    <p>No suppliers found</p>
-                  </div>
-                </td>
-              </tr>
-            </ng-template>
-          </p-table>
-        </div>
-      </p-tabPanel>
-
-      <!-- Customers Tab -->
-      <p-tabPanel header="Customers" leftIcon="pi pi-shopping-cart">
-        <div class="tab-header">
-          <p-button
-            label="Add Customer"
-            icon="pi pi-plus"
-            (onClick)="createCustomer()">
-          </p-button>
-        </div>
-
-        <div class="customers-table-section">
-          <p-table
-            [value]="filteredCustomers"
-            styleClass="p-datatable-sm"
-            [paginator]="true"
-            [rows]="10"
-            [showCurrentPageReport]="true"
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} customers">
-            <ng-template pTemplate="header">
-              <tr>
-                <th>Name</th>
-                <th>Contact Person</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Location</th>
-                <th>Type</th>
-                <th>Total Orders</th>
-                <th>Total Value</th>
-                <th>Credit Balance</th>
-                <th>Last Order</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-customer>
-              <tr>
-                <td>
-                  <div class="customer-info">
-                    <div class="customer-name">{{ customer.name }}</div>
-                  </div>
-                </td>
-                <td>{{ customer.contactPerson }}</td>
-                <td>{{ customer.email }}</td>
-                <td>{{ customer.phone }}</td>
-                <td>
-                  <div class="location-info">
-                    <div>{{ customer.city }}, {{ customer.country }}</div>
-                  </div>
-                </td>
-                <td>
-                  <p-badge
-                    [value]="customer.customerType"
-                    [severity]="getCustomerTypeSeverity(customer.customerType)">
-                  </p-badge>
-                </td>
-                <td>{{ customer.totalOrders }}</td>
-                <td>{{ formatCurrency(customer.totalValue) }}</td>
-                <td>
-                  <div class="credit-info">
-                    <div>{{ formatCurrency(customer.currentBalance) }}</div>
-                    <div class="credit-limit">of {{ formatCurrency(customer.creditLimit) }}</div>
-                  </div>
-                </td>
-                <td>{{ customer.lastOrderDate ? formatDate(customer.lastOrderDate) : 'N/A' }}</td>
-                <td>
-                  <p-badge
-                    [value]="customer.status"
-                    [severity]="getStatusSeverity(customer.status)">
-                  </p-badge>
-                </td>
-                <td>
-                  <div class="action-buttons">
-                    <p-button
-                      icon="pi pi-pencil"
-                      [outlined]="true"
-                      size="small"
-                      (onClick)="editCustomer(customer)"
-                      pTooltip="Edit Customer">
-                    </p-button>
-                    <p-button
-                      icon="pi pi-trash"
-                      [outlined]="true"
-                      severity="danger"
-                      size="small"
-                      (onClick)="deleteCustomer(customer)"
-                      pTooltip="Delete Customer">
-                    </p-button>
-                  </div>
-                </td>
-              </tr>
-            </ng-template>
-            <ng-template pTemplate="emptymessage">
-              <tr>
-                <td colspan="12" class="empty-message">
-                  <div class="empty-content">
-                    <i class="pi pi-shopping-cart"></i>
-                    <p>No customers found</p>
-                  </div>
-                </td>
-              </tr>
-            </ng-template>
-          </p-table>
-        </div>
-      </p-tabPanel>
-    </p-tabView>
+      </div>
+    </div>
   </div>
 
-  <!-- Supplier Dialog -->
+  <div class="bg-white rounded-xl border border-gray-200 p-12 text-center" *ngIf="loading">
+    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="pi pi-spin pi-spinner text-blue-500 text-2xl"></i>
+    </div>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">Loading suppliers...</h3>
+    <p class="text-gray-500">Please wait while data is being fetched.</p>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" *ngIf="!loading">
+    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+      <h2 class="text-lg font-semibold text-gray-900">Supplier List ({{ filteredSuppliers.length }})</h2>
+    </div>
+
+    <p-table
+      [value]="filteredSuppliers"
+      styleClass="p-datatable-sm"
+      [paginator]="true"
+      [rows]="10"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} suppliers">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Name</th>
+          <th>Contact Person</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Address</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-supplier>
+        <tr>
+          <td>
+            <div>
+              <div class="font-semibold text-gray-900">{{ supplier.name }}</div>
+            </div>
+          </td>
+          <td>{{ supplier.contact_name || '-' }}</td>
+          <td>{{ supplier.email || '-' }}</td>
+          <td>{{ supplier.phone || '-' }}</td>
+          <td>{{ supplier.address || '-' }}</td>
+          <td>
+            <p-badge
+              [value]="getStatusLabel(supplier.is_active)"
+              [severity]="getStatusSeverity(supplier.is_active)">
+            </p-badge>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <p-button
+                icon="pi pi-pencil"
+                [outlined]="true"
+                size="small"
+                (onClick)="openEditDialog(supplier)"
+                pTooltip="Edit Supplier">
+              </p-button>
+              <p-button
+                icon="pi pi-trash"
+                [outlined]="true"
+                severity="danger"
+                size="small"
+                (onClick)="deleteSupplier($event, supplier)"
+                pTooltip="Delete Supplier">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="text-center py-12 text-gray-500">
+            No suppliers found
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
   <p-dialog
     [(visible)]="showSupplierDialog"
-    [header]="editingSupplier?.id ? 'Edit Supplier' : 'Add New Supplier'"
+    [header]="editingSupplier ? 'Edit Supplier' : 'Add Supplier'"
     [modal]="true"
-    [style]="{width: '700px'}"
-    [closable]="true">
-    <div class="supplier-form" *ngIf="editingSupplier">
-      <div class="form-grid">
-        <div class="form-field">
-          <label for="name">Supplier Name *</label>
-          <input
-            pInputText
-            id="name"
-            [(ngModel)]="editingSupplier.name"
-            placeholder="Enter supplier name"
-            class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label for="contactPerson">Contact Person *</label>
-          <input
-            pInputText
-            id="contactPerson"
-            [(ngModel)]="editingSupplier.contactPerson"
-            placeholder="Enter contact person name"
-            class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label for="email">Email *</label>
-          <input
-            pInputText
-            id="email"
-            [(ngModel)]="editingSupplier.email"
-            type="email"
-            placeholder="Enter email address"
-            class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label for="phone">Phone *</label>
-          <input
-            pInputText
-            id="phone"
-            [(ngModel)]="editingSupplier.phone"
-            placeholder="Enter phone number"
-            class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label for="address">Address *</label>
-          <input
-            pInputText
-            id="address"
-            [(ngModel)]="editingSupplier.address"
-            placeholder="Enter street address"
-            class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label for="city">City *</label>
-          <input
-            pInputText
-            id="city"
-            [(ngModel)]="editingSupplier.city"
-            placeholder="Enter city"
-            class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label for="country">Country *</label>
-          <input
-            pInputText
-            id="country"
-            [(ngModel)]="editingSupplier.country"
-            placeholder="Enter country"
-            class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label for="taxId">Tax ID</label>
-          <input
-            pInputText
-            id="taxId"
-            [(ngModel)]="editingSupplier.taxId"
-            placeholder="Enter tax ID"
-            class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label for="paymentTerms">Payment Terms</label>
-          <p-dropdown
-            [(ngModel)]="editingSupplier.paymentTerms"
-            [options]="paymentTermsOptions"
-            optionLabel="label"
-            optionValue="value">
-          </p-dropdown>
-        </div>
-
-        <div class="form-field">
-          <label for="status">Status</label>
-          <p-dropdown
-            [(ngModel)]="editingSupplier.status"
-            [options]="statusOptions"
-            optionLabel="label"
-            optionValue="value">
-          </p-dropdown>
-        </div>
-
-        <div class="form-field full-width">
-          <label for="notes">Notes</label>
-          <textarea
-            pInputTextarea
-            [(ngModel)]="editingSupplier.notes"
-            placeholder="Additional notes..."
-            rows="3"
-            class="form-textarea">
-          </textarea>
-        </div>
+    [style]="{ width: '640px' }"
+    [closable]="!createSaving">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+        <input pInputText [(ngModel)]="createForm.name" placeholder="Supplier name" class="w-full"
+               [class.border-red-500]="formSubmitted && !createForm.name">
+        <small class="text-red-500 text-xs" *ngIf="formSubmitted && !createForm.name">Name is required</small>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Contact Person</label>
+        <input pInputText [(ngModel)]="createForm.contact_name" placeholder="Contact name" class="w-full">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+        <input pInputText [(ngModel)]="createForm.email" placeholder="email@example.com" class="w-full">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+        <input pInputText [(ngModel)]="createForm.phone" placeholder="+84..." class="w-full">
+      </div>
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+        <textarea pInputTextarea [(ngModel)]="createForm.address" rows="3" placeholder="Street address" class="w-full"></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+        <p-dropdown [(ngModel)]="createForm.is_active" [options]="[{label: 'Active', value: true}, {label: 'Inactive', value: false}]" optionLabel="label" optionValue="value" class="w-full"></p-dropdown>
       </div>
     </div>
 
     <ng-template pTemplate="footer">
-      <p-button
-        label="Cancel"
-        icon="pi pi-times"
-        [outlined]="true"
-        (onClick)="cancelSupplierEdit()">
-      </p-button>
-      <p-button
-        label="Save"
-        icon="pi pi-check"
-        severity="success"
-        (onClick)="saveSupplier()"
-        [disabled]="!editingSupplier?.name || !editingSupplier?.contactPerson || !editingSupplier?.email || !editingSupplier?.phone || !editingSupplier?.address || !editingSupplier?.city || !editingSupplier?.country">
-      </p-button>
+      <p-button label="Cancel" [outlined]="true" [disabled]="createSaving" (onClick)="cancelEdit()"></p-button>
+      <p-button label="Save" icon="pi pi-check" [loading]="createSaving" (onClick)="saveSupplier()"></p-button>
     </ng-template>
   </p-dialog>
-
-  <!-- Customer Dialog -->
-  <p-dialog
-    [(visible)]="showCustomerDialog"
-    [header]="editingCustomer?.id ? 'Edit Customer' : 'Add New Customer'"
-    [modal]="true"
-    [style]="{width: '700px'}"
-    [closable]="true">
-    <div class="customer-form" *ngIf="editingCustomer">
-      <div class="form-grid">
-        <div class="form-field">
-          <label for="name">Customer Name *</label>
-          <input
-            pInputText
-            id="name"
-            [(ngModel)]="editingCustomer.name"
-            placeholder="Enter customer name"
-            class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label for="contactPerson">Contact Person *</label>
-          <input
-            pInputText
-            id="contactPerson"
-            [(ngModel)]="editingCustomer.contactPerson"
-            placeholder="Enter contact person name"
-            class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label for="email">Email *</label>
-          <input
-            pInputText
-            id="email"
-            [(ngModel)]="editingCustomer.email"
-            type="email"
-            placeholder="Enter email address"
-            class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label for="phone">Phone *</label>
-          <input
-            pInputText
-            id="phone"
-            [(ngModel)]="editingCustomer.phone"
-            placeholder="Enter phone number"
-            class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label for="address">Address *</label>
-          <input
-            pInputText
-            id="address"
-            [(ngModel)]="editingCustomer.address"
-            placeholder="Enter street address"
-            class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label for="city">City *</label>
-          <input
-            pInputText
-            id="city"
-            [(ngModel)]="editingCustomer.city"
-            placeholder="Enter city"
-            class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label for="country">Country *</label>
-          <input
-            pInputText
-            id="country"
-            [(ngModel)]="editingCustomer.country"
-            placeholder="Enter country"
-            class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label for="customerType">Customer Type</label>
-          <p-dropdown
-            [(ngModel)]="editingCustomer.customerType"
-            [options]="customerTypeOptions"
-            optionLabel="label"
-            optionValue="value">
-          </p-dropdown>
-        </div>
-
-        <div class="form-field">
-          <label for="creditLimit">Credit Limit</label>
-          <input
-            pInputText
-            id="creditLimit"
-            [(ngModel)]="editingCustomer.creditLimit"
-            type="number"
-            step="0.01"
-            placeholder="0.00"
-            class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label for="status">Status</label>
-          <p-dropdown
-            [(ngModel)]="editingCustomer.status"
-            [options]="statusOptions"
-            optionLabel="label"
-            optionValue="value">
-          </p-dropdown>
-        </div>
-
-        <div class="form-field full-width">
-          <label for="notes">Notes</label>
-          <textarea
-            pInputTextarea
-            [(ngModel)]="editingCustomer.notes"
-            placeholder="Additional notes..."
-            rows="3"
-            class="form-textarea">
-          </textarea>
-        </div>
-      </div>
-    </div>
-
-    <ng-template pTemplate="footer">
-      <p-button
-        label="Cancel"
-        icon="pi pi-times"
-        [outlined]="true"
-        (onClick)="cancelCustomerEdit()">
-      </p-button>
-      <p-button
-        label="Save"
-        icon="pi pi-check"
-        severity="success"
-        (onClick)="saveCustomer()"
-        [disabled]="!editingCustomer?.name || !editingCustomer?.contactPerson || !editingCustomer?.email || !editingCustomer?.phone || !editingCustomer?.address || !editingCustomer?.city || !editingCustomer?.country">
-      </p-button>
-    </ng-template>
-  </p-dialog>
-
-  <!-- Confirm Dialog -->
-  <p-confirmDialog></p-confirmDialog>
-
-  <!-- Toast Messages -->
-  <p-toast></p-toast>
 </div>
