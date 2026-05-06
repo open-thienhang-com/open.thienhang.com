@@ -296,6 +296,19 @@ export class SidebarComponent implements OnInit, OnChanges {
       this.onPresetChange(this.themeState().preset);
     }
 
+    // Set initial user from session storage (avoids blank until auth service emits)
+    try {
+      const cached = sessionStorage.getItem('currentUser');
+      if (cached) {
+        const user = JSON.parse(cached);
+        if (user && Object.keys(user).length > 0) {
+          this.currentUser.set(user);
+        }
+      }
+    } catch (e) {
+      // ignore session storage errors
+    }
+
     // Subscribe to user changes from AuthServices (this ensures we get normalized data)
     this.authServices.getUser().subscribe(user => {
       if (user) {

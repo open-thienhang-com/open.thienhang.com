@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AppSwitcherService, AppKey } from '../../core/services/app-switcher.service';
 import { TreeModule } from 'primeng/tree';
@@ -8,14 +9,173 @@ import { TreeNode } from 'primeng/api';
 @Component({
   selector: 'app-applications',
   standalone: true,
-  imports: [CommonModule, TreeModule],
+  imports: [CommonModule, FormsModule, TreeModule],
   templateUrl: './applications.component.html',
   styleUrls: ['./applications.component.scss']
 })
 export class ApplicationsComponent implements OnInit {
-  selectedNode: TreeNode | null = null;
+  selectedNodes: TreeNode[] = [];
+  searchTerm: string = '';
+
+  get selectedNode(): TreeNode | null {
+    return this.selectedNodes.length > 0 ? this.selectedNodes[0] : null;
+  }
+
+  get filteredTreeData(): TreeNode[] {
+    if (!this.searchTerm) return this.treeData;
+    
+    const search = this.searchTerm.toLowerCase();
+    return this.filterTree(this.treeData, search);
+  }
+
+  private filterTree(nodes: TreeNode[], search: string): TreeNode[] {
+    return nodes
+      .map(node => {
+        const cloned = { ...node };
+        if (cloned.children) {
+          cloned.children = this.filterTree(cloned.children, search);
+        }
+        
+        const matchesLabel = (node.label || '').toLowerCase().includes(search);
+        const matchesDesc = node.data?.description?.toLowerCase().includes(search);
+        const hasMatchingChildren = cloned.children && cloned.children.length > 0;
+        
+        if (matchesLabel || matchesDesc || hasMatchingChildren) {
+          if (cloned.children) {
+            cloned.expanded = true;
+          }
+          return cloned;
+        }
+        return null;
+      })
+      .filter((node): node is TreeNode => node !== null);
+  }
+
+  features = [
+    { icon: 'pi pi-bolt', color: 'text-yellow-600', label: 'Real-time Sync', desc: 'All modules sync in real-time across apps' },
+    { icon: 'pi pi-shield', color: 'text-green-600', label: 'Role-based Access', desc: 'Fine-grained permissions per module' },
+    { icon: 'pi pi-chart-bar', color: 'text-blue-600', label: 'Analytics', desc: 'Cross-platform analytics and reporting' },
+    { icon: 'pi pi-bell', color: 'text-red-600', label: 'Smart Notifications', desc: 'Context-aware alerts and reminders' },
+    { icon: 'pi pi-mobile', color: 'text-purple-600', label: 'Mobile Ready', desc: 'Responsive design for all devices' },
+    { icon: 'pi pi-cog', color: 'text-gray-600', label: 'Configurable', desc: 'Customize workflows and preferences' }
+  ];
+
+  recentActivity = [
+    { icon: 'pi pi-check-circle', color: 'text-green-600', title: 'Inventory sync completed', time: '2 min ago' },
+    { icon: 'pi pi-refresh', color: 'text-blue-600', title: 'Loyalty points recalculated', time: '15 min ago' },
+    { icon: 'pi pi-user-plus', color: 'text-purple-600', title: 'New user registered', time: '1 hour ago' },
+    { icon: 'pi pi-shopping-cart', color: 'text-emerald-600', title: '12 new orders received', time: '2 hours ago' }
+  ];
 
   treeData: TreeNode[] = [
+    {
+      key: 'planning-root',
+      label: 'Planning & Scheduling',
+      icon: 'pi pi-calendar',
+      selectable: false,
+      expanded: true,
+      children: [
+        {
+          key: 'planning-home',
+          label: 'Planning Home',
+          icon: 'pi pi-home',
+          data: {
+            route: '/planning',
+            description: 'Open planning home and forecasting workbench'
+          }
+        },
+        {
+          key: 'planning-evaluate',
+          label: 'Evaluate Plan',
+          icon: 'pi pi-check-square',
+          data: {
+            route: '/planning/evaluate',
+            description: 'Evaluate and review plans'
+          }
+        },
+        {
+          key: 'planning-schedule',
+          label: 'Schedule Evaluation',
+          icon: 'pi pi-clock',
+          data: {
+            route: '/planning/schedule-evaluation',
+            description: 'Evaluate planned schedules'
+          }
+        },
+        {
+          key: 'planning-simulation',
+          label: 'Simulation',
+          icon: 'pi pi-play',
+          data: {
+            route: '/planning/simulation',
+            description: 'Run planning simulations'
+          }
+        },
+        {
+          key: 'planning-auto',
+          label: 'Auto Planning',
+          icon: 'pi pi-cog',
+          data: {
+            route: '/planning/auto-planning',
+            description: 'Automated planning workflows'
+          }
+        },
+        {
+          key: 'forecast-demand',
+          label: 'Forecast Demand',
+          icon: 'pi pi-line-chart',
+          data: {
+            route: '/planning/forecast/demand',
+            description: 'Forecast demand scenarios'
+          }
+        },
+        {
+          key: 'forecast-truck',
+          label: 'Forecast Truck',
+          icon: 'pi pi-truck',
+          data: {
+            route: '/planning/forecast/truck',
+            description: 'Plan truck capacity and routes'
+          }
+        },
+        {
+          key: 'forecast-trip',
+          label: 'Forecast Trip',
+          icon: 'pi pi-map',
+          data: {
+            route: '/planning/forecast/trip',
+            description: 'Analyze trip forecasting'
+          }
+        },
+        {
+          key: 'forecast-hub',
+          label: 'Forecast Hub',
+          icon: 'pi pi-sitemap',
+          data: {
+            route: '/planning/forecast/hub',
+            description: 'Review hub-level forecasts'
+          }
+        },
+        {
+          key: 'delivery-points',
+          label: 'Delivery Points',
+          icon: 'pi pi-map-marker',
+          data: {
+            route: '/planning/delivery-points',
+            description: 'Manage delivery points and logistics'
+          }
+        },
+        {
+          key: 'fleet',
+          label: 'Fleet Management',
+          icon: 'pi pi-truck',
+          data: {
+            route: '/planning/fleet',
+            description: 'Manage planning fleet assets'
+          }
+        }
+      ]
+    },
     {
       key: 'retail-root',
       label: 'Retail & Supply Chain',
@@ -24,142 +184,25 @@ export class ApplicationsComponent implements OnInit {
       expanded: true,
       children: [
         {
-          key: 'planning',
-          label: 'Planning & Forecasting',
-          icon: 'pi pi-chart-line',
-          selectable: false,
-          expanded: true,
-          children: [
-            {
-              key: 'planning-home',
-              label: 'Planning Home',
-              icon: 'pi pi-home',
-              data: {
-                route: '/planning',
-                description: 'Open planning home and forecasting workbench'
-              }
-            },
-            {
-              key: 'planning-forecast-demand',
-              label: 'Forecast Demand',
-              icon: 'pi pi-line-chart',
-              data: {
-                route: '/planning/forecast/demand',
-                description: 'Forecast demand scenarios'
-              }
-            },
-            {
-              key: 'planning-forecast-truck',
-              label: 'Forecast Truck',
-              icon: 'pi pi-truck',
-              data: {
-                route: '/planning/forecast/truck',
-                description: 'Plan truck capacity and routes'
-              }
-            },
-            {
-              key: 'planning-forecast-trip',
-              label: 'Forecast Trip',
-              icon: 'pi pi-map',
-              data: {
-                route: '/planning/forecast/trip',
-                description: 'Analyze trip forecasting'
-              }
-            },
-            {
-              key: 'planning-forecast-hub',
-              label: 'Forecast Hub',
-              icon: 'pi pi-sitemap',
-              data: {
-                route: '/planning/forecast/hub',
-                description: 'Review hub-level forecasts'
-              }
-            },
-            {
-              key: 'planning-auto',
-              label: 'Auto Planning',
-              icon: 'pi pi-cog',
-              data: {
-                route: '/planning/auto-planning',
-                description: 'Automated planning workflows'
-              }
-            },
-            {
-              key: 'planning-delivery-points',
-              label: 'Delivery Points',
-              icon: 'pi pi-map-marker',
-              data: {
-                route: '/planning/delivery-points',
-                description: 'Manage delivery points and logistics'
-              }
-            },
-            {
-              key: 'planning-fleet',
-              label: 'Fleet Management',
-              icon: 'pi pi-truck',
-              data: {
-                route: '/planning/fleet',
-                description: 'Manage planning fleet assets'
-              }
-            }
-          ]
-        },
-        {
-          key: 'inventory',
+          key: 'retail-inventory',
           label: 'Inventory Management',
           icon: 'pi pi-box',
           selectable: false,
           expanded: true,
           children: [
             {
-              key: 'inventory-overview',
-              label: 'Overview',
-              icon: 'pi pi-fw pi-book',
-              data: {
-                route: '/inventory/overview',
-                description: 'Inventory dashboard and stock overview'
-              }
-            },
-            {
               key: 'inventory-products',
               label: 'Products',
-              icon: 'pi pi-fw pi-tags',
+              icon: 'pi pi-tags',
               data: {
                 route: '/inventory/products',
-                description: 'Product catalog and details'
-              }
-            },
-            {
-              key: 'inventory-product-create',
-              label: 'Create Product',
-              icon: 'pi pi-fw pi-plus',
-              data: {
-                route: '/inventory/products/create',
-                description: 'Create a new inventory product'
-              }
-            },
-            {
-              key: 'inventory-product-detail',
-              label: 'Product Detail',
-              icon: 'pi pi-fw pi-eye',
-              data: {
-                route: '/inventory/products/:id',
-                description: 'View product details by ID'
-              }
-            },
-            {
-              key: 'inventory-product-edit',
-              label: 'Edit Product',
-              icon: 'pi pi-fw pi-pencil',
-              data: {
-                route: '/inventory/products/:id/edit',
-                description: 'Edit an existing inventory product'
+                description: 'Product catalog and management'
               }
             },
             {
               key: 'inventory-categories',
               label: 'Categories',
-              icon: 'pi pi-fw pi-list',
+              icon: 'pi pi-list',
               data: {
                 route: '/inventory/categories',
                 description: 'Manage item categories'
@@ -168,82 +211,64 @@ export class ApplicationsComponent implements OnInit {
             {
               key: 'inventory-suppliers',
               label: 'Suppliers',
-              icon: 'pi pi-fw pi-user-plus',
+              icon: 'pi pi-user-plus',
               data: {
                 route: '/inventory/suppliers',
                 description: 'Manage suppliers and vendors'
               }
             },
             {
-              key: 'inventory-partners',
-              label: 'Partners',
-              icon: 'pi pi-fw pi-briefcase',
+              key: 'inventory-analytics',
+              label: 'Analytics',
+              icon: 'pi pi-chart-bar',
               data: {
-                route: '/inventory/partners',
-                description: 'Partner and collaborator management'
+                route: '/inventory/analytics',
+                description: 'Inventory analytics and reporting'
+              }
+            }
+          ]
+        },
+        {
+          key: 'retail-inventory-2',
+          label: 'Inventory',
+          icon: 'pi pi-box',
+          selectable: false,
+          expanded: false,
+          children: [
+            {
+              key: 'inventory-products',
+              label: 'Products',
+              icon: 'pi pi-tags',
+              data: {
+                route: '/inventory/products',
+                description: 'Product catalog and management'
+              }
+            },
+            {
+              key: 'inventory-categories',
+              label: 'Categories',
+              icon: 'pi pi-list',
+              data: {
+                route: '/inventory/categories',
+                description: 'Manage item categories'
+              }
+            },
+            {
+              key: 'inventory-suppliers',
+              label: 'Suppliers',
+              icon: 'pi pi-user-plus',
+              data: {
+                route: '/inventory/suppliers',
+                description: 'Manage suppliers and vendors'
               }
             },
             {
               key: 'inventory-analytics',
               label: 'Analytics',
-              icon: 'pi pi-fw pi-chart-bar',
+              icon: 'pi pi-chart-bar',
               data: {
                 route: '/inventory/analytics',
                 description: 'Inventory analytics and reporting'
-              }
-            },
-            {
-              key: 'inventory-settings',
-              label: 'Inventory Settings',
-              icon: 'pi pi-fw pi-cog',
-              data: {
-                route: '/inventory/settings',
-                description: 'Inventory configuration and settings'
-              }
-            },
-            {
-              key: 'inventory-delivery-points',
-              label: 'Delivery Points',
-              icon: 'pi pi-fw pi-map-marker',
-              data: {
-                route: '/inventory/delivery-points',
-                description: 'Delivery points and warehouse locations'
-              }
-            },
-            {
-              key: 'inventory-forecast-demand',
-              label: 'Forecast Demand',
-              icon: 'pi pi-fw pi-chart-line',
-              data: {
-                route: '/inventory/forecast/demand',
-                description: 'Demand forecasting for inventory'
-              }
-            },
-            {
-              key: 'inventory-forecast-truck',
-              label: 'Forecast Truck',
-              icon: 'pi pi-fw pi-truck',
-              data: {
-                route: '/inventory/forecast/truck',
-                description: 'Truck planning and forecast'
-              }
-            },
-            {
-              key: 'inventory-forecast-trip',
-              label: 'Forecast Trip',
-              icon: 'pi pi-fw pi-map',
-              data: {
-                route: '/inventory/forecast/trip',
-                description: 'Trip planning and forecast'
-              }
-            },
-            {
-              key: 'inventory-forecast-hub',
-              label: 'Forecast Hub',
-              icon: 'pi pi-fw pi-sitemap',
-              data: {
-                route: '/inventory/forecast/hub',
-                description: 'Hub-level inventory forecasts'
               }
             }
           ]
@@ -345,15 +370,6 @@ export class ApplicationsComponent implements OnInit {
           selectable: false,
           expanded: true,
           children: [
-            {
-              key: 'loyalty-overview',
-              label: 'Overview',
-              icon: 'pi pi-fw pi-home',
-              data: {
-                route: '/loyalty/overview',
-                description: 'Loyalty program overview'
-              }
-            },
             {
               key: 'loyalty-members',
               label: 'Members',
@@ -1075,15 +1091,6 @@ export class ApplicationsComponent implements OnInit {
           expanded: true,
           children: [
             {
-              key: 'notification-overview',
-              label: 'Overview',
-              icon: 'pi pi-fw pi-eye',
-              data: {
-                route: '/notification',
-                description: 'Notification service overview'
-              }
-            },
-            {
               key: 'notification-explorer',
               label: 'Explorer',
               icon: 'pi pi-fw pi-search',
@@ -1167,19 +1174,17 @@ export class ApplicationsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.selectedNode = null;
+    this.selectedNodes = [];
   }
 
   onNodeSelect(event: any): void {
     const node = event.node as TreeNode;
-    this.selectedNode = node;
+    this.selectedNodes = [node]; // PrimeNG single selection returns array
+    // Just show details, don't navigate automatically
+  }
 
-    const route = node?.data?.route as string | undefined;
-    if (route) {
-      this.navigateToRoute(route, node?.data?.app as AppKey | undefined);
-    } else if (node?.data?.app) {
-      this.selectApp(node.key as AppKey);
-    }
+  clearSelection(): void {
+    this.selectedNodes = [];
   }
 
   navigateToRoute(route: string, appKey?: AppKey): void {
