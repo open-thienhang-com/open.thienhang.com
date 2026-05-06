@@ -150,7 +150,7 @@ export class PosComponent implements OnInit, OnDestroy {
 
   loadStocks(): void {
     if (!this.selectedWarehouseId) return;
-    this.inventoryService.listStocks(this.selectedWarehouseId, 0, 200)
+    this.inventoryService.listStocks(this.selectedWarehouseId, 0, 100)
       .pipe(takeUntil(this.destroy$))
       .subscribe(res => {
         const stocks = res.data || [];
@@ -276,15 +276,27 @@ export class PosComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const subtotal = this.subtotal;
+    const tax = this.tax;
+    const total = this.total;
+
     const payload = {
+      order_number: this.orderNumber,
       customer_id: 'walk-in',
-      total_amount: this.total,
-      status: 'confirmed',
+      source: 'pos',
+      warehouse_id: this.selectedWarehouseId || undefined,
+      total_amount: total,
+      tax_amount: tax,
+      discount_total: 0,
+      net_amount: subtotal,
       items: this.cart.map((line) => ({
         product_id: line.product.id,
+        sku: line.product.sku,
+        product_name: line.product.name,
         quantity: line.quantity,
         unit_price: this.getEffectivePrice(line.product as any),
-        total_price: this.getEffectivePrice(line.product as any) * line.quantity
+        total_price: this.getEffectivePrice(line.product as any) * line.quantity,
+        discount: 0
       }))
     };
 
@@ -292,6 +304,7 @@ export class PosComponent implements OnInit, OnDestroy {
     this.inventoryService.createOrder(payload).subscribe({
       next: () => {
         this.placingOrder = false;
+        this.orderNumber = Math.floor(1000 + Math.random() * 9000).toString();
         this.messageService.add({
           severity: 'success',
           summary: 'Sale Completed',

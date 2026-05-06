@@ -1,3 +1,4 @@
+<p-toast></p-toast>
 <div class="ecommerce-platform">
 
   <!-- ── Top Dashboard Header ── -->
@@ -78,7 +79,7 @@
           }
         } @else {
           @for (product of filteredProducts; track product.id) {
-            <div class="p-card" [class.out-of-stock]="getStockLevel(product.id) <= 0">
+            <div class="p-card" [class.out-of-stock]="getStockLevel(product) <= 0">
               <div class="pf-thumb">
                 @if (getProductImage(product)) {
                   <img [src]="getProductImage(product)" [alt]="product.name" />

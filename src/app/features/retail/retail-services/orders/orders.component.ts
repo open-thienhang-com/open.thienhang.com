@@ -8,6 +8,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
+import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
 import { InventoryService as RetailOrderService } from '../../../inventory/services/inventory.service';
 
@@ -38,7 +39,8 @@ interface OrderItem {
     DropdownModule,
     ToastModule,
     TagModule,
-    TooltipModule
+    TooltipModule,
+    DialogModule
   ],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.scss',
@@ -51,6 +53,9 @@ export class OrdersComponent implements OnInit {
   totalRecords = signal(0);
   first = signal(0);
   rows = signal(20);
+  selectedOrder = signal<any>(null);
+  detailVisible = signal(false);
+  detailLoading = signal(false);
 
   searchTerm = signal('');
   selectedOrderStatus = signal('');
@@ -168,6 +173,27 @@ export class OrdersComponent implements OnInit {
     if (key === 'unpaid' || key === 'pending') return 'warn';
     if (key === 'failed') return 'danger';
     return 'info';
+  }
+
+  viewOrder(id: string): void {
+    this.detailLoading.set(true);
+    this.detailVisible.set(true);
+    this.selectedOrder.set(null);
+    this.retailOrderService.getOrder(id).subscribe({
+      next: (resp: any) => {
+        this.selectedOrder.set(resp?.data || resp);
+        this.detailLoading.set(false);
+      },
+      error: () => {
+        this.detailLoading.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Could not load order details.' });
+      }
+    });
+  }
+
+  closeDetail(): void {
+    this.detailVisible.set(false);
+    this.selectedOrder.set(null);
   }
 
   private mapOrder(raw: any): OrderItem {

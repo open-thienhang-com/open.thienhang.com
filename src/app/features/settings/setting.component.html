@@ -606,6 +606,64 @@
           </div>
         </ng-container>
 
+        <!-- ══ PERMISSIONS ══ -->
+        <ng-container *ngIf="activeSection === 'permissions'">
+          <div class="rounded-lg border border-gray-100 overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-shield text-indigo-600 text-sm"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-gray-900">Permission Check Results</h3>
+                  <p class="text-xs text-gray-500">Verify access rights across modules</p>
+                </div>
+              </div>
+              <p-button icon="pi pi-refresh" [text]="true" [rounded]="true" size="small"
+                (click)="loadPermissionsCheck()" [loading]="permissionsCheckLoading"></p-button>
+            </div>
+            <div class="p-5">
+              <div *ngIf="permissionsCheckLoading" class="py-8 text-center">
+                <p-progressSpinner [style]="{width:'48px',height:'48px'}"></p-progressSpinner>
+                <p class="text-sm text-gray-400 mt-3">Checking permissions...</p>
+              </div>
+
+              <div *ngIf="!permissionsCheckLoading && permissionChecks.length > 0" class="flex flex-col gap-4">
+                <p-table [value]="permissionChecks" [tableStyle]="{'min-width': '400px'}" styleClass="p-datatable-sm">
+                  <ng-template pTemplate="header">
+                    <tr>
+                      <th class="text-left">Path</th>
+                      <th class="text-center w-24">Method</th>
+                      <th class="text-center w-24">Status</th>
+                    </tr>
+                  </ng-template>
+                  <ng-template pTemplate="body" let-check>
+                    <tr>
+                      <td class="font-mono text-sm">{{ check.path }}</td>
+                      <td class="text-center"><p-tag [value]="check.method" severity="info" styleClass="text-xs"></p-tag></td>
+                      <td class="text-center">
+                        <span class="inline-flex items-center gap-1.5">
+                          <i class="text-sm" [ngClass]="check.allow ? 'pi pi-check text-green-600' : 'pi pi-times text-red-600'"></i>
+                          <span class="text-sm font-semibold" [ngClass]="check.allow ? 'text-green-600' : 'text-red-600'">
+                            {{ check.allow ? 'ALLOW' : 'DENY' }}
+                          </span>
+                        </span>
+                      </td>
+                    </tr>
+                  </ng-template>
+                </p-table>
+              </div>
+
+              <div *ngIf="!permissionsCheckLoading && permissionChecks.length === 0" class="py-8 text-center">
+                <i class="pi pi-shield text-3xl text-gray-300 block mb-2"></i>
+                <p class="text-sm text-gray-400">No permission data available</p>
+                <p-button label="Check Permissions" icon="pi pi-refresh" size="small" class="mt-3"
+                  (click)="loadPermissionsCheck()"></p-button>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
         <!-- ══ DATA & PRIVACY ══ -->
         <ng-container *ngIf="activeSection === 'data'">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">

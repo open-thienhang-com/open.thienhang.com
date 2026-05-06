@@ -172,6 +172,7 @@
           <th>Order Status</th>
           <th>Payment Status</th>
           <th>Created At</th>
+          <th></th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-item>
@@ -194,13 +195,99 @@
             <p-tag [value]="item.paymentStatus || '-'" [severity]="getPaymentStatusSeverity(item.paymentStatus)"></p-tag>
           </td>
           <td>{{ item.createdAt ? (item.createdAt | date: 'short') : '-' }}</td>
+          <td>
+            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" pTooltip="View Detail" (onClick)="viewOrder(item.id)"></p-button>
+          </td>
         </tr>
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="8" class="text-center py-12 text-gray-500">No orders found</td>
+          <td colspan="9" class="text-center py-12 text-gray-500">No orders found</td>
         </tr>
       </ng-template>
     </p-table>
   </div>
 </div>
+
+<p-dialog
+  header="Order Detail"
+  [visible]="detailVisible()"
+  (visibleChange)="detailVisible.set($event)"
+  [modal]="true"
+  [style]="{ width: '700px' }"
+  [draggable]="false"
+  [resizable]="false">
+
+  <div *ngIf="detailLoading()" class="flex justify-center py-8">
+    <i class="pi pi-spin pi-spinner text-2xl text-orange-500"></i>
+  </div>
+
+  <ng-container *ngIf="!detailLoading() && selectedOrder()">
+    <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
+      <div>
+        <span class="text-gray-500">Order Number</span>
+        <p class="font-semibold">{{ selectedOrder().order_number || '-' }}</p>
+      </div>
+      <div>
+        <span class="text-gray-500">Customer</span>
+        <p class="font-semibold">{{ selectedOrder().customer_id || '-' }}</p>
+      </div>
+      <div>
+        <span class="text-gray-500">Source</span>
+        <p class="font-semibold">{{ selectedOrder().source || '-' }}</p>
+      </div>
+      <div>
+        <span class="text-gray-500">Warehouse</span>
+        <p class="font-semibold">{{ selectedOrder().warehouse_id || '-' }}</p>
+      </div>
+      <div>
+        <span class="text-gray-500">Order Status</span>
+        <p-tag [value]="selectedOrder().order_status || '-'" [severity]="getOrderStatusSeverity(selectedOrder().order_status)"></p-tag>
+      </div>
+      <div>
+        <span class="text-gray-500">Payment Status</span>
+        <p-tag [value]="selectedOrder().payment_status || '-'" [severity]="getPaymentStatusSeverity(selectedOrder().payment_status)"></p-tag>
+      </div>
+      <div>
+        <span class="text-gray-500">Total Amount</span>
+        <p class="font-semibold text-orange-600">{{ selectedOrder().total_amount | number: '1.2-2' }}</p>
+      </div>
+      <div>
+        <span class="text-gray-500">Net Amount</span>
+        <p class="font-semibold">{{ selectedOrder().net_amount | number: '1.2-2' }}</p>
+      </div>
+    </div>
+
+    <h3 class="text-sm font-semibold text-gray-700 mb-2">Items ({{ selectedOrder().items?.length || 0 }})</h3>
+    <div class="border rounded-lg overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-3 py-2 text-left text-gray-600">Product</th>
+            <th class="px-3 py-2 text-left text-gray-600">SKU</th>
+            <th class="px-3 py-2 text-right text-gray-600">Qty</th>
+            <th class="px-3 py-2 text-right text-gray-600">Unit Price</th>
+            <th class="px-3 py-2 text-right text-gray-600">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let it of selectedOrder().items" class="border-t">
+            <td class="px-3 py-2">{{ it.product_name || it.product_id }}</td>
+            <td class="px-3 py-2 text-gray-500">{{ it.sku || '-' }}</td>
+            <td class="px-3 py-2 text-right">{{ it.quantity }}</td>
+            <td class="px-3 py-2 text-right">{{ it.unit_price | number: '1.2-2' }}</td>
+            <td class="px-3 py-2 text-right font-semibold">{{ it.total_price | number: '1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 text-xs text-gray-400">
+      Created: {{ selectedOrder().created_at ? (selectedOrder().created_at | date: 'medium') : '-' }}
+    </div>
+  </ng-container>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Close" icon="pi pi-times" severity="secondary" [outlined]="true" (onClick)="closeDetail()"></p-button>
+  </ng-template>
+</p-dialog>

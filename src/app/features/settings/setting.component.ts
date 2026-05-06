@@ -132,6 +132,7 @@ export class SettingsComponent implements OnInit {
 
     { key: 'users',         label: 'User Management',    icon: 'pi pi-users',    description: 'Workspace members, roles, and status' },
     { key: 'appearance',    label: 'Appearance',         icon: 'pi pi-palette',  description: 'Theme, layout, and visual behavior' },
+    { key: 'permissions',   label: 'Permissions',        icon: 'pi pi-shield',   description: 'Check access rights and policies' },
     { key: 'data',          label: 'Data & Privacy',     icon: 'pi pi-database', description: 'Export, retention, and destructive actions' },
   ];
   activeSection: string = 'profile';
@@ -144,6 +145,7 @@ export class SettingsComponent implements OnInit {
 
     if (sectionKey === 'notifications' && !this.notifLoaded) this.loadNotificationSettings();
     if (sectionKey === 'security' && !this.securityLoaded) this.loadSecuritySettings();
+    if (sectionKey === 'permissions') this.loadPermissionsCheck();
   }
 
   // Security settings state
@@ -485,8 +487,6 @@ export class SettingsComponent implements OnInit {
   ngOnInit(): void {
     this.loadThemeSettings();
     this.fetchLocalProfile();
-    this.loadProfileData();
-    this.loadNotificationSettings();
 
     // Handle ?tab= deep-links
     this.route.queryParams.subscribe(params => {
@@ -910,15 +910,8 @@ export class SettingsComponent implements OnInit {
           language:   this.profile.language,
         });
 
-        // Sessions come from AccountInfo.sessions array
-        if (Array.isArray(apiProfile.sessions)) {
-          this.sessions = apiProfile.sessions.map((s: any, i: number) => ({
-            kid:               s.kid || `session-${i}`,
-            session:           s.session || '',
-            device:            s.device || 'Unknown device',
-            remaining_seconds: s.remaining_seconds ?? 0,
-          }));
-        }
+        // Load sessions separately
+        this.refreshSessions();
       },
       error: (err) => {
         this.localLoading = false;
@@ -985,6 +978,59 @@ export class SettingsComponent implements OnInit {
             this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.detail || 'Failed to revoke sessions' });
           }
         });
+      }
+    });
+  }
+
+  // --- Permissions check state ---
+  permissionChecks: any[] = [];
+  permissionsCheckLoading = false;
+
+  loadPermissionsCheck(): void {
+    this.permissionsCheckLoading = true;
+    const apiBase = getApiBase();
+    const userId = this.profileService.getUserId();
+    const tenantId = this.profileService.getTenantId();
+
+    const checks = [
+      { path: '/governance/*', method: 'GET' },
+      { path: '/governance/tenant*', method: 'GET' },
+      { path: '/governance/user*', method: 'GET' },
+      { path: '/governance/account*', method: 'GET' },
+      { path: '/governance/team*', method: 'GET' },
+      { path: '/governance/branch*', method: 'GET' },
+      { path: '/governance/role*', method: 'GET' },
+      { path: '/governance/permission*', method: 'GET' },
+      { path: '/governance/polic*', method: 'GET' },
+      { path: '/governance/asset*', method: 'GET' },
+      { path: '/governance/entitlement*', method: 'GET' },
+      { path: '/governance/casbin*', method: 'GET' },
+      { path: '/governance/admin*', method: 'GET' },
+      { path: '/inventory/*', method: 'GET' },
+      { path: '/retail/*', method: 'GET' },
+      { path: '/loyalty/*', method: 'GET' },
+      { path: '/cmc/*', method: 'GET' },
+      { path: '/planning/*', method: 'GET' },
+      { path: '/data-mesh/*', method: 'GET' }
+    ];
+
+    this.http.post(`${apiBase}/governance/casbin/bulk-check`, {
+      user_id: userId,
+      tenant_id: tenantId,
+      checks: checks
+    }).subscribe({
+      next: (res: any) => {
+        const data = res?.data || {};
+        this.permissionChecks = Object.keys(data).map(path => ({
+          path: path,
+          method: 'GET',
+          allow: data[path]
+        }));
+        this.permissionsCheckLoading = false;
+      },
+      error: (err) => {
+        this.permissionsCheckLoading = false;
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.detail || 'Failed to check permissions' });
       }
     });
   }

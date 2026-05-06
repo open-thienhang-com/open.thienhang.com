@@ -91,12 +91,12 @@ export class LoginComponent extends AppBaseComponent {
           this.authService.getCurrentUser().subscribe(() => {
             localStorage.setItem('isLoggedIn', 'true');
             this.showSuccess('Login successful');
-            this.router.navigate(['']).then();
+            this.router.navigate(['/profile']).then();
           }, () => {
             // even if fetching profile fails, continue to navigate
             localStorage.setItem('isLoggedIn', 'true');
             this.showSuccess('Login successful');
-            this.router.navigate(['']).then();
+            this.router.navigate(['/profile']).then();
           });
         } else {
           this.showError(res.message || 'Login failed');

@@ -377,6 +377,46 @@ export class AuthServices {
       .pipe(map(response => this.wrapResponse(response)));
   }
 
+  // Account user management
+  getAccountUsers(): Observable<ApiResponse<any[]>> {
+    const url = `${this.baseUrl}/authentication/me/users`;
+    return this.http.get<any>(url)
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  switchUser(targetUserId: string): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/authentication/me/switch-user`;
+    return this.http.post<any>(url, { target_user_id: targetUserId })
+      .pipe(
+        tap(response => {
+          const isTokenShape = response && ('access_token' in response);
+          if (isTokenShape || this.isWrappedResponse(response)) {
+            const token = (response as any).access_token || (response as any).data?.access_token;
+            if (token) {
+              localStorage.setItem('access_token', token);
+            }
+            const activeUser = (response as any).data?.active_user || (response as any).active_user;
+            if (activeUser) {
+              const current = this.userSubject.getValue();
+              if (current) {
+                const updated = { ...current, ...activeUser };
+                this.userSubject.next(updated as UserProfile);
+                try {
+                  sessionStorage.setItem('currentUser', JSON.stringify(updated));
+                } catch (e) { }
+              }
+            }
+          }
+        }),
+        map(response => {
+          if (response && 'access_token' in response && !this.isWrappedResponse(response)) {
+            return { success: true, data: response } as ApiResponse<any>;
+          }
+          return this.wrapResponse(response);
+        })
+      );
+  }
+
   // Helper to check if a response is already wrapped in our ApiResponse format
   private isWrappedResponse(response: any): response is ApiResponse<any> {
     // Backend SuccessResponse may not have 'success' field but usually has 'data' and 'message'

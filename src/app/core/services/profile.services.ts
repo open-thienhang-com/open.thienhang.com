@@ -163,6 +163,39 @@ export class ProfileServices {
       .pipe(map(response => this.wrapResponse(response?.data ?? response)));
   }
 
+  getUserId(): string | null {
+    const claims = this.getTokenClaims();
+    return claims?.user_id || claims?.sub || null;
+  }
+
+  getTenantId(): string | null {
+    const claims = this.getTokenClaims();
+    return claims?.tenant_id || null;
+  }
+
+  private getTokenClaims(): any {
+    try {
+      const token = this.getToken();
+      if (!token) return null;
+      const payload = token.split('.')[1];
+      return JSON.parse(atob(payload));
+    } catch (e) {
+      return null;
+    }
+  }
+
+  private getToken(): string | null {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+        if (token) return token.replace('Bearer ', '');
+      }
+    } catch (e) {
+      // ignore
+    }
+    return null;
+  }
+
   // Helper method to wrap a single object response to match the API response format
   private wrapResponse<T>(data: T): ApiResponse<T> {
     return { data, success: true };

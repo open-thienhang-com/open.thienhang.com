@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 import { ProductService, CategoryService, WarehouseService, InventoryService } from '../../../inventory/services/inventory.service';
 import { UploadService } from '../../../inventory/services/upload.service';
 import { Product, Warehouse, Stock } from '../../../inventory/models/inventory.models';
@@ -15,9 +17,10 @@ export interface CartItem {
 @Component({
   selector: 'app-ecommerce',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ToastModule],
   templateUrl: './ecommerce.component.html',
-  styleUrl: './ecommerce.component.scss'
+  styleUrl: './ecommerce.component.scss',
+  providers: [MessageService]
 })
 export class EcommerceComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -26,6 +29,7 @@ export class EcommerceComponent implements OnInit, OnDestroy {
   private productService = inject(ProductService);
   private categoryService = inject(CategoryService);
   private uploadService = inject(UploadService);
+  private messageService = inject(MessageService);
 
   // Data
   products: Product[] = [];
@@ -44,6 +48,8 @@ export class EcommerceComponent implements OnInit, OnDestroy {
   // State
   isLoading = false;
   isCartVisible = true;
+  placingOrder = false;
+  orderNumber: string = Math.floor(1000 + Math.random() * 9000).toString();
   voucherApplied = false;
   voucherCode = '';
   discountRate = 0;
@@ -114,7 +120,7 @@ export class EcommerceComponent implements OnInit, OnDestroy {
 
   loadStocks(): void {
     if (!this.selectedWarehouseId) return;
-    this.inventoryService.listStocks(this.selectedWarehouseId, 0, 200)
+    this.inventoryService.listStocks(this.selectedWarehouseId, 0, 100)
       .pipe(takeUntil(this.destroy$))
       .subscribe(res => {
         const stocks = res.data || [];
@@ -129,8 +135,9 @@ export class EcommerceComponent implements OnInit, OnDestroy {
     this.loadStocks();
   }
 
-  getStockLevel(productId: string): number {
-    return this.stockMap[productId] ?? 0;
+  getStockLevel(productOrId: Product | string): number {
+    const id = typeof productOrId === 'string' ? productOrId : ((productOrId as any)._id || productOrId.id);
+    return this.stockMap[id] ?? 0;
   }
 
   loadCategories(): void {
@@ -303,7 +310,49 @@ export class EcommerceComponent implements OnInit, OnDestroy {
   }
 
   checkout(): void {
-    alert('Demo checkout – total: $' + this.getTotal().toFixed(2));
+    if (!this.cart.length || this.getTotal() <= 0 || this.placingOrder) return;
+
+    const subtotal = this.getSubtotal();
+    const tax = this.getTax();
+    const discount = this.getDiscount();
+    const total = this.getTotal();
+
+    const payload = {
+      order_number: this.orderNumber,
+      customer_id: 'guest',
+      source: 'ecommerce',
+      warehouse_id: this.selectedWarehouseId || undefined,
+      total_amount: total,
+      tax_amount: tax,
+      discount_total: discount,
+      net_amount: subtotal,
+      items: this.cart.map((line) => ({
+        product_id: line.product.id,
+        sku: line.product.sku,
+        product_name: line.product.name,
+        quantity: line.quantity,
+        unit_price: this.getEffectivePrice(line.product),
+        total_price: this.getEffectivePrice(line.product) * line.quantity,
+        discount: 0
+      }))
+    };
+
+    this.placingOrder = true;
+    this.inventoryService.createOrder(payload)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.placingOrder = false;
+          this.orderNumber = Math.floor(1000 + Math.random() * 9000).toString();
+          this.messageService.add({ severity: 'success', summary: 'Order Placed', detail: 'Your order has been created successfully.' });
+          this.clearCart();
+        },
+        error: (err: any) => {
+          this.placingOrder = false;
+          const detail = err?.error?.detail || 'Could not place order. Please try again.';
+          this.messageService.add({ severity: 'error', summary: 'Checkout Failed', detail });
+        }
+      });
   }
 
   private signImages(): void {

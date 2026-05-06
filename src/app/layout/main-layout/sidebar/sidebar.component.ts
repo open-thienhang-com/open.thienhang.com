@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnChanges, OnInit, computed, effect, inject, PLATFORM_ID, signal, ElementRef } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, OnInit, computed, effect, inject, PLATFORM_ID, signal, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
@@ -12,6 +12,7 @@ import {
 } from '@angular/animations';
 import { AppSwitcherService, AppKey } from '../../../core/services/app-switcher.service';
 import { AuthServices } from '../../../core/services/auth.services';
+import { SidebarPermissionService } from '../../../core/services/sidebar-permission.service';
 import { MenuItem, MenuInfo } from '../../models/menu-item';
 import { $t, updatePreset, updateSurfacePalette } from '@primeng/themes';
 import Aura from '@primeng/themes/aura';
@@ -29,6 +30,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { StyleClassModule } from 'primeng/styleclass';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { AvatarModule } from 'primeng/avatar';
+import { BadgeModule } from 'primeng/badge';
 import { SearchResultsComponent } from '../../../shared/components/search-results/search-results.component';
 import { sidebarGroups as configGroups, menu as fullMenu } from '../../menu-config';
 
@@ -60,6 +64,9 @@ export interface ThemeState {
     SelectButtonModule,
     StyleClassModule,
     ToggleSwitchModule,
+    OverlayPanelModule,
+    AvatarModule,
+    BadgeModule,
   ],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
@@ -98,6 +105,12 @@ export class SidebarComponent implements OnInit, OnChanges {
   });
   userEmail = computed(() => this.currentUser()?.email || '');
   userIdentify = computed(() => this.currentUser()?.identify || '');
+  userTenant = computed(() => this.currentUser()?.tenant_id || this.currentUser()?.tenantId || '');
+  userTenantLabel = computed(() => {
+    const t = this.userTenant();
+    if (!t || t === '*' || t === 'system') return 'System';
+    return t;
+  });
   userInitials = computed(() => {
     const name = this.userFullName();
     if (!name || name === 'User') return 'U';
@@ -105,6 +118,11 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     return (parts[0]?.[0] || 'U').toUpperCase();
   });
+
+  // User switcher state
+  accountUsers = signal<any[]>([]);
+  userSwitcherLoading = signal(false);
+  @ViewChild('userSwitcherPanel') userSwitcherPanel: any;
 
   private readonly HIDDEN_GROUP_LABELS = ['ad manager', 'blogger', 'file', 'travel', 'hotel', 'explore'];
 
@@ -244,7 +262,7 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   sidebarGroups = configGroups;
 
-  constructor(private router: Router, private appSwitcher: AppSwitcherService, private authServices: AuthServices) {
+  constructor(private router: Router, private appSwitcher: AppSwitcherService, private authServices: AuthServices, private sidebarPermSvc: SidebarPermissionService) {
     this.themeState.set({ ...this.loadthemeState() });
 
     effect(() => {
@@ -282,6 +300,13 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.authServices.getUser().subscribe(user => {
       if (user) {
         this.currentUser.set(user);
+        const userId = (user as any).identify || (user as any).id || '';
+        const tenantId = this._extractTenantFromJwt() || (user as any).tenant_id || 'system';
+        if (userId) {
+          this.sidebarPermSvc.loadPermissions(userId, tenantId).subscribe(() => {
+            this.computeVisibleGroups();
+          });
+        }
       }
     });
 
@@ -293,23 +318,23 @@ export class SidebarComponent implements OnInit, OnChanges {
     // Initialize primary menu structure
     this.menu = [
       {
-
         label: 'Governance',
         icon: 'pi pi-shield',
         type: 'item',
+        casbinPath: '/governance/*',
         expanded: false,
         children: [
-          { label: 'Overview', url: '/governance/proposal', icon: 'pi pi-th-large' },
+          { label: 'Overview', url: '/governance/proposal', icon: 'pi pi-th-large', casbinPath: '/governance/*' },
           {
             label: 'Identity',
             icon: 'pi pi-id-card',
             expanded: false,
             children: [
-              { label: 'Tenants', url: '/governance/tenants', icon: 'pi pi-sitemap' },
-              { label: 'Users', url: '/governance/users', icon: 'pi pi-user' },
-              { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building' },
-              { label: 'Teams', url: '/governance/teams', icon: 'pi pi-users' },
-              // { label: 'Branches', url: '/governance/branches', icon: 'pi pi-sitemap' },
+              { label: 'Tenants',  url: '/governance/tenants',  icon: 'pi pi-sitemap',  casbinPath: '/governance/tenant*' },
+              { label: 'Users',    url: '/governance/users',    icon: 'pi pi-user',     casbinPath: '/governance/user*' },
+              { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building', casbinPath: '/governance/account*' },
+              { label: 'Teams',    url: '/governance/teams',    icon: 'pi pi-users',    casbinPath: '/governance/team*' },
+              { label: 'Branches', url: '/governance/branches', icon: 'pi pi-sitemap',  casbinPath: '/governance/branch*' },
             ]
           },
           {
@@ -317,22 +342,22 @@ export class SidebarComponent implements OnInit, OnChanges {
             icon: 'pi pi-lock',
             expanded: false,
             children: [
-              { label: 'Roles', url: '/governance/roles', icon: 'pi pi-tag' },
-              { label: 'Permissions', url: '/governance/permissions', icon: 'pi pi-key' },
-              { label: 'Policies', url: '/governance/policies', icon: 'pi pi-lock' },
-              { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database' },
-              // { label: 'Entitlements', url: '/governance/entitlements', icon: 'pi pi-key' },
+              { label: 'Roles',        url: '/governance/roles',        icon: 'pi pi-tag',      casbinPath: '/governance/role*' },
+              { label: 'Permissions',  url: '/governance/permissions',  icon: 'pi pi-key',      casbinPath: '/governance/permission*' },
+              { label: 'Policies',     url: '/governance/policies',     icon: 'pi pi-lock',     casbinPath: '/governance/polic*' },
+              { label: 'Assets',       url: '/governance/assets',       icon: 'pi pi-database', casbinPath: '/governance/asset*' },
+              { label: 'Entitlements', url: '/governance/entitlements', icon: 'pi pi-key',      casbinPath: '/governance/entitlement*' },
             ]
           },
-          // {
-          //   label: 'RBAC & Admin',
-          //   icon: 'pi pi-cog',
-          //   expanded: false,
-          //   children: [
-          //     { label: 'RBAC Engine', url: '/governance/casbin', icon: 'pi pi-shield' },
-          //     { label: 'Admin Tools', url: '/governance/admin', icon: 'pi pi-wrench' },
-          //   ]
-          // },
+          {
+            label: 'RBAC & Admin',
+            icon: 'pi pi-cog',
+            expanded: false,
+            children: [
+              { label: 'RBAC Engine', url: '/governance/casbin', icon: 'pi pi-shield', casbinPath: '/governance/casbin*' },
+              { label: 'Admin Tools', url: '/governance/admin',  icon: 'pi pi-wrench', casbinPath: '/governance/admin*' },
+            ]
+          },
         ]
       },
     ];
@@ -407,6 +432,17 @@ export class SidebarComponent implements OnInit, OnChanges {
   }
 
   // Helper: Get icon for menu item based on label or URL
+  private _extractTenantFromJwt(): string | null {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return null;
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.tenant_id || null;
+    } catch {
+      return null;
+    }
+  }
+
   private getIconForMenuItem(item: any): string {
     if (item.icon) return item.icon;
 
@@ -532,6 +568,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.sidebarGroups = Array.from(uniqueGroups.values()).map(g => ({
        label: g.label,
        icon: g.icon,
+       casbinPath: (g as any).casbinPath,
        items: (g as any).children || (g as any).items || []
     }));
 
@@ -539,7 +576,9 @@ export class SidebarComponent implements OnInit, OnChanges {
       const allGroups = (this.sidebarGroups || []).filter(g => {
         if (!g || !g.label) return false;
         const label = g.label.toLowerCase();
-        return !this.HIDDEN_GROUP_LABELS.some(hidden => label.includes(hidden));
+        if (this.HIDDEN_GROUP_LABELS.some(hidden => label.includes(hidden))) return false;
+        if ((g as any).casbinPath && !this.sidebarPermSvc.isAllowed((g as any).casbinPath)) return false;
+        return true;
       });
       this.visibleGroups = this.orderGroupsForApp(allGroups, 'all');
       // Close all groups by default to keep sidebar compact
@@ -588,7 +627,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     }
 
     if (key === 'inventory' || key === 'fleet' || key === 'warehouse' || key === 'forecast') {
-      const invGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('inventory management'));
+      const invGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('inventory'));
       if (invGroup) {
         const subGroupLabels = ['dashboard', 'resources', 'inventory', 'forecasting', 'fleet & routes'];
         const currentUrl = this.router.url;
@@ -830,7 +869,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     }
     // Special-case: for Support app (Messaging Platform unified)
     if (key === 'chat' || key === 'support') {
-      const messagingGroup = fullMenu.find(g => (g.label || '').toLowerCase() === 'support');
+      const messagingGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('messaging platform'));
       if (messagingGroup) {
         const sourceItems = (messagingGroup as any).children || (messagingGroup as any).items || [];
         const groups: any[] = [];
@@ -902,12 +941,22 @@ export class SidebarComponent implements OnInit, OnChanges {
 
     // Special-case: for Governance app - render sub-groups with section headers
     if (key === 'governance') {
+      // If user has no governance access at all, show nothing
+      if (!this.sidebarPermSvc.isAllowed('/governance/*')) {
+        this.visibleGroups = [];
+        return;
+      }
       const governanceGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('governance'));
       if (governanceGroup) {
         const sourceItems = (governanceGroup as any).items || [];
         const groups: any[] = [];
 
         sourceItems.forEach((item: any) => {
+          // Skip item/group if its casbinPath is explicitly denied
+          if (item.casbinPath && !this.sidebarPermSvc.isAllowed(item.casbinPath)) {
+            return;
+          }
+
           if (item.url && !item.children && !item.items) {
             // Standalone top-level items (like Overview)
             groups.push({
@@ -920,15 +969,20 @@ export class SidebarComponent implements OnInit, OnChanges {
               _flattened: [item]
             });
           } else if (item.children || item.items) {
-            // Subgroups (Identity, Access Control, etc.)
-            const sourceItems = item.children || item.items || [];
-            groups.push({
-              label: item.label,
-              icon: item.icon,
-              expanded: true,
-              items: sourceItems,
-              _flattened: this.getFlattenedItems(sourceItems)
-            });
+            // Subgroups (Identity, Access Control, etc.) — filter children by casbinPath
+            const allChildren: any[] = item.children || item.items || [];
+            const allowedChildren = allChildren.filter((child: any) =>
+              !child.casbinPath || this.sidebarPermSvc.isAllowed(child.casbinPath)
+            );
+            if (allowedChildren.length > 0) {
+              groups.push({
+                label: item.label,
+                icon: item.icon,
+                expanded: true,
+                items: allowedChildren,
+                _flattened: this.getFlattenedItems(allowedChildren)
+              });
+            }
           }
         });
 
@@ -1167,7 +1221,46 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   // Surface Logout action from current user component
   doLogout(): void {
+    this.sidebarPermSvc.clear();
     try { this.router.navigate(['/logout']); } catch (e) { /* safe fallback */ }
+  }
+
+  // User switcher
+  isActiveUser(user: any): boolean {
+    const current = this.currentUser();
+    if (!current || !user) return false;
+    return current.id === user.id || current.identify === user.id || (current as any).user_id === user.id;
+  }
+
+  loadAccountUsers(): void {
+    this.userSwitcherLoading.set(true);
+    this.authServices.getAccountUsers().subscribe({
+      next: (resp: any) => {
+        const users = resp?.data || resp?.data?.data || [];
+        this.accountUsers.set(Array.isArray(users) ? users : []);
+        this.userSwitcherLoading.set(false);
+      },
+      error: () => {
+        this.accountUsers.set([]);
+        this.userSwitcherLoading.set(false);
+      }
+    });
+  }
+
+  doSwitchUser(userId: string): void {
+    this.userSwitcherLoading.set(true);
+    this.authServices.switchUser(userId).subscribe({
+      next: (resp: any) => {
+        this.userSwitcherLoading.set(false);
+        // Refresh current user data
+        this.authServices.getCurrentUser().subscribe();
+        // Reload account users
+        this.loadAccountUsers();
+      },
+      error: () => {
+        this.userSwitcherLoading.set(false);
+      }
+    });
   }
 
   navigateToLogin(): void {

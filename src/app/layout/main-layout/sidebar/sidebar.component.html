@@ -190,7 +190,7 @@
     <!-- Logged in: user avatar + name + email + logout -->
     <ng-container *ngIf="isLoggedIn">
       <div class="footer-user-row">
-        <button type="button" class="user-profile-btn" (click)="openProfile()"
+        <button type="button" class="user-profile-btn" (click)="userSwitcherPanel.toggle($event)"
                 [pTooltip]="collapsed ? userFullName() : ''"
                 tooltipPosition="right">
           <div class="user-avatar-circle">
@@ -199,6 +199,10 @@
           <div class="user-details" *ngIf="!collapsed">
             <span class="user-display-name">{{ userFullName() }}</span>
             <span class="user-display-email" *ngIf="userEmail()">{{ userEmail() }}</span>
+            <span class="user-display-tenant tenant-badge" *ngIf="userTenantLabel()">
+              <i class="pi pi-building"></i>
+              {{ userTenantLabel() }}
+            </span>
           </div>
         </button>
         <button type="button" class="footer-logout-btn" (click)="doLogout()"
@@ -206,6 +210,39 @@
           <i class="pi pi-sign-out"></i>
         </button>
       </div>
+
+      <!-- User Switcher Overlay Panel -->
+      <p-overlayPanel #userSwitcherPanel [showCloseIcon]="true" styleClass="user-switcher-panel">
+        <div class="user-switcher-content">
+          <div class="user-switcher-header">
+            <h4>Switch User</h4>
+            <button type="button" class="refresh-users-btn" (click)="loadAccountUsers()" pTooltip="Refresh users">
+              <i class="pi pi-refresh"></i>
+            </button>
+          </div>
+          <div class="user-list" *ngIf="accountUsers().length > 0; else noUsers">
+            <div class="user-item" *ngFor="let user of accountUsers()"
+                 [class.active]="isActiveUser(user)"
+                 (click)="doSwitchUser(user.id)">
+              <div class="user-item-avatar">
+                <span>{{ (user.first_name || user.email?.split('@')[0] || 'U')[0] | uppercase }}</span>
+              </div>
+              <div class="user-item-info">
+                <span class="user-item-name">{{ user.first_name || user.email?.split('@')[0] || 'User' }} {{ user.last_name || '' }}</span>
+                <span class="user-item-email">{{ user.email }}</span>
+                <span class="user-item-badge" *ngIf="user.roles?.length">{{ user.roles[0] }}</span>
+              </div>
+              <i class="pi pi-check active-indicator" *ngIf="isActiveUser(user)"></i>
+            </div>
+          </div>
+          <ng-template #noUsers>
+            <div class="no-users-message">No users found</div>
+          </ng-template>
+          <div class="user-switcher-loading" *ngIf="userSwitcherLoading()">
+            <i class="pi pi-spin pi-spinner"></i>
+          </div>
+        </div>
+      </p-overlayPanel>
     </ng-container>
 
     <!-- Not logged in: Login and Register buttons -->

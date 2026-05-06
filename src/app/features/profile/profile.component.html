@@ -203,36 +203,55 @@
                     <th class="table-header">{{ 'profile.users.role' | translate }}</th>
                     <th class="table-header">{{ 'profile.users.status' | translate }}</th>
                     <th class="table-header">{{ 'profile.users.joinedDate' | translate }}</th>
+                    <th class="table-header">{{ 'profile.users.action' | translate }}</th>
                   </tr>
                 </ng-template>
-                
+
                 <ng-template pTemplate="body" let-user>
-                  <tr class="table-row">
+                  <tr class="table-row" [class.active-user-row]="isActiveUser(user)">
                     <td class="table-cell">
                       <div class="user-cell">
-                        <div class="user-avatar">
+                        <div class="user-avatar" [class.active-avatar]="isActiveUser(user)">
                           <span class="avatar-initials">{{ getUserInitials(user) }}</span>
                         </div>
                         <div class="user-info">
-                          <div class="user-name">{{ user.full_name || 'Unknown' }}</div>
-                          <div class="user-id">ID: {{ user.identify }}</div>
+                          <div class="user-name">
+                            {{ user.full_name || (user.first_name ? (user.first_name + ' ' + (user.last_name || '')) : 'Unknown') }}
+                            <span class="active-user-badge" *ngIf="isActiveUser(user)">{{ 'profile.users.activeUser' | translate }}</span>
+                          </div>
+                          <div class="user-id">ID: {{ user.id || user.identify }}</div>
                         </div>
                       </div>
                     </td>
                     <td class="table-cell">
                       <div class="email-cell">
                         <span class="email-text">{{ user.email }}</span>
-                        <i class="pi pi-verified text-green-500 ml-1" *ngIf="user.is_verified" [pTooltip]="'profile.account.verified' | translate"></i>
                       </div>
                     </td>
                     <td class="table-cell">
-                      <p-tag [value]="getRoleDisplayText(user.role || 'user') | translate" [severity]="getRoleSeverity(user.role || 'user')"></p-tag>
+                      <p-tag [value]="getRoleDisplayText((user.roles && user.roles[0]) || user.role || 'user') | translate" [severity]="getRoleSeverity((user.roles && user.roles[0]) || user.role || 'user')"></p-tag>
                     </td>
                     <td class="table-cell">
                       <p-tag [value]="getUserStatus(user) | translate" [severity]="getUserStatusSeverity(user)"></p-tag>
                     </td>
                     <td class="table-cell">
                       <span class="date-text">{{ formatDate(user.created_at) }}</span>
+                    </td>
+                    <td class="table-cell">
+                      <p-button
+                        *ngIf="!isActiveUser(user)"
+                        label="Activate"
+                        icon="pi pi-user-edit"
+                        size="small"
+                        severity="primary"
+                        [outlined]="true"
+                        [loading]="switchingUserId === (user.id || user.identify)"
+                        (click)="switchActiveUser(user.id || user.identify)"
+                        pTooltip="Switch to this user (requires re-login)">
+                      </p-button>
+                      <span *ngIf="isActiveUser(user)" class="text-green-600 text-sm font-medium">
+                        <i class="pi pi-check-circle mr-1"></i>Active
+                      </span>
                     </td>
                   </tr>
                 </ng-template>
@@ -249,6 +268,66 @@
                   </tr>
                 </ng-template>
               </p-table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Access Permissions Card -->
+        <div class="info-card">
+          <div class="card-header">
+            <div class="header-icon bg-indigo-100">
+              <i class="pi pi-lock text-indigo-600"></i>
+            </div>
+            <div class="header-content">
+              <h2 class="card-title">Access Permissions</h2>
+              <p class="card-subtitle">Your Casbin policy permissions for each module</p>
+            </div>
+            <div class="header-actions">
+              <span *ngIf="!permissionsLoaded" class="text-gray-400 text-sm">Loading…</span>
+              <span *ngIf="permissionsLoaded" class="user-count-badge">{{ permissionList.length }} checks</span>
+            </div>
+          </div>
+
+          <div class="card-content" *ngIf="permissionsLoaded">
+            <div *ngFor="let group of permissionsBySection" class="mb-6">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="font-semibold text-gray-700 text-sm uppercase tracking-wide">{{ group.section }}</span>
+                <div class="flex-1 border-t border-gray-200"></div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div *ngFor="let item of group.items"
+                     class="flex items-center justify-between px-3 py-2 rounded-lg border"
+                     [ngClass]="{
+                       'bg-green-50 border-green-200': item.allowed === true,
+                       'bg-red-50 border-red-200': item.allowed === false,
+                       'bg-gray-50 border-gray-200': item.allowed === null
+                     }">
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium text-gray-800">{{ item.label }}</div>
+                    <code class="text-xs text-gray-500 truncate block">{{ item.path }}</code>
+                  </div>
+                  <div class="ml-3 flex-shrink-0">
+                    <span *ngIf="item.allowed === true"
+                          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                      <i class="pi pi-check text-xs"></i> Allowed
+                    </span>
+                    <span *ngIf="item.allowed === false"
+                          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                      <i class="pi pi-times text-xs"></i> Denied
+                    </span>
+                    <span *ngIf="item.allowed === null"
+                          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                      <i class="pi pi-minus text-xs"></i> Unknown
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-content" *ngIf="!permissionsLoaded">
+            <div class="flex justify-center py-6">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
             </div>
           </div>
         </div>

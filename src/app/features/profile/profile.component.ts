@@ -1,10 +1,13 @@
 import { Component, Injector, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AppBaseComponent } from '../../core/base/app-base.component';
 import { ProfileServices } from '../../core/services/profile.services';
 import { UserService } from '../../core/services/user.service';
 import { I18nService } from '../../core/services/i18n.service';
+import { AuthServices } from '../../core/services/auth.services';
+import { SidebarPermissionService, SidebarCheck } from '../../core/services/sidebar-permission.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { AvatarModule } from 'primeng/avatar';
 import { BadgeModule } from 'primeng/badge';
@@ -46,6 +49,7 @@ export class ProfileComponent extends AppBaseComponent implements OnInit {
   currentDate = new Date();
   loading = false;
   userSearchText = '';
+  currentUserData: any = null;
   // Sessions display control
   showAllSessions = false;
   _sessionsPreviewCount = 4; // show first 4 sessions by default
@@ -59,31 +63,95 @@ export class ProfileComponent extends AppBaseComponent implements OnInit {
     { field: 'created_at', header: 'profile.users.joinedDate' }
   ];
 
+  switchingUserId: string | null = null;
+  permissionList: Array<SidebarCheck & { allowed: boolean | null }> = [];
+  permissionsLoaded = false;
+
   constructor(
     private injector: Injector,
     private dataProdServices: ProfileServices,
     private userService: UserService,
-    public i18nService: I18nService
+    private authServices: AuthServices,
+    private sidebarPermSvc: SidebarPermissionService,
+    public i18nService: I18nService,
+    private router: Router,
   ) {
     super(injector);
   }
 
   ngOnInit() {
+    // Subscribe to permissions observable — updates whenever sidebar loads/reloads perms
+    this.sidebarPermSvc.getPermissions$().subscribe(map => {
+      if (map !== null) {
+        this.permissionList = this.sidebarPermSvc.getPermissionList();
+        this.permissionsLoaded = true;
+      }
+    });
+
+    this.authServices.getUser().subscribe(user => {
+      if (user) {
+        this.currentUserData = user;
+        this.profile = user;
+        // Load permissions if not yet loaded by sidebar
+        if (!this.permissionsLoaded) {
+          const userId = (user as any).identify || (user as any).id || '';
+          const tenantId = (user as any).tenant_id || 'system';
+          if (userId) {
+            this.sidebarPermSvc.loadPermissions(userId, tenantId).subscribe();
+          }
+        }
+      }
+    });
+    if (this.authServices.isLoggedIn()) {
+      this.authServices.getCurrentUser().subscribe(res => {
+        const data = (res as any)?.data || res;
+        if (data) {
+          this.profile = data;
+          this.currentUserData = data;
+        }
+      });
+    }
     this.loadProfileData();
+  }
+
+  get permissionsBySection(): { section: string; items: Array<SidebarCheck & { allowed: boolean | null }> }[] {
+    const map = new Map<string, Array<SidebarCheck & { allowed: boolean | null }>>();
+    for (const item of this.permissionList) {
+      if (!map.has(item.section)) map.set(item.section, []);
+      map.get(item.section)!.push(item);
+    }
+    return Array.from(map.entries()).map(([section, items]) => ({ section, items }));
   }
 
   loadProfileData() {
     this.loading = true;
-    // Only load users here; do not call /authentication/me on this page
-    this.userService.getAllUsers().subscribe({
+    this.authServices.getAccountUsers().subscribe({
       next: (res) => {
         this.allUsers = res?.data || [];
         this.filteredUsers = [...this.allUsers];
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error loading users:', err);
+        console.error('Error loading account users:', err);
         this.loading = false;
+      }
+    });
+  }
+
+  switchActiveUser(userId: string): void {
+    if (this.switchingUserId) return;
+    this.switchingUserId = userId;
+    this.authServices.switchUser(userId).subscribe({
+      next: () => {
+        this.switchingUserId = null;
+        // Force re-login so new JWT (with updated user_id claim) takes effect
+        this.authServices.logout().subscribe(() => {
+          this.router.navigate(['/login']);
+        });
+      },
+      error: (err) => {
+        console.error('Switch user failed:', err);
+        this.switchingUserId = null;
       }
     });
   }
@@ -105,8 +173,22 @@ export class ProfileComponent extends AppBaseComponent implements OnInit {
 
   // Get user avatar initials
   getUserInitials(user: any): string {
-    if (!user?.full_name) return 'U';
-    return user.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+    const name = user?.full_name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : null);
+    if (!name) return 'U';
+    return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  // Check if a user is the currently active user
+  isActiveUser(user: any): boolean {
+    if (!user) return false;
+    const userId = user.id || user.identify;
+    // Priority: active_user_id from profile (account doc), then active_user.id from JWT info
+    const activeId = (this.profile as any)?.active_user_id
+      || (this.profile as any)?.active_user?.id
+      || (this.currentUserData as any)?.active_user_id
+      || (this.currentUserData as any)?.active_user?.id
+      || (this.currentUserData as any)?.user_id;
+    return !!activeId && userId === activeId;
   }
 
   // Get user status for display

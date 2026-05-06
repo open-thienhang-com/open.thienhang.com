@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, throwError, timer, tap, of } from 'rxjs';
+import { Observable, throwError, timer, tap, of, map } from 'rxjs';
 import { retry, catchError, timeout } from 'rxjs/operators';
 import { getApiBase } from '../../../core/config/api-config';
 import {
@@ -34,6 +34,10 @@ export class ProductService {
       url += `&category=${category}`;
     }
     return this.http.get<ListResponse<Product>>(url).pipe(
+      map(res => {
+        if (res?.data) res.data = res.data.map((p: any) => ({ ...p, id: p.id || p._id }));
+        return res;
+      }),
       tap(res => {
         this.products.set(res.data || []);
         this.totalProducts.set(res.total || 0);
@@ -313,7 +317,12 @@ export class WarehouseService {
   listWarehouses(skip: number = 0, limit: number = 50, keyword?: string): Observable<any> {
     let url = `${this.baseUrl}?skip=${skip}&limit=${limit}`;
     if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
-    return this.http.get<any>(url);
+    return this.http.get<any>(url).pipe(
+      map((res: any) => {
+        if (res?.data) res.data = res.data.map((w: any) => ({ ...w, id: w.id || w._id }));
+        return res;
+      })
+    );
   }
 
   getWarehouse(id: string): Observable<any> {

@@ -16,4 +16,5 @@ export interface MenuItem {
     info?: MenuInfo;
     highlighted?: boolean;
     type?: 'separator' | 'item';
+    casbinPath?: string;
 }
