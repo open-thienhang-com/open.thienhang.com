@@ -1,25 +1,27 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
-
-interface TierRule {
-  tier: string; color: string; bg: string; border: string;
-  minPoints: number; maxPoints: number | null;
-  multiplier: number; perks: string[];
-}
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
+import { LoyaltyService } from '../../services/loyalty.service';
+import { Strategy } from '../../models/loyalty.models';
 
 @Component({
   selector: 'app-loyalty-strategy',
   standalone: true,
-  imports: [CommonModule, ButtonModule],
+  imports: [CommonModule, ButtonModule, ToastModule],
   templateUrl: './strategy.component.html',
+  providers: [MessageService],
 })
-export class StrategyComponent {
-  tiers: TierRule[] = [
-    { tier: 'Bronze',   color: '#92400e', bg: '#fef3c7', border: '#fde68a', minPoints: 0,    maxPoints: 999,  multiplier: 1,   perks: ['Earn 1 pt / 10K spend', 'Birthday bonus 100 pts', 'Access to basic rewards'] },
-    { tier: 'Silver',   color: '#475569', bg: '#f1f5f9', border: '#cbd5e1', minPoints: 1000, maxPoints: 4999, multiplier: 1.5, perks: ['Earn 1.5× pts', 'Free shipping on orders >200K', 'Early sale access'] },
-    { tier: 'Gold',     color: '#b45309', bg: '#fffbeb', border: '#fcd34d', minPoints: 5000, maxPoints: 19999,multiplier: 2,   perks: ['Earn 2× pts', 'Dedicated support line', 'Exclusive Gold rewards', 'Monthly bonus event'] },
-    { tier: 'Platinum', color: '#6d28d9', bg: '#f5f3ff', border: '#c4b5fd', minPoints: 20000,maxPoints: null, multiplier: 3,   perks: ['Earn 3× pts', 'Personal account manager', 'Unlimited free shipping', 'Invite-only events', 'Tier protection 12 months'] },
+export class StrategyComponent implements OnInit {
+  strategies: Strategy[] = [];
+  loading = false;
+
+  tiers = [
+    { tier: 'Bronze', multiplier: 1, minPoints: 0, maxPoints: 999, perks: ['Basic earn rate', 'Birthday bonus'], color: '#92400e', bg: '#fef3c7', border: '#fde68a' },
+    { tier: 'Silver', multiplier: 1.2, minPoints: 1000, maxPoints: 4999, perks: ['1.2× earn rate', 'Birthday bonus', 'Exclusive offers'], color: '#475569', bg: '#f1f5f9', border: '#cbd5e1' },
+    { tier: 'Gold', multiplier: 1.5, minPoints: 5000, maxPoints: 19999, perks: ['1.5× earn rate', 'Birthday bonus', 'Free shipping', 'Priority support'], color: '#b45309', bg: '#fffbeb', border: '#fcd34d' },
+    { tier: 'Platinum', multiplier: 2, minPoints: 20000, maxPoints: null, perks: ['2× earn rate', 'Birthday bonus', 'Free shipping', 'Priority support', 'VIP events'], color: '#6d28d9', bg: '#f5f3ff', border: '#c4b5fd' },
   ];
 
   policies = [
@@ -28,4 +30,44 @@ export class StrategyComponent {
     { label: 'Min Redemption',value: '500 points minimum',               icon: 'pi pi-gift',  color: 'text-green-600',  bg: 'bg-green-50' },
     { label: 'Tier Review',   value: 'Evaluated every 6 months',         icon: 'pi pi-refresh',color:'text-blue-600',   bg: 'bg-blue-50' },
   ];
+
+  constructor(
+    private loyaltyService: LoyaltyService,
+    private messageService: MessageService,
+  ) {}
+
+  ngOnInit(): void { this.load(); }
+
+  load(): void {
+    this.loading = true;
+    this.loyaltyService.listStrategies({ limit: 50 }).subscribe({
+      next: (res) => {
+        this.strategies = res.data;
+        this.loading = false;
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load strategies' });
+        this.loading = false;
+      },
+    });
+  }
+
+  getTierStyle(tier: string): { color: string; bg: string; border: string } {
+    const map: Record<string, { color: string; bg: string; border: string }> = {
+      bronze:   { color: '#92400e', bg: '#fef3c7', border: '#fde68a' },
+      silver:   { color: '#475569', bg: '#f1f5f9', border: '#cbd5e1' },
+      gold:     { color: '#b45309', bg: '#fffbeb', border: '#fcd34d' },
+      platinum: { color: '#6d28d9', bg: '#f5f3ff', border: '#c4b5fd' },
+      diamond:  { color: '#0369a1', bg: '#e0f2fe', border: '#7dd3fc' },
+    };
+    return map[tier.toLowerCase()] || { color: '#475569', bg: '#f1f5f9', border: '#cbd5e1' };
+  }
+
+  getTypeLabel(t: string): string {
+    const map: Record<string, string> = {
+      points_earning: 'Points Earning', points_redemption: 'Redemption',
+      tier_upgrade: 'Tier Upgrade', vip_access: 'VIP Access', custom: 'Custom',
+    };
+    return map[t] || t;
+  }
 }

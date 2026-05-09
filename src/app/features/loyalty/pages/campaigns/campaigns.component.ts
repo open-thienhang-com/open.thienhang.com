@@ -9,21 +9,8 @@ import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
 import { BadgeModule } from 'primeng/badge';
 import { MessageService } from 'primeng/api';
-
-interface Campaign {
-  id: string;
-  name: string;
-  description: string;
-  type: 'points_multiplier' | 'bonus_points' | 'referral' | 'birthday' | 'seasonal';
-  status: 'active' | 'scheduled' | 'ended' | 'draft';
-  startDate: Date;
-  endDate: Date;
-  pointMultiplier: number;
-  bonusPoints: number;
-  enrolledCount: number;
-  budget: number;
-  segment: string;
-}
+import { LoyaltyService } from '../../services/loyalty.service';
+import { Campaign, CampaignCreate } from '../../models/loyalty.models';
 
 @Component({
   selector: 'app-campaigns',
@@ -34,62 +21,69 @@ interface Campaign {
 })
 export class CampaignsComponent implements OnInit {
   campaigns: Campaign[] = [];
-  filtered: Campaign[] = [];
   loading = false;
+  total = 0;
   searchTerm = '';
   selectedStatus = '';
   selectedType = '';
 
   showDialog = false;
-  editingCampaign: Campaign | null = null;
+  editingCampaign: Partial<Campaign & CampaignCreate> | null = null;
   dialogMode: 'create' | 'view' = 'create';
 
   statusOptions = [
     { label: 'All Status', value: '' },
     { label: 'Active', value: 'active' },
     { label: 'Scheduled', value: 'scheduled' },
-    { label: 'Ended', value: 'ended' },
+    { label: 'Completed', value: 'completed' },
     { label: 'Draft', value: 'draft' },
+    { label: 'Paused', value: 'paused' },
   ];
 
   typeOptions = [
     { label: 'All Types', value: '' },
-    { label: 'Points Multiplier', value: 'points_multiplier' },
-    { label: 'Bonus Points', value: 'bonus_points' },
-    { label: 'Referral', value: 'referral' },
+    { label: 'Welcome', value: 'welcome' },
     { label: 'Birthday', value: 'birthday' },
+    { label: 'Purchase', value: 'purchase' },
+    { label: 'Referral', value: 'referral' },
+    { label: 'Retention', value: 'retention' },
     { label: 'Seasonal', value: 'seasonal' },
+    { label: 'Promotion', value: 'promotion' },
   ];
 
-  constructor(private messageService: MessageService) {}
+  constructor(
+    private loyaltyService: LoyaltyService,
+    private messageService: MessageService,
+  ) {}
 
   ngOnInit(): void { this.load(); }
 
   load(): void {
     this.loading = true;
-    this.campaigns = this.mock();
-    this.applyFilters();
-    this.loading = false;
-  }
-
-  applyFilters(): void {
-    const kw = this.searchTerm.trim().toLowerCase();
-    this.filtered = this.campaigns.filter(c => {
-      const matchSearch = !kw || c.name.toLowerCase().includes(kw) || c.segment.toLowerCase().includes(kw);
-      const matchStatus = !this.selectedStatus || c.status === this.selectedStatus;
-      const matchType = !this.selectedType || c.type === this.selectedType;
-      return matchSearch && matchStatus && matchType;
+    this.loyaltyService.listCampaigns({
+      search: this.searchTerm || undefined,
+      status: this.selectedStatus || undefined,
+      campaign_type: this.selectedType || undefined,
+    }).subscribe({
+      next: (res) => {
+        this.campaigns = res.data;
+        this.total = res.total;
+        this.loading = false;
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load campaigns' });
+        this.loading = false;
+      },
     });
   }
 
-  clearFilters(): void { this.searchTerm = ''; this.selectedStatus = ''; this.selectedType = ''; this.applyFilters(); }
+  applyFilters(): void { this.load(); }
+  clearFilters(): void { this.searchTerm = ''; this.selectedStatus = ''; this.selectedType = ''; this.load(); }
 
   openCreate(): void {
-    const now = new Date();
-    const end = new Date(now); end.setMonth(end.getMonth() + 1);
     this.editingCampaign = {
-      id: '', name: '', description: '', type: 'points_multiplier', status: 'draft',
-      startDate: now, endDate: end, pointMultiplier: 2, bonusPoints: 0, enrolledCount: 0, budget: 0, segment: 'All members'
+      name: '', description: '', campaign_type: 'promotion', status: 'draft',
+      start_date: new Date().toISOString(), channels: ['email'],
     };
     this.dialogMode = 'create';
     this.showDialog = true;
@@ -97,43 +91,87 @@ export class CampaignsComponent implements OnInit {
 
   viewCampaign(c: Campaign): void { this.editingCampaign = { ...c }; this.dialogMode = 'view'; this.showDialog = true; }
 
+  saveCampaign(): void {
+    if (!this.editingCampaign) return;
+    const id = (this.editingCampaign as Campaign).id;
+    if (this.dialogMode === 'create' || !id) {
+      this.loyaltyService.createCampaign(this.editingCampaign as CampaignCreate).subscribe({
+        next: () => { this.messageService.add({ severity: 'success', summary: 'Created', detail: 'Campaign created' }); this.showDialog = false; this.load(); },
+        error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to create campaign' }),
+      });
+    }
+  }
+
+  activateCampaign(c: Campaign): void {
+    if (!c.id) return;
+    this.loyaltyService.activateCampaign(c.id).subscribe({
+      next: () => { this.messageService.add({ severity: 'success', summary: 'Activated', detail: c.name }); this.load(); },
+      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to activate' }),
+    });
+  }
+
+  pauseCampaign(c: Campaign): void {
+    if (!c.id) return;
+    this.loyaltyService.pauseCampaign(c.id).subscribe({
+      next: () => { this.messageService.add({ severity: 'info', summary: 'Paused', detail: c.name }); this.load(); },
+      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to pause' }),
+    });
+  }
+
+  completeCampaign(c: Campaign): void {
+    if (!c.id) return;
+    this.loyaltyService.completeCampaign(c.id).subscribe({
+      next: () => { this.messageService.add({ severity: 'info', summary: 'Completed', detail: c.name }); this.load(); },
+      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to complete' }),
+    });
+  }
+
+  deleteCampaign(c: Campaign): void {
+    if (!c.id) return;
+    this.loyaltyService.deleteCampaign(c.id).subscribe({
+      next: () => { this.messageService.add({ severity: 'success', summary: 'Deleted', detail: c.name }); this.load(); },
+      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete' }),
+    });
+  }
+
+  get filtered(): Campaign[] {
+    return this.campaigns.filter(c => {
+      if (this.searchTerm && !c.name.toLowerCase().includes(this.searchTerm.toLowerCase())) return false;
+      if (this.selectedStatus && c.status !== this.selectedStatus) return false;
+      if (this.selectedType && c.campaign_type !== this.selectedType) return false;
+      return true;
+    });
+  }
+
+  totalBudget(): number { return this.campaigns.reduce((sum, c) => sum + ((c as any).budget || 0), 0); }
   countByStatus(s: string): number { return this.campaigns.filter(c => c.status === s).length; }
-  totalEnrolled(): number { return this.campaigns.reduce((sum, c) => sum + c.enrolledCount, 0); }
-  totalBudget(): number { return this.campaigns.reduce((sum, c) => sum + c.budget, 0); }
+  totalEnrolled(): number { return this.campaigns.reduce((sum, c) => sum + (c.stats?.['total_recipients'] || 0), 0); }
 
   getStatusStyle(s: string): { bg: string; color: string } {
     const map: Record<string, { bg: string; color: string }> = {
       active:    { bg: '#dcfce7', color: '#15803d' },
       scheduled: { bg: '#dbeafe', color: '#1d4ed8' },
-      ended:     { bg: '#f1f5f9', color: '#64748b' },
+      completed: { bg: '#f1f5f9', color: '#64748b' },
       draft:     { bg: '#fef3c7', color: '#b45309' },
+      paused:    { bg: '#fef9c3', color: '#a16207' },
+      cancelled: { bg: '#fee2e2', color: '#dc2626' },
     };
     return map[s] || { bg: '#f1f5f9', color: '#64748b' };
   }
 
   getTypeLabel(t: string): string {
     const map: Record<string, string> = {
-      points_multiplier: 'Multiplier', bonus_points: 'Bonus', referral: 'Referral', birthday: 'Birthday', seasonal: 'Seasonal'
+      purchase: 'Purchase', referral: 'Referral', birthday: 'Birthday',
+      seasonal: 'Seasonal', welcome: 'Welcome', retention: 'Retention', promotion: 'Promotion',
     };
     return map[t] || t;
   }
 
   getTypeIcon(t: string): string {
     const map: Record<string, string> = {
-      points_multiplier: 'pi pi-star', bonus_points: 'pi pi-plus-circle', referral: 'pi pi-share-alt',
-      birthday: 'pi pi-calendar', seasonal: 'pi pi-sun'
+      purchase: 'pi pi-shopping-cart', referral: 'pi pi-share-alt', birthday: 'pi pi-calendar',
+      seasonal: 'pi pi-sun', welcome: 'pi pi-user-plus', retention: 'pi pi-heart', promotion: 'pi pi-megaphone',
     };
     return map[t] || 'pi pi-megaphone';
-  }
-
-  private mock(): Campaign[] {
-    return [
-      { id: 'C001', name: 'Double Points Weekend', description: 'Earn 2× points on all purchases every weekend', type: 'points_multiplier', status: 'active', startDate: new Date('2026-04-01'), endDate: new Date('2026-04-30'), pointMultiplier: 2, bonusPoints: 0, enrolledCount: 4200, budget: 5000000, segment: 'All members' },
-      { id: 'C002', name: 'Gold Member Bonus', description: '500 bonus points for Gold members spending over 500K', type: 'bonus_points', status: 'active', startDate: new Date('2026-04-10'), endDate: new Date('2026-05-10'), pointMultiplier: 1, bonusPoints: 500, enrolledCount: 1200, budget: 2000000, segment: 'Gold tier' },
-      { id: 'C003', name: 'Refer a Friend', description: 'Both referrer and referred earn 200 bonus points', type: 'referral', status: 'active', startDate: new Date('2026-03-01'), endDate: new Date('2026-06-30'), pointMultiplier: 1, bonusPoints: 200, enrolledCount: 780, budget: 1500000, segment: 'Silver & above' },
-      { id: 'C004', name: 'Birthday Month 3×', description: 'Triple points during members birthday month', type: 'birthday', status: 'scheduled', startDate: new Date('2026-05-01'), endDate: new Date('2026-12-31'), pointMultiplier: 3, bonusPoints: 0, enrolledCount: 0, budget: 3000000, segment: 'All members' },
-      { id: 'C005', name: 'Summer Splash Sale', description: 'Earn 1.5× points on summer collection', type: 'seasonal', status: 'draft', startDate: new Date('2026-06-01'), endDate: new Date('2026-08-31'), pointMultiplier: 1.5, bonusPoints: 0, enrolledCount: 0, budget: 4000000, segment: 'All members' },
-      { id: 'C006', name: 'Tet Holiday Promo', description: 'Special Tet bonus for Platinum members', type: 'bonus_points', status: 'ended', startDate: new Date('2026-01-25'), endDate: new Date('2026-02-05'), pointMultiplier: 1, bonusPoints: 1000, enrolledCount: 320, budget: 1000000, segment: 'Platinum tier' },
-    ];
   }
 }

@@ -4,6 +4,8 @@ import { RouterModule } from '@angular/router';
 import { Button } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { Tag } from 'primeng/tag';
+import { LoyaltyService } from '../../services/loyalty.service';
+import { LoyaltyOverview } from '../../models/loyalty.models';
 
 @Component({
   selector: 'app-loyalty-overview-doc',
@@ -15,13 +17,20 @@ import { Tag } from 'primeng/tag';
 export class LoyaltyOverviewDocComponent implements OnInit {
 
   loading = true;
+  overview: LoyaltyOverview | null = null;
 
-  stats = [
-    { label: 'Active Members',  value: '12,480', icon: 'pi pi-users', color: 'bg-violet-100', iconColor: 'text-violet-600', desc: 'Total members enrolled in loyalty programs' },
-    { label: 'Retention Rate',  value: '94.2%',   icon: 'pi pi-heart', color: 'bg-pink-100',   iconColor: 'text-pink-600',   desc: 'Percentage of members who returned this month' },
-    { label: 'Points Issued',   value: '4.5M',    icon: 'pi pi-star',  color: 'bg-yellow-100', iconColor: 'text-yellow-600',desc: 'Total loyalty points rewarded to date' },
-    { label: 'Burn Rate',       value: '62%',     icon: 'pi pi-bolt',  color: 'bg-orange-100', iconColor: 'text-orange-600',desc: 'Percentage of points redeemed vs issued' },
-  ];
+  get stats() {
+    const o = this.overview;
+    const burnRate = o && o.total_points_in_circulation > 0
+      ? Math.round((o.points_redeemed_this_month / o.total_points_in_circulation) * 100)
+      : 0;
+    return [
+      { label: 'Active Members',  value: o ? o.active_members.toLocaleString() : '—', icon: 'pi pi-users', color: 'bg-violet-100', iconColor: 'text-violet-600', desc: 'Total members enrolled in loyalty programs' },
+      { label: 'Retention Rate',  value: o ? (o.retention_rate * 100).toFixed(1) + '%' : '—', icon: 'pi pi-heart', color: 'bg-pink-100', iconColor: 'text-pink-600', desc: 'Percentage of members who returned this month' },
+      { label: 'Points Issued',   value: o ? (o.total_points_in_circulation / 1_000_000).toFixed(1) + 'M' : '—', icon: 'pi pi-star', color: 'bg-yellow-100', iconColor: 'text-yellow-600', desc: 'Total loyalty points rewarded to date' },
+      { label: 'Burn Rate',       value: o ? burnRate + '%' : '—', icon: 'pi pi-bolt', color: 'bg-orange-100', iconColor: 'text-orange-600', desc: 'Percentage of points redeemed vs issued' },
+    ];
+  }
 
   sections = [
     {
@@ -76,17 +85,20 @@ export class LoyaltyOverviewDocComponent implements OnInit {
     { id: '3', product: 'Campaign',    message: 'Summer Sale enrollment spike detected',severity: 'warning',  severityTag: 'warning', icon: 'pi pi-chart-line', time: '1h ago', context: 'Monitor' },
   ];
 
+  constructor(private loyaltyService: LoyaltyService) {}
+
   ngOnInit(): void {
-    // Simulate data loading
-    setTimeout(() => {
-      this.loading = false;
-    }, 800);
+    this.loadStats();
   }
 
   loadStats(): void {
     this.loading = true;
-    setTimeout(() => {
-      this.loading = false;
-    }, 500);
+    this.loyaltyService.getLoyaltyOverview().subscribe({
+      next: (res) => {
+        this.overview = res.data;
+        this.loading = false;
+      },
+      error: () => { this.loading = false; },
+    });
   }
 }

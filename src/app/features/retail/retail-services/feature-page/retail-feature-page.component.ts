@@ -54,142 +54,170 @@ interface FeatureWorkspaceSection {
   imports: [CommonModule, RouterModule, CardModule, ButtonModule, TagModule, ProgressBarModule],
   template: `
     <div class="feature-page-shell" [style.--accent]="config.accent" [class.feature-page-embedded]="embedded">
+      
+      <!-- Background Ambient Glows -->
+      <div class="ambient-glows">
+        <div class="glow-orb orb-green"></div>
+        <div class="glow-orb orb-indigo"></div>
+        <div class="glow-dots"></div>
+      </div>
+
+      <!-- Hero Header Section -->
       <section class="feature-hero">
-        <div class="feature-hero-main">
-          <div class="feature-hero-copy">
-            <div class="feature-hero-badge leafy-badge">
-              <i [class]="config.icon"></i>
+        <div class="hero-main-content">
+          <div class="hero-header-copy">
+            <div class="hero-badge-container">
+              <div class="hero-badge leafy-badge">
+                <i [class]="config.icon"></i>
+              </div>
+              <span class="badge-tag">Operational Workspace</span>
             </div>
-            <div>
-              <p class="feature-eyebrow">Retail product workspace</p>
-              <h1 class="feature-title">{{ config.title }}</h1>
-              <p class="feature-subtitle">{{ config.subtitle }}</p>
-            </div>
+            
+            <p class="feature-eyebrow">Enterprise Supply Chain Platform</p>
+            <h1 class="feature-title">{{ config.title }}</h1>
+            <p class="feature-subtitle">{{ config.subtitle }}</p>
           </div>
 
+          <!-- Quick Fact Cards -->
           <div class="hero-intro-grid">
             <article class="hero-intro-card">
-              <span class="hero-intro-label">Designed for</span>
-              <strong>Fresh food retailers in Vietnam</strong>
-              <p>Daily stock, demand, and fulfillment kept in one operational system.</p>
+              <div class="intro-card-icon"><i class="pi pi-map-marker"></i></div>
+              <div class="intro-card-text">
+                <span class="hero-intro-label">Vietnam Target Market</span>
+                <strong>Fresh food households & local chains</strong>
+                <p>Tailored specifically for the dynamic logistics and retail landscape of Vietnam.</p>
+              </div>
             </article>
             <article class="hero-intro-card">
-              <span class="hero-intro-label">Main outcome</span>
-              <strong>Less spoilage, better availability</strong>
-              <p>Use better signals before replenishment and delivery decisions are made.</p>
+              <div class="intro-card-icon"><i class="pi pi-bolt"></i></div>
+              <div class="intro-card-text">
+                <span class="hero-intro-label">Primary Outcome</span>
+                <strong>Waste reduction & high availability</strong>
+                <p>Keep shelves optimized daily with smart replenishment and predictive logistics.</p>
+              </div>
             </article>
           </div>
         </div>
 
+        <!-- Right Visual Operations Console -->
         <div class="feature-hero-aside">
-          <div class="feature-hero-visual" *ngIf="isFreshRetail">
-            <div class="hero-visual-panel hero-visual-market">
-              <div class="visual-kicker">
-                <i class="pi pi-shopping-basket"></i>
-                <span>Fresh goods flow</span>
+          <div class="live-console-card">
+            <div class="console-header">
+              <div class="console-status">
+                <span class="status-pulse-dot"></span>
+                <span>OPERATIONAL CONSOLE</span>
               </div>
-              <div class="visual-orbs">
-                <span class="orb orb-lg"></span>
-                <span class="orb orb-md"></span>
-                <span class="orb orb-sm"></span>
+              <p-tag severity="success" value="Ready"></p-tag>
+            </div>
+            
+            <div class="console-visual-display" *ngIf="isFreshRetail">
+              <div class="display-main-metric">
+                <span class="metric-desc">Fulfillment Accuracy</span>
+                <span class="metric-num">98.4<span class="metric-unit">%</span></span>
+                <span class="metric-change"><i class="pi pi-arrow-up-right"></i> +2.1% this week</span>
               </div>
-              <div class="visual-metric-row">
-                <div class="visual-metric-card">
-                  <i class="pi pi-box"></i>
-                  <div>
-                    <strong>Inventory</strong>
-                    <span>Real-time stock</span>
-                  </div>
-                </div>
-                <div class="visual-metric-card">
-                  <i class="pi pi-chart-line"></i>
-                  <div>
-                    <strong>Forecast</strong>
-                    <span>Demand signals</span>
-                  </div>
-                </div>
+
+              <!-- Animated Wave/Graph Line -->
+              <div class="display-graph">
+                <div class="graph-bar" style="height: 40%"></div>
+                <div class="graph-bar" style="height: 55%"></div>
+                <div class="graph-bar" style="height: 45%"></div>
+                <div class="graph-bar" style="height: 70%"></div>
+                <div class="graph-bar animated-bar" style="height: 85%"></div>
+                <div class="graph-bar" style="height: 65%"></div>
+                <div class="graph-bar" style="height: 75%"></div>
+                <div class="graph-bar animated-bar" style="height: 90%"></div>
               </div>
             </div>
 
-            <div class="hero-visual-stack">
-              <div class="hero-mini-card">
-                <i class="pi pi-comments"></i>
-                <span>Omni-channel demand</span>
+            <!-- Operational Signals Info -->
+            <div class="console-rows">
+              <div class="console-row">
+                <span class="row-label"><i class="pi pi-shield"></i> Isolation Level</span>
+                <span class="row-value badge-glass">Strict Tenant Isolation</span>
               </div>
-              <div class="hero-mini-card">
-                <i class="pi pi-send"></i>
-                <span>Auto planning routes</span>
+              <div class="console-row">
+                <span class="row-label"><i class="pi pi-chart-bar"></i> Forecast Signal</span>
+                <span class="row-value badge-glass">Sales + Customer Chat</span>
               </div>
-              <div class="hero-mini-card">
-                <i class="pi pi-shield"></i>
-                <span>Tenant isolation</span>
+              <div class="console-row">
+                <span class="row-label"><i class="pi pi-send"></i> Replenishment</span>
+                <span class="row-value badge-glass">Auto Route Planning</span>
               </div>
             </div>
-          </div>
 
-          <div class="feature-hero-actions">
-            <p-tag severity="success" value="Product Ready"></p-tag>
-            <button pButton type="button" class="p-button-sm p-button-outlined" (click)="switchSection('modules')">
-              View Modules
-            </button>
+            <div class="console-actions">
+              <button pButton type="button" class="p-button-sm btn-premium-gradient" (click)="switchSection('modules')">
+                <i class="pi pi-th-large"></i> Explore Modules
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
+      <!-- Key Performance Indicators Row -->
       <section class="feature-summary-grid">
-        <article class="summary-card" *ngFor="let stat of config.stats">
-          <div>
-            <p class="summary-label">{{ stat.label }}</p>
-            <h3 class="summary-value">{{ stat.value }}</h3>
-            <p class="summary-caption" *ngIf="stat.trend">{{ stat.trend }}</p>
+        <article class="summary-card" *ngFor="let stat of config.stats; let i = index">
+          <div class="summary-card-inner">
+            <div class="summary-icon-wrap" [style.--glow-color]="config.accent">
+              <i [class]="i === 0 ? 'pi pi-users' : i === 1 ? 'pi pi-star' : i === 2 ? 'pi pi-chart-line' : 'pi pi-shield'"></i>
+            </div>
+            <div class="summary-content">
+              <p class="summary-label">{{ stat.label }}</p>
+              <h3 class="summary-value">{{ stat.value }}</h3>
+              <p class="summary-caption" *ngIf="stat.trend">
+                <span class="trend-bullet"></span> {{ stat.trend }}
+              </p>
+            </div>
           </div>
         </article>
       </section>
 
+      <!-- Content Workspace Tabs and Panel -->
       <section class="feature-panel">
         <div class="feature-panel-header">
-          <div>
-            <p class="panel-eyebrow">Product module</p>
+          <div class="panel-header-text">
+            <p class="panel-eyebrow">Interactive Control Surface</p>
             <h2 class="panel-title">{{ activeSectionMeta.label }}</h2>
             <p class="panel-subtitle">{{ activeSectionMeta.description }}</p>
           </div>
-          <div class="panel-chip">
-            <i [class]="activeSectionMeta.icon"></i>
-            <span>{{ config.title }}</span>
-          </div>
+          
+          <nav class="feature-tabs">
+            <button
+              *ngFor="let section of workspaceSections"
+              type="button"
+              class="feature-tab"
+              [class.active]="activeSection === section.key"
+              (click)="switchSection(section.key)">
+              <i [class]="section.icon"></i>
+              <span>{{ section.label }}</span>
+            </button>
+          </nav>
         </div>
 
-        <nav class="feature-tabs">
-          <button
-            *ngFor="let section of workspaceSections"
-            type="button"
-            class="feature-tab"
-            [class.active]="activeSection === section.key"
-            (click)="switchSection(section.key)">
-            <i [class]="section.icon"></i>
-            <span>{{ section.label }}</span>
-          </button>
-        </nav>
-
         <div class="feature-panel-content">
+          <!-- SECTION 1: OVERVIEW -->
           <ng-container *ngIf="activeSection === 'overview'">
             <div class="feature-overview-layout">
               <div class="feature-overview-main">
+                
+                <!-- Main Narrative Card -->
                 <article class="flat-card narrative-card">
                   <div class="card-header">
                     <div class="card-icon">
                       <i class="pi pi-shop"></i>
                     </div>
                     <div class="card-title-group">
-                      <h3 class="card-title">Product Overview</h3>
-                      <p class="card-subtitle">Positioning for daily fresh retail operations</p>
+                      <h3 class="card-title">System Overview & Value Chain</h3>
+                      <p class="card-subtitle">Strategic positioning for local fresh produce operations</p>
                     </div>
                   </div>
                   <div class="card-body">
                     <p class="narrative-text">{{ config.subtitle }}</p>
+                    
                     <div class="highlight-grid" *ngIf="config.highlights?.length">
                       <div class="highlight-item" *ngFor="let highlight of config.highlights">
-                        <i class="pi pi-leaf highlight-icon"></i>
+                        <i class="pi pi-check highlight-icon"></i>
                         <span class="highlight-label">{{ highlight.label }}</span>
                         <strong class="highlight-value">{{ highlight.value }}</strong>
                       </div>
@@ -197,14 +225,15 @@ interface FeatureWorkspaceSection {
                   </div>
                 </article>
 
+                <!-- Vietnam Fresh Retail Story / Visual Loop -->
                 <article class="flat-card visual-story-card" *ngIf="isFreshRetail">
                   <div class="card-header">
                     <div class="card-icon">
-                      <i class="pi pi-images"></i>
+                      <i class="pi pi-globe"></i>
                     </div>
                     <div class="card-title-group">
-                      <h3 class="card-title">Fresh Retail Story</h3>
-                      <p class="card-subtitle">A greener visual explanation of the product value chain</p>
+                      <h3 class="card-title">Supply Chain Integration Flow</h3>
+                      <p class="card-subtitle">A digital pipeline connecting operations from fields to storefronts</p>
                     </div>
                   </div>
                   <div class="card-body">
@@ -212,32 +241,33 @@ interface FeatureWorkspaceSection {
                       <div class="story-image story-image-field">
                         <div class="story-image-overlay">
                           <i class="pi pi-sun"></i>
-                          <span>Seasonality and weather shape demand every day.</span>
+                          <span>Seasonal and weather changes shift market demand hourly.</span>
                         </div>
                       </div>
                       <div class="story-image story-image-ops">
                         <div class="story-image-overlay">
-                          <i class="pi pi-warehouse"></i>
-                          <span>Warehouses, inventory, and vehicles stay connected in one platform.</span>
+                          <i class="pi pi-truck"></i>
+                          <span>Warehouses, delivery points, and trucks stay connected.</span>
                         </div>
                       </div>
                       <div class="story-chip-row">
-                        <span class="story-chip"><i class="pi pi-apple"></i> Daily fresh assortment</span>
-                        <span class="story-chip"><i class="pi pi-bolt"></i> Faster replenishment</span>
-                        <span class="story-chip"><i class="pi pi-map-marker"></i> Local delivery readiness</span>
+                        <span class="story-chip"><i class="pi pi-apple"></i> Perishable Assortment</span>
+                        <span class="story-chip"><i class="pi pi-bolt"></i> Real-time Sync</span>
+                        <span class="story-chip"><i class="pi pi-map-marker"></i> Local Delivery Flow</span>
                       </div>
                     </div>
                   </div>
                 </article>
 
+                <!-- Core Capability List -->
                 <article class="flat-card" *ngIf="config.sections?.length">
                   <div class="card-header">
                     <div class="card-icon">
                       <i class="pi pi-th-large"></i>
                     </div>
                     <div class="card-title-group">
-                      <h3 class="card-title">Capability Stack</h3>
-                      <p class="card-subtitle">How the product is organized end to end</p>
+                      <h3 class="card-title">Platform Capability Stack</h3>
+                      <p class="card-subtitle">Key architectural layers powering the platform</p>
                     </div>
                   </div>
                   <div class="card-body">
@@ -253,20 +283,24 @@ interface FeatureWorkspaceSection {
                 </article>
               </div>
 
+              <!-- Sidebar Sidebar Checklist / Outcomes -->
               <aside class="feature-overview-side">
-                <article class="flat-card">
+                <article class="flat-card side-outcome-card">
                   <div class="card-header">
-                    <div class="card-icon">
-                      <i class="pi pi-sparkles"></i>
+                    <div class="card-icon accent-icon">
+                      <i class="pi pi-star"></i>
                     </div>
                     <div class="card-title-group">
-                      <h3 class="card-title">Core Outcomes</h3>
-                      <p class="card-subtitle">What this product is designed to improve</p>
+                      <h3 class="card-title">Expected Outcomes</h3>
+                      <p class="card-subtitle">Key improvements after integration</p>
                     </div>
                   </div>
                   <div class="card-body">
-                    <div class="pill-list pill-list-single">
-                      <span class="feature-pill" *ngFor="let item of config.checklist">{{ item }}</span>
+                    <div class="pill-list-single">
+                      <span class="feature-pill" *ngFor="let item of config.checklist">
+                        <i class="pi pi-check-circle pill-icon"></i>
+                        <span>{{ item }}</span>
+                      </span>
                     </div>
                   </div>
                 </article>
@@ -277,13 +311,13 @@ interface FeatureWorkspaceSection {
                       <i class="pi pi-compass"></i>
                     </div>
                     <div class="card-title-group">
-                      <h3 class="card-title">Platform Direction</h3>
-                      <p class="card-subtitle">How this product should feel in operation</p>
+                      <h3 class="card-title">Technical Mandate</h3>
+                      <p class="card-subtitle">Operational guidelines</p>
                     </div>
                   </div>
                   <div class="card-body">
                     <p class="narrative-text">
-                      Keep inventory, demand, and fulfillment in one operational surface for fresh goods.
+                      Maintain unified control over inventory, replenishment signals, and dispatch routes in a single, high-performance operational dashboard.
                     </p>
                   </div>
                 </article>
@@ -291,10 +325,11 @@ interface FeatureWorkspaceSection {
             </div>
           </ng-container>
 
+          <!-- SECTION 2: MODULES WORKSPACE -->
           <ng-container *ngIf="activeSection === 'modules'">
             <div class="module-grid">
               <article class="module-card" *ngFor="let action of config.actions">
-                <div class="card-header">
+                <div class="module-card-header">
                   <div class="module-icon">
                     <i [class]="action.icon"></i>
                   </div>
@@ -303,15 +338,16 @@ interface FeatureWorkspaceSection {
                     <p>{{ action.description }}</p>
                   </div>
                 </div>
-                <div class="card-body">
-                  <button pButton type="button" class="p-button-sm p-button-text">
-                    Open
+                <div class="module-card-footer">
+                  <button pButton type="button" class="p-button-sm btn-card-action">
+                    Open Workspace <i class="pi pi-arrow-right"></i>
                   </button>
                 </div>
               </article>
             </div>
           </ng-container>
 
+          <!-- SECTION 3: READINESS AND GO-LIVE -->
           <ng-container *ngIf="activeSection === 'readiness'">
             <div class="feature-readiness-layout">
               <article class="flat-card">
@@ -320,38 +356,45 @@ interface FeatureWorkspaceSection {
                     <i class="pi pi-check-circle"></i>
                   </div>
                   <div class="card-title-group">
-                    <h3 class="card-title">Readiness Checklist</h3>
-                    <p class="card-subtitle">Suggested setup before scaling operations</p>
+                    <h3 class="card-title">Deployment Readiness</h3>
+                    <p class="card-subtitle">Operational checklist before live commercial launch</p>
                   </div>
                 </div>
                 <div class="card-body">
                   <div class="checklist">
                     <div class="check-item" *ngFor="let item of config.checklist">
-                      <i class="pi pi-check-circle"></i>
-                      <span>{{ item }}</span>
+                      <div class="check-item-icon-wrap">
+                        <i class="pi pi-check"></i>
+                      </div>
+                      <div class="check-item-content">
+                        <strong>{{ item }}</strong>
+                        <span>Validated and active on primary tenant.</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </article>
 
               <div class="readiness-side">
-                <article class="flat-card">
+                <article class="flat-card progress-glow-card">
                   <div class="card-header">
-                    <div class="card-icon">
+                    <div class="card-icon bg-success-glow">
                       <i class="pi pi-chart-bar"></i>
                     </div>
                     <div class="card-title-group">
-                      <h3 class="card-title">Go-live Progress</h3>
-                      <p class="card-subtitle">Current setup completeness across product areas</p>
+                      <h3 class="card-title">Go-Live Progress</h3>
+                      <p class="card-subtitle">Cumulative score across setup items</p>
                     </div>
                   </div>
                   <div class="card-body">
                     <div class="progress-wrap">
                       <div class="progress-meta">
-                        <span>Completion</span>
+                        <span>COMPLETENESS RATE</span>
                         <strong>{{ readinessScore }}%</strong>
                       </div>
-                      <p-progressBar [value]="readinessScore"></p-progressBar>
+                      <div class="custom-progress-bar">
+                        <div class="progress-fill" [style.width.%]="readinessScore"></div>
+                      </div>
                     </div>
                   </div>
                 </article>
@@ -359,16 +402,15 @@ interface FeatureWorkspaceSection {
                 <article class="flat-card readiness-highlight">
                   <div class="card-header">
                     <div class="card-icon">
-                      <i class="pi pi-leaf"></i>
+                      <i class="pi pi-shield"></i>
                     </div>
                     <div class="card-title-group">
-                      <h3 class="card-title">Operational Focus</h3>
-                      <p class="card-subtitle">The product should stay practical, not decorative</p>
+                      <h3 class="card-title">Production Stability</h3>
                     </div>
                   </div>
                   <div class="card-body">
                     <p class="narrative-text">
-                      Prioritize daily retail decisions: what to stock, what to replenish, what to deliver, and where demand is moving next.
+                      Ensuring total security isolation and reliable high-performance metrics under high concurrent transaction volume in Vietnam stores.
                     </p>
                   </div>
                 </article>
@@ -380,600 +422,1061 @@ interface FeatureWorkspaceSection {
     </div>
   `,
   styles: [`
-    :host { display: block; }
+    :host { display: block; background: #fafbfe; }
+    
+    /* Ambient Glow Styles */
     .feature-page-shell {
-      padding: 1.5rem;
+      position: relative;
+      padding: 2.2rem;
       display: grid;
-      gap: 1.25rem;
-      background:
-        radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 12%, #ffffff) 0%, transparent 28%),
-        linear-gradient(180deg, #f6fbf7 0%, #eef7f1 100%);
+      gap: 1.8rem;
       min-height: calc(100vh - 4rem);
+      overflow: hidden;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
+
+    .ambient-glows {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.45;
+    }
+
+    .orb-green {
+      top: -10%;
+      right: -5%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, #34d399 0%, rgba(16, 185, 129, 0) 70%);
+    }
+
+    .orb-indigo {
+      bottom: 10%;
+      left: -10%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, #6366f1 0%, rgba(99, 102, 241, 0) 70%);
+    }
+
+    .glow-dots {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(16, 185, 129, 0.08) 1.2px, transparent 1.2px);
+      background-size: 28px 28px;
+    }
+
+    /* Embedded Mode Override */
     .feature-page-embedded {
       padding: 0;
       min-height: auto;
       background: transparent;
     }
+
+    /* ─── Hero Header ─── */
     .feature-hero {
-      --accent: #2563eb;
-      border-radius: 28px;
-      padding: 1.6rem;
-      background:
-        radial-gradient(circle at top left, rgba(187, 247, 208, 0.88) 0%, rgba(187, 247, 208, 0) 28%),
-        linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, #ffffff) 0%, #ffffff 68%);
-      border: 1px solid color-mix(in srgb, var(--accent) 25%, #e5e7eb);
-      display: flex;
-      justify-content: space-between;
-      align-items: stretch;
-      gap: 1.5rem;
-      box-shadow: 0 20px 48px rgba(21, 128, 61, 0.08);
-    }
-    .feature-hero-main {
-      flex: 1 1 50%;
-      display: grid;
-      gap: 1.1rem;
-    }
-    .feature-hero-copy {
-      display: flex;
-      align-items: flex-start;
-      gap: 1rem;
-    }
-    .feature-hero-badge {
-      width: 56px;
-      height: 56px;
-      border-radius: 18px;
-      display: grid;
-      place-items: center;
-      background: var(--accent);
-      color: #fff;
-      font-size: 1.35rem;
-    }
-    .leafy-badge {
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24), 0 16px 28px rgba(21, 128, 61, 0.24);
-      background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);
-    }
-    .feature-eyebrow {
-      margin: 0 0 0.3rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      font-size: 0.72rem;
-      color: color-mix(in srgb, var(--accent) 68%, #1f2937);
-      font-weight: 700;
-    }
-    .feature-title {
-      margin: 0;
-      font-size: 1.8rem;
-      color: #111827;
-    }
-    .feature-subtitle {
-      margin: 0.4rem 0 0;
-      color: #4b5563;
-      max-width: 42rem;
-      line-height: 1.7;
-    }
-    .hero-intro-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.9rem;
-    }
-    .hero-intro-card {
-      padding: 1rem 1.05rem;
-      border-radius: 18px;
-      border: 1px solid rgba(34, 197, 94, 0.14);
-      background: rgba(255, 255, 255, 0.82);
-      display: grid;
-      gap: 0.3rem;
-    }
-    .hero-intro-label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #15803d;
-      font-weight: 700;
-    }
-    .hero-intro-card strong {
-      color: #14532d;
-      font-size: 0.96rem;
-    }
-    .hero-intro-card p {
-      margin: 0;
-      color: #64748b;
-      line-height: 1.55;
-      font-size: 0.88rem;
-    }
-    .feature-hero-aside {
-      width: min(40rem, 48%);
-      display: grid;
-      gap: 0.9rem;
-    }
-    .feature-hero-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      justify-content: flex-end;
-    }
-    .feature-hero-visual {
-      display: flex;
-      align-items: stretch;
-      gap: 0.9rem;
-      min-width: 0;
-    }
-    .hero-visual-panel,
-    .hero-mini-card {
-      border: 1px solid rgba(21, 128, 61, 0.12);
-      background: rgba(255, 255, 255, 0.74);
-      box-shadow: 0 16px 34px rgba(21, 128, 61, 0.08);
-      backdrop-filter: blur(10px);
-    }
-    .hero-visual-market {
-      flex: 1;
-      border-radius: 22px;
-      padding: 1rem;
-      position: relative;
-      overflow: hidden;
-      min-height: 12rem;
-    }
-    .visual-kicker {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.45rem;
-      padding: 0.45rem 0.7rem;
-      border-radius: 999px;
-      background: rgba(240, 253, 244, 0.92);
-      color: #166534;
-      font-size: 0.78rem;
-      font-weight: 700;
-    }
-    .visual-orbs {
-      position: absolute;
-      inset: auto -0.75rem -0.75rem auto;
-      width: 11rem;
-      height: 11rem;
-    }
-    .orb {
-      position: absolute;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(34, 197, 94, 0.45));
-      filter: blur(0.2px);
-    }
-    .orb-lg {
-      width: 7.5rem;
-      height: 7.5rem;
-      right: 0;
-      bottom: 0;
-    }
-    .orb-md {
-      width: 4.5rem;
-      height: 4.5rem;
-      right: 5.2rem;
-      bottom: 4.5rem;
-    }
-    .orb-sm {
-      width: 2.4rem;
-      height: 2.4rem;
-      right: 2.8rem;
-      bottom: 7.8rem;
-    }
-    .visual-metric-row {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.75rem;
-      margin-top: 2.25rem;
       position: relative;
       z-index: 1;
-    }
-    .visual-metric-card {
-      display: flex;
+      border-radius: 24px;
+      padding: 2.5rem;
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
       align-items: center;
-      gap: 0.7rem;
-      padding: 0.8rem;
-      border-radius: 16px;
-      background: rgba(255, 255, 255, 0.88);
-      border: 1px solid rgba(34, 197, 94, 0.12);
+      gap: 3rem;
+      box-shadow: 
+        0 4px 30px rgba(0, 0, 0, 0.03),
+        inset 0 1px 1px rgba(255, 255, 255, 0.6);
     }
-    .visual-metric-card i {
-      width: 2rem;
-      height: 2rem;
-      border-radius: 12px;
+
+    .hero-main-content {
+      display: grid;
+      gap: 2rem;
+    }
+
+    .hero-badge-container {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .hero-badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
       display: grid;
       place-items: center;
-      background: rgba(220, 252, 231, 0.95);
-      color: #15803d;
+      color: #fff;
+      font-size: 1.2rem;
     }
-    .visual-metric-card strong,
-    .hero-mini-card span {
-      display: block;
-      color: #14532d;
-      font-size: 0.88rem;
-      font-weight: 700;
+
+    .leafy-badge {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      box-shadow: 0 10px 20px rgba(16, 185, 129, 0.25);
     }
-    .visual-metric-card span {
-      display: block;
-      color: #4b5563;
+
+    .badge-tag {
       font-size: 0.75rem;
-      margin-top: 0.15rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #059669;
+      background: rgba(16, 185, 129, 0.08);
+      padding: 6px 14px;
+      border-radius: 100px;
+      border: 1px solid rgba(16, 185, 129, 0.15);
     }
-    .hero-visual-stack {
-      display: grid;
-      gap: 0.7rem;
-      width: 11rem;
-    }
-    .hero-mini-card {
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-      padding: 0.8rem 0.9rem;
-      border-radius: 18px;
-    }
-    .hero-mini-card i {
-      color: #16a34a;
-      font-size: 1rem;
-    }
-    .feature-summary-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 0.9rem;
-    }
-    .summary-card {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(240, 253, 244, 0.94) 100%);
-      border: 1px solid rgba(34, 197, 94, 0.14);
-      border-radius: 20px;
-      padding: 1.1rem 1.15rem;
-      box-shadow: 0 10px 30px rgba(21, 128, 61, 0.08);
-    }
-    .summary-label { color: #64748b; font-size: 0.82rem; margin: 0; }
-    .summary-value { color: #0f172a; font-size: 1.45rem; font-weight: 700; margin: 0.3rem 0 0; }
-    .summary-caption { color: #15803d; font-size: 0.82rem; margin: 0.2rem 0 0; }
-    .feature-panel,
-    .flat-card,
-    .module-card {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.96) 100%);
-      border: 1px solid rgba(34, 197, 94, 0.12);
-      border-radius: 20px;
-      box-shadow: 0 16px 36px rgba(21, 128, 61, 0.07);
-    }
-    .panel-eyebrow {
-      margin: 0 0 0.35rem;
+
+    .feature-eyebrow {
+      margin: 0;
+      font-size: 0.8rem;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.12em;
-      font-size: 0.72rem;
-      font-weight: 700;
       color: #64748b;
     }
-    .panel-title {
-      margin: 0;
-      font-size: 1.25rem;
+
+    .feature-title {
+      margin: 0.4rem 0 0.6rem;
+      font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+      font-weight: 800;
       color: #0f172a;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
     }
-    .feature-tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      margin-top: 1rem;
-      padding: 0.35rem;
-      border-radius: 18px;
-      background: #f7fbf8;
-      border: 1px solid rgba(34, 197, 94, 0.12);
-    }
-    .feature-tab {
-      border: 1px solid transparent;
-      background: transparent;
-      color: #475569;
-      border-radius: 14px;
-      padding: 0.8rem 1rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.55rem;
-      cursor: pointer;
-      font-weight: 600;
-      transition: 0.2s ease;
-    }
-    .feature-tab.active {
-      background: #ffffff;
-      color: #166534;
-      border-color: rgba(34, 197, 94, 0.18);
-      box-shadow: 0 10px 24px rgba(21, 128, 61, 0.08);
-    }
-    .card-icon,
-    .card-icon,
-    .module-icon,
-    .feature-sidebar-note-icon {
-      width: 2.5rem;
-      height: 2.5rem;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
-      background: color-mix(in srgb, var(--accent) 12%, #f8fafc);
-      color: color-mix(in srgb, var(--accent) 70%, #0f172a);
-      flex: 0 0 auto;
-    }
-    .panel-subtitle,
-    .card-subtitle,
-    .feature-sidebar-note-text,
-    .narrative-text,
-    .module-copy p,
-    .section-item p {
+
+    .feature-subtitle {
       margin: 0;
-      color: #64748b;
-      line-height: 1.6;
+      font-size: 0.95rem;
+      color: #475569;
+      line-height: 1.65;
+      max-width: 38rem;
     }
-    .feature-panel {
-      padding: 1.4rem;
+
+    /* Fact cards in hero */
+    .hero-intro-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
     }
-    .feature-panel-header,
-    .card-header {
+
+    .hero-intro-card {
       display: flex;
-      justify-content: space-between;
       align-items: flex-start;
       gap: 1rem;
+      padding: 1.2rem;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      backdrop-filter: blur(10px);
+      transition: all 0.25s ease;
     }
-    .panel-chip {
-      display: inline-flex;
+
+    .hero-intro-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(16, 185, 129, 0.3);
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .intro-card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.08);
+      color: #059669;
+      display: flex;
       align-items: center;
-      gap: 0.55rem;
-      border-radius: 999px;
-      padding: 0.55rem 0.8rem;
-      background: #f8fafc;
-      color: #334155;
-      font-size: 0.86rem;
-      font-weight: 600;
-      border: 1px solid #e2e8f0;
+      justify-content: center;
+      font-size: 0.95rem;
+      flex-shrink: 0;
     }
-    .feature-panel-content {
+
+    .intro-card-text {
       display: grid;
-      gap: 1.1rem;
+      gap: 0.2rem;
+    }
+
+    .hero-intro-label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+      font-weight: 700;
+    }
+
+    .hero-intro-card strong {
+      font-size: 0.88rem;
+      color: #1e293b;
+      font-weight: 700;
+    }
+
+    .hero-intro-card p {
+      margin: 0;
+      font-size: 0.78rem;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    /* Operational Console on Right Side */
+    .live-console-card {
+      background: linear-gradient(135deg, #022c22 0%, #064e3b 100%);
+      border-radius: 20px;
+      padding: 1.8rem;
+      color: #f0fdf4;
+      display: grid;
+      gap: 1.5rem;
+      box-shadow: 
+        0 20px 40px rgba(2, 44, 34, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .console-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .console-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #34d399;
+    }
+
+    .status-pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: statusPulse 2s infinite;
+    }
+
+    @keyframes statusPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.2); }
+    }
+
+    .console-visual-display {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 14px;
+      padding: 1.2rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .display-main-metric {
+      display: grid;
+      gap: 0.1rem;
+    }
+
+    .metric-desc {
+      font-size: 0.72rem;
+      color: #a7f3d0;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .metric-num {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1;
+    }
+
+    .metric-unit {
+      font-size: 1.1rem;
+      color: #34d399;
+      font-weight: 700;
+    }
+
+    .metric-change {
+      font-size: 0.75rem;
+      color: #34d399;
+      margin-top: 0.3rem;
+      font-weight: 600;
+    }
+
+    .display-graph {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 60px;
+    }
+
+    .graph-bar {
+      width: 6px;
+      background: rgba(52, 211, 153, 0.3);
+      border-radius: 2px;
+      transition: height 0.3s ease;
+    }
+
+    .animated-bar {
+      background: #34d399;
+      animation: graphFloat 2.5s infinite ease-in-out alternate;
+    }
+
+    @keyframes graphFloat {
+      0% { transform: scaleY(0.9); }
+      100% { transform: scaleY(1.1); }
+    }
+
+    .console-rows {
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .console-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.8rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .console-row:last-child {
+      border: none;
+      padding: 0;
+    }
+
+    .row-label {
+      font-size: 0.8rem;
+      color: #a7f3d0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .row-label i {
+      color: #34d399;
+    }
+
+    .row-value {
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .badge-glass {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .console-actions {
+      display: grid;
+    }
+
+    .btn-premium-gradient {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+      color: white !important;
+      border: none !important;
+      font-weight: 700 !important;
+      padding: 10px 18px !important;
+      border-radius: 12px !important;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3) !important;
+      transition: all 0.25s ease !important;
+    }
+
+    .btn-premium-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4) !important;
+    }
+
+    /* ─── Metric Cards ─── */
+    .feature-summary-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    .summary-card {
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 20px;
+      padding: 1.3rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .summary-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(16, 185, 129, 0.25);
+      background: rgba(255, 255, 255, 0.85);
+      box-shadow: 0 12px 30px rgba(16, 185, 129, 0.08);
+    }
+
+    .summary-card-inner {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .summary-icon-wrap {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.08);
+      color: #059669;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .summary-icon-wrap::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 14px;
+      border: 1px solid rgba(16, 185, 129, 0.15);
+      opacity: 0.5;
+    }
+
+    .summary-content {
+      display: grid;
+      gap: 0.15rem;
+    }
+
+    .summary-label {
+      margin: 0;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #64748b;
+    }
+
+    .summary-value {
+      margin: 0;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .summary-caption {
+      margin: 0;
+      font-size: 0.75rem;
+      color: #10b981;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .trend-bullet {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #10b981;
+    }
+
+    /* ─── Tabs Panel and Control Surface ─── */
+    .feature-panel {
+      position: relative;
+      z-index: 1;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 24px;
+      padding: 2rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+    }
+
+    .feature-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 2rem;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+      padding-bottom: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel-header-text {
+      display: grid;
+      gap: 0.2rem;
+    }
+
+    .panel-eyebrow {
+      margin: 0;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .panel-subtitle {
+      margin: 0;
+      font-size: 0.82rem;
+      color: #64748b;
+    }
+
+    /* Modern Tabs Switcher */
+    .feature-tabs {
+      display: flex;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+
+    .feature-tab {
+      background: transparent;
+      border: none;
+      color: #64748b;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .feature-tab:hover {
+      color: #1e293b;
+    }
+
+    .feature-tab.active {
+      background: #ffffff;
+      color: #059669;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Generic Flat Card Design */
+    .flat-card {
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      border-radius: 20px;
+      padding: 1.5rem;
+      transition: all 0.25s ease;
+    }
+
+    .flat-card:hover {
+      border-color: rgba(16, 185, 129, 0.2);
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.02);
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.08);
+      color: #059669;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .card-icon.accent-icon {
+      background: rgba(99, 102, 241, 0.08);
+      color: #4f46e5;
+    }
+
+    .card-title-group {
+      display: grid;
+      gap: 0.15rem;
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .card-subtitle {
+      margin: 0;
+      font-size: 0.78rem;
+      color: #94a3b8;
+    }
+
+    .card-body {
       margin-top: 1.2rem;
     }
+
+    .narrative-text {
+      margin: 0;
+      font-size: 0.88rem;
+      color: #475569;
+      line-height: 1.6;
+    }
+
+    /* Content Layout Grids */
     .feature-overview-layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.85fr);
-      gap: 1rem;
-      align-items: start;
+      grid-template-columns: 1.4fr 0.8fr;
+      gap: 1.5rem;
     }
+
     .feature-overview-main,
     .feature-overview-side,
     .readiness-side {
       display: grid;
-      gap: 1rem;
+      gap: 1.5rem;
     }
-    .feature-readiness-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.85fr);
-      gap: 1rem;
-    }
-    .flat-card {
-      padding: 1.2rem;
-    }
-    .card-title-group {
-      display: grid;
-      gap: 0.2rem;
-      flex: 1;
-    }
-    .card-title {
-      margin: 0;
-      color: #0f172a;
-      font-size: 1.05rem;
-    }
-    .card-body {
-      margin-top: 1rem;
-    }
-    .highlight-grid,
-    .section-list,
-    .module-grid,
-    .pill-list,
-    .checklist {
-      display: grid;
-      gap: 0.75rem;
-    }
+
+    /* Checklist / Highlighting */
     .highlight-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      margin-top: 1rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1.2rem;
     }
-    .highlight-item,
-    .section-item {
-      border-radius: 16px;
-      border: 1px solid rgba(34, 197, 94, 0.14);
-      background: linear-gradient(180deg, #f0fdf4 0%, #f8fafc 100%);
-      padding: 0.9rem 1rem;
-      position: relative;
+
+    .highlight-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      padding: 1rem 1.2rem;
+      border-radius: 14px;
+      background: rgba(248, 250, 252, 0.6);
+      border: 1px solid #f1f5f9;
     }
+
     .highlight-icon {
-      position: absolute;
-      top: 0.85rem;
-      right: 0.85rem;
-      color: #22c55e;
+      font-size: 0.8rem;
+      color: #10b981;
+      margin-bottom: 0.2rem;
     }
+
     .highlight-label {
-      display: block;
-      color: #64748b;
-      font-size: 0.78rem;
-      margin-bottom: 0.25rem;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+      font-weight: 700;
     }
+
     .highlight-value {
-      color: #0f172a;
-      font-size: 0.95rem;
-    }
-    .pill-list {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-    .pill-list-single {
-      grid-template-columns: 1fr;
-    }
-    .feature-pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.7rem 0.85rem;
-      border-radius: 999px;
-      background: color-mix(in srgb, var(--accent) 11%, #ffffff);
-      color: #0f172a;
-      border: 1px solid color-mix(in srgb, var(--accent) 18%, #bbf7d0);
       font-size: 0.88rem;
-      font-weight: 600;
+      color: #1e293b;
+      font-weight: 700;
     }
+
+    /* Premium Pill Outcomes list */
+    .pill-list-single {
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .feature-pill {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.8rem;
+      padding: 1rem;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid #f1f5f9;
+      transition: all 0.2s ease;
+    }
+
+    .feature-pill:hover {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(99, 102, 241, 0.2);
+    }
+
+    .pill-icon {
+      color: #4f46e5;
+      font-size: 1rem;
+      margin-top: 2px;
+    }
+
+    .feature-pill span {
+      font-size: 0.85rem;
+      color: #334155;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    /* Vietnam Story Grid style */
     .visual-story-card {
       overflow: hidden;
     }
+
     .story-visual-grid {
       display: grid;
       grid-template-columns: 1.2fr 1fr;
-      gap: 0.9rem;
+      gap: 1rem;
     }
+
     .story-image {
       min-height: 13rem;
-      border-radius: 20px;
+      border-radius: 18px;
       overflow: hidden;
       position: relative;
-      background-size: cover;
-      background-position: center;
-      border: 1px solid rgba(34, 197, 94, 0.14);
+      border: 1px solid rgba(226, 232, 240, 0.8);
     }
+
     .story-image-field {
       background:
-        linear-gradient(160deg, rgba(22, 163, 74, 0.18), rgba(21, 128, 61, 0.62)),
-        radial-gradient(circle at 25% 25%, rgba(253, 224, 71, 0.8), rgba(253, 224, 71, 0) 24%),
-        linear-gradient(180deg, #bbf7d0 0%, #86efac 36%, #4ade80 72%, #166534 100%);
+        linear-gradient(135deg, rgba(5, 150, 105, 0.15), rgba(4, 120, 87, 0.65)),
+        radial-gradient(circle at 20% 20%, rgba(252, 211, 77, 0.6) 0%, transparent 40%),
+        linear-gradient(180deg, #a7f3d0 0%, #34d399 50%, #047857 100%);
     }
+
     .story-image-ops {
       background:
-        linear-gradient(160deg, rgba(20, 83, 45, 0.18), rgba(22, 101, 52, 0.74)),
-        radial-gradient(circle at 70% 28%, rgba(110, 231, 183, 0.9), rgba(110, 231, 183, 0) 20%),
-        linear-gradient(160deg, #dcfce7 0%, #86efac 46%, #16a34a 100%);
+        linear-gradient(135deg, rgba(79, 70, 229, 0.15), rgba(67, 56, 202, 0.65)),
+        radial-gradient(circle at 80% 20%, rgba(167, 243, 208, 0.6) 0%, transparent 40%),
+        linear-gradient(180deg, #c7d2fe 0%, #818cf8 50%, #4338ca 100%);
     }
+
     .story-image-overlay {
       position: absolute;
       inset: auto 0 0 0;
-      padding: 1rem;
-      background: linear-gradient(180deg, rgba(20, 83, 45, 0) 0%, rgba(20, 83, 45, 0.82) 100%);
-      color: #f0fdf4;
-      display: grid;
-      gap: 0.4rem;
+      padding: 1.2rem;
+      background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.75) 100%);
+      color: #ffffff;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      font-weight: 500;
     }
+
     .story-image-overlay i {
-      font-size: 1.1rem;
+      font-size: 1rem;
+      color: #34d399;
+      margin-top: 1px;
     }
+
     .story-chip-row {
       grid-column: 1 / -1;
       display: flex;
       flex-wrap: wrap;
-      gap: 0.75rem;
+      gap: 0.6rem;
+      margin-top: 0.4rem;
     }
+
     .story-chip {
       display: inline-flex;
       align-items: center;
-      gap: 0.45rem;
-      padding: 0.65rem 0.85rem;
-      border-radius: 999px;
-      background: rgba(240, 253, 244, 0.96);
-      border: 1px solid rgba(34, 197, 94, 0.16);
-      color: #166534;
+      gap: 0.5rem;
+      padding: 6px 14px;
+      border-radius: 100px;
+      background: #f1f5f9;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      color: #475569;
+      font-size: 0.78rem;
       font-weight: 600;
     }
-    .section-item-header h4,
-    .module-copy h3 {
-      margin: 0;
-      color: #0f172a;
+
+    .story-chip i {
+      color: #059669;
     }
-    .module-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-    .module-card {
-      padding: 1.1rem;
+
+    /* Capability Stack grid */
+    .feature-sections-compact {
       display: grid;
-      gap: 0.9rem;
-      align-content: start;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
     }
+
+    .section-item {
+      padding: 1.2rem;
+      border-radius: 16px;
+      background: rgba(248, 250, 252, 0.6);
+      border: 1px solid #f1f5f9;
+      display: grid;
+      gap: 0.4rem;
+    }
+
+    .section-item h4 {
+      margin: 0;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .section-item p {
+      margin: 0;
+      font-size: 0.78rem;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    /* Support Side Note style */
+    .feature-side-note {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.03) 0%, rgba(99, 102, 241, 0.03) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.1);
+    }
+
+    /* ─── SECTION 2: MODULES ─── */
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .module-card {
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      border-radius: 20px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .module-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(16, 185, 129, 0.3);
+      box-shadow: 0 12px 30px rgba(16, 185, 129, 0.08);
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .module-card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.1rem;
+    }
+
+    .module-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.08);
+      color: #059669;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
     .module-copy {
       display: grid;
       gap: 0.3rem;
     }
-    .feature-sections-compact {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    .module-copy h3 {
+      margin: 0;
+      font-size: 0.96rem;
+      font-weight: 700;
+      color: #0f172a;
     }
-    .feature-side-note {
-      background:
-        radial-gradient(circle at top right, rgba(187, 247, 208, 0.45) 0%, rgba(187, 247, 208, 0) 30%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(240, 253, 244, 0.92) 100%);
+
+    .module-copy p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: #64748b;
+      line-height: 1.5;
     }
-    .readiness-highlight {
-      background:
-        linear-gradient(145deg, rgba(240, 253, 244, 0.98) 0%, rgba(220, 252, 231, 0.96) 100%);
+
+    .module-card-footer {
+      margin-top: 1.5rem;
+      display: grid;
     }
+
+    .btn-card-action {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      border: 1px solid #e2e8f0 !important;
+      font-weight: 600 !important;
+      padding: 8px 14px !important;
+      border-radius: 10px !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .module-card:hover .btn-card-action {
+      border-color: rgba(16, 185, 129, 0.3) !important;
+      background: rgba(16, 185, 129, 0.04) !important;
+      color: #059669 !important;
+    }
+
+    /* ─── SECTION 3: READINESS ─── */
+    .feature-readiness-layout {
+      display: grid;
+      grid-template-columns: 1.3fr 0.8fr;
+      gap: 1.5rem;
+    }
+
     .checklist {
-      margin-bottom: 0;
+      display: grid;
+      gap: 1rem;
     }
+
     .check-item {
       display: flex;
-      align-items: center;
-      gap: 0.65rem;
-      color: #0f172a;
-      font-size: 0.92rem;
-      padding: 0.8rem 0.9rem;
-      border-radius: 14px;
-      background: linear-gradient(180deg, #f0fdf4 0%, #f8fafc 100%);
-      border: 1px solid rgba(34, 197, 94, 0.14);
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.2rem;
+      border-radius: 16px;
+      background: rgba(248, 250, 252, 0.6);
+      border: 1px solid #f1f5f9;
+      transition: all 0.25s ease;
     }
-    .check-item i { color: #10b981; }
-    .progress-meta {
+
+    .check-item:hover {
+      background: #ffffff;
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+
+    .check-item-icon-wrap {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.1);
+      color: #059669;
       display: flex;
-      justify-content: space-between;
-      margin-bottom: 0.7rem;
-      color: #374151;
-      font-size: 0.86rem;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      flex-shrink: 0;
     }
-    @media (max-width: 1100px) {
+
+    .check-item-content {
+      display: grid;
+      gap: 0.15rem;
+    }
+
+    .check-item-content strong {
+      font-size: 0.88rem;
+      color: #1e293b;
+      font-weight: 700;
+    }
+
+    .check-item-content span {
+      font-size: 0.78rem;
+      color: #64748b;
+    }
+
+    /* Custom progress bar styles */
+    .progress-glow-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 253, 244, 0.8) 100%);
+    }
+
+    .progress-wrap {
+      display: grid;
+      gap: 0.6rem;
+    }
+
+    .custom-progress-bar {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 100px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #059669);
+      border-radius: 100px;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .bg-success-glow {
+      background: rgba(16, 185, 129, 0.1);
+      color: #059669;
+    }
+
+    .readiness-highlight {
+      background: rgba(248, 250, 252, 0.65);
+    }
+
+    /* ─── Responsive Adjustments ─── */
+    @media (max-width: 1200px) {
       .feature-hero {
-        flex-direction: column;
+        grid-template-columns: 1fr;
+        gap: 2rem;
       }
-      .feature-hero-aside,
-      .feature-hero-visual {
+      .feature-hero-aside {
+        max-width: 500px;
+        margin: 0 auto;
         width: 100%;
       }
       .feature-overview-layout,
-      .feature-readiness-layout,
+      .feature-readiness-layout {
+        grid-template-columns: 1fr;
+      }
+      .feature-summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .module-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .feature-panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.2rem;
+      }
+      .feature-tabs {
+        width: 100%;
+        overflow-x: auto;
+      }
+      .feature-tab {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .feature-page-shell {
+        padding: 1rem;
+        gap: 1rem;
+      }
+      .feature-hero {
+        padding: 1.5rem;
+      }
+      .hero-intro-grid {
+        grid-template-columns: 1fr;
+      }
+      .feature-summary-grid {
+        grid-template-columns: 1fr;
+      }
       .module-grid {
         grid-template-columns: 1fr;
       }
-    }
-    @media (max-width: 900px) {
-      .hero-intro-grid,
-      .feature-summary-grid,
-      .feature-sections-compact,
-      .pill-list,
-      .highlight-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-    @media (max-width: 640px) {
-      .feature-hero,
-      .feature-hero-visual,
-      .feature-panel-header,
-      .card-header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .feature-hero-actions,
-      .feature-tabs {
-        width: 100%;
-      }
-      .feature-summary-grid,
-      .hero-intro-grid,
-      .feature-sections-compact,
-      .pill-list,
-      .highlight-grid,
-      .story-visual-grid,
-      .visual-metric-row {
+      .feature-sections-compact {
         grid-template-columns: 1fr;
       }
-      .hero-visual-stack {
-        width: 100%;
+      .story-visual-grid {
+        grid-template-columns: 1fr;
       }
-      .feature-page-shell,
-      .feature-panel,
-      .flat-card,
-      .module-card {
-        padding-left: 1rem;
-        padding-right: 1rem;
+      .feature-panel {
+        padding: 1.2rem;
       }
     }
   `]

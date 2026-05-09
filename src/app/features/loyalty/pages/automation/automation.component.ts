@@ -1,31 +1,75 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
-
-interface AutoRule {
-  id: string; name: string; trigger: string; action: string;
-  status: 'active' | 'paused' | 'draft';
-  firedCount: number; lastFired: Date | null;
-  icon: string; color: string; bg: string;
-}
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
+import { LoyaltyService } from '../../services/loyalty.service';
+import { AutomationRule } from '../../models/loyalty.models';
 
 @Component({
   selector: 'app-loyalty-automation',
   standalone: true,
-  imports: [CommonModule, ButtonModule],
+  imports: [CommonModule, ButtonModule, ToastModule],
   templateUrl: './automation.component.html',
+  providers: [MessageService],
 })
-export class AutomationComponent {
-  rules: AutoRule[] = [
-    { id: 'A001', name: 'Welcome Bonus',         trigger: 'Member joins the loyalty program',          action: 'Grant 100 bonus points',                   status: 'active', firedCount: 412,  lastFired: new Date('2026-04-09'), icon: 'pi pi-user-plus',    color: '#1d4ed8', bg: '#dbeafe' },
-    { id: 'A002', name: 'Birthday Reward',        trigger: 'Member birthday month starts',              action: 'Grant 3× multiplier for 30 days + 200 pts', status: 'active', firedCount: 310,  lastFired: new Date('2026-04-01'), icon: 'pi pi-calendar',     color: '#be185d', bg: '#fce7f3' },
-    { id: 'A003', name: 'Tier Upgrade Alert',     trigger: 'Member crosses tier threshold',             action: 'Send push notification + email congratulation', status: 'active', firedCount: 87, lastFired: new Date('2026-04-08'), icon: 'pi pi-arrow-up',     color: '#15803d', bg: '#dcfce7' },
-    { id: 'A004', name: 'Inactivity Re-engage',   trigger: 'No activity for 60 days',                  action: 'Send email with 50 bonus points offer',     status: 'active', firedCount: 234,  lastFired: new Date('2026-04-07'), icon: 'pi pi-bell',         color: '#b45309', bg: '#fef3c7' },
-    { id: 'A005', name: 'Points Expiry Warning',  trigger: '30 days before points expiration',         action: 'Send SMS + email reminder',                 status: 'active', firedCount: 150,  lastFired: new Date('2026-04-06'), icon: 'pi pi-clock',        color: '#7c3aed', bg: '#f5f3ff' },
-    { id: 'A006', name: 'High Spend Milestone',   trigger: 'Single order > 2,000,000 VND',             action: 'Grant 500 bonus points + VIP tag',          status: 'paused', firedCount: 55,   lastFired: new Date('2026-03-28'), icon: 'pi pi-star',         color: '#f59e0b', bg: '#fffbeb' },
-    { id: 'A007', name: 'Referral Success',       trigger: 'Referred friend makes first purchase',     action: 'Grant 200 pts to referrer + 100 pts to friend', status: 'active', firedCount: 92, lastFired: new Date('2026-04-05'), icon: 'pi pi-share-alt',    color: '#0284c7', bg: '#e0f2fe' },
-    { id: 'A008', name: 'Winback Campaign',       trigger: 'No activity > 6 months',                  action: 'Trigger winback campaign enrollment',       status: 'draft',  firedCount: 0,    lastFired: null,                  icon: 'pi pi-refresh',      color: '#dc2626', bg: '#fee2e2' },
-  ];
+export class AutomationComponent implements OnInit {
+  rules: AutomationRule[] = [];
+  loading = false;
+
+  constructor(
+    private loyaltyService: LoyaltyService,
+    private messageService: MessageService,
+  ) {}
+
+  ngOnInit(): void { this.load(); }
+
+  load(): void {
+    this.loading = true;
+    this.loyaltyService.listAutomationRules({ limit: 50 }).subscribe({
+      next: (res) => {
+        this.rules = res.data;
+        this.loading = false;
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load automation rules' });
+        this.loading = false;
+      },
+    });
+  }
+
+  activateRule(r: AutomationRule): void {
+    const id = r.id;
+    if (!id) return;
+    this.loyaltyService.activateAutomationRule(id).subscribe({
+      next: (res) => {
+        r.status = 'active';
+        this.messageService.add({ severity: 'success', summary: 'Activated', detail: r.name });
+      },
+      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to activate rule' }),
+    });
+  }
+
+  pauseRule(r: AutomationRule): void {
+    const id = r.id;
+    if (!id) return;
+    this.loyaltyService.pauseAutomationRule(id).subscribe({
+      next: () => {
+        r.status = 'paused';
+        this.messageService.add({ severity: 'info', summary: 'Paused', detail: r.name });
+      },
+      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to pause rule' }),
+    });
+  }
+
+  deleteRule(r: AutomationRule): void {
+    const id = r.id;
+    if (!id) return;
+    this.loyaltyService.deleteAutomationRule(id).subscribe({
+      next: () => { this.messageService.add({ severity: 'success', summary: 'Deleted', detail: r.name }); this.load(); },
+      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete rule' }),
+    });
+  }
 
   getStatusStyle(s: string): { bg: string; color: string } {
     const m: Record<string, { bg: string; color: string }> = {
@@ -36,6 +80,40 @@ export class AutomationComponent {
     return m[s] || { bg: '#f1f5f9', color: '#64748b' };
   }
 
+  getTriggerLabel(t: string): string {
+    const map: Record<string, string> = {
+      member_join: 'Member joins the loyalty program',
+      birthday: 'Member birthday month starts',
+      tier_upgrade: 'Member crosses tier threshold',
+      inactivity_60d: 'No activity for 60 days',
+      inactivity_180d: 'No activity for 6 months',
+      points_expiry_warning: '30 days before points expiration',
+      high_spend: 'Single order exceeds threshold',
+      referral_success: 'Referred friend makes first purchase',
+    };
+    return map[t] || t;
+  }
+
+  getActionLabel(a: string): string {
+    const map: Record<string, string> = {
+      grant_points: 'Grant bonus points',
+      send_notification: 'Send notification',
+      apply_multiplier: 'Apply points multiplier',
+      enroll_campaign: 'Enroll in campaign',
+      assign_tag: 'Assign member tag',
+    };
+    return map[a] || a;
+  }
+
+  getIcon(t: string): string {
+    const map: Record<string, string> = {
+      member_join: 'pi pi-user-plus', birthday: 'pi pi-calendar', tier_upgrade: 'pi pi-arrow-up',
+      inactivity_60d: 'pi pi-bell', inactivity_180d: 'pi pi-refresh', points_expiry_warning: 'pi pi-clock',
+      high_spend: 'pi pi-star', referral_success: 'pi pi-share-alt',
+    };
+    return map[t] || 'pi pi-bolt';
+  }
+
   countByStatus(s: string): number { return this.rules.filter(r => r.status === s).length; }
-  totalFired(): number { return this.rules.reduce((sum, r) => sum + r.firedCount, 0); }
+  totalFired(): number { return this.rules.reduce((sum, r) => sum + (r.fired_count || 0), 0); }
 }

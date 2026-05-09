@@ -106,10 +106,10 @@
           <td>
             <div class="flex items-center gap-3">
               <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
-                [style.background]="getAvatarBg(m.tier)">{{ getInitials(m.fullName) }}</div>
+                [style.background]="getAvatarBg(m.tier)">{{ getInitials(m.full_name) }}</div>
               <div class="min-w-0">
-                <div class="font-semibold text-gray-900 truncate">{{ m.fullName }}</div>
-                <div class="text-xs text-gray-400">{{ m.customerId }}</div>
+                <div class="font-semibold text-gray-900 truncate">{{ m.full_name }}</div>
+                <div class="text-xs text-gray-400">{{ m.member_id }}</div>
               </div>
             </div>
           </td>
@@ -122,10 +122,10 @@
             </span>
           </td>
           <td>
-            <span class="text-sm font-semibold text-gray-800">{{ m.points | number }}</span>
+            <span class="text-sm font-semibold text-gray-800">{{ m.points_balance | number }}</span>
             <span class="text-xs text-gray-400 ml-1">pts</span>
           </td>
-          <td class="text-xs text-gray-500">{{ m.joinedAt | date:'dd/MM/yyyy' }}</td>
+          <td class="text-xs text-gray-500">{{ m.created_at | date:'dd/MM/yyyy' }}</td>
           <td>
             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
               [class]="m.status === 'active' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'">
@@ -155,10 +155,10 @@
     <div *ngIf="selectedMember" class="space-y-4">
       <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
         <div class="w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold text-white"
-          [style.background]="getAvatarBg(selectedMember.tier)">{{ getInitials(selectedMember.fullName) }}</div>
+          [style.background]="getAvatarBg(selectedMember.tier)">{{ getInitials(selectedMember.full_name) }}</div>
         <div>
-          <div class="text-lg font-bold text-gray-900">{{ selectedMember.fullName }}</div>
-          <div class="text-sm text-gray-500">{{ selectedMember.customerId }}</div>
+          <div class="text-lg font-bold text-gray-900">{{ selectedMember.full_name }}</div>
+          <div class="text-sm text-gray-500">{{ selectedMember.member_id }}</div>
           <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold mt-1 border"
             [style.background]="getTierBadge(selectedMember.tier).bg"
             [style.color]="getTierBadge(selectedMember.tier).color"
@@ -167,7 +167,7 @@
           </span>
         </div>
         <div class="ml-auto text-right">
-          <div class="text-2xl font-bold text-violet-600">{{ selectedMember.points | number }}</div>
+          <div class="text-2xl font-bold text-violet-600">{{ selectedMember.points_balance | number }}</div>
           <div class="text-xs text-gray-400">points</div>
         </div>
       </div>
@@ -182,7 +182,7 @@
         </div>
         <div class="bg-gray-50 rounded-lg p-3">
           <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Joined</p>
-          <p class="font-medium text-gray-800">{{ selectedMember.joinedAt | date:'dd/MM/yyyy' }}</p>
+          <p class="font-medium text-gray-800">{{ selectedMember.created_at | date:'dd/MM/yyyy' }}</p>
         </div>
         <div class="bg-gray-50 rounded-lg p-3">
           <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Status</p>

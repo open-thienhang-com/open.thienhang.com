@@ -142,43 +142,16 @@ export const menu: MenuItem[] = [
         casbinPath: '/loyalty/*',
         expanded: false,
         children: [
-            {
-                label: 'Overview & Members',
-                icon: 'pi pi-home',
-                type: 'item',
-                casbinPath: '/loyalty/*',
-                expanded: false,
-                children: [
-                    { label: 'Overview', url: '/loyalty/overview', icon: 'pi pi-home' },
-                    { label: 'Members', url: '/loyalty/members', icon: 'pi pi-users' },
-                    { label: 'Customers', url: '/retail/customers', icon: 'pi pi-user' },
-                    { label: 'Channels', url: '/loyalty/channels', icon: 'pi pi-share-alt' },
-                ]
-            },
-            {
-                label: 'Rewards & Campaigns',
-                icon: 'pi pi-megaphone',
-                type: 'item',
-                casbinPath: '/loyalty/*',
-                expanded: false,
-                children: [
-                    { label: 'Rewards Catalog', url: '/loyalty/rewards', icon: 'pi pi-gift' },
-                    { label: 'Campaigns', url: '/loyalty/campaigns', icon: 'pi pi-megaphone' },
-                    { label: 'Segments', url: '/loyalty/segments', icon: 'pi pi-filter' },
-                    { label: 'Automation', url: '/loyalty/automation', icon: 'pi pi-bolt' },
-                ]
-            },
-            {
-                label: 'Strategy & Analytics',
-                icon: 'pi pi-chart-bar',
-                type: 'item',
-                casbinPath: '/loyalty/*',
-                expanded: false,
-                children: [
-                    { label: 'Loyalty Strategy', url: '/loyalty/strategy', icon: 'pi pi-sitemap' },
-                    { label: 'Analytics', url: '/loyalty/analytics', icon: 'pi pi-chart-bar' },
-                ]
-            },
+            { label: 'Overview', url: '/loyalty/overview', icon: 'pi pi-home' },
+            { label: 'Members', url: '/loyalty/members', icon: 'pi pi-users' },
+            { label: 'Customers', url: '/retail/customers', icon: 'pi pi-user' },
+            { label: 'Channels', url: '/loyalty/channels', icon: 'pi pi-share-alt' },
+            { label: 'Rewards Catalog', url: '/loyalty/rewards', icon: 'pi pi-gift' },
+            { label: 'Campaigns', url: '/loyalty/campaigns', icon: 'pi pi-megaphone' },
+            { label: 'Segments', url: '/loyalty/segments', icon: 'pi pi-filter' },
+            { label: 'Automation', url: '/loyalty/automation', icon: 'pi pi-bolt' },
+            { label: 'Loyalty Strategy', url: '/loyalty/strategy', icon: 'pi pi-sitemap' },
+            { label: 'Analytics', url: '/loyalty/analytics', icon: 'pi pi-chart-bar' }
         ]
     },
     {

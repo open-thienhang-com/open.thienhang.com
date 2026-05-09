@@ -9,18 +9,8 @@ import { BadgeModule } from 'primeng/badge';
 import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
-
-interface MemberRow {
-  id: string;
-  fullName: string;
-  customerId: string;
-  tier: 'bronze' | 'silver' | 'gold' | 'platinum';
-  points: number;
-  joinedAt: Date | null;
-  status: 'active' | 'inactive';
-  email?: string;
-  phone?: string;
-}
+import { LoyaltyService } from '../../services/loyalty.service';
+import { Member } from '../../models/loyalty.models';
 
 @Component({
   selector: 'app-loyalty-members',
@@ -31,9 +21,11 @@ interface MemberRow {
   providers: [MessageService]
 })
 export class MembersComponent implements OnInit {
-  members: MemberRow[] = [];
-  filtered: MemberRow[] = [];
+  members: Member[] = [];
   loading = false;
+  total = 0;
+  page = 1;
+  pageSize = 20;
 
   searchTerm = '';
   selectedTier = '';
@@ -53,8 +45,29 @@ export class MembersComponent implements OnInit {
     { label: 'Inactive', value: 'inactive' },
   ];
 
-  selectedMember: MemberRow | null = null;
+  selectedMember: Member | null = null;
   showDetail = false;
+  pointsHistory: any[] = [];
+  loadingHistory = false;
+
+  get filtered(): Member[] {
+    return this.members.filter(m => {
+      if (this.searchTerm) {
+        const q = this.searchTerm.toLowerCase();
+        if (!m.full_name.toLowerCase().includes(q) &&
+            !(m.member_id && m.member_id.toLowerCase().includes(q)) &&
+            !(m.email && m.email.toLowerCase().includes(q))) return false;
+      }
+      if (this.selectedTier && m.tier !== this.selectedTier) return false;
+      if (this.selectedStatus && m.status !== this.selectedStatus) return false;
+      return true;
+    });
+  }
+
+  constructor(
+    private loyaltyService: LoyaltyService,
+    private messageService: MessageService,
+  ) {}
 
   ngOnInit(): void {
     this.loadMembers();
@@ -62,20 +75,28 @@ export class MembersComponent implements OnInit {
 
   loadMembers(): void {
     this.loading = true;
-    // Seed mock data while real API is wired
-    this.members = this.mockMembers();
-    this.applyFilters();
-    this.loading = false;
+    this.loyaltyService.listMembers({
+      search: this.searchTerm || undefined,
+      tier: this.selectedTier || undefined,
+      status: this.selectedStatus || undefined,
+      skip: (this.page - 1) * this.pageSize,
+      limit: this.pageSize,
+    }).subscribe({
+      next: (res) => {
+        this.members = res.data;
+        this.total = res.total;
+        this.loading = false;
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load members' });
+        this.loading = false;
+      },
+    });
   }
 
   applyFilters(): void {
-    const kw = this.searchTerm.trim().toLowerCase();
-    this.filtered = this.members.filter(m => {
-      const matchSearch = !kw || m.fullName.toLowerCase().includes(kw) || m.customerId.toLowerCase().includes(kw) || (m.email || '').toLowerCase().includes(kw);
-      const matchTier = !this.selectedTier || m.tier === this.selectedTier;
-      const matchStatus = !this.selectedStatus || m.status === this.selectedStatus;
-      return matchSearch && matchTier && matchStatus;
-    });
+    this.page = 1;
+    this.loadMembers();
   }
 
   clearFilters(): void {
@@ -85,9 +106,36 @@ export class MembersComponent implements OnInit {
     this.applyFilters();
   }
 
-  openDetail(m: MemberRow): void {
+  openDetail(m: Member): void {
     this.selectedMember = m;
     this.showDetail = true;
+    this.loadPointsHistory(m.id || m._id || '');
+  }
+
+  loadPointsHistory(memberId: string): void {
+    if (!memberId) return;
+    this.loadingHistory = true;
+    this.loyaltyService.getPointsHistory(memberId).subscribe({
+      next: (res) => {
+        this.pointsHistory = res.data;
+        this.loadingHistory = false;
+      },
+      error: () => { this.loadingHistory = false; },
+    });
+  }
+
+  deleteMember(m: Member): void {
+    const id = m.id || m._id;
+    if (!id) return;
+    this.loyaltyService.deleteMember(id).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Deleted', detail: `${m.full_name} removed` });
+        this.loadMembers();
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete member' });
+      },
+    });
   }
 
   countByTier(tier: string): number {
@@ -99,7 +147,7 @@ export class MembersComponent implements OnInit {
   }
 
   totalPoints(): number {
-    return this.members.reduce((s, m) => s + m.points, 0);
+    return this.members.reduce((s, m) => s + m.points_balance, 0);
   }
 
   getTierLabel(tier: string): string {
@@ -124,26 +172,5 @@ export class MembersComponent implements OnInit {
   getAvatarBg(tier: string): string {
     const m: Record<string, string> = { platinum: '#8b5cf6', gold: '#f59e0b', silver: '#64748b', bronze: '#b45309' };
     return m[tier] || '#6366f1';
-  }
-
-  private mockMembers(): MemberRow[] {
-    const tiers: MemberRow['tier'][] = ['bronze', 'silver', 'gold', 'platinum'];
-    const names = [
-      'Nguyen Van An', 'Tran Thi Bich', 'Le Van Cuong', 'Pham Thi Dung', 'Hoang Van Em',
-      'Vo Thi Phuong', 'Dang Van Giang', 'Bui Thi Hoa', 'Do Van Hung', 'Ngo Thi Kim',
-      'Nguyen Thi Lan', 'Tran Van Minh', 'Le Thi Ngoc', 'Pham Van Oanh', 'Hoang Thi Phuong',
-      'Vo Van Quang', 'Dang Thi Rung', 'Bui Van Son', 'Do Thi Tam', 'Ngo Van Uyen',
-    ];
-    return names.map((n, i) => ({
-      id: `M${String(i + 1).padStart(4, '0')}`,
-      fullName: n,
-      customerId: `CUS${String(1000 + i)}`,
-      tier: tiers[i % 4],
-      points: Math.floor(Math.random() * 15000) + 500,
-      joinedAt: new Date(Date.now() - Math.random() * 365 * 24 * 3600 * 1000 * 2),
-      status: i % 5 === 0 ? 'inactive' : 'active',
-      email: `${n.toLowerCase().replace(/\s/g, '.')}@example.com`,
-      phone: `09${String(Math.floor(10000000 + Math.random() * 89999999))}`,
-    }));
   }
 }

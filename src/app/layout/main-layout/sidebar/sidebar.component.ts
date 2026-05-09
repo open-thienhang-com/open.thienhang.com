@@ -78,7 +78,7 @@ export class SidebarComponent implements OnInit, OnChanges {
   userFullName = computed(() => {
     const u = this.currentUser();
     const first = u?.first_name || u?.firstName || '';
-    const last  = u?.last_name  || u?.lastName  || '';
+    const last = u?.last_name || u?.lastName || '';
     if (first || last) return `${first} ${last}`.trim();
     return u?.full_name || u?.fullName || u?.name || u?.email?.split('@')[0] || 'User';
   });
@@ -97,18 +97,18 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   // ── App matrix ─────────────────────────────────────────────────────────────
   apps: { key: AppKey; label: string; icon: string; color: string }[] = [
-    { key: 'retail',     label: 'Retail',      icon: 'pi pi-shopping-bag', color: '#f97316' },
-    { key: 'inventory',  label: 'Inventory',   icon: 'pi pi-box',          color: '#10b981' },
-    { key: 'governance', label: 'Governance',  icon: 'pi pi-shield',       color: '#8b5cf6' },
-    { key: 'loyalty',    label: 'Customers',   icon: 'pi pi-users',        color: '#3b82f6' },
-    { key: 'support',    label: 'Support',     icon: 'pi pi-comments',     color: '#06b6d4' },
-    { key: 'planning',   label: 'Planning',    icon: 'pi pi-map',          color: '#14b8a6' },
-    { key: 'hotel',      label: 'Hotel',       icon: 'pi pi-building',     color: '#f59e0b' },
-    { key: 'blogger',    label: 'Blogger',     icon: 'pi pi-pencil',       color: '#ec4899' },
-    { key: 'admanager',  label: 'Ad Manager',  icon: 'pi pi-megaphone',    color: '#ef4444' },
-    { key: 'explore',    label: 'Explore',     icon: 'pi pi-compass',      color: '#6366f1' },
-    { key: 'files',      label: 'Files',       icon: 'pi pi-folder',       color: '#84cc16' },
-    { key: 'settings',   label: 'Settings',    icon: 'pi pi-cog',          color: '#64748b' },
+    { key: 'retail', label: 'Sales', icon: 'pi pi-shopping-bag', color: '#f97316' },
+    { key: 'inventory', label: 'Inventory', icon: 'pi pi-box', color: '#10b981' },
+    { key: 'governance', label: 'Governance', icon: 'pi pi-shield', color: '#8b5cf6' },
+    { key: 'loyalty', label: 'Customers', icon: 'pi pi-users', color: '#3b82f6' },
+    { key: 'support', label: 'Support', icon: 'pi pi-comments', color: '#06b6d4' },
+    { key: 'planning', label: 'Planning', icon: 'pi pi-map', color: '#14b8a6' },
+    { key: 'hotel', label: 'Hotel', icon: 'pi pi-building', color: '#f59e0b' },
+    { key: 'blogger', label: 'Blogger', icon: 'pi pi-pencil', color: '#ec4899' },
+    { key: 'admanager', label: 'Ad Manager', icon: 'pi pi-megaphone', color: '#ef4444' },
+    { key: 'explore', label: 'Explore', icon: 'pi pi-compass', color: '#6366f1' },
+    { key: 'files', label: 'Files', icon: 'pi pi-folder', color: '#84cc16' },
+    { key: 'settings', label: 'Settings', icon: 'pi pi-cog', color: '#64748b' },
   ];
 
   get workspaceLabel(): string {
@@ -126,7 +126,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     private appSwitcher: AppSwitcherService,
     private authServices: AuthServices,
     private sidebarPermSvc: SidebarPermissionService,
-  ) {}
+  ) { }
 
   // ── Lifecycle ───────────────────────────────────────────────────────────────
   ngOnInit() {
@@ -137,13 +137,13 @@ export class SidebarComponent implements OnInit, OnChanges {
         const u = JSON.parse(cached);
         if (u && Object.keys(u).length) this.currentUser.set(u);
       }
-    } catch {}
+    } catch { }
 
     // Subscribe to user changes
     this.authServices.getUser().subscribe(user => {
       if (user) {
         this.currentUser.set(user);
-        const userId   = (user as any).identify || (user as any).id || '';
+        const userId = (user as any).identify || (user as any).id || '';
         const tenantId = this._extractTenantFromJwt() || (user as any).tenant_id || 'system';
         if (userId) {
           this.sidebarPermSvc.loadPermissions(userId, tenantId).subscribe(() => this.computeVisibleGroups());
@@ -164,28 +164,28 @@ export class SidebarComponent implements OnInit, OnChanges {
           {
             label: 'Identity', icon: 'pi pi-id-card', expanded: false,
             children: [
-              { label: 'Tenants',  url: '/governance/tenants',  icon: 'pi pi-sitemap',  casbinPath: '/governance/tenant*' },
-              { label: 'Users',    url: '/governance/users',    icon: 'pi pi-user',     casbinPath: '/governance/user*' },
+              { label: 'Tenants', url: '/governance/tenants', icon: 'pi pi-sitemap', casbinPath: '/governance/tenant*' },
+              { label: 'Users', url: '/governance/users', icon: 'pi pi-user', casbinPath: '/governance/user*' },
               { label: 'Accounts', url: '/governance/accounts', icon: 'pi pi-building', casbinPath: '/governance/account*' },
-              { label: 'Teams',    url: '/governance/teams',    icon: 'pi pi-users',    casbinPath: '/governance/team*' },
-              { label: 'Branches', url: '/governance/branches', icon: 'pi pi-sitemap',  casbinPath: '/governance/branch*' },
+              { label: 'Teams', url: '/governance/teams', icon: 'pi pi-users', casbinPath: '/governance/team*' },
+              { label: 'Branches', url: '/governance/branches', icon: 'pi pi-sitemap', casbinPath: '/governance/branch*' },
             ]
           },
           {
             label: 'Access Control', icon: 'pi pi-lock', expanded: false,
             children: [
-              { label: 'Roles',        url: '/governance/roles',        icon: 'pi pi-tag',      casbinPath: '/governance/role*' },
-              { label: 'Permissions',  url: '/governance/permissions',  icon: 'pi pi-key',      casbinPath: '/governance/permission*' },
-              { label: 'Policies',     url: '/governance/policies',     icon: 'pi pi-lock',     casbinPath: '/governance/polic*' },
-              { label: 'Assets',       url: '/governance/assets',       icon: 'pi pi-database', casbinPath: '/governance/asset*' },
-              { label: 'Entitlements', url: '/governance/entitlements', icon: 'pi pi-key',      casbinPath: '/governance/entitlement*' },
+              { label: 'Roles', url: '/governance/roles', icon: 'pi pi-tag', casbinPath: '/governance/role*' },
+              { label: 'Permissions', url: '/governance/permissions', icon: 'pi pi-key', casbinPath: '/governance/permission*' },
+              { label: 'Policies', url: '/governance/policies', icon: 'pi pi-lock', casbinPath: '/governance/polic*' },
+              { label: 'Assets', url: '/governance/assets', icon: 'pi pi-database', casbinPath: '/governance/asset*' },
+              { label: 'Entitlements', url: '/governance/entitlements', icon: 'pi pi-key', casbinPath: '/governance/entitlement*' },
             ]
           },
           {
             label: 'RBAC & Admin', icon: 'pi pi-cog', expanded: false,
             children: [
               { label: 'RBAC Engine', url: '/governance/casbin', icon: 'pi pi-shield', casbinPath: '/governance/casbin*' },
-              { label: 'Admin Tools', url: '/governance/admin',  icon: 'pi pi-wrench', casbinPath: '/governance/admin*' },
+              { label: 'Admin Tools', url: '/governance/admin', icon: 'pi pi-wrench', casbinPath: '/governance/admin*' },
             ]
           },
         ]
@@ -251,22 +251,22 @@ export class SidebarComponent implements OnInit, OnChanges {
   private getIconForMenuItem(item: any): string {
     if (item.icon) return item.icon;
     const label = (item.label || '').toLowerCase();
-    const url   = (item.url   || '').toLowerCase();
+    const url = (item.url || '').toLowerCase();
     const map: Record<string, string> = {
-      dashboard:'pi pi-home', overview:'pi pi-chart-bar', catalog:'pi pi-list',
-      discovery:'pi pi-search', assets:'pi pi-database', lineage:'pi pi-share-alt',
-      policies:'pi pi-lock', monitoring:'pi pi-chart-line', permissions:'pi pi-key',
-      teams:'pi pi-users', roles:'pi pi-id-card', accounts:'pi pi-building',
-      users:'pi pi-user', products:'pi pi-shopping-cart', apartments:'pi pi-home',
-      rooms:'pi pi-door-open', bookings:'pi pi-calendar-check', calendar:'pi pi-calendar',
-      guests:'pi pi-user', reviews:'pi pi-star', support:'pi pi-comments',
-      maintenance:'pi pi-wrench', inventory:'pi pi-box', staff:'pi pi-id-card',
-      customers:'pi pi-users', settings:'pi pi-cog', database:'pi pi-database',
-      pipelines:'pi pi-sliders-h', topics:'pi pi-tags', container:'pi pi-box',
-      search:'pi pi-search', api:'pi pi-code', explorer:'pi pi-compass',
-      suppliers:'pi pi-truck', transactions:'pi pi-receipt', orders:'pi pi-shopping-cart',
-      analytics:'pi pi-chart-bar', members:'pi pi-users', rewards:'pi pi-gift',
-      campaigns:'pi pi-megaphone', planning:'pi pi-truck', fleet:'pi pi-truck',
+      dashboard: 'pi pi-home', overview: 'pi pi-chart-bar', catalog: 'pi pi-list',
+      discovery: 'pi pi-search', assets: 'pi pi-database', lineage: 'pi pi-share-alt',
+      policies: 'pi pi-lock', monitoring: 'pi pi-chart-line', permissions: 'pi pi-key',
+      teams: 'pi pi-users', roles: 'pi pi-id-card', accounts: 'pi pi-building',
+      users: 'pi pi-user', products: 'pi pi-shopping-cart', apartments: 'pi pi-home',
+      rooms: 'pi pi-door-open', bookings: 'pi pi-calendar-check', calendar: 'pi pi-calendar',
+      guests: 'pi pi-user', reviews: 'pi pi-star', support: 'pi pi-comments',
+      maintenance: 'pi pi-wrench', inventory: 'pi pi-box', staff: 'pi pi-id-card',
+      customers: 'pi pi-users', settings: 'pi pi-cog', database: 'pi pi-database',
+      pipelines: 'pi pi-sliders-h', topics: 'pi pi-tags', container: 'pi pi-box',
+      search: 'pi pi-search', api: 'pi pi-code', explorer: 'pi pi-compass',
+      suppliers: 'pi pi-truck', transactions: 'pi pi-receipt', orders: 'pi pi-shopping-cart',
+      analytics: 'pi pi-chart-bar', members: 'pi pi-users', rewards: 'pi pi-gift',
+      campaigns: 'pi pi-megaphone', planning: 'pi pi-truck', fleet: 'pi pi-truck',
     };
     for (const [k, v] of Object.entries(map)) {
       if (label.includes(k) || url.includes(k)) return v;
@@ -347,7 +347,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     }
 
     // ── Inventory / Fleet / Forecast ─────────────────────────────────────────
-    if (['inventory','fleet','warehouse','forecast'].includes(key)) {
+    if (['inventory', 'fleet', 'warehouse', 'forecast'].includes(key)) {
       const g = fullMenu.find(x => x.label?.toLowerCase().includes('inventory'));
       this.visibleGroups = g ? this.buildGroupsFromChildren((g as any).children || []) : [];
       return;
@@ -368,7 +368,8 @@ export class SidebarComponent implements OnInit, OnChanges {
       if (!this.sidebarPermSvc.isAllowed('/loyalty/*')) { this.visibleGroups = []; return; }
       const g = fullMenu.find(x => x.label?.toLowerCase().includes('customer'));
       if (g) {
-        this.visibleGroups = this.buildGroupsFromChildren((g as any).children || []);
+        const src = (g as any).children || (g as any).items || [];
+        this.visibleGroups = [{ expanded: true, _noHeader: true, items: src, _flattened: this.getFlattenedItems(src) }];
       } else this.visibleGroups = [];
       return;
     }
@@ -526,7 +527,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       'retail-customers': '/retail/customers', 'retail-omni': '/retail/omni-channel',
       'retail-pos': '/retail/pos',
     };
-    try { this.router.navigate([routes[key] || '/']); } catch {}
+    try { this.router.navigate([routes[key] || '/']); } catch { }
     this.closeAppMatrix();
   }
 
@@ -567,17 +568,17 @@ export class SidebarComponent implements OnInit, OnChanges {
         const user = resp?.data || resp;
         const slug = user?.identify || user?.username || user?.email || user?.full_name || '';
         const short = slug ? encodeURIComponent((slug.split('@')[0] || slug).toString().trim().replace(/\s+/g, '-').toLowerCase()) : '';
-        try { this.router.navigate(short ? [`/profile/${short}`] : ['/profile']); } catch {}
+        try { this.router.navigate(short ? [`/profile/${short}`] : ['/profile']); } catch { }
       });
-    } catch { try { this.router.navigate(['/profile']); } catch {} }
+    } catch { try { this.router.navigate(['/profile']); } catch { } }
   }
 
   doLogout(): void {
     this.currentUser.set(null);
     this.visibleGroups = [];
     this.accountUsers.set([]);
-    try { sessionStorage.removeItem('currentUser'); } catch {}
+    try { sessionStorage.removeItem('currentUser'); } catch { }
     this.sidebarPermSvc.clear();
-    try { this.router.navigate(['/logout']); } catch {}
+    try { this.router.navigate(['/logout']); } catch { }
   }
 }
