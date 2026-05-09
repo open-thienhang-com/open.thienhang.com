@@ -1,12 +1,13 @@
 import {
   Component, Input, Output, EventEmitter, ViewChild, ElementRef,
-  AfterViewInit, OnDestroy, OnChanges, SimpleChanges
+  AfterViewInit, OnDestroy, OnChanges, SimpleChanges, inject
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { TelegramConversation } from '../../../models/chat.model';
+import { ChatService } from '../../../services/chat.service';
 
 @Component({
   selector: 'app-conversation-list',
@@ -20,19 +21,28 @@ import { TelegramConversation } from '../../../models/chat.model';
         <p-skeleton height="4rem"></p-skeleton>
       </div>
 
+      <div *ngIf="!loading && conversations.length > 0" style="padding: 0.75rem 1rem; border-bottom: 1px solid #e5e7eb;">
+        <button type="button"
+                style="background: none; border: none; color: #3B82F6; cursor: pointer; font-size: 13px; text-decoration: underline; padding: 0;"
+                (click)="markAllRead()">
+          Đánh dấu tất cả đã đọc
+        </button>
+      </div>
+
       <button *ngFor="let conv of conversations"
               type="button"
               class="conversation-row omni-conversation-row"
               [class.active]="selectedId === conv.id"
-              (click)="conversationSelected.emit(conv.id)">
+              [style.fontWeight]="conv.unread_count > 0 ? '600' : 'normal'"
+              (click)="selectConversation(conv)">
         <div class="conversation-row-top">
           <div class="conversation-identity">
-            <span class="conversation-name">{{ conv.user_name }}</span>
+            <span class="conversation-name" [style.fontWeight]="conv.unread_count > 0 ? '600' : 'normal'">{{ conv.user_name }}</span>
             <span class="conversation-handle">{{ '@' + conv.username }}</span>
+            <span *ngIf="conv.unread_count > 0" style="background:#3B82F6;color:white;border-radius:999px;padding:1px 6px;font-size:11px;margin-left:4px;">{{ conv.unread_count }}</span>
           </div>
           <div class="conversation-time-block">
             <span>{{ conv.last_message_time | date:'shortTime' }}</span>
-            <span *ngIf="conv.unread_count > 0" class="unread-badge">{{ conv.unread_count }}</span>
           </div>
         </div>
         <div class="channel-line">
@@ -41,7 +51,7 @@ import { TelegramConversation } from '../../../models/chat.model';
           </span>
           <p-tag [value]="conv.status" [severity]="getStatusSeverity(conv.status)"></p-tag>
         </div>
-        <p class="conversation-preview">{{ conv.last_message }}</p>
+        <p class="conversation-preview" [style.fontWeight]="conv.unread_count > 0 ? '600' : 'normal'">{{ conv.last_message }}</p>
       </button>
 
       <div *ngIf="!loading && conversations.length === 0" class="empty-card">
@@ -69,6 +79,7 @@ export class ConversationListComponent implements AfterViewInit, OnDestroy, OnCh
   @ViewChild('listSentinel') private sentinel?: ElementRef<HTMLDivElement>;
 
   private observer?: IntersectionObserver;
+  private chatService = inject(ChatService);
 
   ngAfterViewInit(): void {
     this.attachObserver();
@@ -122,5 +133,40 @@ export class ConversationListComponent implements AfterViewInit, OnDestroy, OnCh
       case 'app': return 'Mobile App';
       default: return 'Telegram Bot';
     }
+  }
+
+  // Feature 2: Read Status Badges Implementation
+  selectConversation(conversation: TelegramConversation): void {
+    this.conversationSelected.emit(conversation.id);
+    this.markConversationRead(conversation);
+  }
+
+  private markConversationRead(conversation: TelegramConversation): void {
+    if (conversation.unread_count > 0) {
+      this.chatService.markConversationRead(conversation.id).subscribe({
+        next: () => {
+          const index = this.conversations.findIndex(c => c.id === conversation.id);
+          if (index !== -1) {
+            this.conversations[index].unread_count = 0;
+          }
+        },
+        error: () => {
+          // Silently fail, don't block conversation selection
+        }
+      });
+    }
+  }
+
+  markAllRead(): void {
+    this.chatService.markAllRead().subscribe({
+      next: () => {
+        this.conversations.forEach(conv => {
+          conv.unread_count = 0;
+        });
+      },
+      error: () => {
+        alert('Failed to mark all conversations as read');
+      }
+    });
   }
 }

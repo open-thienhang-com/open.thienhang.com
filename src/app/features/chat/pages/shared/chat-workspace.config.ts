@@ -16,7 +16,7 @@ export const CHAT_WORKSPACE_LINKS: ChatWorkspaceLink[] = [
     label: 'Templates',
     description: 'Reusable replies and welcome messages.',
     icon: 'pi pi-file-edit',
-    route: '/cmc/templates'
+    route: '/cmc/explore'
   },
   {
     label: 'Automation',

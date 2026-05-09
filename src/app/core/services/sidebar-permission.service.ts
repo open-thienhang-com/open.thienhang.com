@@ -30,14 +30,37 @@ export const SIDEBAR_CHECKS: SidebarCheck[] = [
   { path: '/governance/admin*',       method: 'GET', label: 'Admin Tools',        section: 'Governance' },
   // ── Inventory ────────────────────────────────────────────────────────────
   { path: '/inventory/*',             method: 'GET', label: 'Inventory (all)',    section: 'Inventory' },
+  { path: '/inventory/product*',      method: 'GET', label: 'Products',           section: 'Inventory' },
+  { path: '/inventory/categor*',      method: 'GET', label: 'Categories',         section: 'Inventory' },
+  { path: '/inventory/supplier*',     method: 'GET', label: 'Suppliers',          section: 'Inventory' },
+  { path: '/inventory/partner*',      method: 'GET', label: 'Partners',           section: 'Inventory' },
+  { path: '/inventory/fleet*',        method: 'GET', label: 'Fleet/Truck',        section: 'Inventory' },
+  { path: '/inventory/analytic*',     method: 'GET', label: 'Stock Analytics',    section: 'Inventory' },
+  { path: '/inventory/forecast*',     method: 'GET', label: 'Forecasting',        section: 'Inventory' },
   // ── Retail & Commerce ────────────────────────────────────────────────────
   { path: '/retail/*',                method: 'GET', label: 'Retail (all)',       section: 'Retail' },
+  { path: '/retail/order*',           method: 'GET', label: 'Orders',             section: 'Retail' },
+  { path: '/retail/transaction*',     method: 'GET', label: 'Transactions',       section: 'Retail' },
+  { path: '/retail/product*',         method: 'GET', label: 'Retail Products',    section: 'Retail' },
+  { path: '/retail/payment*',         method: 'GET', label: 'Payment',            section: 'Retail' },
+  { path: '/retail/pos*',             method: 'GET', label: 'POS',                section: 'Retail' },
+  { path: '/retail/ecommerce*',       method: 'GET', label: 'Ecommerce',          section: 'Retail' },
   // ── Customers & Loyalty ──────────────────────────────────────────────────
   { path: '/loyalty/*',               method: 'GET', label: 'Loyalty (all)',      section: 'Customers' },
+  { path: '/loyalty/member*',         method: 'GET', label: 'Members',            section: 'Customers' },
+  { path: '/loyalty/reward*',         method: 'GET', label: 'Rewards',            section: 'Customers' },
+  { path: '/loyalty/campaign*',       method: 'GET', label: 'Campaigns',          section: 'Customers' },
+  { path: '/loyalty/segment*',        method: 'GET', label: 'Segments',           section: 'Customers' },
+  { path: '/loyalty/analytic*',       method: 'GET', label: 'Loyalty Analytics',  section: 'Customers' },
   // ── Support / CMC ────────────────────────────────────────────────────────
   { path: '/cmc/*',                   method: 'GET', label: 'Support (all)',      section: 'Support' },
+  { path: '/cmc/template*',           method: 'GET', label: 'Templates',          section: 'Support' },
+  { path: '/cmc/automation*',         method: 'GET', label: 'Automation',         section: 'Support' },
+  { path: '/cmc/workspace*',          method: 'GET', label: 'Workspace',          section: 'Support' },
   // ── Planning & Logistics ─────────────────────────────────────────────────
   { path: '/planning/*',              method: 'GET', label: 'Planning (all)',     section: 'Planning' },
+  { path: '/planning/vehicle*',       method: 'GET', label: 'Vehicles',           section: 'Planning' },
+  { path: '/planning/auto-planning*', method: 'GET', label: 'Auto Planning',      section: 'Planning' },
   // ── Data Mesh ────────────────────────────────────────────────────────────
   { path: '/data-mesh/*',             method: 'GET', label: 'Data Mesh (all)',    section: 'Data Mesh' },
 ];

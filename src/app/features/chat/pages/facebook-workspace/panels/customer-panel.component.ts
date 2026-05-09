@@ -1,5 +1,5 @@
 import {
-  Component, Input, Output, EventEmitter, OnDestroy, inject
+  Component, Input, Output, EventEmitter, OnDestroy, inject, signal, computed, effect
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,32 +8,105 @@ import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/
 import { of } from 'rxjs';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
+import { ButtonModule } from 'primeng/button';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ChatService } from '../../../services/chat.service';
-import { TelegramConversation, CustomerSummary } from '../../../models/chat.model';
+import { TelegramConversation, CustomerSummary, CustomerOrder } from '../../../models/chat.model';
 
 @Component({
   selector: 'app-customer-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, SkeletonModule, TagModule],
+  imports: [CommonModule, FormsModule, SkeletonModule, TagModule, ButtonModule, ProgressSpinnerModule],
   template: `
     <div class="customer-panel p-4">
-      <!-- Linked customer card -->
+      <!-- Linked customer card with tabs -->
       <div *ngIf="linkedCustomer" class="linked-customer-card mb-4">
-        <div class="flex items-start justify-between gap-2">
-          <div>
-            <p class="text-xs text-gray-500 mb-1">Linked customer</p>
-            <strong class="block text-sm">{{ linkedCustomer.name }}</strong>
-            <span class="text-xs text-gray-500">{{ linkedCustomer.phone }}</span>
-            <span *ngIf="linkedCustomer.email" class="block text-xs text-gray-400">{{ linkedCustomer.email }}</span>
-            <div class="flex items-center gap-2 mt-2">
-              <p-tag [value]="linkedCustomer.customer_type" severity="info"></p-tag>
-              <p-tag *ngIf="linkedCustomer.is_active" value="Active" severity="success"></p-tag>
-              <p-tag *ngIf="!linkedCustomer.is_active" value="Inactive" severity="secondary"></p-tag>
-            </div>
-          </div>
+        <!-- Unlink button -->
+        <div class="flex justify-end mb-2">
           <button type="button" class="ghost-action text-xs" (click)="unlink()" [disabled]="linking">
             <i class="pi pi-times mr-1"></i>Unlink
           </button>
+        </div>
+
+        <!-- Micro tabs -->
+        <div class="flex gap-1 mb-3 border-b border-gray-200">
+          <button
+            type="button"
+            pButton
+            [class.active-tab]="activeTab() === 'profile'"
+            class="p-button-text p-button-sm text-xs"
+            (click)="loadTab('profile')">
+            Hồ sơ
+          </button>
+          <button
+            type="button"
+            pButton
+            [class.active-tab]="activeTab() === 'orders'"
+            class="p-button-text p-button-sm text-xs"
+            (click)="loadTab('orders')">
+            Đơn hàng
+          </button>
+          <button
+            type="button"
+            pButton
+            [class.active-tab]="activeTab() === 'history'"
+            class="p-button-text p-button-sm text-xs"
+            (click)="loadTab('history')">
+            Lịch sử chat
+          </button>
+        </div>
+
+        <!-- Tab content: Profile -->
+        <div *ngIf="activeTab() === 'profile'" class="tab-content">
+          <p class="text-xs text-gray-500 mb-1">Linked customer</p>
+          <strong class="block text-sm">{{ linkedCustomer.name }}</strong>
+          <span class="text-xs text-gray-500">{{ linkedCustomer.phone }}</span>
+          <span *ngIf="linkedCustomer.email" class="block text-xs text-gray-400">{{ linkedCustomer.email }}</span>
+          <div class="flex items-center gap-2 mt-2">
+            <p-tag [value]="linkedCustomer.customer_type" severity="info"></p-tag>
+            <p-tag *ngIf="linkedCustomer.is_active" value="Active" severity="success"></p-tag>
+            <p-tag *ngIf="!linkedCustomer.is_active" value="Inactive" severity="secondary"></p-tag>
+          </div>
+        </div>
+
+        <!-- Tab content: Orders -->
+        <div *ngIf="activeTab() === 'orders'" class="tab-content">
+          <div *ngIf="ordersLoading()" class="text-center py-4">
+            <p-progressSpinner [style]="{width:'24px',height:'24px'}"></p-progressSpinner>
+          </div>
+          <div *ngIf="!ordersLoading() && orders().length === 0" class="text-xs text-gray-400 py-2">
+            Không có đơn hàng
+          </div>
+          <div *ngIf="!ordersLoading() && orders().length > 0" class="orders-list" style="max-height:250px;overflow-y:auto;">
+            <div *ngFor="let order of orders()" class="order-row mb-2 pb-2 border-b border-gray-100 text-xs">
+              <div class="font-semibold text-sm">{{ order.order_number }}</div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-600">{{ order.status }}</span>
+                <span class="font-semibold">{{ order.total_amount | currency:'VND':'symbol':'1.0-0' }}</span>
+              </div>
+              <div class="text-gray-400">{{ order.created_at | date:'short' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab content: Chat History -->
+        <div *ngIf="activeTab() === 'history'" class="tab-content">
+          <div *ngIf="historyLoading()" class="text-center py-4">
+            <p-progressSpinner [style]="{width:'24px',height:'24px'}"></p-progressSpinner>
+          </div>
+          <div *ngIf="!historyLoading() && chatHistory().length === 0" class="text-xs text-gray-400 py-2">
+            Không có lịch sử
+          </div>
+          <div *ngIf="!historyLoading() && chatHistory().length > 0" class="history-list" style="max-height:250px;overflow-y:auto;">
+            <div *ngFor="let conv of chatHistory()" class="history-row mb-2 pb-2 border-b border-gray-100 text-xs">
+              <div class="flex items-center gap-1">
+                <i [class]="'pi pi-' + (conv.platform === 'telegram' ? 'send' : 'envelope')" class="text-gray-400"></i>
+                <span class="font-semibold text-xs">{{ conv.platform }}</span>
+              </div>
+              <div class="text-gray-600 truncate mt-1">{{ conv.last_message }}</div>
+              <div class="text-gray-400">{{ conv.last_message_time | date:'short' }}</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -91,6 +164,16 @@ import { TelegramConversation, CustomerSummary } from '../../../models/chat.mode
       border-radius: 8px;
       padding: 12px;
     }
+    .active-tab {
+      border-bottom: 2px solid #3b82f6 !important;
+      color: #3b82f6 !important;
+    }
+    .tab-content {
+      padding-top: 8px;
+    }
+    .order-row:last-child, .history-row:last-child {
+      border-bottom: none;
+    }
     .customer-search-results {
       border: 1px solid #e5e7eb;
       border-radius: 8px;
@@ -132,6 +215,15 @@ export class CustomerPanelComponent implements OnDestroy {
   linking = false;
   linkError = '';
 
+  // Tab-related signals
+  activeTab = signal<'profile' | 'orders' | 'history'>('profile');
+  orders = signal<CustomerOrder[]>([]);
+  chatHistory = signal<any[]>([]);
+  ordersLoaded = signal(false);
+  historyLoaded = signal(false);
+  ordersLoading = signal(false);
+  historyLoading = signal(false);
+
   private searchSubject = new Subject<string>();
   private subs = new Subscription();
 
@@ -156,10 +248,53 @@ export class CustomerPanelComponent implements OnDestroy {
         this.searchResults = res?.data || [];
       })
     );
+
+    // Reset tab state when linked customer changes
+    effect(() => {
+      if (this.linkedCustomer) {
+        this.activeTab.set('profile');
+        this.ordersLoaded.set(false);
+        this.historyLoaded.set(false);
+        this.orders.set([]);
+        this.chatHistory.set([]);
+      }
+    });
   }
 
   ngOnDestroy(): void {
     this.subs.unsubscribe();
+  }
+
+  loadTab(tab: 'profile' | 'orders' | 'history'): void {
+    this.activeTab.set(tab);
+
+    if (tab === 'orders' && !this.ordersLoaded() && this.linkedCustomer) {
+      this.ordersLoading.set(true);
+      this.chatService.getCustomerOrders(this.linkedCustomer.id).subscribe({
+        next: res => {
+          this.orders.set((res.data as CustomerOrder[]) || []);
+          this.ordersLoaded.set(true);
+          this.ordersLoading.set(false);
+        },
+        error: () => {
+          this.ordersLoading.set(false);
+        }
+      });
+    }
+
+    if (tab === 'history' && !this.historyLoaded() && this.linkedCustomer) {
+      this.historyLoading.set(true);
+      this.chatService.getCustomerChatHistory(this.linkedCustomer.id).subscribe({
+        next: res => {
+          this.chatHistory.set((res.data as any[]) || []);
+          this.historyLoaded.set(true);
+          this.historyLoading.set(false);
+        },
+        error: () => {
+          this.historyLoading.set(false);
+        }
+      });
+    }
   }
 
   onSearch(keyword: string): void {

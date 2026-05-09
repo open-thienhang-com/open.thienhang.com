@@ -425,3 +425,122 @@ export interface ProductSearchResult {
     description?: string;
     image_url?: string;
 }
+
+// ── Labels ──────────────────────────────────────────────────────────────────
+export interface Label {
+    id: string;
+    name: string;
+    color: string;
+    tenant_id?: string;
+    created_at?: string;
+}
+
+export interface LabelCreate {
+    name: string;
+    color: string;
+}
+
+// ── Internal Notes ───────────────────────────────────────────────────────────
+export interface InternalNote {
+    id: string;
+    author_id: string;
+    author_name: string;
+    content: string;
+    created_at: string;
+}
+
+export interface InternalNoteCreate {
+    content: string;
+}
+
+// ── Quick Replies ────────────────────────────────────────────────────────────
+export interface QuickReply {
+    id: string;
+    shortcut: string;
+    content: string;
+    channel: string;
+    created_at?: string;
+}
+
+export interface QuickReplyCreate {
+    shortcut: string;
+    content: string;
+    channel: string;
+}
+
+// ── SLA ──────────────────────────────────────────────────────────────────────
+export interface SlaPolicy {
+    id: string;
+    channel: string;
+    priority: string;
+    response_minutes: number;
+}
+
+export interface UnreadSummary {
+    total_unread: number;
+    per_channel: Record<string, number>;
+}
+
+// ── Agent Presence ───────────────────────────────────────────────────────────
+export interface AgentPresence {
+    status: 'online' | 'busy' | 'away';
+}
+
+export interface AgentInfo {
+    id: string;
+    name?: string;
+    presence_status: 'online' | 'busy' | 'away';
+    last_seen_at?: string;
+    active_conversation_count?: number;
+}
+
+// ── Customer 360 ─────────────────────────────────────────────────────────────
+export interface CustomerOrder {
+    id: string;
+    order_number: string;
+    created_at: string;
+    total_amount: number;
+    status: string;
+    item_count: number;
+}
+
+export interface CustomerOrdersResponse {
+    data: CustomerOrder[];
+    total: number;
+    lifetime_value?: number;
+}
+
+// ── Broadcast Campaign ───────────────────────────────────────────────────────
+export interface BroadcastCampaign {
+    id: string;
+    name: string;
+    channel: string;
+    template_id: string;
+    status: 'draft' | 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
+    recipient_count_estimate: number;
+    scheduled_at?: string;
+    created_at?: string;
+    stats?: {
+        sent: number;
+        delivered: number;
+        failed: number;
+        opened: number;
+    };
+}
+
+export interface BroadcastCreate {
+    name: string;
+    channel: string;
+    template_id: string;
+    variables_map: Record<string, string>;
+    audience_filter: {
+        tags?: string[];
+        status?: string;
+        channel_subscribed?: string;
+    };
+    scheduled_at?: string | null;
+}
+
+export interface BroadcastEstimate {
+    count: number;
+}

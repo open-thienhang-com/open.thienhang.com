@@ -1,195 +1,262 @@
-<div id="content-fleet" class="fleet-shell">
-  <section class="fleet-hero">
-    <div>
-      <p class="fleet-eyebrow">{{ isForecastRoute ? 'Forecast module' : 'Planning operations' }}</p>
-      <h1 class="fleet-title">{{ pageTitle }}</h1>
-      <p class="fleet-subtitle">{{ pageSubtitle }}</p>
-    </div>
-    <div class="fleet-actions">
-      <button type="button" class="fleet-button fleet-button--secondary" (click)="loadTrucks()">Refresh</button>
-      <button type="button" class="fleet-button" (click)="openCreateDialog()">Add Truck</button>
-    </div>
-  </section>
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
 
-  <section class="fleet-metrics">
-    <article class="fleet-metric-card">
-      <span class="fleet-metric-label">Total trucks</span>
-      <strong class="fleet-metric-value">{{ total }}</strong>
-      <span class="fleet-metric-meta">Rows returned from retail truck API</span>
-    </article>
-    <article class="fleet-metric-card">
-      <span class="fleet-metric-label">Active trucks</span>
-      <strong class="fleet-metric-value">{{ activeTruckCount }}</strong>
-      <span class="fleet-metric-meta">Vehicles currently enabled for planning</span>
-    </article>
-    <article class="fleet-metric-card">
-      <span class="fleet-metric-label">Total max weight</span>
-      <strong class="fleet-metric-value">{{ formatNumber(totalWeightCapacity) }}</strong>
-      <span class="fleet-metric-meta">Aggregate `max_weight` across loaded trucks</span>
-    </article>
-    <article class="fleet-metric-card">
-      <span class="fleet-metric-label">Total max volume</span>
-      <strong class="fleet-metric-value">{{ formatNumber(totalVolumeCapacity) }}</strong>
-      <span class="fleet-metric-meta">Aggregate `max_volume` across loaded trucks</span>
-    </article>
-  </section>
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
 
-  <section class="fleet-panel">
-    <div class="fleet-panel-header">
-      <div>
-        <h2>Truck registry</h2>
-        <p>Render trực tiếp từ `GET /data-mesh/domains/retail/trucks` và detail từ `GET /data-mesh/domains/retail/trucks/:id`.</p>
+  <!-- ── Header ─────────────────────────────────────────────────────────────── -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
+          <i class="pi pi-truck text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Fleet Management</h1>
+          <p class="text-gray-500 dark:text-gray-400 text-sm mt-0.5">Manage trucks, driver assignments and carrying capacity</p>
+        </div>
       </div>
-      <input
-        type="text"
-        [(ngModel)]="searchTerm"
-        placeholder="Search code, plate, driver, warehouse"
-        class="fleet-search"
-      />
+      <div class="flex flex-wrap items-center gap-2">
+        <p-button icon="pi pi-filter" severity="secondary" [outlined]="!showFilters" [rounded]="true"
+                  (onClick)="showFilters = !showFilters" pTooltip="Filters" tooltipPosition="top"/>
+        <p-button icon="pi pi-refresh" severity="info" [outlined]="true" [rounded]="true"
+                  (onClick)="load()" pTooltip="Refresh" tooltipPosition="top" [loading]="loading"/>
+        <p-button label="Add Truck" icon="pi pi-plus" (onClick)="openCreate()"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Stat cards ─────────────────────────────────────────────────────────── -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Total</p>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ total }}</p>
+        </div>
+        <div class="w-11 h-11 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+          <i class="pi pi-truck text-blue-500 text-lg"></i>
+        </div>
+      </div>
     </div>
 
-    <div *ngIf="error" class="fleet-alert">{{ error }}</div>
-
-    <div *ngIf="loading" class="fleet-empty">Loading trucks...</div>
-
-    <div *ngIf="!loading && filteredTrucks.length === 0" class="fleet-empty">
-      {{ searchTerm ? 'No trucks match the current search.' : 'No trucks returned by the API.' }}
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Active</p>
+          <p class="text-3xl font-bold text-emerald-600 mt-1">{{ activeCount }}</p>
+        </div>
+        <div class="w-11 h-11 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+          <i class="pi pi-check-circle text-emerald-500 text-lg"></i>
+        </div>
+      </div>
     </div>
 
-    <div *ngIf="!loading && filteredTrucks.length > 0" class="fleet-table-wrap">
-      <table class="fleet-table">
-        <thead>
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Max Weight</p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ fmt(totalWeight) }}</p>
+          <p class="text-xs text-gray-400 mt-0.5">kg total capacity</p>
+        </div>
+        <div class="w-11 h-11 bg-amber-50 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
+          <i class="pi pi-box text-amber-500 text-lg"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Max Volume</p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ fmt(totalVolume) }}</p>
+          <p class="text-xs text-gray-400 mt-0.5">m³ total capacity</p>
+        </div>
+        <div class="w-11 h-11 bg-violet-50 dark:bg-violet-900/30 rounded-lg flex items-center justify-center">
+          <i class="pi pi-th-large text-violet-500 text-lg"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Filter panel ────────────────────────────────────────────────────────── -->
+  @if (showFilters) {
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 mb-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Search</label>
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-search"></i>
+            <input pInputText [(ngModel)]="searchTerm" (input)="applyFilters()"
+                   placeholder="Code, plate, driver, warehouse…" class="w-full"/>
+          </span>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Status</label>
+          <p-dropdown [(ngModel)]="selectedStatus" [options]="statusOptions"
+                      optionLabel="label" optionValue="value"
+                      placeholder="All Status" (onChange)="applyFilters()" class="w-full"/>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Type</label>
+          <p-dropdown [(ngModel)]="selectedType" [options]="typeOptions"
+                      optionLabel="label" optionValue="value"
+                      placeholder="All Types" (onChange)="applyFilters()" class="w-full"/>
+        </div>
+        <div class="flex items-end">
+          <p-button label="Clear" icon="pi pi-times" severity="secondary" [outlined]="true"
+                    (onClick)="clearFilters()"/>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Loading ─────────────────────────────────────────────────────────────── -->
+  @if (loading) {
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-16 text-center">
+      <div class="w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="pi pi-spin pi-spinner text-emerald-500 text-2xl"></i>
+      </div>
+      <p class="text-gray-500 font-medium">Loading fleet data…</p>
+    </div>
+  }
+
+  <!-- ── Table ───────────────────────────────────────────────────────────────── -->
+  @if (!loading) {
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+          Truck Registry
+          <span class="ml-2 px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full text-xs font-medium">{{ filteredTrucks.length }}</span>
+        </h2>
+      </div>
+
+      <p-table [value]="filteredTrucks" styleClass="p-datatable-sm"
+               [paginator]="true" [rows]="15" [showCurrentPageReport]="true"
+               currentPageReportTemplate="Showing {first}–{last} of {totalRecords}"
+               [rowHover]="true">
+
+        <ng-template pTemplate="header">
           <tr>
-            <th>Vehicle Code</th>
+            <th pSortableColumn="vehicle_code">Code <p-sortIcon field="vehicle_code"/></th>
             <th>License Plate</th>
             <th>Type</th>
-            <th>Status</th>
+            <th pSortableColumn="status">Status <p-sortIcon field="status"/></th>
             <th>Warehouse</th>
             <th>Driver</th>
-            <th>Weight</th>
-            <th>Volume</th>
-            <th>Actions</th>
+            <th pSortableColumn="max_weight" class="text-right">Weight (kg) <p-sortIcon field="max_weight"/></th>
+            <th pSortableColumn="max_volume" class="text-right">Volume (m³) <p-sortIcon field="max_volume"/></th>
+            <th class="text-center">Actions</th>
           </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let truck of filteredTrucks">
-            <td>{{ truck.vehicle_code }}</td>
-            <td>{{ truck.license_plate }}</td>
-            <td>{{ truck.vehicle_type }}</td>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-truck>
+          <tr>
             <td>
-              <span [class]="getStatusClass(truck.status, truck.is_active)">
-                {{ truck.is_active ? truck.status : 'inactive' }}
+              <span class="font-semibold text-gray-900 dark:text-white">{{ truck.vehicle_code }}</span>
+            </td>
+            <td class="text-gray-600">{{ truck.license_plate || '—' }}</td>
+            <td>
+              <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded text-xs font-medium">
+                {{ truck.vehicle_type || '—' }}
               </span>
             </td>
-            <td>{{ truck.warehouse_id }}</td>
             <td>
-              <div>{{ truck.driver_name || '-' }}</div>
-              <div class="fleet-cell-sub">{{ truck.driver_phone || '-' }}</div>
+              <p-tag [value]="statusLabel(truck)" [severity]="statusSeverity(truck)"/>
             </td>
-            <td>{{ formatNumber(truck.max_weight) }}</td>
-            <td>{{ formatNumber(truck.max_volume) }}</td>
+            <td class="text-gray-600 text-sm">{{ truck.warehouse_id || '—' }}</td>
             <td>
-              <button type="button" class="fleet-link" (click)="openTruckDetail(truck)">View detail</button>
+              @if (truck.driver_name) {
+                <div class="text-sm font-medium text-gray-900 dark:text-white">{{ truck.driver_name }}</div>
+                <div class="text-xs text-gray-400">{{ truck.driver_phone || '' }}</div>
+              } @else {
+                <span class="text-gray-400">—</span>
+              }
+            </td>
+            <td class="text-right text-sm text-gray-700 dark:text-gray-300">{{ fmt(truck.max_weight) }}</td>
+            <td class="text-right text-sm text-gray-700 dark:text-gray-300">{{ fmt(truck.max_volume) }}</td>
+            <td>
+              <div class="flex items-center justify-center gap-1">
+                <p-button icon="pi pi-pencil" [outlined]="true" size="small"
+                          (onClick)="openEdit(truck)" pTooltip="Edit" tooltipPosition="top"/>
+                <p-button icon="pi pi-trash" [outlined]="true" severity="danger" size="small"
+                          (onClick)="confirmDelete($event, truck)" pTooltip="Delete" tooltipPosition="top"/>
+              </div>
             </td>
           </tr>
-        </tbody>
-      </table>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="9" class="text-center py-16">
+              <div class="flex flex-col items-center gap-3 text-gray-400">
+                <i class="pi pi-inbox text-4xl"></i>
+                <p class="font-medium">No trucks found</p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
     </div>
-  </section>
+  }
+
 </div>
 
-<div *ngIf="createDialogVisible" class="fleet-dialog-backdrop" (click)="closeCreateDialog()">
-  <div class="fleet-dialog" (click)="$event.stopPropagation()">
-    <div class="fleet-dialog-header">
-      <div>
-        <h3>Create truck</h3>
-        <p>Submit trực tiếp tới `POST /data-mesh/domains/retail/trucks`.</p>
-      </div>
-      <button type="button" class="fleet-link" (click)="closeCreateDialog()">Close</button>
-    </div>
+<!-- ── Create / Edit Dialog ────────────────────────────────────────────────── -->
+<p-dialog [(visible)]="showDialog" [header]="dialogTitle" [modal]="true"
+          [style]="{ width: '680px' }" [closable]="!saving" [draggable]="false">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
 
-    <div class="fleet-form-grid">
-      <label>
-        <span>Vehicle code</span>
-        <input type="text" [(ngModel)]="form.vehicle_code" />
-      </label>
-      <label>
-        <span>License plate</span>
-        <input type="text" [(ngModel)]="form.license_plate" />
-      </label>
-      <label>
-        <span>Vehicle type</span>
-        <input type="text" [(ngModel)]="form.vehicle_type" />
-      </label>
-      <label>
-        <span>Status</span>
-        <select [(ngModel)]="form.status">
-          <option value="active">active</option>
-          <option value="inactive">inactive</option>
-          <option value="maintenance">maintenance</option>
-        </select>
-      </label>
-      <label>
-        <span>Warehouse ID</span>
-        <input type="text" [(ngModel)]="form.warehouse_id" />
-      </label>
-      <label>
-        <span>Driver name</span>
-        <input type="text" [(ngModel)]="form.driver_name" />
-      </label>
-      <label>
-        <span>Driver phone</span>
-        <input type="text" [(ngModel)]="form.driver_phone" />
-      </label>
-      <label>
-        <span>Max weight</span>
-        <input type="number" [(ngModel)]="form.max_weight" />
-      </label>
-      <label>
-        <span>Max volume</span>
-        <input type="number" [(ngModel)]="form.max_volume" />
-      </label>
-      <label class="fleet-checkbox">
-        <input type="checkbox" [(ngModel)]="form.is_active" />
-        <span>Is active</span>
-      </label>
+    <div>
+      <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Vehicle Code *</label>
+      <input pInputText [(ngModel)]="form.vehicle_code" placeholder="e.g. TRK-001" class="w-full"/>
     </div>
-
-    <div class="fleet-dialog-actions">
-      <button type="button" class="fleet-button fleet-button--secondary" (click)="closeCreateDialog()">Cancel</button>
-      <button type="button" class="fleet-button" (click)="saveTruck()" [disabled]="saving">
-        {{ saving ? 'Saving...' : 'Create truck' }}
-      </button>
+    <div>
+      <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">License Plate *</label>
+      <input pInputText [(ngModel)]="form.license_plate" placeholder="e.g. 51A-12345" class="w-full"/>
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Vehicle Type *</label>
+      <input pInputText [(ngModel)]="form.vehicle_type" placeholder="e.g. truck, van" class="w-full"/>
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Status</label>
+      <p-dropdown [(ngModel)]="form.status" [options]="formStatusOptions"
+                  optionLabel="label" optionValue="value" class="w-full"/>
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Warehouse ID *</label>
+      <input pInputText [(ngModel)]="form.warehouse_id" placeholder="Warehouse ID" class="w-full"/>
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Driver Name</label>
+      <input pInputText [(ngModel)]="form.driver_name" placeholder="Full name" class="w-full"/>
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Driver Phone</label>
+      <input pInputText [(ngModel)]="form.driver_phone" placeholder="+84..." class="w-full"/>
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Max Weight (kg)</label>
+      <input pInputText type="number" [(ngModel)]="form.max_weight" class="w-full"/>
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Max Volume (m³)</label>
+      <input pInputText type="number" [(ngModel)]="form.max_volume" class="w-full"/>
+    </div>
+    <div class="flex items-center gap-3 md:col-span-2">
+      <p-button [label]="form.is_active ? 'Active' : 'Inactive'"
+                [icon]="form.is_active ? 'pi pi-check-circle' : 'pi pi-circle'"
+                [severity]="form.is_active ? 'success' : 'secondary'"
+                [outlined]="true" size="small"
+                (onClick)="form.is_active = !form.is_active"/>
+      <span class="text-sm text-gray-500">Toggle active state</span>
     </div>
   </div>
-</div>
 
-<div *ngIf="detailDialogVisible" class="fleet-dialog-backdrop" (click)="closeTruckDetail()">
-  <div class="fleet-dialog fleet-dialog--detail" (click)="$event.stopPropagation()">
-    <div class="fleet-dialog-header">
-      <div>
-        <h3>Truck detail</h3>
-        <p>Render từ `GET /data-mesh/domains/retail/trucks/:id`.</p>
-      </div>
-      <button type="button" class="fleet-link" (click)="closeTruckDetail()">Close</button>
-    </div>
-
-    <div *ngIf="detailLoading" class="fleet-empty">Loading detail...</div>
-
-    <div *ngIf="!detailLoading && selectedTruck" class="fleet-detail-grid">
-      <div><span>ID</span><strong>{{ selectedTruck._id }}</strong></div>
-      <div><span>Vehicle code</span><strong>{{ selectedTruck.vehicle_code }}</strong></div>
-      <div><span>License plate</span><strong>{{ selectedTruck.license_plate }}</strong></div>
-      <div><span>Vehicle type</span><strong>{{ selectedTruck.vehicle_type }}</strong></div>
-      <div><span>Status</span><strong>{{ selectedTruck.status }}</strong></div>
-      <div><span>Warehouse ID</span><strong>{{ selectedTruck.warehouse_id }}</strong></div>
-      <div><span>Driver name</span><strong>{{ selectedTruck.driver_name || '-' }}</strong></div>
-      <div><span>Driver phone</span><strong>{{ selectedTruck.driver_phone || '-' }}</strong></div>
-      <div><span>Max weight</span><strong>{{ formatNumber(selectedTruck.max_weight) }}</strong></div>
-      <div><span>Max volume</span><strong>{{ formatNumber(selectedTruck.max_volume) }}</strong></div>
-      <div><span>Is active</span><strong>{{ selectedTruck.is_active ? 'true' : 'false' }}</strong></div>
-      <div><span>Created at</span><strong>{{ formatDate(selectedTruck.created_at) }}</strong></div>
-      <div><span>Updated at</span><strong>{{ formatDate(selectedTruck.updated_at) }}</strong></div>
-    </div>
-  </div>
-</div>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancel" severity="secondary" [outlined]="true" [disabled]="saving"
+              (onClick)="showDialog = false"/>
+    <p-button [label]="editingTruck ? 'Update' : 'Create Truck'" icon="pi pi-check"
+              [loading]="saving" (onClick)="save()"/>
+  </ng-template>
+</p-dialog>

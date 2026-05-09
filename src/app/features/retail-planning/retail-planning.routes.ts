@@ -5,10 +5,8 @@ export const retailPlanningRoutes: Routes = [
   { path: 'cost-estimation', loadComponent: () => import('./components/cost-estimation/cost-estimation.component').then(m => m.CostEstimationComponent) },
   { path: 'stochastic', redirectTo: 'forecast/demand', pathMatch: 'full' },
   { path: 'forecast', redirectTo: 'forecast/demand', pathMatch: 'full' },
-  { path: 'forecast/demand', loadComponent: () => import('./components/dataset/dataset.component').then(m => m.DatasetComponent), data: { datasetType: 'demand' } },
-  { path: 'forecast/truck', loadComponent: () => import('./components/fleet/fleet.component').then(m => m.FleetComponent) },
-  { path: 'forecast/trip', loadComponent: () => import('./components/dataset/dataset.component').then(m => m.DatasetComponent), data: { datasetType: 'trip' } },
-  { path: 'forecast/hub', loadComponent: () => import('./components/dataset/dataset.component').then(m => m.DatasetComponent), data: { datasetType: 'hub' } },
+  { path: 'forecast/demand', loadComponent: () => import('./components/demand-forecast/demand-forecast.component').then(m => m.DemandForecastComponent) },
+
   { path: 'stochastic/:id', loadComponent: () => import('./components/dataset-detail/dataset-detail.component').then(m => m.DatasetDetailComponent) },
   { path: 'dataset/:id', loadComponent: () => import('./components/dataset-detail/dataset-detail.component').then(m => m.DatasetDetailComponent) },
   { path: 'datasets/:id', loadComponent: () => import('./components/dataset-detail/dataset-detail.component').then(m => m.DatasetDetailComponent) },

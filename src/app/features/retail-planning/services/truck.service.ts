@@ -19,6 +19,8 @@ export interface Truck {
   updated_at?: string;
 }
 
+export type TruckPayload = Omit<Truck, '_id' | 'created_at' | 'updated_at'>;
+
 interface TruckListResponse {
   success: boolean;
   message?: string;
@@ -34,9 +36,7 @@ interface TruckDetailResponse {
   data: Truck;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class TruckService {
   private get baseUrl(): string {
     return `${getApiBase()}/data-mesh/domains/retail/trucks`;
@@ -44,7 +44,7 @@ export class TruckService {
 
   constructor(private http: HttpClient) {}
 
-  listTrucks(skip: number = 0, limit: number = 20): Observable<TruckListResponse> {
+  listTrucks(skip = 0, limit = 100): Observable<TruckListResponse> {
     return this.http.get<TruckListResponse>(`${this.baseUrl}?skip=${skip}&limit=${limit}`);
   }
 
@@ -52,7 +52,15 @@ export class TruckService {
     return this.http.get<TruckDetailResponse>(`${this.baseUrl}/${id}`);
   }
 
-  createTruck(payload: Omit<Truck, '_id' | 'created_at' | 'updated_at'>): Observable<Truck> {
-    return this.http.post<Truck>(this.baseUrl, payload);
+  createTruck(payload: TruckPayload): Observable<any> {
+    return this.http.post<any>(this.baseUrl, payload);
+  }
+
+  updateTruck(id: string, payload: Partial<TruckPayload>): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/${id}`, payload);
+  }
+
+  deleteTruck(id: string): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/${id}`);
   }
 }

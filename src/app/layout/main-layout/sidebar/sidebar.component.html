@@ -1,457 +1,138 @@
-<div class="sidebar-container">
-  <!-- Header actions with Tools -->
-  <div class="header-actions" [class.collapsed]="collapsed">
-    <!-- Action Buttons Row -->
-    <div class="actions-row" [class.justify-center]="collapsed">
-      <!-- Mobile close button -->
-      <button
-        type="button"
-        class="header-btn mobile-close-btn"
-        (click)="toggle.emit()"
-        aria-label="Close sidebar">
-        <i class="pi pi-times"></i>
-      </button>
-      <!-- App Switcher -->
-      <button
-        type="button"
-        class="header-btn app-switcher-header-btn"
-        (click)="openAppMatrix()"
-        [pTooltip]="workspaceLabel"
-        tooltipPosition="right">
+<div class="sidebar-container" [class.collapsed]="collapsed">
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <div class="sidebar-header" [class.collapsed]="collapsed">
+
+    <!-- Mobile close -->
+    <button type="button" class="hdr-btn mobile-only" (click)="toggle.emit()" aria-label="Close">
+      <i class="pi pi-times"></i>
+    </button>
+
+    <!-- App switcher row: icon + tenant name + workspace label -->
+    <button type="button" class="app-row"
+            (click)="openAppMatrix()"
+            [pTooltip]="collapsed ? (tenantLabel() || workspaceLabel) : ''"
+            tooltipPosition="right"
+            aria-label="Switch application">
+      <div class="app-icon-box">
         <i class="pi pi-th-large"></i>
-      </button>
-
-      <!-- Theme Toggle -->
-      <button type="button"
-              class="header-btn"
-              (click)="onThemeToggler()"
-              [pTooltip]="collapsed ? 'Theme' : ''"
-              tooltipPosition="right">
-        <i [ngClass]="'pi ' + iconClass()"></i>
-      </button>
-
-      <!-- Color Palette -->
-      <button
-        pStyleClass="@next"
-        enterFromClass="hidden"
-        enterActiveClass="animate-scalein"
-        leaveToClass="hidden"
-        leaveActiveClass="animate-fadeout"
-        [hideOnOutsideClick]="true"
-        type="button"
-        class="header-btn"
-        [pTooltip]="collapsed ? 'Colors' : ''"
-        tooltipPosition="right"
-        *ngIf="!collapsed">
-        <i class="pi pi-palette"></i>
-      </button>
-      <div class="dropdown-menu color-menu hidden" *ngIf="!collapsed">
-        <div class="color-section">
-          <span class="section-label">Primary Colors</span>
-          <div class="color-grid">
-            @for (primaryColor of primaryColors(); track primaryColor.name) {
-              <button
-                type="button"
-                [title]="primaryColor.name"
-                (click)="updateColors($event, 'primary', primaryColor)"
-                class="color-swatch"
-                [class.selected]="selectedPrimaryColor() === primaryColor.name"
-                [ngStyle]="{
-                  'background-color': primaryColor.name === 'noir' ? 'var(--text-color)' : primaryColor.palette['500']
-                }">
-              </button>
-            }
-          </div>
-        </div>
-        <div class="color-section">
-          <span class="section-label">Surface Colors</span>
-          <div class="color-grid">
-            @for (surface of surfaces; track surface.name) {
-              <button
-                type="button"
-                [title]="surface.name"
-                (click)="updateColors($event, 'surface', surface)"
-                class="color-swatch"
-                [class.selected]="selectedSurfaceColor() === surface.name"
-                [ngStyle]="{
-                  'background-color': surface.palette['500']
-                }">
-              </button>
-            }
-          </div>
-        </div>
-        <div class="color-section">
-          <span class="section-label">Preset</span>
-          <p-selectbutton [options]="presets" [ngModel]="selectedPreset()" (ngModelChange)="onPresetChange($event)"
-                          [unselectable]="false" size="small"/>
-        </div>
-        <div class="color-section">
-          <span class="section-label">Ripple Effect</span>
-          <p-toggleswitch [(ngModel)]="ripple"/>
-        </div>
       </div>
+      @if (!collapsed) {
+        <div class="app-info">
+          <span class="app-tenant">{{ tenantLabel() || 'Workspace' }}</span>
+          <span class="app-workspace">{{ workspaceLabel }}</span>
+        </div>
+        <i class="pi pi-chevron-down app-caret"></i>
+      }
+    </button>
 
-      <!-- Collapse toggle — desktop only, always visible -->
-      <button
-        type="button"
-        class="header-btn collapse-toggle-btn"
-        (click)="toggle.emit()"
-        [pTooltip]="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
-        tooltipPosition="right">
-        <i class="pi" [ngClass]="collapsed ? 'pi-chevron-right' : 'pi-chevron-left'"></i>
-      </button>
-    </div>
-
-    <!-- App Name Label - Below actions row -->
-    <div class="app-name-label" *ngIf="!collapsed">
-      <span class="app-name">{{ workspaceLabel }}</span>
-    </div>
-
+    <!-- Collapse (desktop only) -->
+    <button type="button" class="hdr-btn collapse-btn desktop-only"
+            (click)="toggle.emit()"
+            [pTooltip]="collapsed ? 'Expand' : 'Collapse'" tooltipPosition="right">
+      <i class="pi" [ngClass]="collapsed ? 'pi-chevron-right' : 'pi-chevron-left'"></i>
+    </button>
   </div>
 
-  <!-- Navigation — only shown when logged in -->
-  <ng-container *ngIf="!isLoggedIn">
-    <div class="sidebar-auth-prompt">
-      <div class="auth-prompt-inner">
-        <i class="pi pi-lock"></i>
-        <span *ngIf="!collapsed">Please log in to view the menu</span>
-      </div>
+  <!-- ── Auth prompt ─────────────────────────────────────────────────────── -->
+  @if (!isLoggedIn) {
+    <div class="auth-prompt" [class.collapsed]="collapsed">
+      <i class="pi pi-lock"></i>
+      @if (!collapsed) { <span>Please log in to view the menu</span> }
     </div>
-  </ng-container>
+  }
 
-  <!-- Navigation - Scrollable Middle Section -->
-  <div class="sidebar-content" *ngIf="isLoggedIn">
-    <nav class="sidebar-nav" [class.collapsed]="collapsed">
+  <!-- ── Navigation ─────────────────────────────────────────────────────── -->
+  @if (isLoggedIn) {
+    <div class="sidebar-scroll">
+      <app-sidebar-nav [groups]="visibleGroups" [collapsed]="collapsed"/>
+    </div>
+  }
 
+  <!-- ── Footer ─────────────────────────────────────────────────────────── -->
+  <app-sidebar-footer
+    [currentUser]="currentUser"
+    [collapsed]="collapsed"
+    [sidebarTheme]="sidebarTheme"
+    (logout)="doLogout()"
+    (openProfile)="openProfile()"
+    (openSwitcher)="onUserSwitcherOpen($event)"/>
 
-
-      <!-- Main Navigation Groups -->
-      <div class="nav-section" *ngFor="let group of visibleGroups; trackBy: trackByGroup">
-        <!-- Standalone top-level link (no group header) -->
-        <ng-container *ngIf="group._isStandalone && group._flattened && group._flattened.length > 0">
-          <div class="standalone-nav-item">
-            <a
-              *ngFor="let item of group._flattened; trackBy: trackByItem"
-              [routerLink]="getPath(item.url)"
-              [queryParams]="getQueryParams(item.url)"
-              class="nav-link standalone-link"
-              routerLinkActive="active">
-              <i [class]="item.icon"></i>
-              <span *ngIf="!collapsed">{{ item.label }}</span>
-            </a>
-          </div>
-        </ng-container>
-
-        <!-- Regular Group Header - Clickable to expand/collapse. Omit when _noHeader flag is set -->
-        <ng-container *ngIf="!group._noHeader && !group._isStandalone">
-          <button
-            class="group-header"
-            [class.expanded]="group.expanded"
-            [class.collapsed-sidebar]="collapsed"
-            (click)="!collapsed && toggleGroup(group)"
-            type="button">
-            <div class="group-title">
-              <i [class]="group.icon"></i>
-              <span *ngIf="!collapsed">{{ group.label }}</span>
-            </div>
-            <i
-              *ngIf="!collapsed && hasItems(group)"
-              class="pi pi-chevron-down expand-icon"
-              [class.expanded]="group.expanded"></i>
-          </button>
-        </ng-container>
-
-        <!-- Group Items - Flat list (NO nested subgroups) -->
-        <!-- Render if group has items or if a flattened item list was provided (pseudo-group) -->
-        <!-- Skip rendering if it's a standalone item -->
-        <ul class="nav-list"
-            *ngIf="!group._isStandalone && !collapsed && hasItems(group)"
-            [ngClass]="{ open: group.expanded || group._noHeader }">
-          <li *ngFor="let item of group._flattened; trackBy: trackByItem">
-            <a
-              [routerLink]="getPath(item.url)"
-              [queryParams]="getQueryParams(item.url)"
-              class="nav-link sub-link"
-              routerLinkActive="active"
-              *ngIf="item.url">
-              <i [class]="item.icon"></i>
-              <span>{{ item.label }}</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-
-    </nav>
-  </div>
-
-  <!-- Footer - Fixed at bottom -->
-  <div class="sidebar-footer" [class.collapsed]="collapsed">
-
-    <!-- Logged in: user avatar + name + email + logout -->
-    <ng-container *ngIf="isLoggedIn">
-      <div class="footer-user-row">
-        <button type="button" class="user-profile-btn" (click)="userSwitcherPanel.toggle($event)"
-                [pTooltip]="collapsed ? userFullName() : ''"
-                tooltipPosition="right">
-          <div class="user-avatar-circle">
-            <span>{{ userInitials() }}</span>
-          </div>
-          <div class="user-details" *ngIf="!collapsed">
-            <span class="user-display-name">{{ userFullName() }}</span>
-            <span class="user-display-email" *ngIf="userEmail()">{{ userEmail() }}</span>
-            <span class="user-display-tenant tenant-badge" *ngIf="userTenantLabel()">
-              <i class="pi pi-building"></i>
-              {{ userTenantLabel() }}
-            </span>
-          </div>
-        </button>
-        <button type="button" class="footer-logout-btn" (click)="doLogout()"
-                pTooltip="Logout" tooltipPosition="right">
-          <i class="pi pi-sign-out"></i>
+  <!-- User Switcher Panel -->
+  <p-overlayPanel #userSwitcherPanel [showCloseIcon]="true" styleClass="user-switcher-panel">
+    <div class="switcher-content">
+      <div class="switcher-header">
+        <span>Switch User</span>
+        <button type="button" class="hdr-btn" (click)="loadAccountUsers()" pTooltip="Refresh">
+          <i class="pi pi-refresh"></i>
         </button>
       </div>
-
-      <!-- User Switcher Overlay Panel -->
-      <p-overlayPanel #userSwitcherPanel [showCloseIcon]="true" styleClass="user-switcher-panel">
-        <div class="user-switcher-content">
-          <div class="user-switcher-header">
-            <h4>Switch User</h4>
-            <button type="button" class="refresh-users-btn" (click)="loadAccountUsers()" pTooltip="Refresh users">
-              <i class="pi pi-refresh"></i>
-            </button>
-          </div>
-          <div class="user-list" *ngIf="accountUsers().length > 0; else noUsers">
-            <div class="user-item" *ngFor="let user of accountUsers()"
-                 [class.active]="isActiveUser(user)"
-                 (click)="doSwitchUser(user.id)">
-              <div class="user-item-avatar">
-                <span>{{ (user.first_name || user.email?.split('@')[0] || 'U')[0] | uppercase }}</span>
+      @if (userSwitcherLoading()) {
+        <div class="switcher-loading"><i class="pi pi-spin pi-spinner"></i></div>
+      }
+      @if (!userSwitcherLoading() && accountUsers().length > 0) {
+        <div class="user-list">
+          @for (u of accountUsers(); track u.id) {
+            <div class="user-item" [class.active]="isActiveUser(u)" (click)="doSwitchUser(u.id)">
+              <div class="item-avatar">{{ (u.first_name || u.email?.split('@')[0] || 'U')[0] | uppercase }}</div>
+              <div class="item-info">
+                <span class="item-name">{{ u.first_name || u.email?.split('@')[0] || 'User' }} {{ u.last_name || '' }}</span>
+                <span class="item-email">{{ u.email }}</span>
+                @if (u.roles?.length) { <span class="item-badge">{{ u.roles[0] }}</span> }
               </div>
-              <div class="user-item-info">
-                <span class="user-item-name">{{ user.first_name || user.email?.split('@')[0] || 'User' }} {{ user.last_name || '' }}</span>
-                <span class="user-item-email">{{ user.email }}</span>
-                <span class="user-item-badge" *ngIf="user.roles?.length">{{ user.roles[0] }}</span>
-              </div>
-              <i class="pi pi-check active-indicator" *ngIf="isActiveUser(user)"></i>
+              @if (isActiveUser(u)) { <i class="pi pi-check check-icon"></i> }
             </div>
-          </div>
-          <ng-template #noUsers>
-            <div class="no-users-message">No users found</div>
-          </ng-template>
-          <div class="user-switcher-loading" *ngIf="userSwitcherLoading()">
-            <i class="pi pi-spin pi-spinner"></i>
-          </div>
+          }
         </div>
-      </p-overlayPanel>
-    </ng-container>
+      }
+      @if (!userSwitcherLoading() && accountUsers().length === 0) {
+        <p class="no-users">No users found</p>
+      }
+    </div>
+  </p-overlayPanel>
 
-    <!-- Not logged in: Login and Register buttons -->
-    <ng-container *ngIf="!isLoggedIn">
-      <div class="footer-auth-row" [class.collapsed]="collapsed">
-        <button type="button" class="footer-auth-btn login-btn" (click)="navigateToLogin()"
-                [pTooltip]="collapsed ? 'Login' : ''"
-                tooltipPosition="right">
-          <i class="pi pi-sign-in"></i>
-          <span *ngIf="!collapsed">Login</span>
-        </button>
-        <button type="button" class="footer-auth-btn register-btn" (click)="navigateToRegister()"
-                [pTooltip]="collapsed ? 'Register' : ''"
-                tooltipPosition="right">
-          <i class="pi pi-user-plus"></i>
-          <span *ngIf="!collapsed">Register</span>
-        </button>
-      </div>
-    </ng-container>
-
-  </div>
 </div>
 
-<!-- App Matrix Dialog -->
+<!-- ── App Matrix Dialog ─────────────────────────────────────────────────── -->
 <p-dialog
-  [header]="null"
   [(visible)]="showAppMatrix"
   [modal]="true"
-  appendTo="body"
-  [baseZIndex]="10000"
-  [style]="{ width: '92vw', maxWidth: '1500px', minWidth: '600px' }"
   [closable]="false"
   [draggable]="false"
   [resizable]="false"
-  (onHide)="closeAppMatrix()"
+  appendTo="body"
+  [baseZIndex]="10000"
+  [style]="{ width: '560px', maxWidth: '96vw' }"
   styleClass="app-matrix-dialog">
 
-  <!-- Custom Header -->
   <ng-template pTemplate="header">
-    <div class="dialog-custom-header">
-      <div class="header-content">
-        <div class="header-icon-badge">
-          <i class="pi pi-th-large"></i>
-        </div>
-        <div class="header-text">
-          <h1 class="header-title">All Applications</h1>
-          <p class="header-description">Choose an application to get started</p>
+    <div class="dlg-header">
+      <div class="dlg-title-wrap">
+        <div class="dlg-icon-wrap"><i class="pi pi-th-large"></i></div>
+        <div>
+          <div class="dlg-title">Applications</div>
+          <div class="dlg-subtitle">Select a workspace to switch to</div>
         </div>
       </div>
-      <button type="button" class="close-button" (click)="closeAppMatrix()" aria-label="Close">
+      <button class="dlg-close" type="button" (click)="closeAppMatrix()">
         <i class="pi pi-times"></i>
       </button>
     </div>
   </ng-template>
 
-  <!-- Dialog Content Wrapper -->
-  <div class="apps-container">
-    <!-- Apps Grid -->
-    <div class="apps-matrix-grid">
-      <button *ngFor="let app of appMatrix(); let i = index" type="button"
-              class="app-card"
+  <div class="app-tile-grid">
+    @for (app of apps; track app.key) {
+      <button type="button" class="app-tile"
               [class.active]="selectedApp === app.key"
-              [attr.data-app-key]="app.key"
-              (click)="selectAppKey(app.key)"
-              [attr.aria-label]="app.label">
-
-        <!-- Card Background Pattern -->
-        <div class="card-pattern"></div>
-
-        <!-- App Accent Bar -->
-        <div class="app-accent-bar"></div>
-
-        <!-- Card Content -->
-        <div class="card-body">
-          <!-- App Icon -->
-          <div class="app-icon-container">
-            <div class="icon-backdrop"></div>
-            <i [class]="app.icon"></i>
-          </div>
-
-          <!-- App Info -->
-          <div class="app-info">
-            <h3 class="app-name">{{ app.label }}</h3>
-            <p class="app-desc" *ngIf="app.description">{{ app.description }}</p>
-          </div>
+              (click)="selectAppKey(app.key)">
+        <div class="tile-icon" [style.background]="app.color + '1a'" [style.color]="app.color">
+          <i [class]="app.icon"></i>
         </div>
-
-        <!-- Active Badge -->
-        <div class="active-indicator" *ngIf="selectedApp === app.key">
-          <i class="pi pi-check-circle"></i>
-          <span>Active</span>
-        </div>
-
-        <!-- Hover Effect -->
-        <div class="card-hover-effect"></div>
-
+        <span class="tile-label">{{ app.label }}</span>
+        @if (selectedApp === app.key) {
+          <div class="tile-active-dot"></div>
+        }
       </button>
-    </div>
+    }
   </div>
 </p-dialog>
-
-<!-- Info Dialog -->
-<p-dialog
-  header="{{ selectedInfo?.title }}"
-  [(visible)]="infoDialogVisible"
-  [modal]="true"
-  [style]="{ width: '600px' }"
-  [draggable]="false"
-  [resizable]="false"
-  styleClass="info-dialog">
-
-  <div *ngIf="selectedInfo" class="info-content">
-    <!-- Description -->
-    <div class="mb-4">
-      <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
-        {{ selectedInfo.description }}
-      </p>
-    </div>
-
-    <!-- Features -->
-    <div class="mb-4">
-      <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-        <i class="pi pi-star text-blue-500 mr-2"></i>
-        Key Features
-      </h4>
-      <ul class="space-y-2">
-        <li *ngFor="let feature of selectedInfo.features" class="flex items-start gap-2">
-          <i class="pi pi-check text-green-500 mt-0.5 text-sm"></i>
-          <span class="text-gray-700 dark:text-gray-300 text-sm">{{ feature }}</span>
-        </li>
-      </ul>
-    </div>
-
-    <p-divider></p-divider>
-
-    <!-- Usage -->
-    <div class="mb-4">
-      <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-        <i class="pi pi-info-circle text-blue-500 mr-2"></i>
-        How to Use
-      </h4>
-      <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
-        {{ selectedInfo.usage }}
-      </p>
-    </div>
-
-    <!-- Tips -->
-    <div *ngIf="selectedInfo.tips && selectedInfo.tips.length > 0" class="mb-4">
-      <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-        <i class="pi pi-lightbulb text-yellow-500 mr-2"></i>
-        Pro Tips
-      </h4>
-      <ul class="space-y-2">
-        <li *ngFor="let tip of selectedInfo.tips" class="flex items-start gap-2">
-          <i class="pi pi-angle-right text-blue-500 mt-0.5 text-sm"></i>
-          <span class="text-gray-700 dark:text-gray-300 text-sm">{{ tip }}</span>
-        </li>
-      </ul>
-    </div>
-  </div>
-
-  <ng-template pTemplate="footer">
-    <div class="flex justify-end gap-2">
-      <button
-        pButton
-        pRipple
-        label="Got it!"
-        icon="pi pi-check"
-        class="p-button-primary"
-        (click)="hideInfo()">
-      </button>
-    </div>
-  </ng-template>
-</p-dialog>
-
-<!-- Blogger Sidebar Card (Redesigned) -->
-<div class="blogger-sidebar-card" *ngIf="!collapsed && selectedApp === 'blogger'">
-  <div class="blogger-accent-bar"></div>
-  <div class="blogger-header flex items-center gap-3 mb-2">
-    <i class="pi pi-pencil blogger-icon"></i>
-    <div>
-      <div class="blogger-title">Blogger Management</div>
-      <div class="blogger-desc">Quản lý bài viết, tác giả và phân quyền cho ứng dụng Blogger.</div>
-    </div>
-  </div>
-  <ul class="blogger-menu-list">
-    <li>
-      <a [routerLink]="'/blogger'" class="blogger-menu-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-        <i class="pi pi-home"></i>
-        <span>Dashboard</span>
-      </a>
-    </li>
-    <li>
-      <a [routerLink]="'/blogger/posts'" class="blogger-menu-link" routerLinkActive="active">
-        <i class="pi pi-file-edit"></i>
-        <span>Posts</span>
-      </a>
-    </li>
-    <li>
-      <a [routerLink]="'/blogger/authors'" class="blogger-menu-link" routerLinkActive="active">
-        <i class="pi pi-users"></i>
-        <span>Authors</span>
-      </a>
-    </li>
-    <li>
-      <a [routerLink]="'/blogger'" [queryParams]="{section: 'blogs'}" class="blogger-menu-link" routerLinkActive="active">
-        <i class="pi pi-briefcase"></i>
-        <span>Blogs</span>
-      </a>
-    </li>
-  </ul>
-</div>

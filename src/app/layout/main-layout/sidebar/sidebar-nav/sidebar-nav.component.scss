@@ -1,0 +1,158 @@
+:host {
+  --item-h: 34px;
+  --group-h: 28px;
+  --icon-size: 0.9rem;
+  --indent: 14px;
+  --radius: 6px;
+  display: block;
+}
+
+.sidebar-nav {
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+// ── Nav Section ──────────────────────────────────────────────────────────────
+.nav-section {
+  margin-bottom: 2px;
+}
+
+// ── Group Header ─────────────────────────────────────────────────────────────
+.group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: var(--group-h);
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--p-text-muted-color);
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: var(--p-surface-hover);
+    color: var(--p-text-color);
+  }
+
+  .group-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .group-icon {
+    font-size: var(--icon-size);
+    min-width: var(--icon-size);
+    opacity: 0.7;
+  }
+
+  .group-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// ── Chevron ───────────────────────────────────────────────────────────────────
+.chevron {
+  font-size: 0.65rem;
+  transition: transform 0.2s ease;
+  opacity: 0.6;
+  flex-shrink: 0;
+
+  &.rotated { transform: rotate(180deg); }
+}
+
+// ── Nav List (collapsible) ────────────────────────────────────────────────────
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 2px 0 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.22s ease;
+
+  &.open { max-height: 1200px; }
+}
+
+// ── Nav Links (shared) ────────────────────────────────────────────────────────
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: var(--item-h);
+  padding: 0 10px 0 calc(10px + var(--indent));
+  border-radius: var(--radius);
+  color: var(--p-text-color);
+  text-decoration: none;
+  font-size: 0.82rem;
+  transition: background 0.13s, color 0.13s;
+  white-space: nowrap;
+  overflow: hidden;
+
+  &:hover {
+    background: var(--p-surface-hover);
+  }
+
+  &.active {
+    background: color-mix(in srgb, var(--p-primary-color) 10%, transparent);
+    color: var(--p-primary-color);
+    font-weight: 600;
+
+    .nav-icon { color: var(--p-primary-color); }
+  }
+
+  // Standalone: no indent, slightly bolder
+  &.standalone {
+    padding-left: 10px;
+    font-weight: 500;
+    font-size: 0.84rem;
+    color: var(--p-text-color);
+  }
+
+  .nav-icon {
+    font-size: var(--icon-size);
+    min-width: var(--icon-size);
+    color: var(--p-text-muted-color);
+    transition: color 0.13s;
+  }
+
+  .nav-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// ── Collapsed mode ───────────────────────────────────────────────────────────
+.sidebar-nav.collapsed {
+  padding: 6px 4px;
+
+  .nav-link {
+    justify-content: center;
+    padding: 0;
+    height: 38px;
+    width: 100%;
+
+    .nav-label { display: none; }
+    .nav-icon  { font-size: 1rem; }
+  }
+
+  .group-header {
+    justify-content: center;
+    padding: 0;
+    height: 38px;
+
+    .group-label { display: none; }
+    .group-icon  { font-size: 1rem; opacity: 1; }
+  }
+}

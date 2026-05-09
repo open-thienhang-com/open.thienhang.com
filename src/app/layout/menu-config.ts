@@ -5,6 +5,7 @@ export const sidebarGroups: MenuItem[] = [
         label: 'Explore',
         icon: 'pi pi-compass',
         expanded: false,
+        hidden: true,
         children: [
             {
                 label: 'Data Mesh',
@@ -99,47 +100,36 @@ export const menu: MenuItem[] = [
         casbinPath: '/inventory/*',
         expanded: true,
         children: [
-            {
-                label: 'Dashboard',
-                icon: 'pi pi-th-large',
-                children: [
-                    { label: 'Overview', url: '/inventory/overview', icon: 'pi pi-th-large' },
-                ]
-            },
+            { label: 'Overview', url: '/inventory/overview', icon: 'pi pi-th-large', casbinPath: '/inventory/*' },
             {
                 label: 'Resources',
                 icon: 'pi pi-server',
+                casbinPath: '/inventory/*',
                 children: [
-                    { label: 'Products', url: '/inventory/products', icon: 'pi pi-tag' },
-                    { label: 'Categories', url: '/inventory/categories', icon: 'pi pi-list' },
-                    { label: 'Suppliers', url: '/inventory/suppliers', icon: 'pi pi-truck' },
-                    { label: 'Partners', url: '/inventory/partners', icon: 'pi pi-users' },
-                    { label: 'Warehouses', url: '/inventory/delivery-points', icon: 'pi pi-map-marker' },
+                    { label: 'Products',   url: '/inventory/products',        icon: 'pi pi-tag' },
+                    { label: 'Categories', url: '/inventory/categories',       icon: 'pi pi-list' },
+                    { label: 'Suppliers',  url: '/inventory/suppliers',        icon: 'pi pi-truck' },
+                    { label: 'Partners',   url: '/inventory/partners',         icon: 'pi pi-users' },
+                    { label: 'Warehouses', url: '/inventory/delivery-points',  icon: 'pi pi-map-marker' },
+                    { label: 'Truck',      url: '/inventory/fleet',            icon: 'pi pi-truck' },
+                    { label: 'Vehicles',   url: '/planning/vehicles',          icon: 'pi pi-car' },
                 ]
             },
             {
-                label: 'Inventory',
-                icon: 'pi pi-box',
-                children: [
-                    { label: 'Stock Analytics', url: '/inventory/analytics', icon: 'pi pi-chart-bar' },
-                ]
-            },
-            {
-                label: 'Forecasting',
+                label: 'Stochastic',
                 icon: 'pi pi-chart-line',
+                casbinPath: '/inventory/*',
                 children: [
+                    { label: 'Stock Analytics', url: '/inventory/analytics',       icon: 'pi pi-chart-bar' },
                     { label: 'Demand Forecast', url: '/inventory/forecast/demand', icon: 'pi pi-chart-bar' },
-                    { label: 'Hub Forecast', url: '/inventory/forecast/hub', icon: 'pi pi-building' },
-                    { label: 'Trip Forecast', url: '/inventory/forecast/trip', icon: 'pi pi-map' },
-                    { label: 'Truck Load', url: '/inventory/forecast/truck', icon: 'pi pi-box' },
                 ]
             },
             {
                 label: 'Fleet & Routes',
-                icon: 'pi pi-truck',
+                icon: 'pi pi-directions',
+                casbinPath: '/planning/*',
+                hidden: true,
                 children: [
-                    { label: 'Truck', url: '/inventory/fleet', icon: 'pi pi-truck' },
-                    { label: 'Vehicles', url: '/planning/vehicles', icon: 'pi pi-list' },
                     { label: 'Planning', url: '/planning/auto-planning', icon: 'pi pi-directions' },
                 ]
             },
@@ -156,6 +146,7 @@ export const menu: MenuItem[] = [
                 label: 'Overview & Members',
                 icon: 'pi pi-home',
                 type: 'item',
+                casbinPath: '/loyalty/*',
                 expanded: false,
                 children: [
                     { label: 'Overview', url: '/loyalty/overview', icon: 'pi pi-home' },
@@ -168,6 +159,7 @@ export const menu: MenuItem[] = [
                 label: 'Rewards & Campaigns',
                 icon: 'pi pi-megaphone',
                 type: 'item',
+                casbinPath: '/loyalty/*',
                 expanded: false,
                 children: [
                     { label: 'Rewards Catalog', url: '/loyalty/rewards', icon: 'pi pi-gift' },
@@ -180,6 +172,7 @@ export const menu: MenuItem[] = [
                 label: 'Strategy & Analytics',
                 icon: 'pi pi-chart-bar',
                 type: 'item',
+                casbinPath: '/loyalty/*',
                 expanded: false,
                 children: [
                     { label: 'Loyalty Strategy', url: '/loyalty/strategy', icon: 'pi pi-sitemap' },
@@ -215,20 +208,19 @@ export const menu: MenuItem[] = [
             {
                 label: 'Templates',
                 icon: 'pi pi-copy',
+                casbinPath: '/cmc/*',
                 children: [
-                    { label: 'Templates Explorer', url: '/cmc/explore', icon: 'pi pi-search' },
-                    { label: 'Manage Templates', url: '/cmc/templates', icon: 'pi pi-list' },
+                    { label: 'Templates', url: '/cmc/explore', icon: 'pi pi-search' },
                 ]
             },
             {
                 label: 'Automation',
                 icon: 'pi pi-bolt',
+                casbinPath: '/cmc/*',
                 children: [
                     { label: 'Workflows', url: '/cmc/automation', icon: 'pi pi-directions' },
-                    { label: 'Bot Settings', url: '/cmc/bot-settings', icon: 'pi pi-cog' },
                     { label: 'Omni-channel', url: '/retail/omni-channel', icon: 'pi pi-sync' },
-                    { label: 'Telegram', url: '/cmc/telegram-workspace', icon: 'pi pi-telegram' },
-                    { label: 'Facebook', url: '/cmc/workspace', icon: 'pi pi-facebook' },
+                    { label: 'Workplace', url: '/cmc/workspace', icon: 'pi pi-facebook' },
                 ]
             },
         ]
@@ -239,6 +231,7 @@ export const menu: MenuItem[] = [
         icon: 'pi pi-bullhorn',
         type: 'item',
         expanded: false,
+        hidden: true,
         children: [
             { label: 'Ad Overview', url: '/ad-manager', icon: 'pi pi-chart-line' },
             { label: 'Campaigns', url: '/ad-manager/campaigns', icon: 'pi pi-megaphone' },
@@ -252,6 +245,7 @@ export const menu: MenuItem[] = [
         icon: 'pi pi-pencil',
         type: 'item',
         expanded: false,
+        hidden: true,
         children: [
             { label: 'Dashboard', url: '/blogger', icon: 'pi pi-home' },
             { label: 'Posts', url: '/blogger/posts', icon: 'pi pi-file-edit' },
@@ -287,6 +281,7 @@ export const menu: MenuItem[] = [
         icon: 'pi pi-building',
         type: 'item',
         expanded: false,
+        hidden: true,
         children: [
             {
                 label: 'Property Management',

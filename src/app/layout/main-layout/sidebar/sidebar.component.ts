@@ -1,347 +1,168 @@
-import { Component, EventEmitter, Input, Output, OnChanges, OnInit, computed, effect, inject, PLATFORM_ID, signal, ElementRef, ViewChild } from '@angular/core';
-import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
+import {
+  Component, EventEmitter, Input, Output,
+  OnChanges, OnInit, computed, inject,
+  PLATFORM_ID, signal, ViewChild
+} from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import {
-  trigger,
-  state,
-  style,
-  transition,
-  animate,
-} from '@angular/animations';
+
 import { AppSwitcherService, AppKey } from '../../../core/services/app-switcher.service';
 import { AuthServices } from '../../../core/services/auth.services';
 import { SidebarPermissionService } from '../../../core/services/sidebar-permission.service';
-import { MenuItem, MenuInfo } from '../../models/menu-item';
-import { $t, updatePreset, updateSurfacePalette } from '@primeng/themes';
-import Aura from '@primeng/themes/aura';
-import Lara from '@primeng/themes/lara';
-import Material from '@primeng/themes/material';
-import Nora from '@primeng/themes/nora';
-import { PrimeNG } from 'primeng/config';
+import { SidebarThemeService } from '../../../core/services/sidebar-theme.service';
+import { MenuItem, VisibleGroup } from '../../models/menu-item';
+import { sidebarGroups as configGroups, menu as fullMenu } from '../../menu-config';
 
-// PrimeNG imports
+// PrimeNG
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
-import { DividerModule } from 'primeng/divider';
 import { TooltipModule } from 'primeng/tooltip';
-import { InputTextModule } from 'primeng/inputtext';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { StyleClassModule } from 'primeng/styleclass';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
-import { AvatarModule } from 'primeng/avatar';
-import { BadgeModule } from 'primeng/badge';
-import { SearchResultsComponent } from '../../../shared/components/search-results/search-results.component';
-import { sidebarGroups as configGroups, menu as fullMenu } from '../../menu-config';
 
-const presets = {
-  Aura,
-  Material,
-  Lara,
-  Nora
-};
-
-export interface ThemeState {
-  preset?: string;
-  primary?: string;
-  surface?: string;
-  darkTheme?: boolean;
-}
+// Sub-components
+import { SidebarNavComponent } from './sidebar-nav/sidebar-nav.component';
+import { SidebarFooterComponent } from './sidebar-footer/sidebar-footer.component';
 
 @Component({
   selector: 'app-sidebar',
+  standalone: true,
   imports: [
     CommonModule,
     FormsModule,
     RouterModule,
     DialogModule,
     ButtonModule,
-    DividerModule,
     TooltipModule,
-    InputTextModule,
     SelectButtonModule,
     StyleClassModule,
     ToggleSwitchModule,
     OverlayPanelModule,
-    AvatarModule,
-    BadgeModule,
+    SidebarNavComponent,
+    SidebarFooterComponent,
   ],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
-  animations: [],
-
 })
 export class SidebarComponent implements OnInit, OnChanges {
-  menu: MenuItem[];
+
+  // ── Inputs / Outputs ────────────────────────────────────────────────────────
   @Input() collapsed = false;
   @Output() toggle = new EventEmitter<void>();
+
+  @ViewChild('userSwitcherPanel') userSwitcherPanel: any;
+
+  // ── Services ────────────────────────────────────────────────────────────────
+  private platformId = inject(PLATFORM_ID);
+  readonly sidebarTheme = inject(SidebarThemeService);
+
+  // ── State ────────────────────────────────────────────────────────────────────
+  menu: MenuItem[] = [];
+  visibleGroups: VisibleGroup[] = [];
+  sidebarGroups: any[] = configGroups;
   appKey: AppKey = 'all';
+  selectedApp: AppKey = 'all';
 
-  visibleGroups: any[] = [];
-
-  // Info dialog properties
-  infoDialogVisible = false;
-  selectedInfo: MenuInfo | null = null;
-
-  // Theme & Settings
-  private readonly STORAGE_KEY = 'themeSwitcherState';
-  document = inject(DOCUMENT);
-  private elementRef = inject(ElementRef);
-  platformId = inject(PLATFORM_ID);
-  config: PrimeNG = inject(PrimeNG);
-
-  // User info from API
   currentUser = signal<any>(null);
-  userFullName = computed(() => {
-    const user = this.currentUser();
-    const firstName = user?.first_name || user?.firstName || '';
-    const lastName = user?.last_name || user?.lastName || '';
-    if (firstName || lastName) {
-      return `${firstName} ${lastName}`.trim();
-    }
-    return user?.full_name || user?.fullName || user?.name || user?.email?.split('@')[0] || 'User';
-  });
-  userEmail = computed(() => this.currentUser()?.email || '');
-  userIdentify = computed(() => this.currentUser()?.identify || '');
-  userTenant = computed(() => this.currentUser()?.tenant_id || this.currentUser()?.tenantId || '');
-  userTenantLabel = computed(() => {
-    const t = this.userTenant();
-    if (!t || t === '*' || t === 'system') return 'System';
-    return t;
-  });
-  userInitials = computed(() => {
-    const name = this.userFullName();
-    if (!name || name === 'User') return 'U';
-    const parts = name.trim().split(/\s+/).filter(p => p.length > 0);
-    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    return (parts[0]?.[0] || 'U').toUpperCase();
-  });
-
-  // User switcher state
   accountUsers = signal<any[]>([]);
   userSwitcherLoading = signal(false);
-  @ViewChild('userSwitcherPanel') userSwitcherPanel: any;
+
+  showAppMatrix = false;
+  private _workspaceHighlight = false;
+
+  // ── Computed user helpers ──────────────────────────────────────────────────
+  userFullName = computed(() => {
+    const u = this.currentUser();
+    const first = u?.first_name || u?.firstName || '';
+    const last  = u?.last_name  || u?.lastName  || '';
+    if (first || last) return `${first} ${last}`.trim();
+    return u?.full_name || u?.fullName || u?.name || u?.email?.split('@')[0] || 'User';
+  });
+
+  tenantLabel = computed(() => {
+    const u = this.currentUser();
+    if (!u) return '';
+    const display = u.tenant_display_name || u.tenantDisplayName;
+    if (display) return display;
+    const id: string = u.tenant_id || u.tenantId || '';
+    if (!id || id === '*' || id === 'system') return 'System';
+    return id.length > 14 ? id.substring(0, 12) + '…' : id;
+  });
 
   private readonly HIDDEN_GROUP_LABELS = ['ad manager', 'blogger', 'file', 'travel', 'hotel', 'explore'];
 
-  // Theme state
-  themeState = signal<ThemeState>(null);
-  theme = computed(() => (this.themeState()?.darkTheme ? 'dark' : 'light'));
-  selectedPreset = computed(() => this.themeState().preset);
-  selectedSurfaceColor = computed(() => this.themeState().surface);
-  selectedPrimaryColor = computed(() => this.themeState().primary);
-  iconClass = computed(() => this.themeState().darkTheme ? 'pi-sun' : 'pi-moon');
-  transitionComplete = signal<boolean>(false);
-
-  presets = Object.keys(presets);
-
-  primaryColors = computed(() => {
-    const presetPalette = presets[this.themeState().preset].primitive;
-    const colors = [
-      'emerald', 'green', 'lime', 'orange', 'amber', 'yellow',
-      'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet',
-      'purple', 'fuchsia', 'pink', 'rose',
-    ];
-    const palettes = [{ name: 'noir', palette: {} }];
-    colors.forEach((color) => {
-      palettes.push({ name: color, palette: presetPalette[color] });
-    });
-    return palettes;
-  });
-
-  surfaces = [
-    {
-      name: 'slate',
-      palette: {
-        0: '#ffffff', 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0',
-        300: '#cbd5e1', 400: '#94a3b8', 500: '#64748b', 600: '#475569',
-        700: '#334155', 800: '#1e293b', 900: '#0f172a', 950: '#020617',
-      },
-    },
-    {
-      name: 'gray',
-      palette: {
-        0: '#ffffff', 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb',
-        300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563',
-        700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#030712',
-      },
-    },
-    {
-      name: 'zinc',
-      palette: {
-        0: '#ffffff', 50: '#fafafa', 100: '#f4f4f5', 200: '#e4e4e7',
-        300: '#d4d4d8', 400: '#a1a1aa', 500: '#71717a', 600: '#52525b',
-        700: '#3f3f46', 800: '#27272a', 900: '#18181b', 950: '#09090b',
-      },
-    },
-    {
-      name: 'neutral',
-      palette: {
-        0: '#ffffff', 50: '#fafafa', 100: '#f5f5f5', 200: '#e5e5e5',
-        300: '#d4d4d4', 400: '#a3a3a3', 500: '#737373', 600: '#525252',
-        700: '#404040', 800: '#262626', 900: '#171717', 950: '#0a0a0a',
-      },
-    },
-    {
-      name: 'stone',
-      palette: {
-        0: '#ffffff', 50: '#fafaf9', 100: '#f5f5f4', 200: '#e7e5e4',
-        300: '#d6d3d1', 400: '#a8a29e', 500: '#78716c', 600: '#57534e',
-        700: '#44403c', 800: '#292524', 900: '#1c1917', 950: '#0c0a09',
-      },
-    },
-    {
-      name: 'soho',
-      palette: {
-        0: '#ffffff', 50: '#ececec', 100: '#dedfdf', 200: '#c4c4c6',
-        300: '#adaeb0', 400: '#97979b', 500: '#7f8084', 600: '#6a6b70',
-        700: '#55565b', 800: '#3f4046', 900: '#2c2c34', 950: '#16161d',
-      },
-    },
-    {
-      name: 'viva',
-      palette: {
-        0: '#ffffff', 50: '#f3f3f3', 100: '#e7e7e8', 200: '#cfd0d0',
-        300: '#b7b8b9', 400: '#9fa1a1', 500: '#87898a', 600: '#6e7173',
-        700: '#565a5b', 800: '#3e4244', 900: '#262b2c', 950: '#0e1315',
-      },
-    },
-    {
-      name: 'ocean',
-      palette: {
-        0: '#ffffff', 50: '#fbfcfc', 100: '#F7F9F8', 200: '#EFF3F2',
-        300: '#DADEDD', 400: '#B1B7B6', 500: '#828787', 600: '#5F7274',
-        700: '#415B61', 800: '#29444E', 900: '#183240', 950: '#0c1920',
-      },
-    },
+  // ── App matrix ─────────────────────────────────────────────────────────────
+  apps: { key: AppKey; label: string; icon: string; color: string }[] = [
+    { key: 'retail',     label: 'Retail',      icon: 'pi pi-shopping-bag', color: '#f97316' },
+    { key: 'inventory',  label: 'Inventory',   icon: 'pi pi-box',          color: '#10b981' },
+    { key: 'governance', label: 'Governance',  icon: 'pi pi-shield',       color: '#8b5cf6' },
+    { key: 'loyalty',    label: 'Customers',   icon: 'pi pi-users',        color: '#3b82f6' },
+    { key: 'support',    label: 'Support',     icon: 'pi pi-comments',     color: '#06b6d4' },
+    { key: 'planning',   label: 'Planning',    icon: 'pi pi-map',          color: '#14b8a6' },
+    { key: 'hotel',      label: 'Hotel',       icon: 'pi pi-building',     color: '#f59e0b' },
+    { key: 'blogger',    label: 'Blogger',     icon: 'pi pi-pencil',       color: '#ec4899' },
+    { key: 'admanager',  label: 'Ad Manager',  icon: 'pi pi-megaphone',    color: '#ef4444' },
+    { key: 'explore',    label: 'Explore',     icon: 'pi pi-compass',      color: '#6366f1' },
+    { key: 'files',      label: 'Files',       icon: 'pi pi-folder',       color: '#84cc16' },
+    { key: 'settings',   label: 'Settings',    icon: 'pi pi-cog',          color: '#64748b' },
   ];
-
-  get ripple() {
-    return this.config.ripple();
-  }
-
-  set ripple(value: boolean) {
-    this.config.ripple.set(value);
-  }
-
-  // App matrix dialog
-  showAppMatrix = false;
-  apps: { key: AppKey; label: string; icon: string; gradient: string; description?: string }[] = [
-    {
-      key: 'retail',
-      label: 'Retail',
-      icon: 'pi pi-shopping-bag',
-      gradient: 'linear-gradient(135deg, #f97316 0%, #f59e0b 100%)',
-      description: 'Retail operations, orders, ecommerce and payments'
-    },
-    {
-      key: 'inventory',
-      label: 'Inventory Management',
-      icon: 'pi pi-box',
-      gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-      description: 'Stock, warehouses, fleet and forecasting'
-    },
-    {
-      key: 'governance',
-      label: 'Governance',
-      icon: 'pi pi-shield',
-      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      description: 'Tenant management, roles, permissions and policies'
-    },
-  ];
-
-  selectedApp: AppKey = 'all';
-  private _workspaceHighlight = false;
-
-  // Return only the real apps (no placeholders)
-  appMatrix(): Array<any> {
-    return this.apps;
-  }
-
-  sidebarGroups = configGroups;
-
-  constructor(private router: Router, private appSwitcher: AppSwitcherService, private authServices: AuthServices, private sidebarPermSvc: SidebarPermissionService) {
-    this.themeState.set({ ...this.loadthemeState() });
-
-    effect(() => {
-      const state = this.themeState();
-      this.savethemeState(state);
-      this.handleDarkModeTransition(state);
-    });
-  }
-
-  get isLoggedIn(): boolean {
-    return this.authServices.isLoggedIn();
-  }
 
   get workspaceLabel(): string {
-    const app = this.apps.find(a => a.key === this.selectedApp);
-    return app ? app.label : 'All Apps';
+    if (!this.selectedApp || this.selectedApp === 'all') return 'All Apps';
+    return this.apps.find(a => a.key === this.selectedApp)?.label ?? 'All Apps';
   }
 
-  get workspaceHighlight(): boolean {
-    return this._workspaceHighlight;
-  }
+  get workspaceHighlight(): boolean { return this._workspaceHighlight; }
+  get isLoggedIn(): boolean { return this.authServices.isLoggedIn(); }
 
-  private playWorkspaceHighlight() {
-    this._workspaceHighlight = true;
-    setTimeout(() => (this._workspaceHighlight = false), 600);
-  }
+  appMatrix() { return this.apps; }
 
+  constructor(
+    private router: Router,
+    private appSwitcher: AppSwitcherService,
+    private authServices: AuthServices,
+    private sidebarPermSvc: SidebarPermissionService,
+  ) {}
+
+  // ── Lifecycle ───────────────────────────────────────────────────────────────
   ngOnInit() {
-    // Initialize theme
-    if (isPlatformBrowser(this.platformId)) {
-      this.onPresetChange(this.themeState().preset);
-    }
-
-    // Set initial user from session storage (avoids blank until auth service emits)
+    // Restore user from session cache
     try {
       const cached = sessionStorage.getItem('currentUser');
       if (cached) {
-        const user = JSON.parse(cached);
-        if (user && Object.keys(user).length > 0) {
-          this.currentUser.set(user);
-        }
+        const u = JSON.parse(cached);
+        if (u && Object.keys(u).length) this.currentUser.set(u);
       }
-    } catch (e) {
-      // ignore session storage errors
-    }
+    } catch {}
 
-    // Subscribe to user changes from AuthServices (this ensures we get normalized data)
+    // Subscribe to user changes
     this.authServices.getUser().subscribe(user => {
       if (user) {
         this.currentUser.set(user);
-        const userId = (user as any).identify || (user as any).id || '';
+        const userId   = (user as any).identify || (user as any).id || '';
         const tenantId = this._extractTenantFromJwt() || (user as any).tenant_id || 'system';
         if (userId) {
-          this.sidebarPermSvc.loadPermissions(userId, tenantId).subscribe(() => {
-            this.computeVisibleGroups();
-          });
+          this.sidebarPermSvc.loadPermissions(userId, tenantId).subscribe(() => this.computeVisibleGroups());
         }
       }
     });
 
-    // If logged in but no user data yet, trigger a fetch
     if (this.authServices.isLoggedIn() && !this.currentUser()) {
       this.authServices.getCurrentUser().subscribe();
     }
 
-    // Initialize primary menu structure
+    // Bootstrap governance menu structure
     this.menu = [
       {
-        label: 'Governance',
-        icon: 'pi pi-shield',
-        type: 'item',
-        casbinPath: '/governance/*',
-        expanded: false,
+        label: 'Governance', icon: 'pi pi-shield', type: 'item', casbinPath: '/governance/*', expanded: false,
         children: [
           { label: 'Overview', url: '/governance/proposal', icon: 'pi pi-th-large', casbinPath: '/governance/*' },
           {
-            label: 'Identity',
-            icon: 'pi pi-id-card',
-            expanded: false,
+            label: 'Identity', icon: 'pi pi-id-card', expanded: false,
             children: [
               { label: 'Tenants',  url: '/governance/tenants',  icon: 'pi pi-sitemap',  casbinPath: '/governance/tenant*' },
               { label: 'Users',    url: '/governance/users',    icon: 'pi pi-user',     casbinPath: '/governance/user*' },
@@ -351,9 +172,7 @@ export class SidebarComponent implements OnInit, OnChanges {
             ]
           },
           {
-            label: 'Access Control',
-            icon: 'pi pi-lock',
-            expanded: false,
+            label: 'Access Control', icon: 'pi pi-lock', expanded: false,
             children: [
               { label: 'Roles',        url: '/governance/roles',        icon: 'pi pi-tag',      casbinPath: '/governance/role*' },
               { label: 'Permissions',  url: '/governance/permissions',  icon: 'pi pi-key',      casbinPath: '/governance/permission*' },
@@ -363,9 +182,7 @@ export class SidebarComponent implements OnInit, OnChanges {
             ]
           },
           {
-            label: 'RBAC & Admin',
-            icon: 'pi pi-cog',
-            expanded: false,
+            label: 'RBAC & Admin', icon: 'pi pi-cog', expanded: false,
             children: [
               { label: 'RBAC Engine', url: '/governance/casbin', icon: 'pi pi-shield', casbinPath: '/governance/casbin*' },
               { label: 'Admin Tools', url: '/governance/admin',  icon: 'pi pi-wrench', casbinPath: '/governance/admin*' },
@@ -375,7 +192,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       },
     ];
 
-    // Initialize app selection
+    // App switcher init
     this.appKey = this.appSwitcher.getCurrent();
     this.selectedApp = this.appKey;
     this.computeVisibleGroups();
@@ -383,11 +200,12 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.appSwitcher.currentApp$.subscribe(key => {
       this.appKey = key;
       this.selectedApp = key;
-      this.playWorkspaceHighlight();
+      this._workspaceHighlight = true;
+      setTimeout(() => (this._workspaceHighlight = false), 600);
       this.computeVisibleGroups();
     });
 
-    // If user navigates directly via URL, derive the appKey from the route and apply it so sidebar isn't empty
+    // Derive app from initial URL
     const initialKey = this.deriveAppFromUrl(this.router.url || '');
     if (initialKey && initialKey !== this.appKey) {
       this.appKey = initialKey;
@@ -395,8 +213,8 @@ export class SidebarComponent implements OnInit, OnChanges {
       this.computeVisibleGroups();
     }
 
-    // Update appKey on navigation so deep links and direct URLs correctly show sidebar groups
-    this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe((ev: any) => {
+    // Derive app on navigation
+    this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe((ev: any) => {
       const url = ev.urlAfterRedirects || ev.url || '';
       const derived = this.deriveAppFromUrl(url);
       if (derived && derived !== this.appKey) {
@@ -407,645 +225,248 @@ export class SidebarComponent implements OnInit, OnChanges {
     });
   }
 
-  trackByGroup(index: number, item: any) {
-    return item?.label + '::' + index;
+  ngOnChanges(changes: any) {
+    if (changes.collapsed?.currentValue === true) {
+      this.sidebarGroups.forEach(g => (g.expanded = false));
+    }
   }
 
-  trackByItem(index: number, item: any) {
-    return item?.label + '::' + index;
-  }
-
-  // Helper to extract path part from a URL that may contain query string
+  // ── Menu helpers ────────────────────────────────────────────────────────────
   getPath(url?: string): string {
     if (!url) return '';
-    const idx = url.indexOf('?');
-    return idx === -1 ? url : url.substring(0, idx);
+    const i = url.indexOf('?');
+    return i === -1 ? url : url.substring(0, i);
   }
 
-
-  // Helper: Check if group has items
-  hasItems(group: any): boolean {
-    // For pseudo-groups (_noHeader), we always consider them as having items if _flattened is present
-    if (group?._noHeader) {
-      return !!(group._flattened && group._flattened.length > 0);
-    }
-    // Check both items and _flattened to handle groups with nested children
-    if (group?._flattened && group._flattened.length > 0) return true;
-    return group?.items && group.items.length > 0;
-  }
-
-  // Helper: Toggle group expansion
-  toggleGroup(group: any): void {
-    if (this.collapsed || !this.hasItems(group)) return;
-    group.expanded = !group.expanded;
-    // ensure flattened items exist to avoid recomputing in template
-    if (!(group as any)._flattened) {
-      (group as any)._flattened = this.getFlattenedItems(group.items || []);
-    }
-  }
-
-  // Helper: Get icon for menu item based on label or URL
-  private _extractTenantFromJwt(): string | null {
-    try {
-      const token = localStorage.getItem('access_token');
-      if (!token) return null;
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.tenant_id || null;
-    } catch {
-      return null;
-    }
+  getQueryParams(url?: string): Record<string, string> {
+    if (!url?.includes('?')) return {};
+    const params: Record<string, string> = {};
+    url.split('?')[1].split('&').forEach(p => {
+      const [k, v] = p.split('=');
+      if (k) params[k] = v ?? '';
+    });
+    return params;
   }
 
   private getIconForMenuItem(item: any): string {
     if (item.icon) return item.icon;
-
     const label = (item.label || '').toLowerCase();
-    const url = (item.url || '').toLowerCase();
-
-    // Icon mapping based on label keywords
-    const iconMap: { [key: string]: string } = {
-      'dashboard': 'pi pi-home',
-      'overview': 'pi pi-chart-bar',
-      'catalog': 'pi pi-list',
-      'discovery': 'pi pi-search',
-      'assets': 'pi pi-database',
-      'lineage': 'pi pi-share-alt',
-      'policies': 'pi pi-lock',
-      'monitoring': 'pi pi-chart-line',
-      'permissions': 'pi pi-key',
-      'teams': 'pi pi-users',
-      'roles': 'pi pi-id-card',
-      'accounts': 'pi pi-building',
-      'users': 'pi pi-user',
-      'products': 'pi pi-shopping-cart',
-      'apartments': 'pi pi-home',
-      'rooms': 'pi pi-door-open',
-      'bookings': 'pi pi-calendar-check',
-      'calendar': 'pi pi-calendar',
-      'check-in': 'pi pi-sign-in',
-      'guests': 'pi pi-user',
-      'reviews': 'pi pi-star',
-      'ratings': 'pi pi-star-fill',
-      'support': 'pi pi-comments',
-      'maintenance': 'pi pi-wrench',
-      'inventory': 'pi pi-box',
-      'staff': 'pi pi-id-card',
-      'revenue': 'pi pi-dollar',
-      'occupancy': 'pi pi-chart-line',
-      'customers': 'pi pi-users',
-      'settings': 'pi pi-cog',
-      'database': 'pi pi-database',
-      'pipelines': 'pi pi-sliders-h',
-      'topics': 'pi pi-tags',
-      'models': 'pi pi-brain',
-      'container': 'pi pi-box',
-      'search': 'pi pi-search',
-      'domains': 'pi pi-book',
-      'api': 'pi pi-code',
-      'explorer': 'pi pi-compass',
-      'suppliers': 'pi pi-truck',
-      'locations': 'pi pi-map-marker',
-      'reports': 'pi pi-chart-line',
-      'movements': 'pi pi-exchange',
-      'transactions': 'pi pi-receipt',
-      'orders': 'pi pi-shopping-cart',
-      'analytics': 'pi pi-chart-bar',
-      'insights': 'pi pi-users',
-      'performance': 'pi pi-trophy',
-      'members': 'pi pi-users',
-      'rewards': 'pi pi-gift',
-      'campaigns': 'pi pi-megaphone',
-      'planning': 'pi pi-truck',
-      'stochastic': 'pi pi-chart-pie',
-      'fleet': 'pi pi-truck',
-      'notebook': 'pi pi-book'
+    const url   = (item.url   || '').toLowerCase();
+    const map: Record<string, string> = {
+      dashboard:'pi pi-home', overview:'pi pi-chart-bar', catalog:'pi pi-list',
+      discovery:'pi pi-search', assets:'pi pi-database', lineage:'pi pi-share-alt',
+      policies:'pi pi-lock', monitoring:'pi pi-chart-line', permissions:'pi pi-key',
+      teams:'pi pi-users', roles:'pi pi-id-card', accounts:'pi pi-building',
+      users:'pi pi-user', products:'pi pi-shopping-cart', apartments:'pi pi-home',
+      rooms:'pi pi-door-open', bookings:'pi pi-calendar-check', calendar:'pi pi-calendar',
+      guests:'pi pi-user', reviews:'pi pi-star', support:'pi pi-comments',
+      maintenance:'pi pi-wrench', inventory:'pi pi-box', staff:'pi pi-id-card',
+      customers:'pi pi-users', settings:'pi pi-cog', database:'pi pi-database',
+      pipelines:'pi pi-sliders-h', topics:'pi pi-tags', container:'pi pi-box',
+      search:'pi pi-search', api:'pi pi-code', explorer:'pi pi-compass',
+      suppliers:'pi pi-truck', transactions:'pi pi-receipt', orders:'pi pi-shopping-cart',
+      analytics:'pi pi-chart-bar', members:'pi pi-users', rewards:'pi pi-gift',
+      campaigns:'pi pi-megaphone', planning:'pi pi-truck', fleet:'pi pi-truck',
     };
-
-    // Check label first
-    for (const [key, icon] of Object.entries(iconMap)) {
-      if (label.includes(key)) {
-        return icon;
-      }
+    for (const [k, v] of Object.entries(map)) {
+      if (label.includes(k) || url.includes(k)) return v;
     }
-
-    // Check URL as fallback
-    for (const [key, icon] of Object.entries(iconMap)) {
-      if (url.includes(key)) {
-        return icon;
-      }
-    }
-
-    // Default fallback
     return 'pi pi-circle-fill';
   }
 
-  // Helper: Flatten nested menu items to single level
   getFlattenedItems(items: any[]): any[] {
-    if (!items || items.length === 0) return [];
-
-    const flattened: any[] = [];
-
-    items.forEach(item => {
-      // If item has children/items, add them directly (flatten one level)
+    if (!items?.length) return [];
+    const result: any[] = [];
+    for (const item of items) {
       const children = item.children || item.items;
-      if (children && children.length > 0) {
-        children.forEach((child: any) => {
-          flattened.push({
-            ...child,
-            label: child.label,
-            icon: this.getIconForMenuItem(child),
-            url: child.url
-          });
-        });
+      if (children?.length) {
+        for (const child of children) {
+          result.push({ ...child, icon: this.getIconForMenuItem(child) });
+        }
       } else if (item.url) {
-        // Direct item with URL
-        flattened.push({
-          ...item,
-          icon: this.getIconForMenuItem(item)
-        });
+        result.push({ ...item, icon: this.getIconForMenuItem(item) });
       }
-    });
-
-    return flattened;
+    }
+    return result;
   }
 
+  // Config-driven group builder — filters by hidden flag and casbinPath before rendering
+  private buildGroupsFromChildren(children: any[]): VisibleGroup[] {
+    const groups: VisibleGroup[] = [];
+    for (const item of children) {
+      if (item.hidden) continue;
+      // Skip if casbinPath is explicitly denied
+      if (item.casbinPath && !this.sidebarPermSvc.isAllowed(item.casbinPath)) continue;
+
+      if (item.url && !item.children?.length && !item.items?.length) {
+        groups.push({ expanded: true, _noHeader: true, _isStandalone: true, items: [item], _flattened: [{ ...item, icon: this.getIconForMenuItem(item) }] });
+      } else if (item.children?.length || item.items?.length) {
+        const src = item.children || item.items || [];
+        groups.push({ label: item.label, icon: item.icon, casbinPath: item.casbinPath, expanded: true, items: src, _flattened: this.getFlattenedItems(src) });
+      }
+    }
+    return groups;
+  }
+
+  // ── Compute Visible Groups ─────────────────────────────────────────────────
   computeVisibleGroups() {
-    // Deduplicate groups by label
     const uniqueGroups = new Map<string, any>();
     [...(this.menu || []), ...(fullMenu || []), ...(configGroups || [])].forEach(g => {
-      if (g && g.label && !uniqueGroups.has(g.label)) {
-        uniqueGroups.set(g.label, g);
-      }
+      if (g?.label && !g.hidden && !uniqueGroups.has(g.label)) uniqueGroups.set(g.label, g);
     });
-
     this.sidebarGroups = Array.from(uniqueGroups.values()).map(g => ({
-       label: g.label,
-       icon: g.icon,
-       casbinPath: (g as any).casbinPath,
-       items: (g as any).children || (g as any).items || []
+      label: g.label, icon: g.icon, casbinPath: (g as any).casbinPath,
+      items: (g as any).children || (g as any).items || []
     }));
-
-    if (!this.sidebarGroups || !this.appKey || this.appKey === 'all') {
-      const allGroups = (this.sidebarGroups || []).filter(g => {
-        if (!g || !g.label) return false;
-        const label = g.label.toLowerCase();
-        if (this.HIDDEN_GROUP_LABELS.some(hidden => label.includes(hidden))) return false;
-        if ((g as any).casbinPath && !this.sidebarPermSvc.isAllowed((g as any).casbinPath)) return false;
-        return true;
-      });
-      this.visibleGroups = this.orderGroupsForApp(allGroups, 'all');
-      // Close all groups by default to keep sidebar compact
-      this.visibleGroups.forEach(g => {
-        g.expanded = false;
-        // precompute flattened items to avoid heavy template calls
-        // This ensures groups with nested children are properly flattened
-        (g as any)._flattened = this.getFlattenedItems(g.items || []);
-      });
-      return;
-    }
 
     const key = this.appKey;
 
-    // Special-case: for Retail app, show business sections in a fixed order.
-    if (key === 'retail' || key === 'retail-sales') {
-      const retailGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('sales & commerce'));
-      if (retailGroup) {
-        const sourceItems = (retailGroup as any).children || (retailGroup as any).items || [];
-        const flattened = this.getFlattenedItems(sourceItems);
-        const pseudo = { label: '', icon: '', expanded: true, _noHeader: true, items: sourceItems, _flattened: flattened } as any;
-
-        this.visibleGroups = [pseudo];
-      } else {
-        this.visibleGroups = [];
-      }
+    // ── All apps view ────────────────────────────────────────────────────────
+    if (!key || key === 'all') {
+      const allGroups = this.sidebarGroups.filter(g => {
+        if (!g?.label) return false;
+        const lbl = g.label.toLowerCase();
+        if (this.HIDDEN_GROUP_LABELS.some(h => lbl.includes(h))) return false;
+        if (g.casbinPath && !this.sidebarPermSvc.isAllowed(g.casbinPath)) return false;
+        return true;
+      });
+      this.visibleGroups = this.orderGroupsForApp(allGroups, 'all');
+      this.visibleGroups.forEach(g => { g.expanded = false; (g as any)._flattened = this.getFlattenedItems((g as any).items || []); });
       return;
     }
 
-    if (key === 'planning') {
-      const planningGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('retail planning'));
-      if (planningGroup) {
-        const sourceItems = (planningGroup as any).children || (planningGroup as any).items || [];
-        const flattened = this.getFlattenedItems(sourceItems);
-        const groups = [{
-          label: '',
-          icon: '',
-          items: sourceItems,
-          expanded: false,
-          _noHeader: true,
-          _flattened: flattened
-        } as any];
-        this.visibleGroups = groups;
-        return;
-      }
-    }
-
-    if (key === 'inventory' || key === 'fleet' || key === 'warehouse' || key === 'forecast') {
-      const invGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('inventory'));
-      if (invGroup) {
-        const subGroupLabels = ['dashboard', 'resources', 'inventory', 'forecasting', 'fleet & routes'];
-        const currentUrl = this.router.url;
-        const groups: any[] = subGroupLabels.map(subLabel => {
-          const sub = ((invGroup as any).children || []).find((it: any) =>
-            (it.label || '').toLowerCase().includes(subLabel)
-          );
-          if (!sub) return null;
-          const sourceItems = (sub as any).children || (sub as any).items || [];
-          const flattened = this.getFlattenedItems(sourceItems);
-          const matchesCurrent = flattened.some((item: any) =>
-            this.getPath(item.url) === this.getPath(currentUrl)
-          );
-          return {
-            label: sub.label,
-            icon: sub.icon,
-            expanded: true,
-            items: sourceItems,
-            _flattened: flattened
-          };
-        }).filter(Boolean);
-        this.visibleGroups = groups;
-      } else {
-        this.visibleGroups = [];
-      }
+    // ── Retail ───────────────────────────────────────────────────────────────
+    if (key === 'retail' || key === 'retail-sales' || key === 'retail-products' || key === 'retail-pos') {
+      if (!this.sidebarPermSvc.isAllowed('/retail/*')) { this.visibleGroups = []; return; }
+      const g = fullMenu.find(x => x.label?.toLowerCase().includes('sales & commerce'));
+      if (g) {
+        const src = (g as any).children || (g as any).items || [];
+        this.visibleGroups = [{ expanded: true, _noHeader: true, items: src, _flattened: this.getFlattenedItems(src) }];
+      } else this.visibleGroups = [];
       return;
     }
 
+    // ── Inventory / Fleet / Forecast ─────────────────────────────────────────
+    if (['inventory','fleet','warehouse','forecast'].includes(key)) {
+      const g = fullMenu.find(x => x.label?.toLowerCase().includes('inventory'));
+      this.visibleGroups = g ? this.buildGroupsFromChildren((g as any).children || []) : [];
+      return;
+    }
+
+    // ── Planning ─────────────────────────────────────────────────────────────
+    if (key === 'planning' || key === 'auto-planning') {
+      const g = fullMenu.find(x => x.label?.toLowerCase().includes('retail planning'));
+      if (g) {
+        const src = (g as any).children || (g as any).items || [];
+        this.visibleGroups = [{ expanded: false, _noHeader: true, items: src, _flattened: this.getFlattenedItems(src) }];
+      } else this.visibleGroups = [];
+      return;
+    }
+
+    // ── Loyalty / CRM ─────────────────────────────────────────────────────────
     if (key === 'loyalty' || key === 'retail-customers') {
-      const group = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('crm & customers'));
-      if (group) {
-        this.visibleGroups = [group];
-        this.visibleGroups.forEach(g => {
-          g.expanded = true;
-          (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
-        });
-      } else {
-        this.visibleGroups = [];
-      }
+      if (!this.sidebarPermSvc.isAllowed('/loyalty/*')) { this.visibleGroups = []; return; }
+      const g = fullMenu.find(x => x.label?.toLowerCase().includes('customer'));
+      if (g) {
+        this.visibleGroups = this.buildGroupsFromChildren((g as any).children || []);
+      } else this.visibleGroups = [];
       return;
     }
 
-    if (key === 'orders') {
-      const retailGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('retail'));
-      const group = ((retailGroup as any)?.children || (retailGroup as any)?.items || []).find((it: any) => (it.label || '').toLowerCase().includes('order management'));
-      if (group) {
-        const sourceItems = (group as any).children || (group as any).items || [];
-        const flattened = this.getFlattenedItems(sourceItems);
-        this.visibleGroups = [{
-          label: '',
-          icon: '',
-          items: sourceItems,
-          expanded: true,
-          _noHeader: true,
-          _flattened: flattened
-        }];
-      } else {
-        this.visibleGroups = [];
-      }
+    // ── Retail sub-handlers ───────────────────────────────────────────────────
+    if (key === 'retail-omni') {
+      this._retailSubGroup('omni-channel');
       return;
     }
+    if (key === 'orders') { this._retailSubGroup('order management'); return; }
+    if (key === 'transactions') { this._retailSubGroup('transactions'); return; }
 
-    if (key === 'transactions') {
-      const retailGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('retail'));
-      const group = ((retailGroup as any)?.children || (retailGroup as any)?.items || []).find((it: any) => (it.label || '').toLowerCase().includes('transactions'));
-      if (group) {
-        const sourceItems = (group as any).children || (group as any).items || [];
-        const flattened = this.getFlattenedItems(sourceItems);
-        this.visibleGroups = [{
-          label: '',
-          icon: '',
-          items: sourceItems,
-          expanded: true,
-          _noHeader: true,
-          _flattened: flattened
-        }];
-      } else {
-        this.visibleGroups = [];
-      }
-      return;
-    }
-
-    // Retail sub-app handlers: extract specific sub-group from 'Retail Operations'
-    const retailSubGroupHandler = (subGroupLabel: string) => {
-      const retailGroup = fullMenu.find(g => {
-        const l = (g.label || '').toLowerCase();
-        return l.includes('retail operations') || l.includes('sales & commerce') || l.includes('sales');
-      });
-      const group = ((retailGroup as any)?.children || []).find((it: any) =>
-        (it.label || '').toLowerCase().includes(subGroupLabel.toLowerCase())
-      );
-      if (group) {
-        // Promote children into a pseudo-group without header to match Governance
-        const sourceItems = (group as any).children || (group as any).items || [];
-        const flattened = this.getFlattenedItems(sourceItems);
-        const pseudo = { 
-          label: '', 
-          icon: '', 
-          expanded: false, 
-          _noHeader: true, 
-          items: sourceItems,
-          _flattened: flattened 
-        } as any;
-        
-        this.visibleGroups = [pseudo];
-      } else {
-        this.visibleGroups = [];
-      }
-    };
-
-    if (key === 'retail-products' || key === 'retail-pos') {
-      const salesGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('sales & commerce'));
-      if (salesGroup) {
-        const sourceItems = (salesGroup as any).children || (salesGroup as any).items || [];
-        const flattened = this.getFlattenedItems(sourceItems);
-        const pseudo = { label: '', icon: '', expanded: true, _noHeader: true, items: sourceItems, _flattened: flattened } as any;
-
-        this.visibleGroups = [pseudo];
-      } else {
-        this.visibleGroups = [];
-      }
-      return;
-    }
-    if (key === 'retail-omni') { retailSubGroupHandler('omni-channel'); return; }
-
+    // ── Hotel ─────────────────────────────────────────────────────────────────
     if (key === 'hotel') {
-      const hotelGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('hotel'));
-      if (hotelGroup) {
-        const groups = ((hotelGroup as any).children || (hotelGroup as any).items || []).map((section: any) => ({
-          label: section.label,
-          icon: section.icon,
-          items: (section as any).children || (section as any).items || [],
-          expanded: true,
-          _flattened: this.getFlattenedItems((section as any).children || (section as any).items || [])
+      const g = fullMenu.find(x => x.label?.toLowerCase().includes('hotel'));
+      if (g) {
+        this.visibleGroups = ((g as any).children || []).map((s: any) => ({
+          label: s.label, icon: s.icon, expanded: true,
+          items: s.children || s.items || [],
+          _flattened: this.getFlattenedItems(s.children || s.items || [])
         }));
-        this.visibleGroups = groups;
-      } else {
-        this.visibleGroups = [];
-      }
+      } else this.visibleGroups = [];
       return;
     }
 
-    // Special-case: for Notification app - promote submodules to top-level groups
-    if (key === 'notification') {
-      const notificationGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('notification'));
-      const groups: any[] = [];
-
-      if (notificationGroup) {
-        // 1. Overview (standalone)
-        const overviewItem = (notificationGroup as any).items?.find((it: any) => it.url === '/notification' && !it.children);
-        if (overviewItem) {
-          groups.push({
-            label: '',
-            icon: '',
-            expanded: true,
-            _noHeader: true,
-            _isStandalone: true,
-            items: [overviewItem],
-            _flattened: [overviewItem]
-          });
-        }
-
-        // 2. Templates subgroup
-        const templates = ((notificationGroup as any).items || []).find((it: any) => (it.label || '').toLowerCase().includes('template'));
-        if (templates) {
-          groups.push({
-            label: templates.label,
-            icon: templates.icon || 'pi pi-copy',
-            expanded: true,
-            items: ((templates as any).children ?? (templates as any).items ?? [])
-          });
-        }
-
-        // 3. Monitoring subgroup
-        const monitoring = ((notificationGroup as any).items || []).find((it: any) => (it.label || '').toLowerCase().includes('monitoring'));
-        if (monitoring) {
-          groups.push({
-            label: monitoring.label,
-            icon: monitoring.icon || 'pi pi-chart-line',
-            expanded: false,
-            items: ((monitoring as any).children ?? (monitoring as any).items ?? [])
-          });
-        }
-
-        // 4. Development subgroup
-        const development = ((notificationGroup as any).items || []).find((it: any) => (it.label || '').toLowerCase().includes('development'));
-        if (development) {
-          groups.push({
-            label: development.label,
-            icon: development.icon || 'pi pi-code',
-            expanded: false,
-            items: ((development as any).children ?? (development as any).items ?? [])
-          });
-        }
-      }
-
-      this.visibleGroups = groups;
-      const currentUrl = this.router.url;
-      this.visibleGroups.forEach(g => {
-        if (!(g as any)._flattened) {
-          (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
-        }
-        // Auto-expand if current route is within this group
-        if ((g as any)._flattened && (g as any)._flattened.some((item: any) => this.getPath(item.url) === this.getPath(currentUrl))) {
-          g.expanded = true;
-        }
-      });
-      return;
-    }
-
-    // Special-case: for Blogger app - render its child menu items directly (no parent header)
-    if (key === 'blogger') {
-      const bloggerGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('blogger'));
-      if (bloggerGroup) {
-        const sourceItems = (bloggerGroup as any).children || (bloggerGroup as any).items || [];
-        const flattened = this.getFlattenedItems(sourceItems);
-        const pseudo = { label: '', icon: '', expanded: true, _noHeader: true, items: sourceItems, _flattened: flattened } as any;
-
-        this.visibleGroups = [pseudo];
-      } else {
-        this.visibleGroups = [];
-      }
-      return;
-    }
-    // Special-case: for Explore app - render its child menu items directly (no parent header)
-    if (key === 'explore') {
-      const exploreGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase() === 'explore');
-      if (exploreGroup) {
-        const items: any[] = this.getFlattenedItems((exploreGroup as any).items || []);
-        const pseudo = { label: '', icon: '', expanded: false, _noHeader: true, items } as any;
-        pseudo._flattened = items;
-
-        this.visibleGroups = [pseudo];
-        this.visibleGroups.forEach(g => (g as any)._flattened = (g as any)._flattened || this.getFlattenedItems((g as any).items || []));
-      } else {
-        this.visibleGroups = [];
-      }
-      return;
-    }
-    // Special-case: for Support app (Messaging Platform unified)
-    if (key === 'chat' || key === 'support') {
-      const messagingGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('messaging platform'));
-      if (messagingGroup) {
-        const sourceItems = (messagingGroup as any).children || (messagingGroup as any).items || [];
-        const groups: any[] = [];
-
-        sourceItems.forEach((item: any) => {
-          if (item.url && !item.children) {
-            // Standalone top-level items (like Overview)
-            groups.push({
-              label: '',
-              icon: '',
-              expanded: true,
-              _noHeader: true,
-              _isStandalone: true, // Marker for styling if needed
-              items: [item],
-              _flattened: [item]
-            });
-          } else if (item.children || item.items) {
-            // Functionally grouped items (1. Messaging, 2. Templates, etc.)
-            groups.push({
-              label: item.label,
-              icon: item.icon,
-              expanded: true,
-              _noHeader: false,
-              items: item.children || item.items || [],
-              _flattened: this.getFlattenedItems(item.children || item.items || [])
-            });
-          }
-        });
-
-        this.visibleGroups = groups;
-      } else {
-        this.visibleGroups = [];
-      }
-
-      const currentUrl = this.router.url;
-      this.visibleGroups.forEach(g => {
-        if (g._flattened?.some((item: any) => this.getPath(item.url) === this.getPath(currentUrl))) {
-          g.expanded = true;
-        }
-      });
-      return;
-    }
-    // Special-case: for Ad Manager app - render its child menu items directly (no parent header)
-    if (key === 'admanager') {
-      const adGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('ad manager'));
-      if (adGroup) {
-        const sourceItems = (adGroup as any).children || (adGroup as any).items || [];
-        const flattened = this.getFlattenedItems(sourceItems);
-        const pseudo = { label: '', icon: '', expanded: true, _noHeader: true, items: sourceItems, _flattened: flattened } as any;
-
-        this.visibleGroups = [pseudo];
-      } else {
-        this.visibleGroups = [];
-      }
-      return;
-    }
-    if (key === 'travel') {
-      const travelGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase() === 'travel explorer');
-      if (travelGroup) {
-        const items: any[] = this.getFlattenedItems((travelGroup as any).items || []);
-        const pseudo = { label: '', icon: '', expanded: true, _noHeader: true, items } as any;
-        pseudo._flattened = items;
-        this.visibleGroups = [pseudo];
-      } else {
-        this.visibleGroups = [];
-      }
-      return;
-    }
-
-    // Special-case: for Governance app - render sub-groups with section headers
+    // ── Governance ────────────────────────────────────────────────────────────
     if (key === 'governance') {
-      // If user has no governance access at all, show nothing
-      if (!this.sidebarPermSvc.isAllowed('/governance/*')) {
-        this.visibleGroups = [];
-        return;
+      if (!this.sidebarPermSvc.isAllowed('/governance/*')) { this.visibleGroups = []; return; }
+      const g = this.sidebarGroups.find(x => x.label?.toLowerCase().includes('governance'));
+      if (!g) { this.visibleGroups = []; return; }
+      const groups: VisibleGroup[] = [];
+      for (const item of (g.items || [])) {
+        if (item.casbinPath && !this.sidebarPermSvc.isAllowed(item.casbinPath)) continue;
+        if (item.url && !item.children && !item.items) {
+          groups.push({ expanded: true, _noHeader: true, _isStandalone: true, items: [item], _flattened: [{ ...item, icon: this.getIconForMenuItem(item) }] });
+        } else if (item.children || item.items) {
+          const allowed = (item.children || item.items || []).filter((c: any) => !c.casbinPath || this.sidebarPermSvc.isAllowed(c.casbinPath));
+          if (allowed.length) groups.push({ label: item.label, icon: item.icon, expanded: true, items: allowed, _flattened: this.getFlattenedItems(allowed) });
+        }
       }
-      const governanceGroup = this.sidebarGroups.find(g => (g.label || '').toLowerCase().includes('governance'));
-      if (governanceGroup) {
-        const sourceItems = (governanceGroup as any).items || [];
-        const groups: any[] = [];
-
-        sourceItems.forEach((item: any) => {
-          // Skip item/group if its casbinPath is explicitly denied
-          if (item.casbinPath && !this.sidebarPermSvc.isAllowed(item.casbinPath)) {
-            return;
-          }
-
-          if (item.url && !item.children && !item.items) {
-            // Standalone top-level items (like Overview)
-            groups.push({
-              label: '',
-              icon: '',
-              expanded: true,
-              _noHeader: true,
-              _isStandalone: true,
-              items: [item],
-              _flattened: [item]
-            });
-          } else if (item.children || item.items) {
-            // Subgroups (Identity, Access Control, etc.) — filter children by casbinPath
-            const allChildren: any[] = item.children || item.items || [];
-            const allowedChildren = allChildren.filter((child: any) =>
-              !child.casbinPath || this.sidebarPermSvc.isAllowed(child.casbinPath)
-            );
-            if (allowedChildren.length > 0) {
-              groups.push({
-                label: item.label,
-                icon: item.icon,
-                expanded: true,
-                items: allowedChildren,
-                _flattened: this.getFlattenedItems(allowedChildren)
-              });
-            }
-          }
-        });
-
-        this.visibleGroups = groups;
-        return;
-      }
-    }
-    // Special-case: for Files app - render its child menu items directly (no parent header)
-    if (key === 'files') {
-      const filesGroup = fullMenu.find(g => (g.label || '').toLowerCase().includes('file'));
-      if (filesGroup) {
-        const sourceItems = (filesGroup as any).children || (filesGroup as any).items || [];
-        const flattened = this.getFlattenedItems(sourceItems);
-        const pseudo = { label: '', icon: '', expanded: true, _noHeader: true, items: sourceItems, _flattened: flattened } as any;
-
-        this.visibleGroups = [pseudo];
-      } else {
-        this.visibleGroups = [];
-      }
+      this.visibleGroups = groups;
       return;
     }
 
-    const filtered = this.sidebarGroups.filter(g => true);
+    // ── Support / Chat / CMC ──────────────────────────────────────────────────
+    if (key === 'chat' || key === 'support') {
+      if (!this.sidebarPermSvc.isAllowed('/cmc/*')) { this.visibleGroups = []; return; }
+      const g = fullMenu.find(x => x.label?.toLowerCase().includes('support'));
+      if (g) {
+        this.visibleGroups = this.buildGroupsFromChildren((g as any).children || []);
+      } else this.visibleGroups = [];
+      return;
+    }
 
+    // ── Single-section apps ───────────────────────────────────────────────────
+    const singleSectionApps: Partial<Record<AppKey, string>> = {
+      blogger: 'blogger', explore: 'explore', admanager: 'ad manager',
+      files: 'file', travel: 'travel', notification: 'notification',
+    };
+    const singleLabel = singleSectionApps[key];
+    if (singleLabel) {
+      const g = [...this.sidebarGroups, ...fullMenu].find(x => x.label?.toLowerCase().includes(singleLabel));
+      if (g) {
+        const src = (g as any).children || (g as any).items || [];
+        this.visibleGroups = [{ expanded: true, _noHeader: true, items: src, _flattened: this.getFlattenedItems(src) }];
+      } else this.visibleGroups = [];
+      return;
+    }
+
+    // Fallback
+    const filtered = this.sidebarGroups.filter(() => true);
     this.visibleGroups = this.orderGroupsForApp(filtered, key);
-    // Close all groups by default
-    this.visibleGroups.forEach(g => {
-      g.expanded = false;
-      (g as any)._flattened = this.getFlattenedItems((g as any).items || []);
-    });
+    this.visibleGroups.forEach(g => { g.expanded = false; (g as any)._flattened = this.getFlattenedItems((g as any).items || []); });
   }
 
-  // Derive an AppKey from a router URL (handles deep links like /governance/policies/123)
+  private _retailSubGroup(subLabel: string) {
+    const retailGroup = fullMenu.find(g => {
+      const l = (g.label || '').toLowerCase();
+      return l.includes('retail operations') || l.includes('sales & commerce') || l.includes('sales');
+    });
+    const sub = ((retailGroup as any)?.children || []).find((it: any) => it.label?.toLowerCase().includes(subLabel));
+    if (sub) {
+      const src = sub.children || sub.items || [];
+      this.visibleGroups = [{ expanded: false, _noHeader: true, items: src, _flattened: this.getFlattenedItems(src) }];
+    } else {
+      this.visibleGroups = [];
+    }
+  }
+
+  // ── URL → AppKey ────────────────────────────────────────────────────────────
   deriveAppFromUrl(url: string): AppKey | null {
     if (!url) return null;
     const p = url.split('?')[0].toLowerCase();
-    // Treat root path as the 'all' application so the unified sidebar is shown
     if (p === '/' || p === '' || p === '/applications') return 'all';
     if (p.startsWith('/governance')) return 'governance';
-    if (p.startsWith('/retail/loyalty') || p.startsWith('/retail/rewards') || p.startsWith('/retail/campaigns')) return 'loyalty';
-    if (p.startsWith('/retail/customers')) return 'loyalty';
+    if (p.startsWith('/retail/loyalty') || p.startsWith('/retail/rewards') || p.startsWith('/retail/campaigns') || p.startsWith('/retail/customers')) return 'loyalty';
     if (p.startsWith('/retail/omni-channel')) return 'support';
-    if (p.startsWith('/retail/orders')) return 'retail-sales';
-    if (p.startsWith('/retail/transactions')) return 'retail-sales';
-    if (p.startsWith('/retail/payment')) return 'retail-sales';
-    if (p.startsWith('/retail/products')) return 'retail-sales';
-    if (p.startsWith('/retail/ecommerce')) return 'retail-sales';
-    if (p.startsWith('/retail/pos')) return 'retail-sales';
-    if (p.startsWith('/retail/fresh-retail')) return 'retail-sales';
-    if (p.startsWith('/retail/settings')) return 'retail-sales';
+    if (p.startsWith('/retail/orders') || p.startsWith('/retail/transactions') || p.startsWith('/retail/payment') || p.startsWith('/retail/products') || p.startsWith('/retail/ecommerce') || p.startsWith('/retail/pos') || p.startsWith('/retail/fresh-retail') || p.startsWith('/retail/settings')) return 'retail-sales';
     if (p.startsWith('/retail')) return 'retail';
     if (p.startsWith('/inventory')) return 'inventory';
     if (p.startsWith('/loyalty')) return 'loyalty';
@@ -1056,63 +477,20 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (p.startsWith('/files')) return 'files';
     if (p.startsWith('/travel')) return 'travel';
     if (p.startsWith('/settings')) return 'settings';
-    if (p.startsWith('/planning/forecast')) return 'inventory';
-    if (p.startsWith('/planning/delivery-points')) return 'inventory';
-    if (p.startsWith('/planning/fleet')) return 'inventory';
     if (p.startsWith('/planning')) return 'inventory';
     if (p.startsWith('/cmc')) return 'support';
-    // Marketplace removed - routes to root now
-    // default: nothing to force
     return null;
   }
 
   orderGroupsForApp(groups: any[], key: AppKey) {
-    // Simple prioritization map: which group labels should appear first per app
-    const priorityMap: Record<AppKey, string[]> = {
-      retail: ['Sales & Commerce'],
-      inventory: ['Inventory Management'],
-      loyalty: ['CRM & Customers'],
-      catalog: [],
-      explore: ['explore', 'data mesh'],
-      chat: [],
-      support: ['chat', 'notification', 'omni'],
-      warehouse: ['inventory management'],
-      planning: ['planning'],
-      blogger: ['blog', 'blogger', 'posts'],
-      hotel: ['hotel', 'rooms', 'bookings', 'management'],
-      admanager: ['ad', 'ads', 'advert', 'campaign', 'admanager'],
-      files: ['file', 'storage'],
-      governance: ['governance'],
-      travel: ['travel'],
-      settings: [],
-      notification: ['notification'],
-      all: [],
-      'auto-planning': ['planning'],
-      'delivery-points': ['planning'],
-      fleet: ['inventory management'],
-      demand: ['inventory management'],
-      truck: ['inventory management'],
-      trip: ['inventory management'],
-      hub: ['inventory management'],
-      forecast: ['inventory management'],
-      orders: ['order management'],
-      transactions: ['transactions'],
-      'retail-sales': ['sales & commerce', 'sales & orders'],
-      'retail-products': ['sales & commerce'],
-      'retail-customers': ['crm & customers'],
-      'retail-omni': ['omni-channel'],
-      'retail-pos': ['sales & commerce'],
+    const priorityMap: Partial<Record<AppKey, string[]>> = {
+      retail: ['Sales & Commerce'], inventory: ['Inventory Management'], loyalty: ['CRM & Customers'],
+      governance: ['governance'], explore: ['explore', 'data mesh'],
     };
-
     const priorities = priorityMap[key] || [];
-
     return groups.slice().sort((a, b) => {
-      const al = (a.label || '').toLowerCase();
-      const bl = (b.label || '').toLowerCase();
-
-      const ai = priorities.findIndex(p => al.includes(p));
-      const bi = priorities.findIndex(p => bl.includes(p));
-
+      const ai = priorities.findIndex(p => (a.label || '').toLowerCase().includes(p));
+      const bi = priorities.findIndex(p => (b.label || '').toLowerCase().includes(p));
       if (ai === -1 && bi === -1) return 0;
       if (ai === -1) return 1;
       if (bi === -1) return -1;
@@ -1120,479 +498,86 @@ export class SidebarComponent implements OnInit, OnChanges {
     });
   }
 
-
-
-  ngOnChanges(changes: any) {
-    // When sidebar is collapsed, automatically collapse all menu groups
-    if (changes.collapsed && changes.collapsed.currentValue === true) {
-      this.sidebarGroups.forEach(group => {
-        group.expanded = false;
-      });
-    }
-  }
-
-  toggleItem(item: MenuItem, event?: Event): void {
-    // Toggle expanded state only for items with children
-    if (item.children) {
-      item.expanded = !item.expanded;
-    }
-    // Prevent event bubbling if event is provided
-    event?.stopPropagation();
-  }
-
-  handleMenuClick(event: Event, item: MenuItem): void {
-    // Prevent event bubbling to avoid conflicts
-    event.preventDefault();
-    event.stopPropagation();
-
-    if (item.children && !this.collapsed) {
-      // Toggle submenu for items with children when not collapsed
-      this.toggleItem(item, event);
-    } else if (item.url) {
-      // Navigate for direct menu items
-      this.navigateTo(item.url);
-    }
-  }
-
-  navigateTo(url?: string): void {
-    if (url) {
-      // Split URL and query params
-      const [basePath, queryString] = url.split('?');
-      const queryParams = this.getQueryParams(url);
-
-      this.router.navigate([basePath], { queryParams });
-
-      // Close sidebar on mobile after navigation
-      if (window.innerWidth < 1024) {
-        this.toggle.emit();
-      }
-    }
-  }
-
-  getQueryParams(url: string): any {
-    if (!url || !url.includes('?')) {
-      return {};
-    }
-
-    const queryString = url.split('?')[1];
-    const params: any = {};
-
-    queryString.split('&').forEach(param => {
-      const [key, value] = param.split('=');
-      params[key] = value;
-    });
-
-    return params;
-  }
-
-  showInfo(event: Event, item: MenuItem): void {
-    event.preventDefault();
-    event.stopPropagation();
-
-    if (item.info) {
-      this.selectedInfo = item.info;
-      this.infoDialogVisible = true;
-    }
-  }
-
-  hideInfo(): void {
-    this.infoDialogVisible = false;
-    this.selectedInfo = null;
-  }
-
-  openAppMatrix(): void {
-    this.router.navigate(['/applications']);
-  }
-
-  closeAppMatrix(): void {
-    this.showAppMatrix = false;
-  }
-
-  // Surface Profile action from current user component
-  openProfile(): void {
-    // Try to resolve user identity from /me and navigate to a user-specific profile route
+  // ── JWT helper ──────────────────────────────────────────────────────────────
+  private _extractTenantFromJwt(): string | null {
     try {
-      this.authServices.getCurrentUser().subscribe((resp: any) => {
-        const user = resp?.data || resp;
-        if (user) {
-          const slug = (user.identify || user.username || user.email || user.full_name || user.fullName || '') as string;
-          // Prefer a short username-like value
-          const short = slug && typeof slug === 'string'
-            ? encodeURIComponent((slug.split('@')[0] || slug).toString().trim().replace(/\s+/g, '-').toLowerCase())
-            : '';
-          if (short) {
-            try { this.router.navigate([`/profile/${short}`]); return; } catch (e) { /* ignore */ }
-          }
-        }
-        // fallback to generic profile route
-        try { this.router.navigate(['/profile']); } catch (e) { /* safe fallback */ }
-      });
-    } catch (e) {
-      try { this.router.navigate(['/profile']); } catch (err) { /* safe fallback */ }
-    }
+      const token = localStorage.getItem('access_token');
+      if (!token) return null;
+      return JSON.parse(atob(token.split('.')[1])).tenant_id || null;
+    } catch { return null; }
   }
 
-  // Surface Logout action from current user component
-  doLogout(): void {
-    this.sidebarPermSvc.clear();
-    try { this.router.navigate(['/logout']); } catch (e) { /* safe fallback */ }
+  // ── App switcher ────────────────────────────────────────────────────────────
+  openAppMatrix() { this.showAppMatrix = true; }
+  closeAppMatrix() { this.showAppMatrix = false; }
+
+  selectAppKey(key: AppKey): void {
+    this.appSwitcher.selectApp(key);
+    this.selectedApp = key;
+    const routes: Partial<Record<AppKey, string>> = {
+      all: '/', explore: '/explore', retail: '/retail/fresh-retail', inventory: '/inventory/overview',
+      loyalty: '/loyalty/overview', governance: '/governance/policies', planning: '/inventory/overview',
+      blogger: '/blogger', hotel: '/hotel', admanager: '/ad-manager', support: '/cmc/workspace',
+      chat: '/chat', files: '/files', travel: '/travel', settings: '/settings',
+      notification: '/notification', 'auto-planning': '/planning/auto-planning',
+      warehouse: '/planning/delivery-points', 'delivery-points': '/planning/delivery-points',
+      fleet: '/planning/fleet', orders: '/retail/orders', transactions: '/retail/transactions',
+      'retail-sales': '/retail/orders', 'retail-products': '/retail/products',
+      'retail-customers': '/retail/customers', 'retail-omni': '/retail/omni-channel',
+      'retail-pos': '/retail/pos',
+    };
+    try { this.router.navigate([routes[key] || '/']); } catch {}
+    this.closeAppMatrix();
   }
 
-  // User switcher
+  // ── User switcher ───────────────────────────────────────────────────────────
   isActiveUser(user: any): boolean {
-    const current = this.currentUser();
-    if (!current || !user) return false;
-    return current.id === user.id || current.identify === user.id || (current as any).user_id === user.id;
+    const cur = this.currentUser();
+    return !!(cur && user && (cur.id === user.id || cur.identify === user.id || (cur as any).user_id === user.id));
   }
 
   loadAccountUsers(): void {
     this.userSwitcherLoading.set(true);
     this.authServices.getAccountUsers().subscribe({
       next: (resp: any) => {
-        const users = resp?.data || resp?.data?.data || [];
-        this.accountUsers.set(Array.isArray(users) ? users : []);
+        this.accountUsers.set(Array.isArray(resp?.data) ? resp.data : (Array.isArray(resp?.data?.data) ? resp.data.data : []));
         this.userSwitcherLoading.set(false);
       },
-      error: () => {
-        this.accountUsers.set([]);
-        this.userSwitcherLoading.set(false);
-      }
+      error: () => { this.accountUsers.set([]); this.userSwitcherLoading.set(false); }
     });
   }
 
   doSwitchUser(userId: string): void {
     this.userSwitcherLoading.set(true);
     this.authServices.switchUser(userId).subscribe({
-      next: (resp: any) => {
-        this.userSwitcherLoading.set(false);
-        // Refresh current user data
-        this.authServices.getCurrentUser().subscribe();
-        // Reload account users
-        this.loadAccountUsers();
-      },
-      error: () => {
-        this.userSwitcherLoading.set(false);
-      }
+      next: () => { this.userSwitcherLoading.set(false); this.authServices.getCurrentUser().subscribe(); this.loadAccountUsers(); },
+      error: () => this.userSwitcherLoading.set(false)
     });
   }
 
-  navigateToLogin(): void {
-    try { this.router.navigate(['/login']); } catch (e) { /* safe fallback */ }
+  onUserSwitcherOpen(event: MouseEvent): void {
+    this.loadAccountUsers();
+    this.userSwitcherPanel?.toggle(event);
   }
 
-  navigateToRegister(): void {
-    try { this.router.navigate(['/register']); } catch (e) { /* safe fallback */ }
-  }
-
-  selectAppKey(key: AppKey): void {
-    this.appSwitcher.selectApp(key);
-    this.selectedApp = key;
-    // navigate to the corresponding dashboard / root for the selected app
-    const routeForApp: Record<AppKey, string> = {
-      all: '/',
-      explore: '/explore',
-      retail: '/retail/fresh-retail',
-      inventory: '/inventory/overview',
-      loyalty: '/loyalty/overview',
-      catalog: '/',
-      governance: '/governance/policies',
-      planning: '/inventory/overview',
-      blogger: '/blogger',
-      hotel: '/hotel',
-      admanager: '/ad-manager',
-      support: '/cmc/workspace',
-      chat: '/chat',
-      files: '/files',
-      travel: '/travel',
-      settings: '/settings',
-      notification: '/notification',
-      'auto-planning': '/planning/auto-planning',
-      'warehouse': '/planning/delivery-points',
-      'delivery-points': '/planning/delivery-points',
-      fleet: '/planning/fleet',
-      demand: '/planning/forecast/demand',
-      truck: '/planning/forecast/demand',
-      trip: '/planning/forecast/demand',
-      hub: '/planning/forecast/demand',
-      forecast: '/planning/forecast/demand',
-      orders: '/retail/orders',
-      transactions: '/retail/transactions',
-      'retail-sales': '/retail/orders',
-      'retail-products': '/retail/products',
-      'retail-customers': '/retail/customers',
-      'retail-omni': '/retail/omni-channel',
-      'retail-pos': '/retail/pos',
-    };
-
-    const target = routeForApp[key] || '/';
+  // ── Auth actions ────────────────────────────────────────────────────────────
+  openProfile(): void {
     try {
-      this.router.navigate([target]);
-    } catch (e) {
-      // ignore in non-browser env or during server-side rendering
-    }
-
-    this.closeAppMatrix();
+      this.authServices.getCurrentUser().subscribe((resp: any) => {
+        const user = resp?.data || resp;
+        const slug = user?.identify || user?.username || user?.email || user?.full_name || '';
+        const short = slug ? encodeURIComponent((slug.split('@')[0] || slug).toString().trim().replace(/\s+/g, '-').toLowerCase()) : '';
+        try { this.router.navigate(short ? [`/profile/${short}`] : ['/profile']); } catch {}
+      });
+    } catch { try { this.router.navigate(['/profile']); } catch {} }
   }
 
-  // Theme & Settings Methods
-  onThemeToggler(): void {
-    this.themeState.update((state) => ({
-      ...state,
-      darkTheme: !state.darkTheme,
-    }));
+  doLogout(): void {
+    this.currentUser.set(null);
+    this.visibleGroups = [];
+    this.accountUsers.set([]);
+    try { sessionStorage.removeItem('currentUser'); } catch {}
+    this.sidebarPermSvc.clear();
+    try { this.router.navigate(['/logout']); } catch {}
   }
-
-  updateColors(event: any, type: string, color: any): void {
-    if (type === 'primary') {
-      this.themeState.update((state) => ({ ...state, primary: color.name }));
-    } else if (type === 'surface') {
-      this.themeState.update((state) => ({ ...state, surface: color.name }));
-    }
-    this.applyTheme(type, color);
-    event.stopPropagation();
-  }
-
-  applyTheme(type: string, color: any): void {
-    if (type === 'primary') {
-      updatePreset(this.getPresetExt());
-    } else if (type === 'surface') {
-      updateSurfacePalette(color.palette);
-    }
-  }
-
-  onPresetChange(event: any): void {
-    this.themeState.update((state) => ({ ...state, preset: event }));
-    const preset = presets[event];
-    const surfacePalette = this.surfaces.find(
-      (s) => s.name === this.selectedSurfaceColor()
-    )?.palette;
-    if (this.themeState().preset === 'Material') {
-      this.document.body.classList.add('material');
-      this.config.ripple.set(true);
-    } else {
-      this.document.body.classList.remove('material');
-      this.config.ripple.set(false);
-    }
-    $t()
-      .preset(preset)
-      .preset(this.getPresetExt())
-      .surfacePalette(surfacePalette)
-      .use({ useDefaultOptions: true });
-  }
-
-  getPresetExt(): any {
-    const color = this.primaryColors().find(
-      (c) => c.name === this.selectedPrimaryColor()
-    );
-
-    if (color.name === 'noir') {
-      return {
-        semantic: {
-          primary: {
-            50: '{surface.50}', 100: '{surface.100}', 200: '{surface.200}',
-            300: '{surface.300}', 400: '{surface.400}', 500: '{surface.500}',
-            600: '{surface.600}', 700: '{surface.700}', 800: '{surface.800}',
-            900: '{surface.900}', 950: '{surface.950}',
-          },
-          colorScheme: {
-            light: {
-              primary: {
-                color: '{primary.950}',
-                contrastColor: '#ffffff',
-                hoverColor: '{primary.800}',
-                activeColor: '{primary.700}',
-              },
-              highlight: {
-                background: '{primary.950}',
-                focusBackground: '{primary.700}',
-                color: '#ffffff',
-                focusColor: '#ffffff',
-              },
-            },
-            dark: {
-              primary: {
-                color: '{primary.50}',
-                contrastColor: '{primary.950}',
-                hoverColor: '{primary.200}',
-                activeColor: '{primary.300}',
-              },
-              highlight: {
-                background: '{primary.50}',
-                focusBackground: '{primary.300}',
-                color: '{primary.950}',
-                focusColor: '{primary.950}',
-              },
-            },
-          },
-        },
-      };
-    } else {
-      if (this.themeState().preset === 'Nora') {
-        return {
-          semantic: {
-            primary: color.palette,
-            colorScheme: {
-              light: {
-                primary: {
-                  color: '{primary.600}',
-                  contrastColor: '#ffffff',
-                  hoverColor: '{primary.700}',
-                  activeColor: '{primary.800}',
-                },
-                highlight: {
-                  background: '{primary.600}',
-                  focusBackground: '{primary.700}',
-                  color: '#ffffff',
-                  focusColor: '#ffffff',
-                },
-              },
-              dark: {
-                primary: {
-                  color: '{primary.500}',
-                  contrastColor: '{surface.900}',
-                  hoverColor: '{primary.400}',
-                  activeColor: '{primary.300}',
-                },
-                highlight: {
-                  background: '{primary.500}',
-                  focusBackground: '{primary.400}',
-                  color: '{surface.900}',
-                  focusColor: '{surface.900}',
-                },
-              },
-            },
-          },
-        };
-      } else if (this.themeState().preset === 'Material') {
-        return {
-          semantic: {
-            primary: color.palette,
-            colorScheme: {
-              light: {
-                primary: {
-                  color: '{primary.500}',
-                  contrastColor: '#ffffff',
-                  hoverColor: '{primary.400}',
-                  activeColor: '{primary.300}',
-                },
-                highlight: {
-                  background: 'color-mix(in srgb, {primary.color}, transparent 88%)',
-                  focusBackground: 'color-mix(in srgb, {primary.color}, transparent 76%)',
-                  color: '{primary.700}',
-                  focusColor: '{primary.800}',
-                },
-              },
-              dark: {
-                primary: {
-                  color: '{primary.400}',
-                  contrastColor: '{surface.900}',
-                  hoverColor: '{primary.300}',
-                  activeColor: '{primary.200}',
-                },
-                highlight: {
-                  background: 'color-mix(in srgb, {primary.400}, transparent 84%)',
-                  focusBackground: 'color-mix(in srgb, {primary.400}, transparent 76%)',
-                  color: 'rgba(255,255,255,.87)',
-                  focusColor: 'rgba(255,255,255,.87)',
-                },
-              },
-            },
-          },
-        };
-      } else {
-        return {
-          semantic: {
-            primary: color.palette,
-            colorScheme: {
-              light: {
-                primary: {
-                  color: '{primary.500}',
-                  contrastColor: '#ffffff',
-                  hoverColor: '{primary.600}',
-                  activeColor: '{primary.700}',
-                },
-                highlight: {
-                  background: '{primary.50}',
-                  focusBackground: '{primary.100}',
-                  color: '{primary.700}',
-                  focusColor: '{primary.800}',
-                },
-              },
-              dark: {
-                primary: {
-                  color: '{primary.400}',
-                  contrastColor: '{surface.900}',
-                  hoverColor: '{primary.300}',
-                  activeColor: '{primary.200}',
-                },
-                highlight: {
-                  background: 'color-mix(in srgb, {primary.400}, transparent 84%)',
-                  focusBackground: 'color-mix(in srgb, {primary.400}, transparent 76%)',
-                  color: 'rgba(255,255,255,.87)',
-                  focusColor: 'rgba(255,255,255,.87)',
-                },
-              },
-            },
-          },
-        };
-      }
-    }
-  }
-
-  startViewTransition(state: ThemeState): void {
-    if (!(document as any).startViewTransition) {
-      this.toggleDarkMode(state);
-      this.onTransitionEnd();
-      return;
-    }
-
-    const transition = (document as any).startViewTransition(() => {
-      this.toggleDarkMode(state);
-    });
-    transition.ready.then(() => this.onTransitionEnd());
-  }
-
-  toggleDarkMode(state: ThemeState): void {
-    if (state.darkTheme) {
-      this.document.documentElement.classList.add('p-dark');
-    } else {
-      this.document.documentElement.classList.remove('p-dark');
-    }
-  }
-
-  onTransitionEnd(): void {
-    this.transitionComplete.set(true);
-    setTimeout(() => {
-      this.transitionComplete.set(false);
-    });
-  }
-
-  handleDarkModeTransition(state: ThemeState): void {
-    if (isPlatformBrowser(this.platformId)) {
-      this.startViewTransition(state);
-    }
-  }
-
-  loadthemeState(): any {
-    if (isPlatformBrowser(this.platformId)) {
-      const storedState = localStorage.getItem(this.STORAGE_KEY);
-      if (storedState) {
-        return JSON.parse(storedState);
-      }
-    }
-    return {
-      preset: 'Aura',
-      primary: 'noir',
-      surface: null,
-      darkTheme: false,
-    };
-  }
-
-  savethemeState(state: any): void {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(state));
-    }
-  }
-
 }
-

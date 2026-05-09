@@ -30,7 +30,20 @@ import {
     ProductSearchResult,
     UnifiedTemplate,
     UnifiedTemplateCreate,
-    UnifiedTemplateUpdate
+    UnifiedTemplateUpdate,
+    Label,
+    LabelCreate,
+    InternalNote,
+    QuickReply,
+    QuickReplyCreate,
+    SlaPolicy,
+    UnreadSummary,
+    AgentPresence,
+    AgentInfo,
+    CustomerOrder,
+    BroadcastCampaign,
+    BroadcastCreate,
+    BroadcastEstimate
 } from '../models/chat.model';
 
 @Injectable({
@@ -349,5 +362,134 @@ export class ChatService {
             .set('skip', skip.toString())
             .set('limit', limit.toString());
         return this.http.get<ApiResponse<any[]>>(`${this.cmcBaseUrl}/sms/templates`, { params });
+    }
+
+    // ── Labels ───────────────────────────────────────────────────────────────
+
+    getLabels(): Observable<ApiResponse<Label[]>> {
+        return this.http.get<ApiResponse<Label[]>>(`${this.cmcBaseUrl}/settings/labels`);
+    }
+
+    createLabel(payload: LabelCreate): Observable<ApiResponse<Label>> {
+        return this.http.post<ApiResponse<Label>>(`${this.cmcBaseUrl}/settings/labels`, payload);
+    }
+
+    updateLabel(id: string, payload: Partial<LabelCreate>): Observable<ApiResponse<Label>> {
+        return this.http.put<ApiResponse<Label>>(`${this.cmcBaseUrl}/settings/labels/${id}`, payload);
+    }
+
+    deleteLabel(id: string): Observable<ApiResponse<unknown>> {
+        return this.http.delete<ApiResponse<unknown>>(`${this.cmcBaseUrl}/settings/labels/${id}`);
+    }
+
+    patchConversationLabels(conversationId: string, labels: string[]): Observable<ApiResponse<unknown>> {
+        return this.http.patch<ApiResponse<unknown>>(`${this.cmcBaseUrl}/conversations/${conversationId}/labels`, { labels });
+    }
+
+    // ── Internal Notes ────────────────────────────────────────────────────────
+
+    addInternalNote(conversationId: string, content: string): Observable<ApiResponse<InternalNote>> {
+        return this.http.post<ApiResponse<InternalNote>>(`${this.cmcBaseUrl}/conversations/${conversationId}/notes`, { content });
+    }
+
+    deleteInternalNote(conversationId: string, noteId: string): Observable<ApiResponse<unknown>> {
+        return this.http.delete<ApiResponse<unknown>>(`${this.cmcBaseUrl}/conversations/${conversationId}/notes/${noteId}`);
+    }
+
+    // ── Read Status ───────────────────────────────────────────────────────────
+
+    markConversationRead(conversationId: string): Observable<ApiResponse<unknown>> {
+        return this.http.patch<ApiResponse<unknown>>(`${this.cmcBaseUrl}/conversations/${conversationId}/read`, {});
+    }
+
+    getUnreadSummary(): Observable<ApiResponse<UnreadSummary>> {
+        return this.http.get<ApiResponse<UnreadSummary>>(`${this.cmcBaseUrl}/conversations/unread-summary`);
+    }
+
+    markAllRead(): Observable<ApiResponse<unknown>> {
+        return this.http.post<ApiResponse<unknown>>(`${this.cmcBaseUrl}/conversations/mark-all-read`, {});
+    }
+
+    // ── Quick Replies ─────────────────────────────────────────────────────────
+
+    getQuickReplies(limit: number = 200): Observable<ApiResponse<QuickReply[]>> {
+        const params = new HttpParams().set('limit', limit.toString());
+        return this.http.get<ApiResponse<QuickReply[]>>(`${this.cmcBaseUrl}/settings/quick-replies`, { params });
+    }
+
+    createQuickReply(payload: QuickReplyCreate): Observable<ApiResponse<QuickReply>> {
+        return this.http.post<ApiResponse<QuickReply>>(`${this.cmcBaseUrl}/settings/quick-replies`, payload);
+    }
+
+    updateQuickReply(id: string, payload: Partial<QuickReplyCreate>): Observable<ApiResponse<QuickReply>> {
+        return this.http.put<ApiResponse<QuickReply>>(`${this.cmcBaseUrl}/settings/quick-replies/${id}`, payload);
+    }
+
+    deleteQuickReply(id: string): Observable<ApiResponse<unknown>> {
+        return this.http.delete<ApiResponse<unknown>>(`${this.cmcBaseUrl}/settings/quick-replies/${id}`);
+    }
+
+    // ── Agent Presence ────────────────────────────────────────────────────────
+
+    setAgentPresence(status: 'online' | 'busy' | 'away'): Observable<ApiResponse<AgentPresence>> {
+        return this.http.put<ApiResponse<AgentPresence>>(`${this.cmcBaseUrl}/agents/me/presence`, { status });
+    }
+
+    getOnlineAgents(status: string = 'online,busy'): Observable<ApiResponse<AgentInfo[]>> {
+        const params = new HttpParams().set('status', status);
+        return this.http.get<ApiResponse<AgentInfo[]>>(`${this.cmcBaseUrl}/agents`, { params });
+    }
+
+    // ── SLA ───────────────────────────────────────────────────────────────────
+
+    getSlaSettings(): Observable<ApiResponse<SlaPolicy[]>> {
+        return this.http.get<ApiResponse<SlaPolicy[]>>(`${this.cmcBaseUrl}/settings/sla`);
+    }
+
+    createSlaPolicy(payload: Omit<SlaPolicy, 'id'>): Observable<ApiResponse<SlaPolicy>> {
+        return this.http.post<ApiResponse<SlaPolicy>>(`${this.cmcBaseUrl}/settings/sla`, payload);
+    }
+
+    updateSlaPolicy(id: string, responseMinutes: number): Observable<ApiResponse<SlaPolicy>> {
+        return this.http.put<ApiResponse<SlaPolicy>>(`${this.cmcBaseUrl}/settings/sla/${id}`, { response_minutes: responseMinutes });
+    }
+
+    deleteSlaPolicy(id: string): Observable<ApiResponse<unknown>> {
+        return this.http.delete<ApiResponse<unknown>>(`${this.cmcBaseUrl}/settings/sla/${id}`);
+    }
+
+    // ── Customer 360 ──────────────────────────────────────────────────────────
+
+    getCustomerOrders(customerId: string, limit: number = 5): Observable<ApiResponse<CustomerOrder[]>> {
+        const params = new HttpParams().set('customer_id', customerId).set('limit', limit.toString()).set('sort', '-created_at');
+        return this.http.get<ApiResponse<CustomerOrder[]>>(`${getApiBase()}/retail/orders`, { params });
+    }
+
+    getCustomerChatHistory(customerId: string, limit: number = 5): Observable<ApiResponse<TelegramConversation[]>> {
+        const params = new HttpParams().set('customer_id', customerId).set('limit', limit.toString());
+        return this.http.get<ApiResponse<TelegramConversation[]>>(`${this.cmcBaseUrl}/conversations`, { params });
+    }
+
+    // ── Broadcast Campaigns ───────────────────────────────────────────────────
+
+    getBroadcastCampaigns(skip: number = 0, limit: number = 20): Observable<ApiResponse<BroadcastCampaign[]>> {
+        const params = new HttpParams().set('skip', skip.toString()).set('limit', limit.toString());
+        return this.http.get<ApiResponse<BroadcastCampaign[]>>(`${this.cmcBaseUrl}/broadcasts`, { params });
+    }
+
+    createBroadcastCampaign(payload: BroadcastCreate): Observable<ApiResponse<BroadcastCampaign>> {
+        return this.http.post<ApiResponse<BroadcastCampaign>>(`${this.cmcBaseUrl}/broadcasts`, payload);
+    }
+
+    estimateBroadcastAudience(audienceFilter: BroadcastCreate['audience_filter']): Observable<ApiResponse<BroadcastEstimate>> {
+        return this.http.post<ApiResponse<BroadcastEstimate>>(`${this.cmcBaseUrl}/broadcasts/estimate`, { audience_filter: audienceFilter });
+    }
+
+    cancelBroadcastCampaign(id: string): Observable<ApiResponse<unknown>> {
+        return this.http.post<ApiResponse<unknown>>(`${this.cmcBaseUrl}/broadcasts/${id}/cancel`, {});
+    }
+
+    getBroadcastStats(id: string): Observable<ApiResponse<BroadcastCampaign['stats']>> {
+        return this.http.get<ApiResponse<BroadcastCampaign['stats']>>(`${this.cmcBaseUrl}/broadcasts/${id}/stats`);
     }
 }

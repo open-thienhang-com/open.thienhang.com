@@ -789,7 +789,7 @@ export class ApplicationsComponent implements OnInit {
               label: 'Templates',
               icon: 'pi pi-fw pi-file',
               data: {
-                route: '/cmc/templates',
+                route: '/cmc/explore',
                 description: 'Support message templates'
               }
             },

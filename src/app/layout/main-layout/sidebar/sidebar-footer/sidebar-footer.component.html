@@ -1,0 +1,145 @@
+<div class="sidebar-footer" [class.collapsed]="collapsed">
+
+  <!-- ── UI Controls row (theme + color palette) ─────────────────────────── -->
+  <div class="ctrl-row" [class.collapsed]="collapsed">
+    <!-- Dark mode toggle -->
+    <button type="button" class="ctrl-btn"
+            (click)="sidebarTheme.onThemeToggler()"
+            [pTooltip]="sidebarTheme.iconClass().includes('sun') ? 'Light Mode' : 'Dark Mode'"
+            tooltipPosition="right">
+      <i class="pi" [ngClass]="sidebarTheme.iconClass()"></i>
+    </button>
+
+    <!-- Color palette -->
+    <button type="button" class="ctrl-btn"
+            (click)="colorPanel.toggle($event)"
+            pTooltip="Appearance" tooltipPosition="right">
+      <i class="pi pi-palette"></i>
+    </button>
+
+    <!-- Color picker overlay -->
+    <p-overlayPanel #colorPanel appendTo="body" styleClass="color-picker-panel">
+      <div class="cpick">
+        <div class="cpick-section">
+          <span class="cpick-label">Primary</span>
+          <div class="cpick-grid">
+            @for (c of sidebarTheme.primaryColors(); track c.name) {
+              <button type="button" class="cpick-dot" [title]="c.name"
+                      [class.selected]="sidebarTheme.selectedPrimaryColor() === c.name"
+                      [ngStyle]="{ 'background-color': c.name === 'noir' ? 'var(--p-text-color)' : c.palette['500'] }"
+                      (click)="sidebarTheme.updateColors($event, 'primary', c)">
+              </button>
+            }
+          </div>
+        </div>
+        <div class="cpick-section">
+          <span class="cpick-label">Surface</span>
+          <div class="cpick-grid">
+            @for (s of sidebarTheme.surfaces; track s.name) {
+              <button type="button" class="cpick-dot" [title]="s.name"
+                      [class.selected]="sidebarTheme.selectedSurfaceColor() === s.name"
+                      [ngStyle]="{ 'background-color': s.palette['500'] }"
+                      (click)="sidebarTheme.updateColors($event, 'surface', s)">
+              </button>
+            }
+          </div>
+        </div>
+        <div class="cpick-section">
+          <span class="cpick-label">Preset</span>
+          <p-selectbutton [options]="sidebarTheme.presets"
+                          [ngModel]="sidebarTheme.selectedPreset()"
+                          (ngModelChange)="sidebarTheme.onPresetChange($event)"
+                          [unselectable]="false" size="small"/>
+        </div>
+        <div class="cpick-section">
+          <span class="cpick-label">Ripple</span>
+          <p-toggleswitch [(ngModel)]="sidebarTheme.ripple"/>
+        </div>
+      </div>
+    </p-overlayPanel>
+  </div>
+
+  <!-- ── Logged in ─────────────────────────────────────────────────────────── -->
+  @if (isLoggedIn()) {
+
+    <button type="button" class="user-trigger"
+            (click)="toggleMenu($event)"
+            [pTooltip]="collapsed ? fullName() : ''"
+            tooltipPosition="right"
+            aria-label="User menu">
+      <div class="avatar">{{ initials() }}</div>
+      @if (!collapsed) {
+        <div class="trigger-info">
+          <span class="trigger-name">{{ fullName() }}</span>
+          <span class="trigger-email">{{ email() }}</span>
+        </div>
+        <i class="pi pi-ellipsis-v trigger-icon"></i>
+      }
+    </button>
+
+    <!-- User menu overlay -->
+    <p-overlayPanel #userMenuPanel styleClass="user-menu-panel" appendTo="body">
+      <div class="umenu">
+
+        <div class="umenu-header">
+          <div class="umenu-avatar">{{ initials() }}</div>
+          <div class="umenu-info">
+            <span class="umenu-name">{{ fullName() }}</span>
+            <span class="umenu-email">{{ email() }}</span>
+          </div>
+        </div>
+
+        @if (tenantLabel() || roleLabel()) {
+          <div class="umenu-meta">
+            @if (tenantLabel()) {
+              <div class="umeta-row">
+                <i class="pi pi-building"></i>
+                <span class="umeta-key">Tenant</span>
+                <span class="umeta-val">{{ tenantLabel() }}</span>
+              </div>
+            }
+            @if (roleLabel()) {
+              <div class="umeta-row">
+                <i class="pi pi-shield"></i>
+                <span class="umeta-key">Role</span>
+                <span class="umeta-val">{{ roleLabel() }}</span>
+              </div>
+            }
+          </div>
+        }
+
+        <div class="umenu-divider"></div>
+
+        <button type="button" class="umenu-item" (click)="onOpenProfile()">
+          <i class="pi pi-user"></i><span>View Profile</span>
+        </button>
+        <button type="button" class="umenu-item" (click)="onSwitchUser($event)">
+          <i class="pi pi-users"></i><span>Switch User</span>
+        </button>
+
+        <div class="umenu-divider"></div>
+
+        <button type="button" class="umenu-item danger" (click)="onLogout()">
+          <i class="pi pi-sign-out"></i><span>Sign Out</span>
+        </button>
+
+      </div>
+    </p-overlayPanel>
+
+  }
+
+  <!-- ── Not logged in ─────────────────────────────────────────────────────── -->
+  @else {
+    @if (!collapsed) {
+      <div class="auth-row">
+        <a routerLink="/login" class="auth-btn login-btn"><i class="pi pi-sign-in"></i><span>Login</span></a>
+        <a routerLink="/register" class="auth-btn register-btn"><i class="pi pi-user-plus"></i><span>Register</span></a>
+      </div>
+    } @else {
+      <a routerLink="/login" class="ctrl-btn" pTooltip="Login" tooltipPosition="right">
+        <i class="pi pi-sign-in"></i>
+      </a>
+    }
+  }
+
+</div>

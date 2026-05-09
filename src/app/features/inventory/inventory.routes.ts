@@ -74,24 +74,8 @@ export const INVENTORY_ROUTES: Routes = [
             },
             {
                 path: 'forecast/demand',
-                loadComponent: () => import('../retail-planning/components/dataset/dataset.component').then(m => m.DatasetComponent),
-                data: { datasetType: 'demand' }
+                loadComponent: () => import('../retail-planning/components/demand-forecast/demand-forecast.component').then(m => m.DemandForecastComponent),
             },
-            {
-                path: 'forecast/truck',
-                loadComponent: () => import('../retail-planning/components/fleet/fleet.component').then(m => m.FleetComponent),
-                data: { forecastType: 'truck' }
-            },
-            {
-                path: 'forecast/trip',
-                loadComponent: () => import('../retail-planning/components/dataset/dataset.component').then(m => m.DatasetComponent),
-                data: { datasetType: 'trip' }
-            },
-            {
-                path: 'forecast/hub',
-                loadComponent: () => import('../retail-planning/components/dataset/dataset.component').then(m => m.DatasetComponent),
-                data: { datasetType: 'hub' }
-            }
         ]
     }
 ];

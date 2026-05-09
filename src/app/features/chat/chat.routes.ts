@@ -22,7 +22,7 @@ export const chatRoutes: Routes = [
   },
   {
     path: 'templates',
-    loadComponent: () => import('./pages/templates/chat-templates.component').then(m => m.ChatTemplatesComponent),
+    redirectTo: 'explore',
   },
   {
     path: 'automation',
