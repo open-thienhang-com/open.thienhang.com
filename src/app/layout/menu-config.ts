@@ -204,25 +204,10 @@ export const menu: MenuItem[] = [
         casbinPath: '/cmc/*',
         expanded: true,
         children: [
-            { label: 'Overview', url: '/cmc/overview', icon: 'pi pi-home' },
-            {
-                label: 'Templates',
-                icon: 'pi pi-copy',
-                casbinPath: '/cmc/*',
-                children: [
-                    { label: 'Templates', url: '/cmc/explore', icon: 'pi pi-search' },
-                ]
-            },
-            {
-                label: 'Automation',
-                icon: 'pi pi-bolt',
-                casbinPath: '/cmc/*',
-                children: [
-                    { label: 'Workflows', url: '/cmc/automation', icon: 'pi pi-directions' },
-                    { label: 'Omni-channel', url: '/retail/omni-channel', icon: 'pi pi-sync' },
-                    { label: 'Workplace', url: '/cmc/workspace', icon: 'pi pi-facebook' },
-                ]
-            },
+            { label: 'Overview',    url: '/cmc/overview',  icon: 'pi pi-home' },
+            { label: 'Workspace',   url: '/cmc/workspace', icon: 'pi pi-inbox' },
+            { label: 'Templates',   url: '/cmc/explore',   icon: 'pi pi-copy' },
+            { label: 'Automation',  url: '/cmc/automation', icon: 'pi pi-bolt' },
         ]
     },
 
