@@ -1,5 +1,5 @@
 import {
-  Component, Input, Output, EventEmitter, OnDestroy, inject
+  Component, Input, Output, EventEmitter, OnInit, OnDestroy, inject
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -36,26 +36,40 @@ interface OrderItem {
             (ngModelChange)="onSearch($event)"
             placeholder="Search products by name or SKU..."
           />
+          <button *ngIf="searchKeyword" type="button"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            (click)="clearSearch()">
+            <i class="pi pi-times text-xs"></i>
+          </button>
         </div>
       </div>
 
       <!-- Loading skeletons -->
-      <div *ngIf="searching" class="flex flex-col gap-2">
-        <p-skeleton height="4rem"></p-skeleton>
-        <p-skeleton height="4rem"></p-skeleton>
+      <div *ngIf="loading" class="flex flex-col gap-2">
+        <p-skeleton height="4rem" *ngFor="let _ of [1,2,3,4]"></p-skeleton>
       </div>
 
-      <!-- Product cards -->
-      <div *ngIf="!searching && searchResults.length > 0" class="product-results mb-4">
-        <div *ngFor="let product of searchResults" class="product-card">
+      <!-- Product list -->
+      <div *ngIf="!loading && displayedProducts.length > 0" class="product-results mb-4">
+        <p class="text-xs text-gray-400 mb-2">
+          {{ searchKeyword ? 'Search results' : 'All products' }}
+          <span class="font-medium text-gray-600">({{ totalProducts }})</span>
+        </p>
+        <div *ngFor="let product of displayedProducts" class="product-card">
           <div class="product-card-image" *ngIf="product.image_url">
-            <img [src]="product.image_url" [alt]="product.name" />
+            <img [src]="product.image_url" [alt]="product.name"
+                 (error)="onImageError($event)" />
+          </div>
+          <div class="product-card-image product-no-image" *ngIf="!product.image_url">
+            <i class="pi pi-box text-gray-300"></i>
           </div>
           <div class="product-card-info flex-1 min-w-0">
             <strong class="block text-sm truncate">{{ product.name }}</strong>
             <span class="text-xs text-gray-500">{{ product.sku }}</span>
             <div class="flex items-center gap-2 mt-1">
-              <span class="text-sm font-semibold text-blue-600">{{ product.selling_price | currency:'VND':'symbol':'1.0-0' }}</span>
+              <span class="text-sm font-semibold text-blue-600">
+                {{ product.selling_price | currency:'VND':'symbol':'1.0-0' }}
+              </span>
               <p-tag *ngIf="product.category" [value]="product.category" severity="secondary"></p-tag>
             </div>
           </div>
@@ -68,16 +82,34 @@ interface OrderItem {
             </button>
           </div>
         </div>
+
+        <!-- Load more -->
+        <button *ngIf="!searchKeyword && hasMore"
+          type="button" class="load-more-btn w-full mt-2 text-xs"
+          (click)="loadMore()" [disabled]="loadingMore">
+          <i [class]="loadingMore ? 'pi pi-spin pi-spinner' : 'pi pi-chevron-down'" class="mr-1"></i>
+          {{ loadingMore ? 'Loading...' : 'Load more' }}
+        </button>
       </div>
 
-      <div *ngIf="!searching && searchKeyword.trim() && searchResults.length === 0" class="text-center py-4 text-sm text-gray-400">
-        <i class="pi pi-box block mb-1"></i>
-        No products found
+      <div *ngIf="!loading && searchKeyword.trim() && displayedProducts.length === 0"
+           class="text-center py-6 text-sm text-gray-400">
+        <i class="pi pi-box block mb-2 text-2xl"></i>
+        No products found for "{{ searchKeyword }}"
+      </div>
+
+      <div *ngIf="!loading && !searchKeyword && displayedProducts.length === 0"
+           class="text-center py-6 text-sm text-gray-400">
+        <i class="pi pi-box block mb-2 text-2xl"></i>
+        No products available
       </div>
 
       <!-- Order draft -->
       <div *ngIf="orderItems.length > 0" class="order-draft mt-4">
-        <p class="text-xs font-semibold text-gray-600 mb-2">Order draft ({{ orderItems.length }} items)</p>
+        <p class="text-xs font-semibold text-gray-600 mb-2">
+          <i class="pi pi-shopping-cart mr-1"></i>
+          Order draft ({{ orderItems.length }} items)
+        </p>
         <div *ngFor="let item of orderItems; let i = index" class="order-item-row">
           <span class="flex-1 text-sm truncate">{{ item.product.name }}</span>
           <div class="flex items-center gap-1">
@@ -90,7 +122,9 @@ interface OrderItem {
           </div>
         </div>
         <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-200">
-          <span class="text-sm text-gray-500">Total: <strong>{{ orderTotal | currency:'VND':'symbol':'1.0-0' }}</strong></span>
+          <span class="text-sm text-gray-500">
+            Total: <strong>{{ orderTotal | currency:'VND':'symbol':'1.0-0' }}</strong>
+          </span>
           <div class="flex gap-2">
             <button type="button" class="ghost-action text-xs" (click)="clearOrder()">Clear</button>
             <button type="button" class="send-btn text-xs" (click)="createOrder()" [disabled]="creatingOrder">
@@ -108,10 +142,20 @@ interface OrderItem {
     .product-card {
       display: flex; gap: 10px; align-items: flex-start;
       padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;
-      background: white;
+      background: white; transition: box-shadow .15s;
     }
+    .product-card:hover { box-shadow: 0 1px 4px rgba(0,0,0,.08); }
     .product-card-image img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; }
+    .product-no-image {
+      width: 48px; height: 48px; border-radius: 6px; background: #f3f4f6;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
     .product-card-actions { flex-shrink: 0; }
+    .load-more-btn {
+      padding: 6px 12px; border: 1px dashed #d1d5db; border-radius: 6px;
+      background: transparent; cursor: pointer; color: #6b7280;
+    }
+    .load-more-btn:hover:not(:disabled) { background: #f9fafb; }
     .order-draft {
       background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px;
     }
@@ -128,7 +172,7 @@ interface OrderItem {
     .qty-btn:hover { background: #f3f4f6; }
   `]
 })
-export class ProductPanelComponent implements OnDestroy {
+export class ProductPanelComponent implements OnInit, OnDestroy {
   private chatService = inject(ChatService);
   private messageService = inject(MessageService);
 
@@ -136,12 +180,17 @@ export class ProductPanelComponent implements OnDestroy {
   @Output() messageSent = new EventEmitter<TelegramMessage>();
 
   searchKeyword = '';
-  searchResults: ProductSearchResult[] = [];
-  searching = false;
+  displayedProducts: ProductSearchResult[] = [];
+  totalProducts = 0;
+  loading = false;
+  loadingMore = false;
+  hasMore = false;
   sending = false;
   creatingOrder = false;
   orderItems: OrderItem[] = [];
 
+  private currentSkip = 0;
+  private readonly pageSize = 20;
   private searchSubject = new Subject<string>();
   private subs = new Subscription();
 
@@ -152,26 +201,71 @@ export class ProductPanelComponent implements OnDestroy {
         distinctUntilChanged(),
         switchMap(keyword => {
           if (!keyword.trim()) {
-            this.searchResults = [];
-            this.searching = false;
+            this.loadInitialProducts();
             return of(null);
           }
-          this.searching = true;
-          return this.chatService.searchProductsForChat(keyword, 10).pipe(catchError(() => of(null)));
+          this.loading = true;
+          this.displayedProducts = [];
+          return this.chatService.searchProductsForChat(keyword, 30).pipe(catchError(() => of(null)));
         })
       ).subscribe(res => {
-        this.searching = false;
-        this.searchResults = res?.data || [];
+        if (res !== null) {
+          this.loading = false;
+          this.displayedProducts = res?.data || [];
+          this.totalProducts = res?.total ?? this.displayedProducts.length;
+        }
       })
     );
+  }
+
+  ngOnInit(): void {
+    this.loadInitialProducts();
   }
 
   ngOnDestroy(): void {
     this.subs.unsubscribe();
   }
 
+  private loadInitialProducts(): void {
+    this.currentSkip = 0;
+    this.loading = true;
+    this.displayedProducts = [];
+    this.subs.add(
+      this.chatService.getProductsForChat(0, this.pageSize).pipe(catchError(() => of(null))).subscribe(res => {
+        this.loading = false;
+        this.displayedProducts = res?.data || [];
+        this.totalProducts = res?.total ?? this.displayedProducts.length;
+        this.hasMore = this.displayedProducts.length >= this.pageSize;
+        this.currentSkip = this.displayedProducts.length;
+      })
+    );
+  }
+
+  loadMore(): void {
+    if (this.loadingMore || !this.hasMore) return;
+    this.loadingMore = true;
+    this.subs.add(
+      this.chatService.getProductsForChat(this.currentSkip, this.pageSize).pipe(catchError(() => of(null))).subscribe(res => {
+        this.loadingMore = false;
+        const newItems = res?.data || [];
+        this.displayedProducts = [...this.displayedProducts, ...newItems];
+        this.currentSkip += newItems.length;
+        this.hasMore = newItems.length >= this.pageSize;
+      })
+    );
+  }
+
   onSearch(keyword: string): void {
     this.searchSubject.next(keyword);
+  }
+
+  clearSearch(): void {
+    this.searchKeyword = '';
+    this.loadInitialProducts();
+  }
+
+  onImageError(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
   }
 
   get orderTotal(): number {
@@ -183,23 +277,39 @@ export class ProductPanelComponent implements OnDestroy {
     if (!conv?.chat_id) return;
 
     this.sending = true;
-    let caption = `🛍️ *${product.name}*\n💰 ${product.selling_price.toLocaleString('vi-VN')} ₫`;
+
+    const priceStr = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(product.selling_price);
+    let caption = `🛍️ *${product.name}*`;
+    if (product.category) caption += `\n🏷️ ${product.category}`;
+    caption += `\n💰 ${priceStr}`;
     if (product.description) caption += `\n\n${product.description}`;
 
-    const payload: any = {
-      chat_id: conv.chat_id,
-      caption,
-      disable_notification: false
+    const keyboard = {
+      inline_keyboard: [[
+        { text: '🛒 Order now', callback_data: `order:${product.id}` },
+        ...(product.selling_price ? [{ text: `💰 ${priceStr}`, callback_data: `price:${product.id}` }] : [])
+      ]]
     };
 
     if (product.image_url) {
-      payload.photo = product.image_url;
-      this.chatService.sendTelegramPhoto(payload).subscribe({
+      this.chatService.sendTelegramPhoto({
+        chat_id: conv.chat_id,
+        photo: product.image_url,
+        caption,
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      }).subscribe({
         next: () => this.onSendSuccess(product, caption, 'photo', product.image_url),
         error: () => this.onSendError()
       });
     } else {
-      this.chatService.sendTelegramMessage({ chat_id: conv.chat_id, text: caption, disable_notification: false }).subscribe({
+      this.chatService.sendTelegramMessage({
+        chat_id: conv.chat_id,
+        text: caption,
+        disable_notification: false,
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      }).subscribe({
         next: () => this.onSendSuccess(product, caption, 'text'),
         error: () => this.onSendError()
       });
@@ -208,18 +318,13 @@ export class ProductPanelComponent implements OnDestroy {
 
   private onSendSuccess(product: ProductSearchResult, content: string, type: string, mediaUrl?: string): void {
     this.sending = false;
-    const message: TelegramMessage = {
+    this.messageSent.emit({
       id: `product_${Date.now()}`,
-      sender: 'agent',
-      sender_name: 'Agent',
-      content,
-      timestamp: new Date().toISOString(),
-      message_type: type,
-      delivery_status: 'sent',
-      media_url: mediaUrl,
-      caption: content
-    };
-    this.messageSent.emit(message);
+      sender: 'agent', sender_name: 'Agent',
+      content, timestamp: new Date().toISOString(),
+      message_type: type, delivery_status: 'sent',
+      media_url: mediaUrl, caption: content
+    });
     this.messageService.add({ severity: 'success', summary: 'Product sent', detail: product.name });
   }
 
@@ -257,13 +362,14 @@ export class ProductPanelComponent implements OnDestroy {
   }
 
   createOrder(): void {
-    if (!this.orderItems.length || !this.conversation?.id) return;
+    if (!this.orderItems.length || !this.conversation?.chat_id) return;
     this.creatingOrder = true;
 
     const lines = this.orderItems.map(item =>
-      `• ${item.product.name} × ${item.qty} = ${(item.product.selling_price * item.qty).toLocaleString('vi-VN')} ₫`
+      `• ${item.product.name} × ${item.qty} = ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(item.product.selling_price * item.qty)}`
     ).join('\n');
-    const summary = `📋 Order created:\n${lines}\n💰 Total: ${this.orderTotal.toLocaleString('vi-VN')} ₫`;
+    const totalStr = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(this.orderTotal);
+    const summary = `📋 Order created:\n${lines}\n💰 Total: ${totalStr}`;
 
     this.chatService.sendTelegramMessage({
       chat_id: this.conversation.chat_id,
@@ -271,17 +377,13 @@ export class ProductPanelComponent implements OnDestroy {
       disable_notification: false
     }).subscribe({
       next: () => {
-        const message: TelegramMessage = {
-          id: `order_${Date.now()}`,
-          sender: 'agent',
-          sender_name: 'Agent',
-          content: summary,
-          timestamp: new Date().toISOString(),
-          message_type: 'text',
-          delivery_status: 'sent'
-        };
         const itemCount = this.orderItems.length;
-        this.messageSent.emit(message);
+        this.messageSent.emit({
+          id: `order_${Date.now()}`,
+          sender: 'agent', sender_name: 'Agent',
+          content: summary, timestamp: new Date().toISOString(),
+          message_type: 'text', delivery_status: 'sent'
+        });
         this.clearOrder();
         this.creatingOrder = false;
         this.messageService.add({ severity: 'success', summary: 'Order created', detail: `${itemCount} items` });

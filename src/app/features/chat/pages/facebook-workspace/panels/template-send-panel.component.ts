@@ -18,23 +18,23 @@ import { TelegramConversation, UnifiedTemplate, CustomerSummary } from '../../..
         <p-toast></p-toast>
         <div class="template-send-panel p-3">
             @if (!conversation) {
-                <div class="text-center text-gray-400 py-8">Chọn một hội thoại để gửi template</div>
+                <div class="text-center text-gray-400 py-8">Select a conversation to send a template</div>
             } @else {
                 <!-- Search -->
                 <div class="mb-3">
-                    <input pInputText [(ngModel)]="searchQuery" placeholder="Tìm template..." class="w-full text-sm"/>
+                    <input pInputText [(ngModel)]="searchQuery" placeholder="Search templates..." class="w-full text-sm"/>
                 </div>
 
                 <!-- All channels toggle -->
                 <div class="mb-3 flex align-items-center gap-2">
                     <input type="checkbox" [(ngModel)]="showAllChannels" (ngModelChange)="loadTemplates()" id="allCh"/>
-                    <label for="allCh" class="text-sm text-gray-600">Tất cả kênh</label>
+                    <label for="allCh" class="text-sm text-gray-600">All channels</label>
                 </div>
 
                 @if (loading()) {
                     <div class="text-center py-4"><p-progressSpinner [style]="{width:'30px',height:'30px'}"></p-progressSpinner></div>
                 } @else if (filteredTemplates().length === 0) {
-                    <div class="text-center text-gray-400 text-sm py-4">Không tìm thấy template</div>
+                    <div class="text-center text-gray-400 text-sm py-4">No templates found</div>
                 } @else if (!selectedTemplate()) {
                     <!-- Template list -->
                     <div class="template-list" style="max-height:300px;overflow-y:auto;">
@@ -51,7 +51,7 @@ import { TelegramConversation, UnifiedTemplate, CustomerSummary } from '../../..
                 } @else {
                     <!-- Variable form + preview -->
                     <div class="selected-template">
-                        <button pButton icon="pi pi-arrow-left" class="p-button-text p-button-sm mb-2" (click)="selectedTemplate.set(null)" label="Chọn lại"></button>
+                        <button pButton icon="pi pi-arrow-left" class="p-button-text p-button-sm mb-2" (click)="selectedTemplate.set(null)" label="Back"></button>
                         <div class="font-semibold mb-2">{{ selectedTemplate()!.name }}</div>
 
                         @for (variable of selectedTemplate()!.variables; track variable) {
@@ -65,7 +65,7 @@ import { TelegramConversation, UnifiedTemplate, CustomerSummary } from '../../..
                         <!-- Preview -->
                         <div class="preview-box p-2 border-round mt-3 mb-3 text-sm" style="background:#f9fafb;border:1px solid #e5e7eb;white-space:pre-wrap;">{{ previewContent() }}</div>
 
-                        <button pButton label="Gửi Template" icon="pi pi-send" class="w-full p-button-sm"
+                        <button pButton label="Send Template" icon="pi pi-send" class="w-full p-button-sm"
                                 [disabled]="sending() || !allVariablesFilled()"
                                 [loading]="sending()"
                                 (click)="sendTemplate()"></button>
@@ -174,12 +174,12 @@ export class TemplateSendPanelComponent implements OnChanges {
         };
         this.chatService.sendTelegramTemplate(payload).subscribe({
             next: () => {
-                this.messageService.add({ severity: 'success', summary: 'Đã gửi', detail: 'Template đã được gửi' });
+                this.messageService.add({ severity: 'success', summary: 'Sent', detail: 'Template sent successfully' });
                 this.selectedTemplate.set(null);
                 this.sending.set(false);
             },
             error: () => {
-                this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: 'Gửi template thất bại' });
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to send template' });
                 this.sending.set(false);
             }
         });

@@ -1,0 +1,165 @@
+<div class="landing-page">
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-bg-pattern"></div>
+    <div class="hero-grid-dots"></div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        MSIT 5910 — Capstone Project
+      </div>
+      <h1 class="hero-title">
+        Digital Inventory &amp;
+        <span class="gradient-text">Demand Forecasting</span>
+        System
+      </h1>
+      <p class="hero-subtitle">
+        For Fresh Retail in Vietnam
+      </p>
+      <p class="hero-description">
+        A full-stack enterprise platform delivering multi-tenant inventory management, sales &amp; commerce operations,
+        ML-driven demand forecasting, and governance with strict data isolation — purpose-built for Vietnam's fresh
+        produce supply chain.
+      </p>
+      <div class="hero-actions">
+        <a routerLink="/applications" class="btn-primary">
+          <i class="pi pi-th-large"></i>
+          Launch Dashboard
+        </a>
+        <a routerLink="/inventory" class="btn-secondary">
+          <i class="pi pi-box"></i>
+          Explore Inventory
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- Academic Info -->
+  <section class="academic-section">
+    <div class="academic-card">
+      <div class="academic-grid">
+        <div class="academic-item">
+          <div class="academic-icon">
+            <i class="pi pi-user"></i>
+          </div>
+          <div>
+            <div class="academic-label">Submitted by</div>
+            <div class="academic-value">Hàng Tuấn Thiên <span class="academic-meta">(c1923591)</span></div>
+          </div>
+        </div>
+        <div class="academic-item">
+          <div class="academic-icon supervisor">
+            <i class="pi pi-star"></i>
+          </div>
+          <div>
+            <div class="academic-label">Supervised by</div>
+            <div class="academic-value">Dr. Shabia Shabir</div>
+          </div>
+        </div>
+        <div class="academic-item">
+          <div class="academic-icon degree">
+            <i class="pi pi-bookmark"></i>
+          </div>
+          <div>
+            <div class="academic-label">Degree</div>
+            <div class="academic-value">Master of Science in Information Technology</div>
+          </div>
+        </div>
+        <div class="academic-item">
+          <div class="academic-icon institution">
+            <i class="pi pi-building"></i>
+          </div>
+          <div>
+            <div class="academic-label">Institution</div>
+            <div class="academic-value">University of the People <span class="academic-meta">Pasadena, CA</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- System Modules -->
+  <section class="modules-section">
+    <div class="section-header">
+      <h2 class="section-title">System Modules</h2>
+      <p class="section-subtitle">4 core functional areas powering the digital supply chain platform</p>
+    </div>
+    <div class="modules-grid">
+      <a *ngFor="let mod of modules" [routerLink]="mod.route" class="module-card">
+        <div class="module-icon" [style.backgroundColor]="mod.bgColor" [style.color]="mod.color">
+          <i [class]="mod.icon"></i>
+        </div>
+        <h3 class="module-title">{{ mod.title }}</h3>
+        <p class="module-desc">{{ mod.description }}</p>
+        <div class="module-link" [style.color]="mod.color">
+          Explore <i class="pi pi-arrow-right"></i>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- Architecture Overview -->
+  <section class="arch-section">
+    <div class="section-header">
+      <h2 class="section-title">Technology Stack</h2>
+      <p class="section-subtitle">Built with modern, production-grade technologies</p>
+    </div>
+    <div class="tech-grid">
+      <div *ngFor="let tech of techStack" class="tech-chip">
+        <span class="tech-category">{{ tech.category }}</span>
+        <span class="tech-name">{{ tech.name }}</span>
+      </div>
+    </div>
+    <div class="arch-diagram">
+      <div class="arch-layer">
+        <div class="arch-layer-label">Frontend</div>
+        <div class="arch-blocks">
+          <div class="arch-block frontend">Angular 19 + PrimeNG</div>
+          <div class="arch-block frontend">Tailwind CSS</div>
+        </div>
+      </div>
+      <div class="arch-connector"><i class="pi pi-arrow-down"></i></div>
+      <div class="arch-layer">
+        <div class="arch-layer-label">API Gateway</div>
+        <div class="arch-blocks">
+          <div class="arch-block api">FastAPI + Casbin RBAC</div>
+          <div class="arch-block api">JWT Authentication</div>
+        </div>
+      </div>
+      <div class="arch-connector"><i class="pi pi-arrow-down"></i></div>
+      <div class="arch-layer">
+        <div class="arch-layer-label">Services</div>
+        <div class="arch-blocks">
+          <div class="arch-block service">Inventory Engine</div>
+          <div class="arch-block service">ML Forecasting</div>
+        </div>
+      </div>
+      <div class="arch-connector"><i class="pi pi-arrow-down"></i></div>
+      <div class="arch-layer">
+        <div class="arch-layer-label">Data Layer</div>
+        <div class="arch-blocks">
+          <div class="arch-block data">MongoDB</div>
+          <div class="arch-block data">Redis Cache</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <div class="footer-content">
+      <p class="footer-text">
+        Department of CS &amp; MSIT · University of the People, Pasadena, CA 91101, United States
+      </p>
+      <p class="footer-term">Term 4, 05, 2026</p>
+    </div>
+  </footer>
+
+</div>

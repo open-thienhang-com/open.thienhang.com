@@ -27,12 +27,12 @@
   width: 280px;
   height: 100dvh;
 
+  // Solid background — sidebar is never see-through
+  background: var(--surface-card);
+
   @supports not (height: 100dvh) {
     height: 100vh;
   }
-
-  // Solid background — sidebar is never see-through
-  background: var(--surface-card);
 
   // Mobile open: slide in from left
   @media (max-width: 1023px) {
@@ -147,6 +147,15 @@
   @supports not (height: 100dvh) {
     height: 100vh;
   }
+}
+
+/* Allow pages with full-bleed dark backgrounds (like landing) to fill the layout */
+.layout-root:has(> .layout-main > .layout-content > app-landing) {
+  background: transparent;
+}
+
+.layout-root:has(> .layout-main > .layout-content > app-landing) .layout-main {
+  background: transparent;
 }
 
 // ─── Main content wrapper ──────────────────────────────────────────────────────

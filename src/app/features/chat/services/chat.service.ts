@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { getApiBase } from '../../../core/config/api-config';
 import {
     ApiResponse,
@@ -275,7 +276,7 @@ export class ChatService {
             this.http.get<ApiResponse<TelegramConversation[]>>(`${this.chatBaseUrl}/telegram/conversations`, { params }).subscribe({
                 next: (response) => {
                     const items = (response.data || []).map(item => this.normalizeTelegramConversation(item));
-                    observer.next({ items, has_more: items.length === limit, skip });
+                    observer.next({ items, has_more: items.length >= limit, skip });
                     observer.complete();
                 },
                 error: (error) => observer.error(error)
@@ -303,9 +304,27 @@ export class ChatService {
 
     // ── Product search ───────────────────────────────────────────────────────
 
+    private normalizeProduct(p: any): ProductSearchResult {
+        const primary = (p.images || []).find((i: any) => i.is_primary) || p.images?.[0];
+        return {
+            ...p,
+            id: p.id || p._id,
+            image_url: p.image_url || p.thumbnail?.url || primary?.url || undefined,
+        };
+    }
+
+    getProductsForChat(skip: number = 0, limit: number = 20): Observable<ApiResponse<ProductSearchResult[]>> {
+        const params = new HttpParams().set('limit', limit.toString()).set('skip', skip.toString());
+        return this.http.get<any>(`${getApiBase()}/retail/products`, { params }).pipe(
+            map(res => ({ ...res, data: (res.data || []).map((p: any) => this.normalizeProduct(p)) }))
+        );
+    }
+
     searchProductsForChat(keyword: string, limit: number = 10): Observable<ApiResponse<ProductSearchResult[]>> {
         const params = new HttpParams().set('search', keyword).set('limit', limit.toString()).set('skip', '0');
-        return this.http.get<ApiResponse<ProductSearchResult[]>>(`${getApiBase()}/retail/products`, { params });
+        return this.http.get<any>(`${getApiBase()}/retail/products`, { params }).pipe(
+            map(res => ({ ...res, data: (res.data || []).map((p: any) => this.normalizeProduct(p)) }))
+        );
     }
 
     // ── Unified template management ──────────────────────────────────────────

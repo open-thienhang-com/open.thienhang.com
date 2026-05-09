@@ -245,6 +245,8 @@ export interface TelegramSendMessagePayload {
     chat_id: number;
     text: string;
     disable_notification: boolean;
+    parse_mode?: string;
+    reply_markup?: TelegramInlineKeyboardMarkup | null;
 }
 
 export interface TelegramReplyParameters {
@@ -414,6 +416,13 @@ export interface UnifiedTemplateUpdate {
     tags?: string[];
 }
 
+export interface ProductImageAsset {
+    url?: string;
+    file_id?: string;
+    is_primary?: boolean;
+    alt?: string;
+}
+
 export interface ProductSearchResult {
     id: string;
     _id?: string;
@@ -424,6 +433,9 @@ export interface ProductSearchResult {
     category?: string;
     description?: string;
     image_url?: string;
+    thumbnail?: ProductImageAsset;
+    images?: ProductImageAsset[];
+    is_active?: boolean;
 }
 
 // ── Labels ──────────────────────────────────────────────────────────────────

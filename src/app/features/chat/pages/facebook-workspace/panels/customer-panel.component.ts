@@ -36,7 +36,7 @@ import { TelegramConversation, CustomerSummary, CustomerOrder } from '../../../m
             [class.active-tab]="activeTab() === 'profile'"
             class="p-button-text p-button-sm text-xs"
             (click)="loadTab('profile')">
-            Hồ sơ
+            Profile
           </button>
           <button
             type="button"
@@ -44,7 +44,7 @@ import { TelegramConversation, CustomerSummary, CustomerOrder } from '../../../m
             [class.active-tab]="activeTab() === 'orders'"
             class="p-button-text p-button-sm text-xs"
             (click)="loadTab('orders')">
-            Đơn hàng
+            Orders
           </button>
           <button
             type="button"
@@ -52,7 +52,7 @@ import { TelegramConversation, CustomerSummary, CustomerOrder } from '../../../m
             [class.active-tab]="activeTab() === 'history'"
             class="p-button-text p-button-sm text-xs"
             (click)="loadTab('history')">
-            Lịch sử chat
+            Chat history
           </button>
         </div>
 
@@ -75,7 +75,7 @@ import { TelegramConversation, CustomerSummary, CustomerOrder } from '../../../m
             <p-progressSpinner [style]="{width:'24px',height:'24px'}"></p-progressSpinner>
           </div>
           <div *ngIf="!ordersLoading() && orders().length === 0" class="text-xs text-gray-400 py-2">
-            Không có đơn hàng
+            No orders
           </div>
           <div *ngIf="!ordersLoading() && orders().length > 0" class="orders-list" style="max-height:250px;overflow-y:auto;">
             <div *ngFor="let order of orders()" class="order-row mb-2 pb-2 border-b border-gray-100 text-xs">
@@ -95,7 +95,7 @@ import { TelegramConversation, CustomerSummary, CustomerOrder } from '../../../m
             <p-progressSpinner [style]="{width:'24px',height:'24px'}"></p-progressSpinner>
           </div>
           <div *ngIf="!historyLoading() && chatHistory().length === 0" class="text-xs text-gray-400 py-2">
-            Không có lịch sử
+            No history
           </div>
           <div *ngIf="!historyLoading() && chatHistory().length > 0" class="history-list" style="max-height:250px;overflow-y:auto;">
             <div *ngFor="let conv of chatHistory()" class="history-row mb-2 pb-2 border-b border-gray-100 text-xs">

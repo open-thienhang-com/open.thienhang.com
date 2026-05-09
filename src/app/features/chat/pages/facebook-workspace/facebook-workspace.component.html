@@ -1,480 +1,487 @@
-<div class="bg-gray-50 min-h-screen p-6">
-    <div class="w-full max-w-[1600px] mx-auto">
-      <ng-container *ngIf="loading()">
-        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                <i class="pi pi-share-alt text-white text-xl"></i>
-              </div>
-              <div>
-                <h1 class="text-3xl font-bold text-gray-900">Unified Support Inbox</h1>
-                <p class="text-gray-600">Loading workspace data for the shared inbox...</p>
-              </div>
+<div class="cw-root">
+
+  <!-- ── Top bar ──────────────────────────────────────────────────────────── -->
+  <header class="cw-topbar">
+    <div class="cw-brand">
+      <div class="cw-brand-icon"><i class="pi pi-comments"></i></div>
+      <div>
+        <h1 class="cw-brand-title">Support Inbox</h1>
+        <p class="cw-brand-sub">{{ filteredConversations().length }} conversations</p>
+      </div>
+    </div>
+
+    <div class="cw-queue-tabs">
+      <button *ngFor="let tab of queueTabs" type="button"
+              class="cw-tab" [class.active]="activeQueue() === tab.value"
+              (click)="setActiveQueue(tab.value)">
+        {{ tab.label }}
+        <span class="cw-tab-count">{{ getQueueCount(tab.value) }}</span>
+      </button>
+    </div>
+
+    <div class="cw-topbar-right">
+      <button type="button" class="cw-icon-btn" (click)="loadWorkspace()" title="Refresh">
+        <i class="pi pi-refresh"></i>
+      </button>
+      <button type="button" class="cw-icon-btn" (click)="openOverviewDialog()" title="Overview">
+        <i class="pi pi-chart-bar"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Body ─────────────────────────────────────────────────────────────── -->
+  <div class="cw-body" [class.has-drawer]="infoPanel() !== 'none'">
+
+    <!-- Left: conversation list -->
+    <aside class="cw-left">
+      <!-- Search + channel filter -->
+      <div class="cw-left-head">
+        <div class="cw-search-wrap">
+          <i class="pi pi-search cw-search-icon"></i>
+          <input type="text" class="cw-search-input"
+                 [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+                 placeholder="Search..." />
+          <button *ngIf="searchTerm()" type="button" class="cw-search-clear"
+                  (click)="searchTerm.set('')">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+        <div class="cw-channel-chips">
+          <button *ngFor="let ch of channelFilters" type="button"
+                  class="cw-chip" [class.active]="activeChannel() === ch.value"
+                  (click)="setActiveChannel(ch.value)">
+            {{ ch.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Conversation list -->
+      <app-conversation-list
+        [conversations]="filteredConversations()"
+        [selectedId]="selectedConversation()?.id ?? null"
+        [loading]="loadingConversations()"
+        [hasMore]="hasMoreConversations()"
+        (conversationSelected)="selectConversation($event)"
+        (loadMore)="loadMoreConversations()">
+      </app-conversation-list>
+    </aside>
+
+    <!-- Middle: thread -->
+    <main class="cw-thread">
+      <!-- Loading -->
+      <div *ngIf="loading()" class="cw-thread-loading">
+        <i class="pi pi-spin pi-spinner"></i>
+        <span>Loading...</span>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="!loading() && !selectedConversation()" class="cw-thread-empty">
+        <i class="pi pi-comments"></i>
+        <h3>Select a conversation</h3>
+        <p>Choose a conversation from the list on the left to get started.</p>
+      </div>
+
+      <!-- Thread view -->
+      <ng-container *ngIf="!loading() && selectedConversation() as conv">
+        <!-- Thread header -->
+        <div class="cw-thread-head">
+          <div class="cw-th-avatar" [attr.data-ch]="getConversationChannel(conv)">
+            {{ (conv.user_name || '?').charAt(0).toUpperCase() }}
+          </div>
+          <div class="cw-th-info">
+            <div class="cw-th-name-row">
+              <h2 class="cw-th-name">{{ conv.user_name }}</h2>
+              <span class="cw-th-platform">
+                <i [class]="getConversationSourceIcon(conv)"></i>
+                {{ getConversationSourceLabel(conv) }}
+              </span>
+              <p-tag [value]="conv.status" [severity]="getStatusSeverity(conv.status)"></p-tag>
+            </div>
+            <p class="cw-th-meta">
+              &#64;{{ conv.username }}
+              <span *ngIf="conv.agent"> &bull; <i class="pi pi-user"></i> {{ conv.agent }}</span>
+              <span *ngIf="!conv.agent"> &bull; Unassigned</span>
+            </p>
+          </div>
+          <div class="cw-th-actions">
+            <!-- Resolve / Reopen -->
+            <button type="button" class="cw-btn"
+                    [class.cw-btn-resolve]="conv.status !== 'resolved'"
+                    [class.cw-btn-reopen]="conv.status === 'resolved'"
+                    [disabled]="resolvingConversation()"
+                    (click)="resolveConversation()">
+              <i [class]="resolvingConversation() ? 'pi pi-spin pi-spinner' : (conv.status === 'resolved' ? 'pi pi-undo' : 'pi pi-check')"></i>
+              {{ conv.status === 'resolved' ? 'Reopen' : 'Resolve' }}
+            </button>
+
+            <!-- Assign -->
+            <div class="cw-dropdown-host">
+              <button type="button" class="cw-btn" [disabled]="assigningConversation()"
+                      (click)="assignDropdownVisible = !assignDropdownVisible">
+                <i [class]="assigningConversation() ? 'pi pi-spin pi-spinner' : 'pi pi-user-edit'"></i>
+                Assign
+              </button>
+              <ng-container *ngIf="assignDropdownVisible">
+                <div class="cw-overlay" (click)="assignDropdownVisible=false"></div>
+                <div class="cw-dropdown">
+                  <div *ngIf="agents().length === 0" class="cw-dd-empty">No agents online</div>
+                  <button *ngFor="let agent of agents()" type="button" class="cw-dd-item"
+                          (click)="assignConversation(agent.id, agent.name || agent.id)">
+                    <span class="cw-agent-dot" [class.online]="agent.presence_status === 'online'"></span>
+                    {{ agent.name || agent.id }}
+                  </button>
+                </div>
+              </ng-container>
+            </div>
+
+            <!-- Info panel toggles -->
+            <div class="cw-panel-toggles">
+              <button type="button" class="cw-icon-btn" title="Customer"
+                      [class.active]="infoPanel() === 'customer'"
+                      (click)="toggleInfoPanel('customer')">
+                <i class="pi pi-user"></i>
+              </button>
+              <button type="button" class="cw-icon-btn" title="Products"
+                      [class.active]="infoPanel() === 'product'"
+                      (click)="toggleInfoPanel('product')">
+                <i class="pi pi-shopping-bag"></i>
+              </button>
+              <button type="button" class="cw-icon-btn" title="Context"
+                      [class.active]="infoPanel() === 'context'"
+                      (click)="toggleInfoPanel('context')">
+                <i class="pi pi-info-circle"></i>
+              </button>
+              <button type="button" class="cw-icon-btn" title="Channel"
+                      [class.active]="infoPanel() === 'channel'"
+                      (click)="toggleInfoPanel('channel')">
+                <i class="pi pi-link"></i>
+              </button>
             </div>
           </div>
         </div>
 
-        <section class="chat-overview-grid">
-          <article *ngFor="let item of [1,2,3,4]" class="summary-card">
-            <p-skeleton height="6rem"></p-skeleton>
-          </article>
-        </section>
+        <!-- Message thread -->
+        <app-message-thread
+          [conversation]="selectedConversation()"
+          [loadingMore]="loadingMoreMessages()"
+          [hasMore]="hasMoreMessages()"
+          (loadOlderMessages)="handleLoadOlderMessages()">
+        </app-message-thread>
 
-        <div class="omni-layout">
-          <article class="flat-card compact-card"><div class="card-body"><p-skeleton height="34rem"></p-skeleton></div></article>
-          <article class="flat-card thread-card-shell"><div class="card-body"><p-skeleton height="34rem"></p-skeleton></div></article>
-        </div>
-      </ng-container>
-
-      <ng-container *ngIf="!loading()">
-        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                <i class="pi pi-share-alt text-white text-xl"></i>
-              </div>
-              <div>
-                <h1 class="text-3xl font-bold text-gray-900">Unified Support Inbox</h1>
-                <p class="text-gray-600">One chat UI for every connected channel. This workspace uses the live APIs.</p>
-              </div>
+        <!-- Composer -->
+        <div class="cw-composer">
+          <!-- Toolbar -->
+          <div class="cw-composer-tools">
+            <div class="cw-tools-left">
+              <button *ngFor="let action of quickActions" type="button"
+                      class="cw-tool" [class.active]="action.mode === actionPopupMode"
+                      [title]="action.label"
+                      (click)="activateQuickAction(action.mode)">
+                <i [class]="action.icon"></i>
+                <span>{{ action.label }}</span>
+              </button>
             </div>
-            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-              <p-button icon="pi pi-chart-bar" label="Overview" severity="secondary" [outlined]="true" [rounded]="true" (onClick)="openOverviewDialog()"></p-button>
-              <p-button icon="pi pi-refresh" label="Refresh" severity="info" [outlined]="true" [rounded]="true" (onClick)="loadWorkspace()"></p-button>
-              <div class="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium border border-blue-100 flex items-center gap-2">
-                 <i class="pi pi-comments"></i> {{ filteredConversations().length }} visible threads
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="omni-layout">
-          <aside class="queue-column">
-              <article class="flat-card queue-card-shell">
-                <div class="card-header compact-header">
-                  <div class="card-title-group">
-                    <h3 class="card-title">Conversations</h3>
-                  </div>
-                  <div class="queue-header-actions">
-                    <button type="button" class="queue-toolbar-btn" (click)="openFilterDialog()">
-                      <i class="pi pi-sliders-h"></i>
-                      <span>Filters</span>
-                    </button>
-                    <span class="queue-total">{{ filteredConversations().length }}</span>
-                  </div>
-                </div>
-                <div class="card-body queue-body">
-                  <div class="queue-toolbar">
-                    <div class="queue-search-box">
-                      <i class="pi pi-search"></i>
-                      <input type="text" class="form-input queue-search-input"
-                             [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
-                             placeholder="Search customer, category, or tag" />
+            <div class="cw-tools-right">
+              <!-- Quick reply picker -->
+              <div class="cw-qr-host">
+                <button type="button" class="cw-tool cw-tool-qr"
+                        (click)="quickReplyPickerVisible = !quickReplyPickerVisible; quickReplyFilter = ''"
+                        title="Quick reply">
+                  <i class="pi pi-bolt"></i><span>Quick reply</span>
+                </button>
+                <ng-container *ngIf="quickReplyPickerVisible">
+                  <div class="cw-overlay" (click)="quickReplyPickerVisible=false"></div>
+                  <div class="cw-qr-panel">
+                    <div class="cw-qr-search-wrap">
+                      <input type="text" class="cw-qr-search-input"
+                             [(ngModel)]="quickReplyFilter" placeholder="Search shortcuts..." />
                     </div>
-                    <div class="queue-active-filters">
-                      <span class="queue-inline-pill">Queue: {{ getActiveQueueLabel() }}</span>
-                      <span class="queue-inline-pill">Channel: {{ getActiveChannelLabel() }}</span>
-                    </div>
-                  </div>
-
-                  <!-- Conversation list panel -->
-                  <app-conversation-list
-                    [conversations]="filteredConversations()"
-                    [selectedId]="selectedConversation()?.id ?? null"
-                    [loading]="loadingConversations()"
-                    [hasMore]="hasMoreConversations()"
-                    (conversationSelected)="selectConversation($event)"
-                    (loadMore)="loadMoreConversations()">
-                  </app-conversation-list>
-                </div>
-              </article>
-            </aside>
-
-          <section class="thread-column" *ngIf="selectedConversation() as conversation; else emptyConversationState">
-              <article class="flat-card thread-card-shell">
-                <div class="card-header thread-card-header">
-                  <div class="thread-header-main">
-                    <div class="thread-title-row">
-                      <h3 class="card-title">{{ conversation.user_name }}</h3>
-                      <span class="source-pill source-pill-inline"><i [class]="getConversationSourceIcon(conversation)"></i>{{ getConversationSourceLabel(conversation) }}</span>
-                      <span class="audience-pill" [class.group]="isGroupConversation(conversation)">{{ getConversationAudienceLabel(conversation) }}</span>
-                      <p-tag [value]="conversation.status" [severity]="getStatusSeverity(conversation.status)"></p-tag>
-                    </div>
-                    <p class="card-subtitle">{{ '@' + conversation.username }} | {{ getConversationProductContext(conversation) }} | {{ getConversationStore(conversation) }}</p>
-                  </div>
-
-                  <div class="thread-tools">
-                    <button type="button" class="ghost-action" [class.active]="infoPanel() === 'customer'" (click)="openInfoPanel('customer')">Khách hàng</button>
-                    <button type="button" class="ghost-action" [class.active]="infoPanel() === 'product'" (click)="openInfoPanel('product')">Sản phẩm</button>
-                    <button type="button" class="ghost-action" [class.active]="infoPanel() === 'context'" (click)="openInfoPanel('context')">Context</button>
-                    <button type="button" class="ghost-action" [class.active]="infoPanel() === 'channel'" (click)="openInfoPanel('channel')">Kênh</button>
-                    <button type="button" class="close-btn" *ngIf="infoPanel() !== 'none'" (click)="closeInfoPanel()"><i class="pi pi-times"></i></button>
-                  </div>
-                </div>
-
-                <div class="card-body thread-card-body">
-                  <div class="thread-highlight-row">
-                    <div class="mini-info-card">
-                      <span class="mini-label">Owner</span>
-                      <strong>{{ conversation.agent || 'Unassigned' }}</strong>
-                    </div>
-                    <div class="mini-info-card">
-                      <span class="mini-label">Priority</span>
-                      <strong>{{ conversation.priority }}</strong>
-                    </div>
-                    <div class="mini-info-card">
-                      <span class="mini-label">Unread</span>
-                      <strong>{{ conversation.unread_count }}</strong>
-                    </div>
-                    <div class="mini-info-card">
-                      <span class="mini-label">Tags</span>
-                      <strong>{{ conversation.tags?.length || 0 }}</strong>
-                    </div>
-                  </div>
-
-                  <!-- Message thread panel -->
-                  <app-message-thread
-                    [conversation]="selectedConversation()"
-                    [loadingMore]="loadingMoreMessages()"
-                    [hasMore]="hasMoreMessages()"
-                    (loadOlderMessages)="handleLoadOlderMessages()">
-                  </app-message-thread>
-
-                  <div class="composer-card">
-                    <div class="composer-head">
-                      <div class="quick-action-row">
-                        <button *ngFor="let action of quickActions"
-                                type="button"
-                                class="quick-action-btn"
-                                [class.active]="action.mode === actionPopupMode"
-                                (click)="activateQuickAction(action.mode)">
-                          <i [class]="action.icon"></i>
-                          <span>{{ action.label }}</span>
-                        </button>
+                    <div class="cw-qr-list">
+                      <div *ngIf="filteredQuickReplies().length === 0" class="cw-qr-empty">
+                        {{ quickReplies().length === 0 ? 'No quick replies' : 'Not found' }}
                       </div>
-                    </div>
-
-                    <div class="composer-grid">
-                      <section class="composer-section">
-                        <textarea class="form-input composer-input" rows="4" [(ngModel)]="draftReply" placeholder="Reply to the customer from the unified inbox"></textarea>
-                      </section>
-                    </div>
-
-                    <div class="composer-footer">
-                      <div class="composer-secondary-actions">
-                        <button type="button" class="inventory-cta">
-                          <i class="pi pi-box"></i>
-                          <span>Ask store inventory</span>
-                        </button>
-                        <button type="button" class="template-cta" (click)="openTemplateDialog()" [disabled]="!templates.length">
-                          <i class="pi pi-file-export"></i>
-                          <span>Send template</span>
-                        </button>
-                        <button type="button" class="template-cta media-send-btn" (click)="sendMedia()" [disabled]="!mediaUrl.trim() || sendingMedia">
-                          <i [class]="sendingMedia ? 'pi pi-spin pi-spinner' : (mediaType === 'photo' ? 'pi pi-image' : mediaType === 'gif' ? 'pi pi-images' : 'pi pi-file')"></i>
-                          <span>{{ sendingMedia ? 'Sending media...' : (mediaType === 'photo' ? 'Send photo' : mediaType === 'gif' ? 'Send GIF' : 'Send document') }}</span>
-                        </button>
-                      </div>
-                      <button type="button" class="send-btn" (click)="sendReply()" [disabled]="!draftReply.trim() || sendingReply">
-                        <i [class]="sendingReply ? 'pi pi-spin pi-spinner' : 'pi pi-send'"></i>
-                        <span>{{ sendingReply ? 'Sending...' : 'Send reply' }}</span>
+                      <button *ngFor="let r of filteredQuickReplies()" type="button"
+                              class="cw-qr-item" (click)="useQuickReply(r)">
+                        <span class="cw-qr-key">/{{ r.shortcut }}</span>
+                        <span class="cw-qr-txt">{{ r.content }}</span>
                       </button>
                     </div>
                   </div>
-                </div>
-              </article>
-          </section>
+                </ng-container>
+              </div>
+              <button type="button" class="cw-tool" title="Send template"
+                      [disabled]="!templates.length" (click)="openTemplateDialog()">
+                <i class="pi pi-file-export"></i><span>Template</span>
+              </button>
+            </div>
+          </div>
+          <!-- Textarea + send -->
+          <div class="cw-composer-input-row">
+            <textarea class="cw-textarea" rows="3" [(ngModel)]="draftReply"
+                      placeholder="Type a message... (Ctrl+Enter to send)"
+                      (keydown.control.enter)="sendReply()"></textarea>
+            <button type="button" class="cw-send-btn"
+                    (click)="sendReply()" [disabled]="!draftReply.trim() || sendingReply">
+              <i [class]="sendingReply ? 'pi pi-spin pi-spinner' : 'pi pi-send'"></i>
+            </button>
+          </div>
         </div>
       </ng-container>
-    </div>
-</div>
+    </main>
 
-<div class="quick-popup-backdrop" *ngIf="filterDialogVisible" (click)="closeFilterDialog()">
-  <section class="quick-popup filter-popup" (click)="$event.stopPropagation()">
-    <div class="quick-popup-header">
-      <div>
-        <p class="panel-eyebrow">Conversation filters</p>
-        <h3 class="panel-title info-title-compact">Filter Threads</h3>
-      </div>
-      <button type="button" class="close-btn" (click)="closeFilterDialog()"><i class="pi pi-times"></i></button>
-    </div>
-
-    <div class="quick-popup-body">
-      <div class="filter-popup-section">
-        <p class="filter-popup-title">Queue</p>
-        <div class="filter-chip-row compact">
-          <button *ngFor="let tab of queueTabs" type="button" class="queue-filter-btn" [class.active]="activeQueue() === tab.value" (click)="setActiveQueue(tab.value)">
-            <span>{{ tab.label }}</span>
-            <span class="pill count-pill">{{ getQueueCount(tab.value) }}</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="filter-popup-section">
-        <p class="filter-popup-title">Channel</p>
-        <div class="filter-chip-row compact">
-          <button *ngFor="let filter of channelFilters" type="button" class="queue-filter-btn" [class.active]="activeChannel() === filter.value" (click)="setActiveChannel(filter.value)">
-            <span>{{ filter.label }}</span>
-            <span class="pill count-pill">{{ getChannelCount(filter.value) }}</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="template-action-row">
-        <button type="button" class="ghost-action" (click)="closeFilterDialog()">Close</button>
-      </div>
-    </div>
-  </section>
-</div>
-
-<div class="quick-popup-backdrop" *ngIf="overviewDialogVisible" (click)="closeOverviewDialog()">
-  <section class="quick-popup overview-popup" (click)="$event.stopPropagation()">
-    <div class="quick-popup-header">
-      <div>
-        <p class="panel-eyebrow">Workspace overview</p>
-        <h3 class="panel-title info-title-compact">Queue Snapshot</h3>
-      </div>
-      <button type="button" class="close-btn" (click)="closeOverviewDialog()"><i class="pi pi-times"></i></button>
-    </div>
-
-    <div class="chat-overview-grid overview-grid-popup">
-      <article *ngFor="let card of overviewCards" class="summary-card" [attr.data-tone]="card.tone">
-        <div>
-          <p class="summary-label">{{ card.label }}</p>
-          <h3 class="summary-value">{{ card.value }}</h3>
-          <p class="summary-caption">{{ card.caption }}</p>
-        </div>
-        <div class="summary-icon"><i [class]="card.icon"></i></div>
-      </article>
-    </div>
-  </section>
-</div>
-
-<div class="quick-popup-backdrop" *ngIf="actionPopupMode !== 'none'" (click)="closeActionPopup()">
-  <section class="quick-popup" (click)="$event.stopPropagation()">
-    <div class="quick-popup-header">
-      <div>
-        <p class="panel-eyebrow">Quick action</p>
-        <h3 class="panel-title info-title-compact">
-          {{ actionPopupMode === 'photo' ? 'Send Photo' : actionPopupMode === 'gif' ? 'Send GIF' : actionPopupMode === 'document' ? 'Send Document' : actionPopupMode === 'icon' ? 'Send Icon' : actionPopupMode === 'product' ? 'Send Product Card' : 'Send Template' }}
+    <!-- Right: info drawer (inline 3rd column) -->
+    <aside class="cw-drawer" *ngIf="infoPanel() !== 'none' && selectedConversation() as conv">
+      <div class="cw-drawer-head">
+        <h3 class="cw-drawer-title">
+          {{ infoPanel() === 'customer' ? 'Customer' : infoPanel() === 'product' ? 'Products' : infoPanel() === 'context' ? 'Context' : 'Channel' }}
         </h3>
-      </div>
-      <button type="button" class="close-btn" (click)="closeActionPopup()"><i class="pi pi-times"></i></button>
-    </div>
-
-    <div class="quick-popup-body" *ngIf="actionPopupMode === 'photo' || actionPopupMode === 'gif' || actionPopupMode === 'document'">
-      <div class="media-input-grid">
-        <input type="text" class="form-input" [(ngModel)]="mediaUrl"
-               [placeholder]="actionPopupMode === 'photo' ? 'Paste photo URL' : actionPopupMode === 'gif' ? 'Paste GIF URL' : 'Paste document URL'" />
-        <input type="text" class="form-input" [(ngModel)]="mediaCaption" placeholder="Optional caption" />
-      </div>
-
-      <div class="media-preview" *ngIf="(actionPopupMode === 'photo' || actionPopupMode === 'gif') && mediaUrl.trim()">
-        <img [src]="mediaUrl.trim()" alt="Media preview" class="media-preview-image" />
-      </div>
-
-      <label class="media-toggle">
-        <input type="checkbox" [(ngModel)]="protectMediaContent" />
-        <span>Protect content</span>
-      </label>
-
-      <div class="template-action-row">
-        <button type="button" class="ghost-action" (click)="closeActionPopup()">Cancel</button>
-        <button type="button" class="send-btn" (click)="sendMedia()" [disabled]="!mediaUrl.trim() || sendingMedia">
-          <i [class]="sendingMedia ? 'pi pi-spin pi-spinner' : (actionPopupMode === 'photo' ? 'pi pi-image' : actionPopupMode === 'gif' ? 'pi pi-images' : 'pi pi-file')"></i>
-          <span>{{ sendingMedia ? 'Sending...' : (actionPopupMode === 'photo' ? 'Send photo' : actionPopupMode === 'gif' ? 'Send GIF' : 'Send document') }}</span>
+        <button type="button" class="cw-icon-btn" (click)="closeInfoPanel()">
+          <i class="pi pi-times"></i>
         </button>
       </div>
-    </div>
+      <div class="cw-drawer-body">
 
-    <div class="quick-popup-body" *ngIf="actionPopupMode === 'icon'">
-      <div class="icon-group-list">
-        <section *ngFor="let group of iconGroups" class="icon-group-card">
-          <div class="icon-group-title">{{ group.label }}</div>
-          <div class="icon-grid">
-            <button *ngFor="let icon of group.icons" type="button" class="icon-chip"
+        <!-- Customer panel -->
+        <div *ngIf="infoPanel() === 'customer'">
+          <app-customer-panel [conversation]="selectedConversation()"
+                              (customerLinked)="handleCustomerLinked($event)">
+          </app-customer-panel>
+        </div>
+
+        <!-- Product panel -->
+        <div *ngIf="infoPanel() === 'product'">
+          <app-product-panel [conversation]="selectedConversation()"
+                             (messageSent)="handleMessageSent($event)">
+          </app-product-panel>
+        </div>
+
+        <!-- Context panel -->
+        <div *ngIf="infoPanel() === 'context'" class="cw-context-panel">
+          <div class="cw-info-row">
+            <span class="cw-info-label">Category</span>
+            <span class="cw-info-val">{{ conv.category || 'General support' }}</span>
+          </div>
+          <div class="cw-info-row">
+            <span class="cw-info-label">Channel</span>
+            <span class="cw-info-val">{{ getConversationSourceLabel(conv) }}</span>
+          </div>
+          <div class="cw-info-row">
+            <span class="cw-info-label">Conversation type</span>
+            <span class="cw-info-val">{{ getConversationAudienceLabel(conv) }}</span>
+          </div>
+          <div class="cw-info-row">
+            <span class="cw-info-label">Tags</span>
+            <div class="cw-tags">
+              <span *ngFor="let tag of conv.tags" class="cw-tag">{{ tag }}</span>
+              <span *ngIf="!conv.tags?.length" class="cw-info-val">—</span>
+            </div>
+          </div>
+
+          <!-- Internal notes -->
+          <div class="cw-notes-section">
+            <p class="cw-notes-title">Internal notes</p>
+            <div *ngIf="notes().length === 0" class="cw-notes-empty">No notes yet</div>
+            <div *ngFor="let note of notes()" class="cw-note">
+              <div class="cw-note-head">
+                <span class="cw-note-author">{{ note.author_name }}</span>
+                <button type="button" class="cw-note-del" (click)="deleteNote(note.id)">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+              <p class="cw-note-text">{{ note.content }}</p>
+              <span class="cw-note-time">{{ note.created_at | date:'dd/MM HH:mm' }}</span>
+            </div>
+            <div class="cw-note-add">
+              <input type="text" class="cw-note-input" [(ngModel)]="draftNote"
+                     placeholder="Add a note..." (keydown.enter)="addNote()" />
+              <button type="button" class="cw-note-add-btn"
+                      [disabled]="!draftNote.trim() || savingNote()" (click)="addNote()">
+                <i [class]="savingNote() ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Channel panel -->
+        <div *ngIf="infoPanel() === 'channel'" class="cw-context-panel">
+          <div class="cw-info-row">
+            <span class="cw-info-label">Source</span>
+            <span class="cw-info-val">{{ getConversationSourceLabel(conv) }}</span>
+          </div>
+          <div class="cw-info-row">
+            <span class="cw-info-label">Bot profile</span>
+            <span class="cw-info-val">{{ (profile?.first_name || 'Bot') + ' @' + (profile?.username || '—') }}</span>
+          </div>
+          <div class="cw-info-row">
+            <span class="cw-info-label">Chat ID</span>
+            <span class="cw-info-val">{{ conv.chat_id }}</span>
+          </div>
+          <div class="cw-info-row">
+            <span class="cw-info-label">History</span>
+            <span class="cw-info-val">{{ conv.message_count ?? 0 }} messages</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ── Quick action popup ────────────────────────────────────────────────────── -->
+<div class="cw-modal-backdrop" *ngIf="actionPopupMode !== 'none' && actionPopupMode !== 'template' && actionPopupMode !== 'product'" (click)="closeActionPopup()">
+  <div class="cw-modal" (click)="$event.stopPropagation()">
+    <div class="cw-modal-head">
+      <h3 class="cw-modal-title">
+        {{ actionPopupMode === 'photo' ? 'Send photo' : actionPopupMode === 'gif' ? 'Send GIF' : actionPopupMode === 'document' ? 'Send document' : actionPopupMode === 'icon' ? 'Send icon' : 'Send product' }}
+      </h3>
+      <button type="button" class="cw-icon-btn" (click)="closeActionPopup()"><i class="pi pi-times"></i></button>
+    </div>
+    <div class="cw-modal-body">
+
+      <!-- Photo / GIF / Document -->
+      <ng-container *ngIf="actionPopupMode === 'photo' || actionPopupMode === 'gif' || actionPopupMode === 'document'">
+        <div class="cw-form-group">
+          <label class="cw-label">URL media</label>
+          <input type="text" class="cw-input" [(ngModel)]="mediaUrl"
+                 [placeholder]="actionPopupMode === 'photo' ? 'Paste image URL' : actionPopupMode === 'gif' ? 'Paste GIF URL' : 'Paste document URL'" />
+        </div>
+        <div class="cw-form-group">
+          <label class="cw-label">Caption (optional)</label>
+          <input type="text" class="cw-input" [(ngModel)]="mediaCaption" placeholder="Description" />
+        </div>
+        <div *ngIf="(actionPopupMode === 'photo' || actionPopupMode === 'gif') && mediaUrl.trim()" class="cw-preview">
+          <img [src]="mediaUrl.trim()" alt="Preview" class="cw-preview-img" />
+        </div>
+        <label class="cw-check-label">
+          <input type="checkbox" [(ngModel)]="protectMediaContent" />
+          Protect content
+        </label>
+        <div class="cw-modal-footer">
+          <button type="button" class="cw-btn" (click)="closeActionPopup()">Cancel</button>
+          <button type="button" class="cw-btn cw-btn-primary" (click)="sendMedia()"
+                  [disabled]="!mediaUrl.trim() || sendingMedia">
+            <i [class]="sendingMedia ? 'pi pi-spin pi-spinner' : 'pi pi-send'"></i>
+            {{ sendingMedia ? 'Sending...' : 'Send' }}
+          </button>
+        </div>
+      </ng-container>
+
+      <!-- Icon picker -->
+      <ng-container *ngIf="actionPopupMode === 'icon'">
+        <div *ngFor="let group of iconGroups" class="cw-icon-group">
+          <p class="cw-icon-group-label">{{ group.label }}</p>
+          <div class="cw-icon-grid">
+            <button *ngFor="let icon of group.icons" type="button" class="cw-icon-chip"
                     [class.active]="selectedIcon === icon" (click)="selectedIcon = icon">
               {{ icon }}
             </button>
           </div>
-        </section>
-      </div>
+        </div>
+        <input type="text" class="cw-input" [(ngModel)]="selectedIcon" maxlength="8" placeholder="Custom emoji" />
+        <div class="cw-modal-footer">
+          <button type="button" class="cw-btn" (click)="closeActionPopup()">Cancel</button>
+          <button type="button" class="cw-btn cw-btn-primary" (click)="sendIcon()"
+                  [disabled]="!selectedIcon.trim() || sendingIcon">
+            {{ sendingIcon ? 'Sending...' : 'Send icon' }}
+          </button>
+        </div>
+      </ng-container>
 
-      <input type="text" class="form-input" [(ngModel)]="selectedIcon" maxlength="8" placeholder="Custom icon or emoji" />
-
-      <div class="template-action-row">
-        <button type="button" class="ghost-action" (click)="closeActionPopup()">Cancel</button>
-        <button type="button" class="send-btn" (click)="sendIcon()" [disabled]="!selectedIcon.trim() || sendingIcon">
-          <i [class]="sendingIcon ? 'pi pi-spin pi-spinner' : 'pi pi-face-smile'"></i>
-          <span>{{ sendingIcon ? 'Sending...' : 'Send icon' }}</span>
-        </button>
-      </div>
+      <!-- Product card -->
+      <ng-container *ngIf="actionPopupMode === 'product'">
+        <div class="cw-form-group">
+          <label class="cw-label">Product name *</label>
+          <input type="text" class="cw-input" [(ngModel)]="productName" placeholder="e.g. AirPods Pro" />
+        </div>
+        <div class="cw-form-group">
+          <label class="cw-label">Price</label>
+          <input type="text" class="cw-input" [(ngModel)]="productPrice" placeholder="e.g. 5,990,000 VND" />
+        </div>
+        <div class="cw-form-group">
+          <label class="cw-label">Image URL *</label>
+          <input type="text" class="cw-input" [(ngModel)]="productImageUrl" placeholder="https://..." />
+        </div>
+        <div *ngIf="productImageUrl.trim()" class="cw-preview">
+          <img [src]="productImageUrl.trim()" alt="Preview" class="cw-preview-img" style="max-height:120px;object-fit:contain;" />
+        </div>
+        <div class="cw-form-group">
+          <label class="cw-label">Description</label>
+          <textarea class="cw-input" rows="2" [(ngModel)]="productDesc" placeholder="Product description..."></textarea>
+        </div>
+        <div class="cw-form-group">
+          <label class="cw-label">Product link</label>
+          <input type="text" class="cw-input" [(ngModel)]="productLink" placeholder="https://..." />
+        </div>
+        <div class="cw-modal-footer">
+          <button type="button" class="cw-btn" (click)="closeActionPopup()">Cancel</button>
+          <button type="button" class="cw-btn cw-btn-primary" (click)="sendProductCard()"
+                  [disabled]="!productName.trim() || !productImageUrl.trim() || sendingProduct">
+            {{ sendingProduct ? 'Sending...' : 'Send product' }}
+          </button>
+        </div>
+      </ng-container>
     </div>
-
-    <!-- Product Card Popup -->
-    <div class="quick-popup-body" *ngIf="actionPopupMode === 'product'">
-      <div class="flex flex-col gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
-          <input type="text" class="form-input w-full" [(ngModel)]="productName" placeholder="e.g. AirPods Pro 2nd Gen" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Price</label>
-          <input type="text" class="form-input w-full" [(ngModel)]="productPrice" placeholder="e.g. $249.00" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Image URL *</label>
-          <input type="text" class="form-input w-full" [(ngModel)]="productImageUrl" placeholder="https://example.com/image.jpg" />
-        </div>
-        <div *ngIf="productImageUrl.trim()" class="media-preview">
-          <img [src]="productImageUrl.trim()" alt="Product preview" class="media-preview-image max-h-32 object-contain" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-          <textarea class="form-input w-full" rows="3" [(ngModel)]="productDesc" placeholder="Product features and highlights..."></textarea>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Product Link</label>
-          <input type="text" class="form-input w-full" [(ngModel)]="productLink" placeholder="https://yourstore.com/product/123" />
-        </div>
-      </div>
-
-      <div class="template-action-row mt-6">
-        <button type="button" class="ghost-action" (click)="closeActionPopup()">Cancel</button>
-        <button type="button" class="send-btn" (click)="sendProductCard()" [disabled]="!productName.trim() || !productImageUrl.trim() || sendingProduct">
-          <i [class]="sendingProduct ? 'pi pi-spin pi-spinner' : 'pi pi-shopping-bag'"></i>
-          <span>{{ sendingProduct ? 'Sending...' : 'Send Product Card' }}</span>
-        </button>
-      </div>
-    </div>
-  </section>
+  </div>
 </div>
 
-<div class="info-overlay" *ngIf="infoPanel() !== 'none'" (click)="closeInfoPanel()">
-  <aside class="info-drawer" (click)="$event.stopPropagation()" *ngIf="selectedConversation() as conversation">
-    <div class="info-drawer-header">
-      <div>
-        <p class="panel-eyebrow">More details</p>
-        <h3 class="panel-title info-title-compact">
-          {{ infoPanel() === 'customer' ? 'Khách hàng' : infoPanel() === 'product' ? 'Sản phẩm' : infoPanel() === 'context' ? 'Conversation Context' : 'Channel Information' }}
-        </h3>
-      </div>
-      <button type="button" class="close-btn" (click)="closeInfoPanel()"><i class="pi pi-times"></i></button>
+<!-- ── Template drawer ───────────────────────────────────────────────────────── -->
+<div class="cw-modal-backdrop" *ngIf="templateDialogVisible" (click)="closeTemplateDialog()">
+  <div class="cw-modal cw-modal-wide" (click)="$event.stopPropagation()">
+    <div class="cw-modal-head">
+      <h3 class="cw-modal-title">Send template</h3>
+      <button type="button" class="cw-icon-btn" (click)="closeTemplateDialog()"><i class="pi pi-times"></i></button>
     </div>
-
-    <!-- Tab: Khách hàng -->
-    <div class="info-drawer-body" *ngIf="infoPanel() === 'customer'">
-      <app-customer-panel
-        [conversation]="selectedConversation()"
-        (customerLinked)="handleCustomerLinked($event)">
-      </app-customer-panel>
-    </div>
-
-    <!-- Tab: Sản phẩm -->
-    <div class="info-drawer-body" *ngIf="infoPanel() === 'product'">
-      <app-product-panel
-        [conversation]="selectedConversation()"
-        (messageSent)="handleMessageSent($event)">
-      </app-product-panel>
-    </div>
-
-    <div class="info-drawer-body" *ngIf="infoPanel() === 'context'">
-      <div class="detail-card">
-        <span class="detail-label">Product context</span>
-        <strong>{{ getConversationProductContext(conversation) }}</strong>
-      </div>
-      <div class="detail-card">
-        <span class="detail-label">Journey note</span>
-        <strong>{{ conversation.category || 'Shared thread context from support intake.' }}</strong>
-      </div>
-      <div class="detail-stack">
-        <div *ngFor="let step of journeySteps" class="journey-item">
-          <div>
-            <strong>{{ step.label }}</strong>
-            <span>{{ step.value }}</span>
-          </div>
-          <p>{{ step.detail }}</p>
-        </div>
-      </div>
-      <div class="tag-stack">
-        <span *ngFor="let tag of conversation.tags" class="meta-pill">{{ tag }}</span>
-      </div>
-    </div>
-
-    <div class="info-drawer-body" *ngIf="infoPanel() === 'channel'">
-      <div class="detail-card">
-        <span class="detail-label">Source</span>
-        <strong>{{ getConversationSourceLabel(conversation) }}</strong>
-      </div>
-      <div class="detail-card">
-        <span class="detail-label">Bot profile</span>
-        <strong>{{ (profile?.first_name || 'Bot') + ' / @' + (profile?.username || 'unknown') }}</strong>
-      </div>
-      <div class="detail-card">
-        <span class="detail-label">Shared history</span>
-        <strong>Kept across channels</strong>
-      </div>
-      <div class="detail-card">
-        <span class="detail-label">BOPIS support</span>
-        <strong>Enabled for {{ getConversationStore(conversation) }}</strong>
-      </div>
-    </div>
-  </aside>
-</div>
-
-<div class="info-overlay" *ngIf="templateDialogVisible" (click)="closeTemplateDialog()">
-  <section class="info-drawer template-drawer" (click)="$event.stopPropagation()">
-    <div class="info-drawer-header">
-      <div>
-        <p class="panel-eyebrow">Telegram template</p>
-        <h3 class="panel-title info-title-compact">Preview Before Send</h3>
-      </div>
-      <button type="button" class="close-btn" (click)="closeTemplateDialog()"><i class="pi pi-times"></i></button>
-    </div>
-
-    <div class="info-drawer-body">
+    <div class="cw-modal-body">
       <p-dropdown [options]="templates" [(ngModel)]="selectedTemplateId"
                   optionLabel="label" optionValue="value" class="w-full"
-                  placeholder="Choose a template"
+                  placeholder="Select template"
                   (onChange)="onTemplateChange($event.value)"></p-dropdown>
-
-      <div *ngIf="getSelectedTemplate() as selectedTemplate" class="detail-card template-preview-shell">
-        <div class="template-meta-row">
-          <strong>{{ selectedTemplate.name }}</strong>
-          <span class="meta-pill">{{ selectedTemplate.category }}</span>
+      <div *ngIf="getSelectedTemplate() as tpl" class="cw-tpl-preview">
+        <div class="cw-tpl-meta">
+          <strong>{{ tpl.name }}</strong>
+          <span class="cw-tag">{{ tpl.category }}</span>
         </div>
-        <p class="template-template-copy">{{ selectedTemplate.content }}</p>
-
-        <div *ngFor="let variable of selectedTemplate.variables" class="template-variable-field">
-          <label>{{ variable }}</label>
-          <input pInputText type="text" class="w-full"
-                 [(ngModel)]="templateVariableValues[variable]"
-                 [placeholder]="'Enter value for ' + variable" />
+        <p class="cw-tpl-content">{{ tpl.content }}</p>
+        <div *ngFor="let v of tpl.variables" class="cw-form-group">
+          <label class="cw-label">{{ v }}</label>
+          <input type="text" class="cw-input" [(ngModel)]="templateVariableValues[v]"
+                 [placeholder]="'Enter value for ' + v" />
         </div>
-
-        <div class="template-render-preview">
-          <span class="detail-label">Preview</span>
+        <div class="cw-tpl-render">
+          <span class="cw-label">Preview</span>
           <p>{{ selectedTemplatePreview }}</p>
         </div>
       </div>
-
-      <div class="template-action-row">
-        <button type="button" class="ghost-action" (click)="closeTemplateDialog()">Cancel</button>
-        <button type="button" class="send-btn" (click)="sendTemplate()" [disabled]="!selectedTemplateId || sendingTemplate">{{ sendingTemplate ? 'Sending...' : 'Send template' }}</button>
+      <div class="cw-modal-footer">
+        <button type="button" class="cw-btn" (click)="closeTemplateDialog()">Cancel</button>
+        <button type="button" class="cw-btn cw-btn-primary" (click)="sendTemplate()"
+                [disabled]="!selectedTemplateId || sendingTemplate">
+          {{ sendingTemplate ? 'Sending...' : 'Send template' }}
+        </button>
       </div>
     </div>
-  </section>
+  </div>
 </div>
 
-<ng-template #emptyConversationState>
-  <article class="flat-card empty-thread-card">
-    <div class="empty-state">
-      <i class="pi pi-comments"></i>
-      <h3>No conversation selected</h3>
-      <p>Choose a thread from the inbox to open the shared omnichannel conversation view.</p>
+<!-- ── Overview dialog ───────────────────────────────────────────────────────── -->
+<div class="cw-modal-backdrop" *ngIf="overviewDialogVisible" (click)="closeOverviewDialog()">
+  <div class="cw-modal cw-modal-wide" (click)="$event.stopPropagation()">
+    <div class="cw-modal-head">
+      <h3 class="cw-modal-title">Inbox overview</h3>
+      <button type="button" class="cw-icon-btn" (click)="closeOverviewDialog()"><i class="pi pi-times"></i></button>
     </div>
-  </article>
-</ng-template>
+    <div class="cw-modal-body">
+      <div class="cw-stats-grid">
+        <div *ngFor="let card of overviewCards" class="cw-stat-card" [attr.data-tone]="card.tone">
+          <div class="cw-stat-icon"><i [class]="card.icon"></i></div>
+          <div>
+            <p class="cw-stat-label">{{ card.label }}</p>
+            <h3 class="cw-stat-value">{{ card.value }}</h3>
+            <p class="cw-stat-cap">{{ card.caption }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <p-toast></p-toast>

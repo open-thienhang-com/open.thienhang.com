@@ -12,6 +12,9 @@ import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { ChatService } from '../../services/chat.service';
 import {
+  AgentInfo,
+  InternalNote,
+  QuickReply,
   TelegramBotProfile,
   TelegramConversation,
   TelegramDashboard,
@@ -65,6 +68,16 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
   readonly activeQueue = signal('all');
   readonly activeChannel = signal('all');
   readonly infoPanel = signal<'none' | 'customer' | 'product' | 'context' | 'channel'>('none');
+  readonly agents = signal<AgentInfo[]>([]);
+  readonly quickReplies = signal<QuickReply[]>([]);
+  readonly resolvingConversation = signal(false);
+  readonly assigningConversation = signal(false);
+  assignDropdownVisible = false;
+  quickReplyPickerVisible = false;
+  quickReplyFilter = '';
+  readonly notes = signal<InternalNote[]>([]);
+  readonly savingNote = signal(false);
+  draftNote = '';
 
   // ── Computed ───────────────────────────────────────────────────────────────
   readonly filteredConversations = computed(() => {
@@ -78,6 +91,13 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
       return [conv.user_name, conv.username, conv.last_message, conv.agent, conv.category, ...(conv.tags || [])]
         .filter(Boolean).join(' ').toLowerCase().includes(query);
     });
+  });
+
+  readonly filteredQuickReplies = computed(() => {
+    const q = this.quickReplyFilter.toLowerCase();
+    return this.quickReplies().filter(r =>
+      !q || r.shortcut.toLowerCase().includes(q) || r.content.toLowerCase().includes(q)
+    );
   });
 
   // ── Static data ────────────────────────────────────────────────────────────
@@ -171,6 +191,12 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
     this.loadingConversations.set(true);
     let pending = 4;
     const done = () => { if (--pending <= 0) this.loading.set(false); };
+    this.chatService.getOnlineAgents('online,busy').pipe(catchError(() => of(null))).subscribe(res => {
+      this.agents.set(res?.data ?? []);
+    });
+    this.chatService.getQuickReplies().pipe(catchError(() => of(null))).subscribe(res => {
+      this.quickReplies.set(res?.data ?? []);
+    });
 
     this.chatService.getTelegramProfile().pipe(catchError(() => of(null))).subscribe(res => {
       this.profile = res?.data ?? null;
@@ -248,11 +274,16 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
         this.messageSkip = this.MESSAGE_PAGE_SIZE;
         this.loading.set(false);
         this.draftReply = '';
+        this.draftNote = '';
+        this.notes.set([]);
         this.resetMediaForm();
         this.disableNotification = false;
         this.closeTemplateDialog();
         this.closeActionPopup();
         setTimeout(() => this.messageThreadRef?.scrollToBottom());
+        this.chatService.markConversationRead(id).pipe(catchError(() => of(null))).subscribe(() => {
+          this.conversations.update(convs => convs.map(c => c.id === id ? { ...c, unread_count: 0 } : c));
+        });
       },
       error: () => {
         this.loading.set(false);
@@ -382,9 +413,91 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
     return conversation.category ? `${conversation.category} inquiry` : 'General support context';
   }
 
+  // ── Conversation actions ───────────────────────────────────────────────────
+  resolveConversation(): void {
+    const conv = this.selectedConversation();
+    if (!conv?.id || this.resolvingConversation()) return;
+    this.resolvingConversation.set(true);
+    const newStatus = conv.status === 'resolved' ? 'active' : 'resolved';
+    this.chatService.updateTelegramConversationStatus(conv.id, { status: newStatus, note: '' }).subscribe({
+      next: (res) => {
+        const updated = { ...conv, status: res.data?.status ?? newStatus };
+        this.selectedConversation.set(updated);
+        this.conversations.update(convs => convs.map(c => c.id === conv.id ? { ...c, status: updated.status } : c));
+        this.resolvingConversation.set(false);
+        this.messageService.add({ severity: 'success', summary: newStatus === 'resolved' ? 'Resolved' : 'Reopened', detail: `Conversation marked as ${newStatus}` });
+      },
+      error: () => {
+        this.resolvingConversation.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Action failed', detail: 'Could not update conversation status' });
+      }
+    });
+  }
+
+  assignConversation(agentId: string, agentName: string): void {
+    const conv = this.selectedConversation();
+    if (!conv?.id || this.assigningConversation()) return;
+    this.assigningConversation.set(true);
+    this.assignDropdownVisible = false;
+    this.chatService.assignTelegramConversation(conv.id, { agent_id: agentId, agent_name: agentName }).subscribe({
+      next: (res) => {
+        const updated = { ...conv, agent: res.data?.agent ?? agentName };
+        this.selectedConversation.set(updated);
+        this.conversations.update(convs => convs.map(c => c.id === conv.id ? { ...c, agent: updated.agent } : c));
+        this.assigningConversation.set(false);
+        this.messageService.add({ severity: 'success', summary: 'Assigned', detail: `Conversation assigned to ${agentName}` });
+      },
+      error: () => {
+        this.assigningConversation.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Assign failed', detail: 'Could not assign conversation' });
+      }
+    });
+  }
+
   // ── Info panel ─────────────────────────────────────────────────────────────
   openInfoPanel(panel: 'customer' | 'product' | 'context' | 'channel'): void {
     this.infoPanel.set(panel);
+    if (panel === 'context') this._loadNotes();
+  }
+
+  toggleInfoPanel(panel: 'customer' | 'product' | 'context' | 'channel'): void {
+    if (this.infoPanel() === panel) {
+      this.infoPanel.set('none');
+    } else {
+      this.openInfoPanel(panel);
+    }
+  }
+
+  private _loadNotes(): void {
+    const id = this.selectedConversation()?.id;
+    if (!id) return;
+    // Backend may not return notes on conversation detail; fetch separately if endpoint supports it
+  }
+
+  addNote(): void {
+    const id = this.selectedConversation()?.id;
+    const content = this.draftNote.trim();
+    if (!id || !content || this.savingNote()) return;
+    this.savingNote.set(true);
+    this.chatService.addInternalNote(id, content).subscribe({
+      next: (res) => {
+        this.notes.update(n => [...n, res.data]);
+        this.draftNote = '';
+        this.savingNote.set(false);
+      },
+      error: () => {
+        this.savingNote.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Note failed', detail: 'Could not save internal note' });
+      }
+    });
+  }
+
+  deleteNote(noteId: string): void {
+    const id = this.selectedConversation()?.id;
+    if (!id) return;
+    this.chatService.deleteInternalNote(id, noteId).pipe(catchError(() => of(null))).subscribe(() => {
+      this.notes.update(n => n.filter(note => note.id !== noteId));
+    });
   }
 
   closeInfoPanel(): void {
@@ -580,6 +693,13 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ── Quick replies ──────────────────────────────────────────────────────────
+  useQuickReply(reply: QuickReply): void {
+    this.draftReply = reply.content;
+    this.quickReplyPickerVisible = false;
+    this.quickReplyFilter = '';
+  }
+
   // ── Product from panel (messageSent output) ────────────────────────────────
   handleMessageSent(message: TelegramMessage): void {
     const conv = this.selectedConversation();
@@ -600,7 +720,7 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
     if (mode === 'template') { this.openTemplateDialog(); return; }
     if (mode === 'photo' || mode === 'gif' || mode === 'document') { this.mediaType = mode as any; this.actionPopupMode = mode as any; return; }
     if (mode === 'icon') { this.actionPopupMode = 'icon'; return; }
-    if (mode === 'product') { this.actionPopupMode = 'product'; }
+    if (mode === 'product') { this.openInfoPanel('product'); return; }
   }
 
   closeActionPopup(): void {

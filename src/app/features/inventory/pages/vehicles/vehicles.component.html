@@ -1,0 +1,369 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="bg-gray-50 min-h-screen p-6">
+
+    <!-- Header Section -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
+            <i class="pi pi-truck text-white text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">Fleet Management</h1>
+            <p class="text-gray-600">Manage vehicles, drivers and logistics capacity</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+          <p-button
+            icon="pi pi-refresh"
+            severity="info"
+            [outlined]="true"
+            [rounded]="true"
+            (click)="refreshData()"
+            pTooltip="Refresh Data"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <p-button
+            icon="pi pi-filter"
+            severity="secondary"
+            [outlined]="!showFilters"
+            [rounded]="true"
+            (click)="toggleFilters()"
+            pTooltip="Toggle Filters"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <p-button
+            icon="pi pi-list"
+            severity="secondary"
+            [outlined]="viewMode !== 'list'"
+            [rounded]="true"
+            (click)="setViewMode('list')"
+            pTooltip="List View"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <p-button
+            icon="pi pi-th-large"
+            severity="secondary"
+            [outlined]="viewMode !== 'card'"
+            [rounded]="true"
+            (click)="setViewMode('card')"
+            pTooltip="Card View"
+            class="hidden sm:inline-flex">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Total Vehicles</p>
+            <p class="text-3xl font-bold text-gray-900">{{ stats.total || 0 }}</p>
+          </div>
+          <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-truck text-amber-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Active</p>
+            <p class="text-3xl font-bold text-green-600">{{ stats.active || 0 }}</p>
+          </div>
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-check-circle text-green-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Busy</p>
+            <p class="text-3xl font-bold text-blue-600">{{ stats.busy || 0 }}</p>
+          </div>
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-spin pi-spinner text-blue-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Maintenance</p>
+            <p class="text-3xl font-bold text-orange-600">{{ stats.maintenance || 0 }}</p>
+          </div>
+          <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-wrench text-orange-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6" *ngIf="showFilters">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="flex flex-col gap-2">
+          <label for="search" class="text-sm font-medium text-gray-700">Search</label>
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-search"></i>
+            <input
+              id="search"
+              type="text"
+              pInputText
+              placeholder="Search by plate, code, driver..."
+              [(ngModel)]="keyword"
+              (keyup.enter)="onSearch()"
+              class="w-full" />
+          </span>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label for="status" class="text-sm font-medium text-gray-700">Status</label>
+          <p-dropdown
+            id="status"
+            [options]="statusOptions"
+            [(ngModel)]="selectedStatus"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="All Status"
+            [showClear]="true"
+            (onChange)="onStatusFilter()"
+            class="w-full">
+          </p-dropdown>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label for="warehouse" class="text-sm font-medium text-gray-700">Warehouse</label>
+          <p-dropdown
+            id="warehouse"
+            [options]="warehouseOptions"
+            [(ngModel)]="selectedWarehouse"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="All Warehouses"
+            [showClear]="true"
+            (onChange)="onWarehouseFilter()"
+            class="w-full">
+          </p-dropdown>
+        </div>
+
+        <div></div>
+      </div>
+
+      <!-- Filter Actions -->
+      <div class="flex items-center gap-3 mt-4">
+        <p-button
+          label="Apply"
+          icon="pi pi-check"
+          severity="primary"
+          (click)="applyFilters()">
+        </p-button>
+        <p-button
+          label="Clear"
+          icon="pi pi-times"
+          severity="secondary"
+          [outlined]="true"
+          (click)="clearFilters()">
+        </p-button>
+      </div>
+    </div>
+
+    <!-- List View -->
+    <div *ngIf="viewMode === 'list'" class="bg-white rounded-lg shadow-sm">
+      <p-table
+        [value]="vehicles"
+        [loading]="loading"
+        [tableStyle]="{ 'min-width': '60rem' }"
+        styleClass="p-datatable-gridlines">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Vehicle</th>
+            <th>Type</th>
+            <th>Driver</th>
+            <th>Status</th>
+            <th class="text-center">Capacity</th>
+            <th>Warehouse</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-v>
+          <tr class="cursor-pointer hover:bg-amber-50/30 transition-colors" (click)="viewVehicle(v)">
+            <td>
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-truck text-white"></i>
+                </div>
+                <div>
+                  <div class="font-semibold text-gray-900 hover:text-amber-600">{{ v.license_plate || '—' }}</div>
+                  <div class="text-sm font-mono text-gray-500">{{ v.vehicle_code || '—' }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <p-badge
+                [value]="v.vehicle_type || 'Unknown'"
+                severity="info">
+              </p-badge>
+            </td>
+            <td>
+              <div class="font-medium text-gray-900">{{ v.driver_name || '—' }}</div>
+              <div *ngIf="v.driver_phone" class="text-xs text-gray-500">{{ v.driver_phone }}</div>
+            </td>
+            <td>
+              <p-badge
+                [value]="(v.status || 'unknown') | titlecase"
+                [severity]="getStatusSeverity(v.status)">
+              </p-badge>
+            </td>
+            <td class="text-center">
+              <div class="text-sm font-medium text-gray-900">{{ v.max_weight ? (v.max_weight + ' kg') : '—' }}</div>
+              <div *ngIf="v.max_volume" class="text-xs text-gray-500">{{ v.max_volume }} m³</div>
+            </td>
+            <td>
+              <span class="text-sm text-gray-600">{{ v.warehouse_name || v.warehouse_id || '—' }}</span>
+            </td>
+            <td (click)="$event.stopPropagation()">
+              <div class="flex items-center justify-center gap-1">
+                <p-button
+                  icon="pi pi-eye"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="info"
+                  size="small"
+                  (click)="viewVehicle(v)"
+                  pTooltip="View Details">
+                </p-button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7" class="text-center py-12">
+              <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="pi pi-truck text-gray-400 text-2xl"></i>
+              </div>
+              <h3 class="text-lg font-medium text-gray-900 mb-2">No vehicles found</h3>
+              <p class="text-gray-500 mb-6">{{ keyword || selectedStatus || selectedWarehouse ? 'Try adjusting your filters.' : 'No vehicles are registered yet.' }}</p>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- Card View -->
+    <div *ngIf="viewMode === 'card'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let v of vehicles"
+           class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer"
+           (click)="viewVehicle(v)">
+
+        <!-- Vehicle Header -->
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
+                <i class="pi pi-truck text-white text-lg"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-900 hover:text-amber-600">{{ v.license_plate || 'No Plate' }}</h3>
+                <p class="text-sm font-mono text-gray-500">{{ v.vehicle_code || '—' }}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-badge
+                [value]="(v.status || 'unknown') | titlecase"
+                [severity]="getStatusSeverity(v.status)"
+                class="text-xs">
+              </p-badge>
+            </div>
+          </div>
+
+          <!-- Vehicle Stats -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="text-center p-3 bg-gray-50 rounded-lg">
+              <div class="text-lg font-semibold text-gray-900">{{ v.max_weight ? (v.max_weight + ' kg') : '—' }}</div>
+              <div class="text-xs text-gray-500">Max Weight</div>
+            </div>
+            <div class="text-center p-3 bg-gray-50 rounded-lg">
+              <div class="text-lg font-semibold text-gray-900">{{ v.max_volume ? (v.max_volume + ' m³') : '—' }}</div>
+              <div class="text-xs text-gray-500">Max Volume</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Driver & Type Info -->
+        <div class="p-4 border-b border-gray-200 bg-gray-50/50">
+          <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
+            <div class="flex items-center gap-1">
+              <i class="pi pi-car text-[10px]"></i>
+              <span>{{ v.vehicle_type || 'Unknown' }}</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <i class="pi pi-building text-[10px]"></i>
+              <span>{{ v.warehouse_name || v.warehouse_id || '—' }}</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 text-sm text-gray-700">
+            <i class="pi pi-user text-xs text-gray-400"></i>
+            <span class="font-medium">{{ v.driver_name || 'No driver assigned' }}</span>
+          </div>
+          <div *ngIf="v.driver_phone" class="flex items-center gap-2 text-xs text-gray-500 mt-1">
+            <i class="pi pi-phone text-[10px] text-gray-400"></i>
+            <span>{{ v.driver_phone }}</span>
+          </div>
+        </div>
+
+        <!-- Vehicle Actions -->
+        <div class="p-4" (click)="$event.stopPropagation()">
+          <div class="flex items-center justify-between gap-2">
+            <p-button
+                label="View Details"
+                icon="pi pi-eye"
+                [text]="true"
+                severity="info"
+                size="small"
+                (click)="viewVehicle(v)"
+                class="w-full">
+            </p-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="vehicles.length === 0 && !loading" class="col-span-full">
+        <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="pi pi-truck text-gray-400 text-2xl"></i>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No vehicles found</h3>
+          <p class="text-gray-500 mb-6">{{ keyword || selectedStatus || selectedWarehouse ? 'Try adjusting your filters.' : 'No vehicles are registered yet.' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Skeleton for Card View -->
+    <div *ngIf="loading && viewMode === 'card'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let i of [1,2,3,4,5,6]" class="bg-white rounded-xl border border-gray-200 p-6">
+        <p-skeleton height="160px" borderRadius="8px"></p-skeleton>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-8 flex justify-center" *ngIf="vehicles.length > 0 && totalRecords > pageSize">
+      <p-paginator
+        [rows]="pageSize"
+        [totalRecords]="totalRecords"
+        [rowsPerPageOptions]="[10,20,50]"
+        (onPageChange)="onPageChange($event)">
+      </p-paginator>
+    </div>
+
+</div>

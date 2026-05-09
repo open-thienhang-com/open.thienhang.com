@@ -28,7 +28,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        loadComponent: () => import('./features/applications/applications.component').then(m => m.ApplicationsComponent),
+        loadComponent: () => import('./pages/landing/landing.component').then(m => m.LandingComponent),
         pathMatch: 'full'
       },
       {

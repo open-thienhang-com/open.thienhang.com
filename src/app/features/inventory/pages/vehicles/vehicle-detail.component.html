@@ -1,0 +1,153 @@
+<p-toast></p-toast>
+
+<div class="bg-gray-50 min-h-screen p-6">
+
+    <!-- Back Navigation -->
+    <div class="mb-6">
+      <p-button
+        label="Back to Fleet"
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        [outlined]="true"
+        size="small"
+        (click)="router.navigate(['/inventory/fleet'])">
+      </p-button>
+    </div>
+
+    <!-- Loading Skeleton -->
+    <div *ngIf="loading" class="space-y-6">
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <p-skeleton height="48px" borderRadius="8px" class="mb-4"></p-skeleton>
+        <p-skeleton height="24px" width="60%" borderRadius="8px"></p-skeleton>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <p-skeleton height="200px" borderRadius="8px"></p-skeleton>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <p-skeleton height="200px" borderRadius="8px"></p-skeleton>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vehicle Detail -->
+    <div *ngIf="!loading && vehicle">
+
+      <!-- Header Card -->
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
+              <i class="pi pi-truck text-white text-2xl"></i>
+            </div>
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900">{{ vehicle.license_plate || vehicle.vehicle_code }}</h1>
+              <p class="text-gray-600 font-mono">{{ vehicle.vehicle_code }} · {{ vehicle.vehicle_type || 'Vehicle' }}</p>
+            </div>
+          </div>
+          <p-badge
+            [value]="(vehicle.status || 'unknown') | titlecase"
+            [severity]="getStatusSeverity(vehicle.status)">
+          </p-badge>
+        </div>
+      </div>
+
+      <!-- Detail Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Vehicle Specifications -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <i class="pi pi-cog text-amber-600"></i>
+            Specifications
+          </h2>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+              <span class="text-sm text-gray-500 flex items-center gap-2">
+                <i class="pi pi-id-card text-xs"></i> License Plate
+              </span>
+              <span class="font-semibold text-gray-900">{{ vehicle.license_plate || '—' }}</span>
+            </div>
+            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+              <span class="text-sm text-gray-500 flex items-center gap-2">
+                <i class="pi pi-hashtag text-xs"></i> Vehicle Code
+              </span>
+              <span class="font-mono text-gray-900">{{ vehicle.vehicle_code || '—' }}</span>
+            </div>
+            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+              <span class="text-sm text-gray-500 flex items-center gap-2">
+                <i class="pi pi-car text-xs"></i> Vehicle Type
+              </span>
+              <span class="font-medium text-gray-900">{{ vehicle.vehicle_type || '—' }}</span>
+            </div>
+            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+              <span class="text-sm text-gray-500 flex items-center gap-2">
+                <i class="pi pi-arrow-up text-xs"></i> Max Weight
+              </span>
+              <span class="font-semibold text-gray-900">{{ vehicle.max_weight ? (vehicle.max_weight + ' kg') : '—' }}</span>
+            </div>
+            <div class="flex items-center justify-between py-3">
+              <span class="text-sm text-gray-500 flex items-center gap-2">
+                <i class="pi pi-box text-xs"></i> Max Volume
+              </span>
+              <span class="font-semibold text-gray-900">{{ vehicle.max_volume ? (vehicle.max_volume + ' m³') : '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Driver & Location -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <i class="pi pi-user text-amber-600"></i>
+            Driver & Assignment
+          </h2>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+              <span class="text-sm text-gray-500 flex items-center gap-2">
+                <i class="pi pi-user text-xs"></i> Driver Name
+              </span>
+              <span class="font-semibold text-gray-900">{{ vehicle.driver_name || '—' }}</span>
+            </div>
+            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+              <span class="text-sm text-gray-500 flex items-center gap-2">
+                <i class="pi pi-phone text-xs"></i> Driver Phone
+              </span>
+              <span class="font-medium text-gray-900">{{ vehicle.driver_phone || '—' }}</span>
+            </div>
+            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+              <span class="text-sm text-gray-500 flex items-center gap-2">
+                <i class="pi pi-building text-xs"></i> Warehouse
+              </span>
+              <span class="font-medium text-gray-900">{{ vehicle.warehouse_name || vehicle.warehouse_id || '—' }}</span>
+            </div>
+            <div class="flex items-center justify-between py-3">
+              <span class="text-sm text-gray-500 flex items-center gap-2">
+                <i class="pi pi-info-circle text-xs"></i> Status
+              </span>
+              <p-badge
+                [value]="(vehicle.status || 'unknown') | titlecase"
+                [severity]="getStatusSeverity(vehicle.status)">
+              </p-badge>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Not Found State -->
+    <div *ngIf="!loading && !vehicle" class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+      <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="pi pi-exclamation-triangle text-orange-600 text-2xl"></i>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">Vehicle not found</h3>
+      <p class="text-gray-500 mb-6">The requested vehicle could not be located.</p>
+      <p-button
+        label="Back to Fleet"
+        icon="pi pi-arrow-left"
+        severity="primary"
+        (click)="router.navigate(['/inventory/fleet'])">
+      </p-button>
+    </div>
+
+</div>
