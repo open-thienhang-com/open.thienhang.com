@@ -32,6 +32,11 @@
               "assets": [
                 "src/assets",
                 {
+                  "glob": "**/*",
+                  "input": "public",
+                  "output": "/public"
+                },
+                {
                   "glob": "CNAME",
                   "input": ".",
                   "output": "/"

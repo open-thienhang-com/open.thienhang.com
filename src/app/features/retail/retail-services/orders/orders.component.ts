@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, effect } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -9,7 +9,8 @@ import { ToastModule } from 'primeng/toast';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
-import { MessageService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { InventoryService as RetailOrderService } from '../../../inventory/services/inventory.service';
 
 interface OrderItem {
@@ -27,6 +28,20 @@ interface OrderItem {
   updatedAt: Date | null;
 }
 
+interface StatusStep {
+  status: string;
+  icon: string;
+  label: string;
+  desc: string;
+}
+
+interface StatusAction {
+  key: string;
+  label: string;
+  severity: 'success' | 'warn' | 'danger' | 'info' | 'secondary' | 'contrast';
+  icon: string;
+}
+
 @Component({
   selector: 'app-orders',
   standalone: true,
@@ -40,11 +55,12 @@ interface OrderItem {
     ToastModule,
     TagModule,
     TooltipModule,
-    DialogModule
+    DialogModule,
+    ConfirmDialogModule
   ],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.scss',
-  providers: [MessageService]
+  providers: [MessageService, ConfirmationService]
 })
 export class OrdersComponent implements OnInit {
   // ── Signals ──
@@ -56,6 +72,13 @@ export class OrdersComponent implements OnInit {
   selectedOrder = signal<any>(null);
   detailVisible = signal(false);
   detailLoading = signal(false);
+  updatingStatus = signal(false);
+
+  // Handle both _id (MongoDB alias) and id (serialized field name)
+  selectedOrderId = computed(() => {
+    const o = this.selectedOrder();
+    return o?._id || o?.id || '';
+  });
 
   searchTerm = signal('');
   selectedOrderStatus = signal('');
@@ -103,18 +126,36 @@ export class OrdersComponent implements OnInit {
     { label: 'All Order Status', value: '' },
     { label: 'Pending', value: 'pending' },
     { label: 'Confirmed', value: 'confirmed' },
-    { label: 'Cancelled', value: 'cancelled' }
+    { label: 'Processing', value: 'processing' },
+    { label: 'Shipped', value: 'shipped' },
+    { label: 'Delivered', value: 'delivered' },
+    { label: 'Cancelled', value: 'cancelled' },
+    { label: 'Returned', value: 'returned' },
+    { label: 'Expired', value: 'expired' }
   ];
 
   paymentStatusOptions = [
     { label: 'All Payment Status', value: '' },
     { label: 'Unpaid', value: 'unpaid' },
     { label: 'Paid', value: 'paid' },
-    { label: 'Failed', value: 'failed' }
+    { label: 'Partial', value: 'partial' },
+    { label: 'Refunded', value: 'refunded' }
   ];
+
+  // ── Status flow definition (for timeline card) ──
+  statusFlow: StatusStep[] = [
+    { status: 'pending',    icon: 'pi-clock',        label: 'Pending',    desc: 'Đơn mới tạo, chờ xác nhận từ nhân viên' },
+    { status: 'confirmed',  icon: 'pi-check-circle', label: 'Confirmed',  desc: 'Đã xác nhận, đang chờ xử lý đóng gói' },
+    { status: 'processing', icon: 'pi-cog',          label: 'Processing', desc: 'Đang xử lý / đóng gói hàng hóa' },
+    { status: 'shipped',    icon: 'pi-truck',        label: 'Shipped',    desc: 'Đã bàn giao cho đơn vị vận chuyển' },
+    { status: 'delivered',  icon: 'pi-home',         label: 'Delivered',  desc: 'Giao hàng thành công đến khách hàng' },
+  ];
+
+  private readonly statusOrder = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
 
   constructor(
     private messageService: MessageService,
+    private confirmationService: ConfirmationService,
     private retailOrderService: RetailOrderService
   ) { }
 
@@ -161,18 +202,99 @@ export class OrdersComponent implements OnInit {
 
   getOrderStatusSeverity(status: string): 'success' | 'warn' | 'danger' | 'info' {
     const key = (status || '').toLowerCase();
-    if (key === 'confirmed' || key === 'completed') return 'success';
+    if (key === 'delivered') return 'success';
     if (key === 'pending') return 'warn';
-    if (key === 'cancelled' || key === 'failed') return 'danger';
+    if (key === 'cancelled' || key === 'returned' || key === 'expired') return 'danger';
     return 'info';
   }
 
   getPaymentStatusSeverity(status: string): 'success' | 'warn' | 'danger' | 'info' {
     const key = (status || '').toLowerCase();
     if (key === 'paid') return 'success';
+    if (key === 'partial') return 'warn';
     if (key === 'unpaid' || key === 'pending') return 'warn';
-    if (key === 'failed') return 'danger';
+    if (key === 'refunded') return 'danger';
     return 'info';
+  }
+
+  isCurrentOrPastStatus(stepStatus: string): boolean {
+    const current = (this.selectedOrder()?.order_status || '').toLowerCase();
+    const currentIdx = this.statusOrder.indexOf(current);
+    const stepIdx = this.statusOrder.indexOf(stepStatus);
+    if (currentIdx === -1 || stepIdx === -1) return false;
+    return stepIdx <= currentIdx;
+  }
+
+  isCurrentStatus(stepStatus: string): boolean {
+    return (this.selectedOrder()?.order_status || '').toLowerCase() === stepStatus;
+  }
+
+  isCancelledOrder(): boolean {
+    const status = (this.selectedOrder()?.order_status || '').toLowerCase();
+    return status === 'cancelled' || status === 'returned' || status === 'expired';
+  }
+
+  getAvailableActions(status: string): StatusAction[] {
+    const s = (status || '').toLowerCase();
+    const cancelAction: StatusAction = { key: 'cancel', label: 'Cancel Order', severity: 'danger', icon: 'pi pi-times' };
+    switch (s) {
+      case 'pending':    return [{ key: 'confirm',  label: 'Confirm Order',      severity: 'success', icon: 'pi pi-check' }, cancelAction];
+      case 'confirmed':  return [{ key: 'process',  label: 'Mark Processing',    severity: 'info',    icon: 'pi pi-cog'   }, cancelAction];
+      case 'processing': return [{ key: 'ship',     label: 'Mark Shipped',       severity: 'info',    icon: 'pi pi-truck' }, cancelAction];
+      case 'shipped':    return [{ key: 'deliver',  label: 'Mark Delivered',     severity: 'success', icon: 'pi pi-home'  }];
+      default:           return [];
+    }
+  }
+
+  updateOrderStatus(action: string, orderId: string): void {
+    if (action === 'cancel') {
+      this.confirmationService.confirm({
+        message: 'Bạn chắc chắn muốn huỷ đơn hàng này?',
+        header: 'Xác nhận huỷ đơn',
+        icon: 'pi pi-exclamation-triangle',
+        accept: () => this.executeStatusUpdate(action, orderId)
+      });
+      return;
+    }
+    this.executeStatusUpdate(action, orderId);
+  }
+
+  private executeStatusUpdate(action: string, orderId: string): void {
+    if (!orderId) {
+      this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: 'Không tìm thấy ID đơn hàng' });
+      return;
+    }
+    this.updatingStatus.set(true);
+
+    const request$ = (() => {
+      switch (action) {
+        case 'confirm':  return this.retailOrderService.confirmOrder(orderId);
+        case 'process':  return this.retailOrderService.processOrder(orderId);
+        case 'ship':     return this.retailOrderService.shipOrder(orderId);
+        case 'deliver':  return this.retailOrderService.deliverOrder(orderId);
+        case 'cancel':   return this.retailOrderService.cancelOrder(orderId);
+        default:         return null;
+      }
+    })();
+
+    if (!request$) { this.updatingStatus.set(false); return; }
+
+    request$.subscribe({
+      next: (resp: any) => {
+        const updated = resp?.data || resp;
+        this.selectedOrder.set(updated);
+        const updatedId = updated?._id || updated?.id || orderId;
+        this.orders.update(list =>
+          list.map(o => o.id === updatedId ? { ...o, orderStatus: updated?.order_status || o.orderStatus } : o)
+        );
+        this.updatingStatus.set(false);
+        this.messageService.add({ severity: 'success', summary: 'Cập nhật thành công', detail: `Đơn hàng đã chuyển sang trạng thái ${updated?.order_status}` });
+      },
+      error: (err: any) => {
+        this.updatingStatus.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: err?.error?.detail || 'Không thể cập nhật trạng thái đơn hàng' });
+      }
+    });
   }
 
   viewOrder(id: string): void {

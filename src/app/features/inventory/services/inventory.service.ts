@@ -207,6 +207,26 @@ export class InventoryService {
     return this.http.post<ApiResponse<any>>(`${getApiBase()}/data-mesh/domains/retail/orders`, data);
   }
 
+  confirmOrder(id: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${getApiBase()}/data-mesh/domains/retail/orders/${id}/confirm`, {});
+  }
+
+  processOrder(id: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${getApiBase()}/data-mesh/domains/retail/orders/${id}/process`, {});
+  }
+
+  shipOrder(id: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${getApiBase()}/data-mesh/domains/retail/orders/${id}/ship`, {});
+  }
+
+  deliverOrder(id: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${getApiBase()}/data-mesh/domains/retail/orders/${id}/deliver`, {});
+  }
+
+  cancelOrder(id: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${getApiBase()}/data-mesh/domains/retail/orders/${id}/cancel`, {});
+  }
+
   listTransactions(skip: number = 0, limit: number = 20): Observable<ListResponse<any>> {
     return this.http.get<ListResponse<any>>(`${getApiBase()}/data-mesh/domains/retail/transactions?skip=${skip}&limit=${limit}`);
   }

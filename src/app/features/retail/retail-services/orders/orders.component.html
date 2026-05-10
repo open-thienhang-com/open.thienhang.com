@@ -1,4 +1,5 @@
 <p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
 
 <div class="bg-gray-50 min-h-screen p-6">
   <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
@@ -209,12 +210,13 @@
   </div>
 </div>
 
+<!-- Order Detail Modal -->
 <p-dialog
   header="Order Detail"
   [visible]="detailVisible()"
   (visibleChange)="detailVisible.set($event)"
   [modal]="true"
-  [style]="{ width: '700px' }"
+  [style]="{ width: '820px' }"
   [draggable]="false"
   [resizable]="false">
 
@@ -223,71 +225,129 @@
   </div>
 
   <ng-container *ngIf="!detailLoading() && selectedOrder()">
-    <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
-      <div>
-        <span class="text-gray-500">Order Number</span>
-        <p class="font-semibold">{{ selectedOrder().order_number || '-' }}</p>
-      </div>
-      <div>
-        <span class="text-gray-500">Customer</span>
-        <p class="font-semibold">{{ selectedOrder().customer_id || '-' }}</p>
-      </div>
-      <div>
-        <span class="text-gray-500">Source</span>
-        <p class="font-semibold">{{ selectedOrder().source || '-' }}</p>
-      </div>
-      <div>
-        <span class="text-gray-500">Warehouse</span>
-        <p class="font-semibold">{{ selectedOrder().warehouse_id || '-' }}</p>
-      </div>
-      <div>
-        <span class="text-gray-500">Order Status</span>
-        <p-tag [value]="selectedOrder().order_status || '-'" [severity]="getOrderStatusSeverity(selectedOrder().order_status)"></p-tag>
-      </div>
-      <div>
-        <span class="text-gray-500">Payment Status</span>
-        <p-tag [value]="selectedOrder().payment_status || '-'" [severity]="getPaymentStatusSeverity(selectedOrder().payment_status)"></p-tag>
-      </div>
-      <div>
-        <span class="text-gray-500">Total Amount</span>
-        <p class="font-semibold text-orange-600">{{ selectedOrder().total_amount | number: '1.2-2' }}</p>
-      </div>
-      <div>
-        <span class="text-gray-500">Net Amount</span>
-        <p class="font-semibold">{{ selectedOrder().net_amount | number: '1.2-2' }}</p>
-      </div>
-    </div>
+    <div class="flex gap-6">
 
-    <h3 class="text-sm font-semibold text-gray-700 mb-2">Items ({{ selectedOrder().items?.length || 0 }})</h3>
-    <div class="border rounded-lg overflow-hidden">
-      <table class="w-full text-sm">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-3 py-2 text-left text-gray-600">Product</th>
-            <th class="px-3 py-2 text-left text-gray-600">SKU</th>
-            <th class="px-3 py-2 text-right text-gray-600">Qty</th>
-            <th class="px-3 py-2 text-right text-gray-600">Unit Price</th>
-            <th class="px-3 py-2 text-right text-gray-600">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let it of selectedOrder().items" class="border-t">
-            <td class="px-3 py-2">{{ it.product_name || it.product_id }}</td>
-            <td class="px-3 py-2 text-gray-500">{{ it.sku || '-' }}</td>
-            <td class="px-3 py-2 text-right">{{ it.quantity }}</td>
-            <td class="px-3 py-2 text-right">{{ it.unit_price | number: '1.2-2' }}</td>
-            <td class="px-3 py-2 text-right font-semibold">{{ it.total_price | number: '1.2-2' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <!-- Status Timeline Card -->
+      <div class="status-timeline-card">
+        <div class="timeline-card-title">
+          <i class="pi pi-map-marker"></i>
+          Luồng trạng thái
+        </div>
+        <p class="timeline-card-hint">Hướng dẫn cho nhân viên mới</p>
 
-    <div class="mt-4 text-xs text-gray-400">
-      Created: {{ selectedOrder().created_at ? (selectedOrder().created_at | date: 'medium') : '-' }}
+        <div class="status-timeline" *ngIf="!isCancelledOrder()">
+          <div
+            *ngFor="let step of statusFlow; let last = last"
+            class="timeline-item"
+            [class.active]="isCurrentOrPastStatus(step.status)"
+            [class.current]="isCurrentStatus(step.status)">
+            <div class="timeline-connector-wrap">
+              <div class="timeline-dot">
+                <i [class]="'pi ' + step.icon"></i>
+              </div>
+              <div class="timeline-line" *ngIf="!last"></div>
+            </div>
+            <div class="timeline-content">
+              <span class="step-label">{{ step.label }}</span>
+              <span class="step-desc">{{ step.desc }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cancelled / terminal state -->
+        <div *ngIf="isCancelledOrder()" class="cancelled-notice">
+          <div class="cancelled-dot">
+            <i class="pi pi-times-circle"></i>
+          </div>
+          <div>
+            <span class="step-label" style="color:#ef4444">{{ selectedOrder().order_status | titlecase }}</span>
+            <span class="step-desc">Đơn hàng đã kết thúc, không thể thay đổi trạng thái</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Info -->
+      <div class="flex-1">
+        <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
+          <div>
+            <span class="text-gray-500">Order Number</span>
+            <p class="font-semibold">{{ selectedOrder().order_number || '-' }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500">Customer</span>
+            <p class="font-semibold">{{ selectedOrder().customer_id || '-' }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500">Source</span>
+            <p class="font-semibold">{{ selectedOrder().source || '-' }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500">Warehouse</span>
+            <p class="font-semibold">{{ selectedOrder().warehouse_id || '-' }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500">Order Status</span>
+            <p-tag [value]="selectedOrder().order_status || '-'" [severity]="getOrderStatusSeverity(selectedOrder().order_status)"></p-tag>
+          </div>
+          <div>
+            <span class="text-gray-500">Payment Status</span>
+            <p-tag [value]="selectedOrder().payment_status || '-'" [severity]="getPaymentStatusSeverity(selectedOrder().payment_status)"></p-tag>
+          </div>
+          <div>
+            <span class="text-gray-500">Total Amount</span>
+            <p class="font-semibold text-orange-600">{{ selectedOrder().total_amount | number: '1.2-2' }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500">Net Amount</span>
+            <p class="font-semibold">{{ selectedOrder().net_amount | number: '1.2-2' }}</p>
+          </div>
+        </div>
+
+        <h3 class="text-sm font-semibold text-gray-700 mb-2">Items ({{ selectedOrder().items?.length || 0 }})</h3>
+        <div class="border rounded-lg overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-3 py-2 text-left text-gray-600">Product</th>
+                <th class="px-3 py-2 text-left text-gray-600">SKU</th>
+                <th class="px-3 py-2 text-right text-gray-600">Qty</th>
+                <th class="px-3 py-2 text-right text-gray-600">Unit Price</th>
+                <th class="px-3 py-2 text-right text-gray-600">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let it of selectedOrder().items" class="border-t">
+                <td class="px-3 py-2">{{ it.product_name || it.product_id }}</td>
+                <td class="px-3 py-2 text-gray-500">{{ it.sku || '-' }}</td>
+                <td class="px-3 py-2 text-right">{{ it.quantity }}</td>
+                <td class="px-3 py-2 text-right">{{ it.unit_price | number: '1.2-2' }}</td>
+                <td class="px-3 py-2 text-right font-semibold">{{ it.total_price | number: '1.2-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-4 text-xs text-gray-400">
+          Created: {{ selectedOrder().created_at ? (selectedOrder().created_at | date: 'medium') : '-' }}
+        </div>
+      </div>
     </div>
   </ng-container>
 
   <ng-template pTemplate="footer">
-    <p-button label="Close" icon="pi pi-times" severity="secondary" [outlined]="true" (onClick)="closeDetail()"></p-button>
+    <div class="flex items-center justify-between w-full">
+      <div class="flex gap-2" *ngIf="selectedOrder()">
+        <p-button
+          *ngFor="let action of getAvailableActions(selectedOrder().order_status)"
+          [label]="action.label"
+          [severity]="action.severity"
+          [icon]="action.icon"
+          [loading]="updatingStatus()"
+          [disabled]="updatingStatus()"
+          (onClick)="updateOrderStatus(action.key, selectedOrderId())">
+        </p-button>
+      </div>
+      <p-button label="Close" icon="pi pi-times" severity="secondary" [outlined]="true" (onClick)="closeDetail()"></p-button>
+    </div>
   </ng-template>
 </p-dialog>
