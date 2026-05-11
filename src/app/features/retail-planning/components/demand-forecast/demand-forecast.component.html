@@ -1,0 +1,353 @@
+<p-toast/>
+
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
+          <i class="pi pi-chart-line text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Demand Forecasting</h1>
+          <p class="text-gray-500 dark:text-gray-400 text-sm mt-0.5">
+            Gaussian Process Regression · RBF + Periodic + WhiteKernel
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <p-button icon="pi pi-refresh" severity="info" [outlined]="true" [rounded]="true"
+                  (onClick)="loadProducts()" pTooltip="Refresh" tooltipPosition="top"
+                  [loading]="loadingProducts"/>
+        <p-button icon="pi pi-info-circle" severity="secondary" [outlined]="true" [rounded]="true"
+                  (onClick)="showInfoModal = true" pTooltip="How it works" tooltipPosition="top"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Controls ────────────────────────────────────────────────────────── -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wide">Product</label>
+        <p-dropdown [options]="products" [(ngModel)]="selectedProduct"
+                    optionLabel="product_name"
+                    placeholder="Select product…"
+                    [filter]="true" filterBy="product_name,product_sku"
+                    (onChange)="selectProduct($event.value)"
+                    class="w-full" styleClass="w-full">
+          <ng-template pTemplate="selectedItem" let-item>
+            <span *ngIf="item">{{ item.product_name }}</span>
+          </ng-template>
+          <ng-template pTemplate="item" let-item>
+            <div class="flex flex-col">
+              <span class="font-medium text-sm">{{ item.product_name }}</span>
+              <span class="text-xs text-gray-400">{{ item.product_sku }} · {{ item.data_points }} records</span>
+            </div>
+          </ng-template>
+        </p-dropdown>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wide">Warehouse</label>
+        <p-dropdown [options]="warehouseOptions" [(ngModel)]="selectedWarehouseId"
+                    optionLabel="label" optionValue="value"
+                    placeholder="All Warehouses"
+                    class="w-full" styleClass="w-full"/>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wide">Forecast Horizon (days)</label>
+        <p-inputNumber [(ngModel)]="horizonDays" [min]="7" [max]="90" [showButtons]="true"
+                       buttonLayout="horizontal" class="w-full" styleClass="w-full"
+                       decrementButtonClass="p-button-secondary p-button-outlined"
+                       incrementButtonClass="p-button-secondary p-button-outlined"/>
+      </div>
+      <div>
+        <p-button label="Run Forecast" icon="pi pi-play" class="w-full"
+                  styleClass="w-full" (onClick)="runForecast()"
+                  [loading]="forecasting"
+                  [disabled]="!selectedProduct || loadingProducts"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── KPI Cards ───────────────────────────────────────────────────────── -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Data Points</p>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+            {{ selectedProduct?.data_points ?? '—' }}
+          </p>
+        </div>
+        <div class="w-11 h-11 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+          <i class="pi pi-database text-blue-500 text-lg"></i>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Avg Daily</p>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+            {{ selectedProduct ? fmt(selectedProduct.avg_daily) : '—' }}
+          </p>
+          <p class="text-xs text-gray-400 mt-0.5">units / day</p>
+        </div>
+        <div class="w-11 h-11 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+          <i class="pi pi-chart-bar text-emerald-500 text-lg"></i>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">R² Fit Score</p>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+            @if (forecastResult) {
+              <p-tag [value]="forecastResult.r2_score.toFixed(3)" [severity]="r2Severity"/>
+            } @else {
+              <span class="text-gray-400 text-2xl">—</span>
+            }
+          </p>
+        </div>
+        <div class="w-11 h-11 bg-violet-50 dark:bg-violet-900/30 rounded-lg flex items-center justify-center">
+          <i class="pi pi-star text-violet-500 text-lg"></i>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Horizon</p>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ horizonDays }}</p>
+          <p class="text-xs text-gray-400 mt-0.5">days ahead</p>
+        </div>
+        <div class="w-11 h-11 bg-amber-50 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
+          <i class="pi pi-calendar text-amber-500 text-lg"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Product Tabs ─────────────────────────────────────────────────────── -->
+  @if (products.length > 0) {
+    <div class="bg-white dark:bg-gray-800 rounded-t-xl border border-b-0 border-gray-200 dark:border-gray-700 px-4 pt-3">
+      <div class="flex items-center gap-1 overflow-x-auto pb-0 scrollbar-hide">
+        @for (p of topProducts; track p.product_id) {
+          <button type="button"
+                  (click)="selectProduct(p)"
+                  class="flex-shrink-0 px-3 py-2 rounded-t-lg text-xs font-medium whitespace-nowrap border-b-2 transition-all"
+                  [class.border-teal-500]="selectedProduct?.product_id === p.product_id"
+                  [class.text-teal-600]="selectedProduct?.product_id === p.product_id"
+                  [class.border-transparent]="selectedProduct?.product_id !== p.product_id"
+                  [class.text-gray-500]="selectedProduct?.product_id !== p.product_id"
+                  [class.hover:text-gray-700]="selectedProduct?.product_id !== p.product_id">
+            {{ p.product_name }}
+            <span class="ml-1 text-gray-400 font-normal">({{ p.data_points }})</span>
+          </button>
+        }
+        @if (remainingCount > 0) {
+          <span class="flex-shrink-0 px-2 py-1 text-xs text-gray-400">+{{ remainingCount }} more</span>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ── Chart Panel ──────────────────────────────────────────────────────── -->
+  <div class="bg-white dark:bg-gray-800 rounded-b-xl rounded-tr-xl border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+      <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+        @if (selectedProduct) {
+          {{ selectedProduct.product_name }}
+          <span class="ml-2 text-xs font-normal text-gray-400">{{ selectedProduct.product_sku }}</span>
+        } @else {
+          Select a product to start
+        }
+      </h2>
+      @if (forecastResult) {
+        <span class="text-xs text-gray-400">
+          Fitted {{ fmtDate(forecastResult.fitted_at) }}
+        </span>
+      }
+    </div>
+
+    <!-- Loading -->
+    @if (forecasting) {
+      <div class="flex flex-col items-center justify-center py-24 gap-4 text-gray-400">
+        <div class="w-14 h-14 bg-teal-50 dark:bg-teal-900/30 rounded-full flex items-center justify-center">
+          <i class="pi pi-spin pi-spinner text-teal-500 text-2xl"></i>
+        </div>
+        <p class="font-medium">Running GPR forecast…</p>
+        <p class="text-xs">Fitting RBF + Periodic + WhiteKernel</p>
+      </div>
+    }
+
+    <!-- No data empty state -->
+    @if (!forecasting && (!forecastResult || forecastResult.data_points === 0)) {
+      <div class="flex flex-col items-center justify-center py-24 gap-4">
+        <div class="w-16 h-16 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-full flex items-center justify-center">
+          <i class="pi pi-chart-line text-white text-2xl"></i>
+        </div>
+        <div class="text-center">
+          <p class="text-lg font-semibold text-gray-600 dark:text-gray-300">No Demand Data</p>
+          <p class="text-sm text-gray-400 mt-1 max-w-xs">
+            No historical records found for this product. Run the seed script to generate sample data, or add records manually.
+          </p>
+        </div>
+      </div>
+    }
+
+    <!-- Chart -->
+    @if (!forecasting && forecastResult && forecastResult.data_points > 0 && chartData) {
+      <div class="p-4" style="height: 400px;">
+        <p-chart type="line" [data]="chartData" [options]="chartOptions" height="380px"/>
+      </div>
+    }
+  </div>
+
+  <!-- ── Forecast Detail Table ────────────────────────────────────────────── -->
+  @if (forecastResult && forecastResult.forecast.length > 0) {
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+          Forecast Detail
+          <span class="ml-2 px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full text-xs font-medium">
+            {{ forecastResult.forecast.length }} days
+          </span>
+        </h2>
+      </div>
+      <p-table [value]="forecastResult.forecast" styleClass="p-datatable-sm"
+               [paginator]="true" [rows]="14" [showCurrentPageReport]="true"
+               currentPageReportTemplate="Showing {first}–{last} of {totalRecords}"
+               [rowHover]="true">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Date</th>
+            <th class="text-right">Predicted</th>
+            <th class="text-right">Lower CI (95%)</th>
+            <th class="text-right">Upper CI (95%)</th>
+            <th class="text-right">CI Width</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-row>
+          <tr>
+            <td class="font-medium text-gray-700 dark:text-gray-300">{{ fmtDate(row.date) }}</td>
+            <td class="text-right font-semibold text-orange-600">{{ fmt(row.predicted) }}</td>
+            <td class="text-right text-gray-500">{{ fmt(row.ci_lower) }}</td>
+            <td class="text-right text-gray-500">{{ fmt(row.ci_upper) }}</td>
+            <td class="text-right text-gray-400 text-xs">± {{ fmt(ciWidth(row)) }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  }
+
+</div>
+
+<!-- ── Information Modal ──────────────────────────────────────────────────── -->
+<p-dialog [(visible)]="showInfoModal" header="Gaussian Process Regression — Technical Reference"
+          [modal]="true" [style]="{ width: '700px' }" [draggable]="false" [closable]="true">
+  <div class="space-y-6 text-sm text-gray-700 dark:text-gray-300">
+
+    <!-- Kernel Formula -->
+    <div>
+      <h3 class="font-semibold text-gray-900 dark:text-white mb-2">Composite Kernel</h3>
+      <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 font-mono text-xs leading-relaxed">
+        k(xᵢ, xⱼ) = c₁² · exp(−(xᵢ−xⱼ)² / 2l₁²)<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        + c₂² · exp(−2sin²(π|xᵢ−xⱼ|/p) / l₂²)<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        + σₙ² · δᵢⱼ
+      </div>
+    </div>
+
+    <!-- Parameter Table -->
+    <div>
+      <h3 class="font-semibold text-gray-900 dark:text-white mb-2">Kernel Parameters</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs border-collapse">
+          <thead>
+            <tr class="bg-gray-50 dark:bg-gray-900">
+              <th class="text-left p-2 border border-gray-200 dark:border-gray-700 font-semibold">Symbol</th>
+              <th class="text-left p-2 border border-gray-200 dark:border-gray-700 font-semibold">Component</th>
+              <th class="text-left p-2 border border-gray-200 dark:border-gray-700 font-semibold">Default</th>
+              <th class="text-left p-2 border border-gray-200 dark:border-gray-700 font-semibold">Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of [
+              {s:'c₁', c:'RBF', d:'1.0', m:'Amplitude of long-term trend'},
+              {s:'l₁', c:'RBF', d:'7.0 days', m:'Smoothness of growth curve'},
+              {s:'c₂', c:'Periodic', d:'1.0', m:'Amplitude of weekly seasonality'},
+              {s:'l₂', c:'Periodic', d:'1.0', m:'Sharpness of periodic pattern'},
+              {s:'p',  c:'Periodic', d:'7.0 days', m:'Cycle length (7 = weekly)'},
+              {s:'σₙ²', c:'White', d:'0.1', m:'Noise variance (weather, surprises)'}
+            ]">
+              <td class="p-2 border border-gray-200 dark:border-gray-700 font-mono">{{ row.s }}</td>
+              <td class="p-2 border border-gray-200 dark:border-gray-700">{{ row.c }}</td>
+              <td class="p-2 border border-gray-200 dark:border-gray-700 text-gray-500">{{ row.d }}</td>
+              <td class="p-2 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400">{{ row.m }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Component Descriptions -->
+    <div class="space-y-3">
+      <h3 class="font-semibold text-gray-900 dark:text-white">Component Descriptions</h3>
+      <div class="flex gap-3">
+        <div class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></div>
+        <div>
+          <span class="font-medium text-gray-800 dark:text-gray-200">RBF (Long-term Trend)</span>
+          <p class="text-gray-500 mt-0.5">Captures gradual changes in baseline demand — e.g., new store openings or shifting consumer habits in Binh Thuan. Points close in time are highly correlated; distant points have exponentially decaying correlation.</p>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <div class="w-2 h-2 rounded-full bg-orange-500 mt-1.5 flex-shrink-0"></div>
+        <div>
+          <span class="font-medium text-gray-800 dark:text-gray-200">ExpSineSquared (Weekly Cycle)</span>
+          <p class="text-gray-500 mt-0.5">Models recurring demand spikes — higher weekend sales of vegetables, meat and seafood at local markets. Periodicity p=7 captures the standard weekly buying cycle.</p>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <div class="w-2 h-2 rounded-full bg-gray-400 mt-1.5 flex-shrink-0"></div>
+        <div>
+          <span class="font-medium text-gray-800 dark:text-gray-200">WhiteKernel (Noise)</span>
+          <p class="text-gray-500 mt-0.5">Accounts for unpredictable variation — sudden coastal storms, supply disruptions, measurement error. δᵢⱼ = 1 only when i = j (diagonal noise).</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Requirements -->
+    <div class="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
+      <div class="flex gap-2">
+        <i class="pi pi-exclamation-triangle text-amber-500 mt-0.5 flex-shrink-0"></i>
+        <div>
+          <p class="font-medium text-amber-800 dark:text-amber-300">Model Requirements</p>
+          <p class="text-amber-700 dark:text-amber-400 mt-0.5">
+            Minimum <strong>14 data points</strong> (2 full weeks) required for reliable fitting.
+            Optimal performance with ≥ 60 data points (2 months).
+            Parameters are automatically optimized via log-marginal-likelihood maximization.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- References -->
+    <div>
+      <h3 class="font-semibold text-gray-900 dark:text-white mb-1">References</h3>
+      <ul class="list-disc list-inside text-gray-500 space-y-1 text-xs">
+        <li>Duvenaud, D. <em>The Kernel Cookbook</em>. University of Cambridge.</li>
+        <li>scikit-learn developers. <em>Gaussian Processes</em>. scikit-learn.org/stable/modules/gaussian_process.html</li>
+        <li>Williams, C.K.I. & Rasmussen, C.E. (2006). <em>Gaussian Processes for Machine Learning</em>. MIT Press.</li>
+      </ul>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Close" severity="secondary" [outlined]="true" (onClick)="showInfoModal = false"/>
+  </ng-template>
+</p-dialog>

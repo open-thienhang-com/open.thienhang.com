@@ -1,0 +1,216 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="role-profile-page">
+
+  <!-- ── Loading ──────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="profile-loading">
+    <p-progressSpinner styleClass="w-4rem h-4rem"></p-progressSpinner>
+    <p>Loading role profile...</p>
+  </div>
+
+  <!-- ── Not Found / Error ─────────────────────────────────────────────── -->
+  <div *ngIf="!loading && (errorMessage || !role)" class="profile-not-found">
+    <i class="pi pi-shield"></i>
+    <h2>{{ errorMessage || 'Role not found' }}</h2>
+    <p>This role may have been deleted or the ID is incorrect.</p>
+    <button pButton label="Back to Roles" icon="pi pi-arrow-left" class="p-button-outlined" (click)="goBack()"></button>
+  </div>
+
+  <!-- ── Profile Layout ─────────────────────────────────────────── -->
+  <ng-container *ngIf="!loading && role">
+
+    <!-- Cover + Avatar header -->
+    <div class="profile-cover">
+      <div class="cover-gradient"></div>
+      <div class="profile-header-content">
+        <!-- Avatar / Icon -->
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar">
+            <i class="pi pi-shield"></i>
+          </div>
+          <span class="profile-status-dot"
+                [class.dot-active]="role.is_active !== false"
+                [class.dot-inactive]="role.is_active === false"
+                [pTooltip]="(role.is_active !== false ? 'Active' : 'Inactive')"></span>
+        </div>
+
+        <!-- Name & Meta -->
+        <div class="profile-hero">
+          <div class="profile-name-row">
+            <h1 class="profile-name">{{ role.name }}</h1>
+            <p-tag *ngIf="role.type" [value]="role.type | titlecase"
+                   [severity]="getTypeSeverity(role.type)" styleClass="profile-status-tag"></p-tag>
+          </div>
+          <p class="profile-email"><i class="pi pi-info-circle"></i> {{ role.description || 'No description provided' }}</p>
+          <div class="profile-meta-chips">
+            <span class="meta-chip"><i class="pi pi-tag"></i> {{ role.type || 'System' }} Role</span>
+            <span class="meta-chip mono"><i class="pi pi-hashtag"></i> {{ (role.kid || role.id || '').slice(0,8) }}…</span>
+          </div>
+        </div>
+
+        <!-- Header actions -->
+        <div class="profile-header-actions">
+          <button pButton icon="pi pi-arrow-left" label="Back" class="p-button-text p-button-secondary" (click)="goBack()"></button>
+          <button pButton icon="pi pi-pencil" label="Edit" class="p-button-outlined p-button-secondary" (click)="editRole()"></button>
+          <button pButton icon="pi pi-trash" class="p-button-outlined p-button-danger" (click)="deleteRole()" pTooltip="Delete role"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Main grid ─────────────────────────────────────────────── -->
+    <div class="profile-body">
+
+      <!-- LEFT COLUMN -->
+      <aside class="profile-sidebar">
+
+        <!-- Stat cards row -->
+        <div class="stat-cards">
+          <div class="stat-card">
+            <i class="pi pi-key stat-icon"></i>
+            <div class="stat-value">{{ role.permissions?.length || 0 }}</div>
+            <div class="stat-label">Perms</div>
+          </div>
+          <div class="stat-card">
+            <i class="pi pi-database stat-icon"></i>
+            <div class="stat-value">{{ getTotalAssetsCount() }}</div>
+            <div class="stat-label">Assets</div>
+          </div>
+          <div class="stat-card">
+            <i class="pi pi-users stat-icon"></i>
+            <div class="stat-value">{{ usersLoading ? '…' : usersWithRole.length }}</div>
+            <div class="stat-label">Users</div>
+          </div>
+        </div>
+
+        <!-- Role Info card -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <i class="pi pi-shield"></i>
+            <span>Role Info</span>
+          </div>
+          <div class="info-list">
+            <div class="info-row">
+              <span class="info-key">Name</span>
+              <span class="info-val">{{ role.name }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Type</span>
+              <span class="info-val">
+                <p-tag [value]="role.type | titlecase" [severity]="getTypeSeverity(role.type)" [style]="{'font-size':'0.75rem'}"></p-tag>
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Status</span>
+              <span class="info-val">
+                <p-tag [value]="role.is_active !== false ? 'Active' : 'Inactive'" 
+                       [severity]="role.is_active !== false ? 'success' : 'secondary'" [style]="{'font-size':'0.75rem'}"></p-tag>
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Assets</span>
+              <span class="info-val">{{ getTotalAssetsCount() }} entries</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ID card -->
+        <div class="info-card id-card">
+          <div class="info-card-header">
+            <i class="pi pi-hashtag"></i>
+            <span>Role ID</span>
+          </div>
+          <code class="id-code">{{ role.kid || role.id || '—' }}</code>
+        </div>
+
+      </aside>
+
+      <!-- RIGHT COLUMN -->
+      <main class="profile-main">
+
+        <!-- Tabs card -->
+        <div class="profile-card no-pad">
+          <p-tabView styleClass="profile-tabview">
+            
+            <!-- PERMISSIONS PANEL -->
+            <p-tabPanel header="Permissions">
+              <div class="p-0">
+                <div class="p-6 border-b border-gray-100 bg-gray-50/30">
+                  <h3 class="card-title">Assigned Permissions ({{ role.permissions?.length || 0 }})</h3>
+                  <p class="card-subtitle">Capabilities granted by this role</p>
+                </div>
+
+                <div *ngIf="!role.permissions?.length" class="empty-state">
+                  <i class="pi pi-key empty-icon"></i>
+                  <p>No permissions assigned to this role.</p>
+                </div>
+
+                <p-table *ngIf="role.permissions?.length" [value]="role.permissions" 
+                         styleClass="p-datatable-sm no-border">
+                  <ng-template pTemplate="header">
+                    <tr>
+                      <th style="padding-left: 24px">Permission</th>
+                      <th style="width: 200px">Code</th>
+                      <th class="text-center" style="width: 120px">Action</th>
+                      <th class="text-center" style="width: 100px; padding-right: 24px">Assets</th>
+                    </tr>
+                  </ng-template>
+                  <ng-template pTemplate="body" let-perm>
+                    <tr>
+                      <td style="padding-left: 24px">
+                        <p class="font-bold text-gray-900">{{ perm.name }}</p>
+                        <p class="text-xs text-gray-500 mt-1 line-clamp-1">{{ perm.description }}</p>
+                      </td>
+                      <td>
+                        <code class="text-xs bg-gray-50 border border-gray-100 px-2 py-1 rounded text-indigo-600 mono">{{ perm.code }}</code>
+                      </td>
+                      <td class="text-center">
+                        <p-tag [value]="perm.action" [severity]="getActionSeverity(perm.action)" styleClass="text-[10px] font-bold uppercase"></p-tag>
+                      </td>
+                      <td class="text-center" style="padding-right: 24px">
+                        <p-badge [value]="(perm.assets?.length || 0).toString()" severity="info"></p-badge>
+                      </td>
+                    </tr>
+                  </ng-template>
+                </p-table>
+              </div>
+            </p-tabPanel>
+
+            <!-- USERS PANEL -->
+            <p-tabPanel header="Users">
+              <div class="p-0">
+                <div class="p-6 border-b border-gray-100 bg-gray-50/30">
+                  <h3 class="card-title">Assigned Users ({{ usersWithRole.length }})</h3>
+                  <p class="card-subtitle">Accounts currently holding this role</p>
+                </div>
+
+                <div *ngIf="usersLoading" class="p-12 text-center">
+                  <p-progressSpinner styleClass="w-3rem h-3rem"></p-progressSpinner>
+                </div>
+
+                <div *ngIf="!usersLoading && !usersWithRole.length" class="empty-state">
+                  <i class="pi pi-users empty-icon"></i>
+                  <p>No users currently assigned to this role.</p>
+                </div>
+
+                <div *ngIf="!usersLoading && usersWithRole.length" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                   <a *ngFor="let u of usersWithRole" [routerLink]="['/governance/users', u.kid || u.id]" 
+                      class="user-item-link">
+                     <div class="user-avatar">{{ getUserInitials(u) }}</div>
+                     <div class="user-info">
+                       <p class="name">{{ getUserName(u) }}</p>
+                       <p class="email">{{ u.email }}</p>
+                     </div>
+                     <i class="pi pi-arrow-right"></i>
+                   </a>
+                </div>
+              </div>
+            </p-tabPanel>
+
+          </p-tabView>
+        </div>
+
+      </main>
+    </div>
+  </ng-container>
+</div>

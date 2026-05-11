@@ -1,0 +1,298 @@
+import { Injectable } from '@angular/core';
+import { getApiBase } from '../config/api-config';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+import { ApiResponse } from './governance.services';
+
+export interface DataProduct {
+  id: string;
+  kid?: string | null;
+  name: string;
+  description?: string;
+  domain?: string;
+  owner?: {
+    _id?: string | null;
+    kid?: string;
+    first_name?: string;
+    email?: string;
+    company?: string;
+    last_name?: string;
+  };
+  teams?: any[];
+  purpose?: string;
+  consumers?: any;
+  input_ports?: any;
+  output_ports?: any;
+  assets?: any[];
+  policies?: any[];
+  permissions?: any[];
+  tags?: string[];
+  quality_metrics?: any;
+  lifecycle?: any;
+  cost?: any;
+  discoverability?: any;
+  documentation?: any;
+  apis?: any[];
+  swagger?: string;
+  openapi?: string;
+  status?: string;
+  type?: string;
+  version?: string;
+  schema?: any;
+  api_endpoint?: string;
+  metrics?: any;
+  created_at?: string;
+  updated_at?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface DataProductSubscription {
+  id: string;
+  productId: string;
+  userId: string;
+  status: string;
+  createdAt: Date;
+}
+
+export interface DataProductMetrics {
+  id: string;
+  productId: string;
+  views: number;
+  subscriptions: number;
+  usage: any;
+  quality: any;
+  period: string;
+}
+
+@Injectable({
+  providedIn: 'root',
+})
+export class DataProductServices {
+  private get baseUrl(): string {
+    return getApiBase();
+  }
+
+  constructor(private http: HttpClient) { }
+
+  // Data Products
+  getDataProducts(params?: any): Observable<ApiResponse<DataProduct[]>> {
+    const url = `${this.baseUrl}/governance/data-products`;
+    const httpParams = this.buildHttpParams(params);
+    return this.http.get<any>(url, { params: httpParams })
+      .pipe(
+        map(response => {
+          // Handle the actual API response structure
+          if (response && response.data && Array.isArray(response.data)) {
+            return {
+              data: response.data,
+              total: response.total || response.data.length,
+              success: true,
+              message: response.message
+            };
+          } else {
+            return {
+              data: [],
+              total: 0,
+              success: false,
+              message: response?.message || 'No data found'
+            };
+          }
+        })
+      );
+  }
+
+  // Get data products for a specific domain
+  getDataProductsByDomain(domain: string): Observable<ApiResponse<DataProduct[]>> {
+    const url = `${this.baseUrl}/governance/data-products/${domain}`;
+    return this.http.get<any>(url)
+      .pipe(
+        map(response => {
+          // Handle the actual API response structure
+          if (response && response.data && Array.isArray(response.data)) {
+            return {
+              data: response.data,
+              total: response.total || response.data.length,
+              success: true,
+              message: response.message || 'Domain data products retrieved'
+            };
+          } else {
+            return {
+              data: [],
+              total: 0,
+              success: false,
+              message: response?.message || 'No data products found for this domain'
+            };
+          }
+        })
+      );
+  }
+
+  getDataProductDetail(id: string, domain?: string): Observable<ApiResponse<DataProduct>> {
+    const url = domain
+      ? `${this.baseUrl}/governance/data-products/${domain}/${id}`
+      : `${this.baseUrl}/governance/data-products/${id}`;
+    return this.http.get<DataProduct>(url)
+      .pipe(
+        map(response => {
+          // Handle the actual API response structure
+          if (response) {
+            return {
+              data: response,
+              success: true,
+              message: 'Data product loaded successfully'
+            };
+          } else {
+            return {
+              data: null,
+              success: false,
+              message: 'Data product not found'
+            };
+          }
+        })
+      );
+  }
+
+  createDataProduct(domain: string, data: any): Observable<ApiResponse<DataProduct>> {
+    const url = `${this.baseUrl}/governance/data-products/${domain}`;
+    return this.http.post<any>(url, data)
+      .pipe(
+        map(response => {
+          if (response && response.data) {
+            return {
+              data: response.data,
+              success: true,
+              message: response.message || 'Data Product created successfully'
+            };
+          }
+          return {
+            data: response,
+            success: true,
+            message: 'Data Product created'
+          };
+        })
+      );
+  }
+
+  updateDataProduct(id: string, data: Partial<DataProduct>): Observable<ApiResponse<DataProduct>> {
+    const url = `${this.baseUrl}/governance/data-products/${id}`;
+    return this.http.put<any>(url, data)
+      .pipe(
+        map(response => {
+          if (response && response.data) {
+            return {
+              data: response.data,
+              success: true,
+              message: response.message || 'Data Product updated successfully'
+            };
+          }
+          return {
+            data: response,
+            success: true,
+            message: 'Data Product updated'
+          };
+        })
+      );
+  }
+
+  deleteDataProduct(id: string): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/governance/data-products/${id}`;
+    return this.http.delete<any>(url)
+      .pipe(
+        map(response => {
+          return {
+            data: response?.data || response,
+            success: true,
+            message: response?.message || 'Data Product deleted successfully'
+          };
+        })
+      );
+  }
+
+  subscribeToProduct(productId: string): Observable<ApiResponse<DataProductSubscription>> {
+    const url = `${this.baseUrl}/governance/data-products/${productId}/subscribe`;
+    return this.http.post<any>(url, {})
+      .pipe(map(response => this.wrapResponse(response.data || response)));
+  }
+
+  unsubscribeFromProduct(productId: string): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/governance/data-products/${productId}/unsubscribe`;
+    return this.http.delete<any>(url)
+      .pipe(map(response => this.wrapResponse(response.data || response)));
+  }
+
+  getProductSubscribers(productId: string): Observable<ApiResponse<any[]>> {
+    const url = `${this.baseUrl}/governance/data-products/${productId}/subscribers`;
+    return this.http.get<any[]>(url)
+      .pipe(map(response => this.wrapArrayResponse((response as any).data || response)));
+  }
+
+  getProductMetrics(productId: string): Observable<ApiResponse<DataProductMetrics>> {
+    const url = `${this.baseUrl}/governance/data-products/${productId}/metrics`;
+    return this.http.get<any>(url)
+      .pipe(map(response => this.wrapResponse(response.data || response)));
+  }
+
+  getProductSchema(productId: string): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/governance/data-products/${productId}/schema`;
+    return this.http.get<any>(url)
+      .pipe(map(response => this.wrapResponse(response.data || response)));
+  }
+
+  getProductAPI(productId: string): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/governance/data-products/${productId}/api`;
+    return this.http.get<any>(url)
+      .pipe(map(response => this.wrapResponse(response.data || response)));
+  }
+
+  validateProductSchema(productId: string, schema: any): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/governance/data-products/${productId}/validate-schema`;
+    return this.http.post<any>(url, schema)
+      .pipe(map(response => this.wrapResponse(response.data || response)));
+  }
+
+  publishProduct(productId: string): Observable<ApiResponse<DataProduct>> {
+    const url = `${this.baseUrl}/governance/data-products/${productId}/publish`;
+    return this.http.post<any>(url, {})
+      .pipe(map(response => this.wrapResponse(response.data || response)));
+  }
+
+  archiveProduct(productId: string): Observable<ApiResponse<DataProduct>> {
+    const url = `${this.baseUrl}/governance/data-products/${productId}/archive`;
+    return this.http.post<any>(url, {})
+      .pipe(map(response => this.wrapResponse(response.data || response)));
+  }
+
+  // Helper method to build HttpParams from object
+  private buildHttpParams(params?: any): HttpParams {
+    let httpParams = new HttpParams();
+    if (params) {
+      Object.keys(params).forEach(key => {
+        if (params[key] !== null && params[key] !== undefined) {
+          if (Array.isArray(params[key])) {
+            params[key].forEach((value: any) => {
+              httpParams = httpParams.append(key, value.toString());
+            });
+          } else {
+            httpParams = httpParams.set(key, params[key].toString());
+          }
+        }
+      });
+    }
+    return httpParams;
+  }
+
+  // Helper method to wrap a single object response to match the API response format
+  private wrapResponse<T>(data: T): ApiResponse<T> {
+    return { data, success: true };
+  }
+
+  // Helper method to wrap an array response to match the API response format
+  private wrapArrayResponse<T>(data: T[]): ApiResponse<T[]> {
+    return {
+      data: data || [],
+      total: Array.isArray(data) ? data.length : 0,
+      success: true
+    };
+  }
+}

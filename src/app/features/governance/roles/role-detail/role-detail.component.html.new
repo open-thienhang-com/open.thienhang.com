@@ -1,0 +1,491 @@
+<div class="role-detail-wrapper">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <!-- Error Banner -->
+  <div *ngIf="errorMessage" class="error-banner">
+    <div class="error-banner-content">
+      <i class="pi pi-exclamation-triangle"></i>
+      <div class="error-text">
+        <strong>Error:</strong>
+        <span>{{ errorMessage }}</span>
+      </div>
+      <button pButton pRipple label="Back to Roles" icon="pi pi-arrow-left" 
+              class="p-button-text p-button-sm" (click)="goBack()"></button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <p-progressSpinner styleClass="large-spinner"></p-progressSpinner>
+    <h3>Loading role details...</h3>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading && role" class="role-detail-content">
+    
+    <!-- STICKY HEADER -->
+    <div class="role-header sticky-header">
+      <div class="header-left">
+        <button pButton pRipple icon="pi pi-arrow-left" 
+                class="p-button-text p-button-rounded back-button"
+                pTooltip="Back to Roles" (click)="goBack()"></button>
+        <div class="breadcrumb">
+          <span class="breadcrumb-item">Governance</span>
+          <i class="pi pi-angle-right"></i>
+          <span class="breadcrumb-item">Roles</span>
+          <i class="pi pi-angle-right"></i>
+          <span class="breadcrumb-item active">{{ role.name }}</span>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <button pButton pRipple label="Edit" icon="pi pi-pencil" 
+                class="p-button-outlined p-button-sm" (click)="editRole()"></button>
+        <button pButton pRipple 
+                [label]="role.is_active ? 'Deactivate' : 'Activate'"
+                [icon]="role.is_active ? 'pi pi-times-circle' : 'pi pi-check-circle'"
+                [class]="role.is_active ? 'p-button-outlined p-button-warning p-button-sm' : 'p-button-outlined p-button-success p-button-sm'"
+                (click)="toggleRoleStatus()"></button>
+        <button pButton pRipple icon="pi pi-trash" 
+                class="p-button-outlined p-button-danger p-button-sm"
+                pTooltip="Delete Role" (click)="deleteRole()"></button>
+      </div>
+    </div>
+
+    <!-- ROLE OVERVIEW -->
+    <div class="role-overview-section">
+      <!-- Identity Card -->
+      <div class="identity-card">
+        <div class="role-avatar">
+          <div class="avatar-icon" [ngClass]="'avatar-' + role.type">
+            <i class="pi pi-shield"></i>
+          </div>
+        </div>
+        
+        <div class="role-identity">
+          <h1 class="role-name">{{ role.name }}</h1>
+          <div class="role-meta">
+            <p-tag [value]="role.type | titlecase" 
+                   [severity]="getRoleTypeSeverity(role.type)"></p-tag>
+            <p-tag [value]="role.is_active ? 'Active' : 'Inactive'"
+                   [severity]="role.is_active ? 'success' : 'secondary'"></p-tag>
+          </div>
+          <p class="role-description" *ngIf="role.description">{{ role.description }}</p>
+          <div class="role-metadata">
+            <div class="meta-item" (click)="copyToClipboard(role.kid)">
+              <i class="pi pi-id-card"></i>
+              <span>{{ role.kid }}</span>
+              <i class="pi pi-copy copy-icon"></i>
+            </div>
+            <div class="meta-item">
+              <i class="pi pi-calendar"></i>
+              <span>Created {{ role.created_at | date:'MMM d, y' }}</span>
+            </div>
+            <div class="meta-item">
+              <i class="pi pi-clock"></i>
+              <span>Updated {{ role.updated_at | date:'MMM d, y' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Dashboard -->
+      <div class="stats-dashboard">
+        <div class="stat-card">
+          <div class="stat-icon permissions-icon">
+            <i class="pi pi-shield"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ role.permissions?.length || 0 }}</div>
+            <div class="stat-label">Permissions</div>
+            <div class="stat-breakdown">
+              {{ getSelectedPermissionsCount() }} enabled
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon assets-icon">
+            <i class="pi pi-database"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getTotalAssetsCount() }}</div>
+            <div class="stat-label">Protected Assets</div>
+            <div class="stat-breakdown">
+              {{ getAssetTypeStats().length }} types
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon coverage-icon">
+            <i class="pi pi-chart-pie"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getUniqueAssetCount() }}</div>
+            <div class="stat-label">Unique Assets</div>
+            <div class="stat-breakdown">
+              Across all permissions
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon actions-icon">
+            <i class="pi pi-bolt"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ actionOptions?.length || 0 }}</div>
+            <div class="stat-label">Action Types</div>
+            <div class="stat-breakdown">
+              Read, Write, Delete...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB-BASED CONTENT -->
+    <div class="permissions-content">
+      <p-tabView [(activeIndex)]="activeTabIndex" styleClass="role-tabs">
+        
+        <!-- TAB 1: All Permissions -->
+        <p-tabPanel>
+          <ng-template pTemplate="header">
+            <i class="pi pi-list"></i>
+            <span>All Permissions</span>
+            <p-badge [value]="role.permissions?.length" severity="info"></p-badge>
+          </ng-template>
+
+          <div class="tab-content">
+            <!-- Toolbar -->
+            <div class="content-toolbar">
+              <span class="p-input-icon-left search-input">
+                <i class="pi pi-search"></i>
+                <input pInputText type="text" 
+                       [(ngModel)]="searchTerm"
+                       (input)="filterAssets($event)"
+                       placeholder="Search permissions or assets..." />
+                <button *ngIf="searchTerm" pButton pRipple icon="pi pi-times" 
+                        class="p-button-text p-button-sm"
+                        (click)="clearSearch()"></button>
+              </span>
+
+              <div class="toolbar-actions">
+                <button pButton pRipple label="Expand All" icon="pi pi-angle-down"
+                        class="p-button-outlined p-button-sm"
+                        (click)="expandAllRows()"></button>
+                <button pButton pRipple label="Collapse All" icon="pi pi-angle-up"
+                        class="p-button-outlined p-button-sm"
+                        (click)="collapseAllRows()"></button>
+              </div>
+            </div>
+
+            <!-- Permissions Table -->
+            <p-table 
+              [value]="getFilteredPermissions()" 
+              [expandedRowKeys]="expandedRows"
+              dataKey="_id"
+              [paginator]="getFilteredPermissions().length > 10"
+              [rows]="10"
+              [showCurrentPageReport]="true"
+              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} permissions">
+              
+              <ng-template pTemplate="header">
+                <tr>
+                  <th style="width: 3rem;"></th>
+                  <th style="width: 4rem;">
+                    <p-checkbox 
+                      [binary]="true"
+                      [ngModel]="areAllPermissionsSelected()"
+                      (onChange)="toggleAllPermissions($event)"
+                      [indeterminate]="isSomePermissionsSelected()">
+                    </p-checkbox>
+                  </th>
+                  <th>Permission</th>
+                  <th style="width: 8rem;">Action</th>
+                  <th style="width: 8rem;">Assets</th>
+                  <th style="width: 10rem;">Status</th>
+                </tr>
+              </ng-template>
+              
+              <ng-template pTemplate="body" let-permission let-expanded="expanded">
+                <tr>
+                  <td>
+                    <button type="button" pButton pRipple 
+                            [pRowToggler]="permission" 
+                            class="p-button-text p-button-rounded p-button-plain"
+                            [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'">
+                    </button>
+                  </td>
+                  
+                  <td>
+                    <p-checkbox 
+                      [binary]="true"
+                      [(ngModel)]="permission.selected"
+                      (onChange)="togglePermission(permission)">
+                    </p-checkbox>
+                  </td>
+                  
+                  <td>
+                    <div class="permission-info">
+                      <div class="permission-name">{{ permission.name }}</div>
+                      <div class="permission-code">{{ permission.code }}</div>
+                      <div *ngIf="permission.description" class="permission-description">
+                        {{ permission.description }}
+                      </div>
+                    </div>
+                  </td>
+                  
+                  <td>
+                    <p-tag [value]="permission.action" 
+                           [severity]="getActionSeverity(permission.action)">
+                    </p-tag>
+                  </td>
+                  
+                  <td>
+                    <div class="asset-stats">
+                      <p-badge [value]="permission.validAssets?.length || 0" severity="info"></p-badge>
+                      <small>assets</small>
+                    </div>
+                  </td>
+                  
+                  <td>
+                    <p-tag [value]="permission.selected ? 'Enabled' : 'Disabled'"
+                           [severity]="permission.selected ? 'success' : 'secondary'">
+                    </p-tag>
+                  </td>
+                </tr>
+              </ng-template>
+              
+              <!-- Expanded Row - Assets -->
+              <ng-template pTemplate="rowexpansion" let-permission>
+                <tr>
+                  <td colspan="6">
+                    <div class="assets-expansion-content">
+                      <div class="assets-header">
+                        <h4>
+                          <i class="pi pi-database"></i>
+                          Assets for {{ permission.name }}
+                          <span class="assets-count">({{ permission.validAssets?.length || 0 }})</span>
+                        </h4>
+                      </div>
+                      
+                      <p-table [value]="getFilteredAssetsForPermission(permission)"
+                               styleClass="p-datatable-sm assets-table"
+                               [paginator]="getFilteredAssetsForPermission(permission).length > 5"
+                               [rows]="5">
+                        
+                        <ng-template pTemplate="header">
+                          <tr>
+                            <th style="width: 3rem;">
+                              <p-checkbox 
+                                [binary]="true"
+                                [ngModel]="areAllAssetsSelected(permission)"
+                                (onChange)="toggleAllAssetsForPermission(permission, $event)"
+                                [indeterminate]="isSomeAssetsSelected(permission)">
+                              </p-checkbox>
+                            </th>
+                            <th>Asset</th>
+                            <th style="width: 8rem;">Type</th>
+                            <th style="width: 8rem;">Sensitivity</th>
+                            <th>Location</th>
+                          </tr>
+                        </ng-template>
+                        
+                        <ng-template pTemplate="body" let-asset>
+                          <tr>
+                            <td>
+                              <p-checkbox 
+                                [binary]="true"
+                                [(ngModel)]="asset.selected"
+                                (onChange)="toggleAsset(permission, asset)">
+                              </p-checkbox>
+                            </td>
+                            
+                            <td>
+                              <div class="asset-info">
+                                <i [class]="getAssetIcon(asset.type)" class="asset-icon"></i>
+                                <div class="asset-details">
+                                  <div class="asset-name">{{ asset.name }}</div>
+                                  <div class="asset-kid" *ngIf="asset.kid">{{ asset.kid }}</div>
+                                </div>
+                              </div>
+                            </td>
+                            
+                            <td>
+                              <p-tag [value]="asset.type | titlecase" severity="info"></p-tag>
+                            </td>
+                            
+                            <td>
+                              <p-tag *ngIf="asset.sensitivity"
+                                     [value]="asset.sensitivity | titlecase"
+                                     [severity]="getSensitivitySeverity(asset.sensitivity)">
+                              </p-tag>
+                              <span *ngIf="!asset.sensitivity">-</span>
+                            </td>
+                            
+                            <td>
+                              <span *ngIf="asset.location" class="asset-location" [title]="asset.location">
+                                {{ asset.location.length > 50 ? asset.location.substring(0, 50) + '...' : asset.location }}
+                              </span>
+                              <span *ngIf="!asset.location">-</span>
+                            </td>
+                          </tr>
+                        </ng-template>
+                        
+                        <ng-template pTemplate="emptymessage">
+                          <tr>
+                            <td colspan="5" class="text-center">
+                              <div class="empty-assets-message">
+                                <i class="pi pi-inbox"></i>
+                                <p>No assets found</p>
+                              </div>
+                            </td>
+                          </tr>
+                        </ng-template>
+                      </p-table>
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+              
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="6" class="text-center">
+                    <div class="empty-permissions-message">
+                      <i class="pi pi-shield"></i>
+                      <h3>No permissions found</h3>
+                      <p *ngIf="searchTerm">No permissions match "<strong>{{ searchTerm }}</strong>"</p>
+                      <button *ngIf="searchTerm" pButton pRipple label="Clear Search" 
+                              icon="pi pi-times" class="p-button-outlined"
+                              (click)="clearSearch()"></button>
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </p-tabPanel>
+
+        <!-- TAB 2: By Action Type -->
+        <p-tabPanel>
+          <ng-template pTemplate="header">
+            <i class="pi pi-bolt"></i>
+            <span>By Action</span>
+            <p-badge [value]="actionOptions?.length || 0" severity="warning"></p-badge>
+          </ng-template>
+
+          <div class="tab-content">
+            <div class="grouped-view">
+              <p-accordion [multiple]="true">
+                <p-accordionTab *ngFor="let action of actionOptions" [header]="action.label">
+                  <ng-template pTemplate="header">
+                    <div class="accordion-header">
+                      <p-tag [value]="action.label" [severity]="getActionSeverity(action.value)"></p-tag>
+                      <p-badge [value]="getPermissionsByAction(action.value).length" severity="info"></p-badge>
+                    </div>
+                  </ng-template>
+                  
+                  <div class="permission-cards">
+                    <div *ngFor="let permission of getPermissionsByAction(action.value)" 
+                         class="permission-card">
+                      <div class="card-header">
+                        <p-checkbox [binary]="true"
+                                    [(ngModel)]="permission.selected"
+                                    (onChange)="togglePermission(permission)">
+                        </p-checkbox>
+                        <div class="card-title">
+                          <strong>{{ permission.name }}</strong>
+                          <small>{{ permission.code }}</small>
+                        </div>
+                        <p-tag [value]="permission.selected ? 'Enabled' : 'Disabled'"
+                               [severity]="permission.selected ? 'success' : 'secondary'">
+                        </p-tag>
+                      </div>
+                      <div class="card-content">
+                        <p *ngIf="permission.description">{{ permission.description }}</p>
+                        <div class="card-stats">
+                          <span><i class="pi pi-database"></i> {{ permission.validAssets?.length || 0 }} assets</span>
+                          <span><i class="pi pi-tags"></i> {{ getAssetTypesForPermission(permission).length }} types</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </p-accordionTab>
+              </p-accordion>
+            </div>
+          </div>
+        </p-tabPanel>
+
+        <!-- TAB 3: By Asset Type -->
+        <p-tabPanel>
+          <ng-template pTemplate="header">
+            <i class="pi pi-database"></i>
+            <span>By Asset Type</span>
+            <p-badge [value]="getAssetTypeStats().length" severity="success"></p-badge>
+          </ng-template>
+
+          <div class="tab-content">
+            <div class="asset-type-grid">
+              <div *ngFor="let assetGroup of getAssetsByType()" class="asset-type-card">
+                <div class="type-card-header">
+                  <div class="type-info">
+                    <i [class]="getAssetIcon(assetGroup.type)"></i>
+                    <h3>{{ assetGroup.type | titlecase }}</h3>
+                  </div>
+                  <p-badge [value]="assetGroup.count" severity="info"></p-badge>
+                </div>
+                
+                <div class="type-card-content">
+                  <div class="asset-list">
+                    <div *ngFor="let asset of assetGroup.assets.slice(0, 5)" class="asset-item">
+                      <span class="asset-name">{{ asset.name }}</span>
+                      <p-tag *ngIf="asset.sensitivity" 
+                             [value]="asset.sensitivity | titlecase"
+                             [severity]="getSensitivitySeverity(asset.sensitivity)"
+                             styleClass="tiny-tag">
+                      </p-tag>
+                    </div>
+                    <div *ngIf="assetGroup.assets.length > 5" class="more-assets">
+                      +{{ assetGroup.assets.length - 5 }} more
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </p-tabPanel>
+
+      </p-tabView>
+    </div>
+
+    <!-- FOOTER ACTIONS -->
+    <div class="actions-footer" *ngIf="hasChanges()">
+      <div class="footer-summary">
+        <i class="pi pi-info-circle"></i>
+        <span>{{ getSelectedPermissionsCount() }} permissions selected • 
+              {{ getSelectedAssetsCount() }} assets accessible</span>
+      </div>
+      <div class="footer-actions">
+        <button pButton pRipple label="Save Changes" icon="pi pi-save"
+                class="p-button-success" (click)="savePermissionChanges()"></button>
+        <button pButton pRipple label="Reset" icon="pi pi-refresh"
+                class="p-button-outlined p-button-secondary"
+                (click)="resetChanges()"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!loading && !role && !errorMessage" class="error-state">
+    <div class="error-content">
+      <i class="pi pi-exclamation-triangle error-icon"></i>
+      <h3>Role Not Found</h3>
+      <p>The role you're looking for doesn't exist or has been deleted.</p>
+      <button pButton pRipple label="Back to Roles" icon="pi pi-arrow-left"
+              class="p-button-outlined" (click)="goBack()"></button>
+    </div>
+  </div>
+</div>

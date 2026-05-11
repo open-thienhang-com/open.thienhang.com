@@ -1,0 +1,205 @@
+<p-toast></p-toast>
+
+<div class="pos-terminal">
+
+  <!-- ── Status Bar ── -->
+  <header class="terminal-bar">
+    <div class="bar-left">
+      <div class="brand">
+        <i class="pi pi-desktop"></i>
+        <span>RETAIL POS v2.0</span>
+      </div>
+      <div class="location">
+        <p-dropdown
+          [options]="warehouses"
+          [(ngModel)]="selectedWarehouseId"
+          optionLabel="name"
+          optionValue="id"
+          (onChange)="onWarehouseChange()"
+          placeholder="Select location"
+          appendTo="body"
+          styleClass="pos-wh-select"
+          [style]="{'min-width':'180px'}">
+        </p-dropdown>
+      </div>
+    </div>
+
+    <div class="bar-center">
+      <div class="barcode-field">
+        <i class="pi pi-filter"></i>
+        <input
+          type="text"
+          placeholder="Scan barcode or search product..."
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="applyFilters()"
+          #barcodeInput
+        />
+      </div>
+    </div>
+
+    <div class="bar-right">
+      <div class="clock">{{ currentDate | date:'HH:mm' }}</div>
+      <div class="operator">
+        <i class="pi pi-user"></i>
+        <span>Operator #104</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="terminal-workspace">
+
+    <!-- ── Left: Product Matrix ── -->
+    <main class="matrix-area">
+      <nav class="category-nav">
+        <button
+          class="cat-btn"
+          [class.active]="selectedCategory === ''"
+          (click)="selectedCategory = ''; applyFilters()"
+        >ALL</button>
+        @for (cat of categories; track cat) {
+          <button
+            class="cat-btn"
+            [class.active]="selectedCategory === cat"
+            (click)="selectedCategory = cat; applyFilters()"
+          >{{ cat | uppercase }}</button>
+        }
+      </nav>
+
+      <div class="product-matrix" [class.loading]="loading">
+        @if (loading) {
+          @for (n of [1,2,3,4,5,6,7,8,9,10,11,12]; track n) {
+            <div class="matrix-tile ghost"></div>
+          }
+        } @else if (filteredProducts.length === 0) {
+          <div class="matrix-empty">
+            <i class="pi pi-search"></i>
+            <p>No products found</p>
+            <span>Try a different search or category</span>
+          </div>
+        } @else {
+          @for (product of filteredProducts; track product.id) {
+            <button
+              class="matrix-tile"
+              [class.sold-out]="getStockLevel(product.id) <= 0"
+              (click)="addToCart(product)"
+              type="button"
+            >
+              <div class="tile-img">
+                @if (getProductImage(product)) {
+                  <img [src]="getProductImage(product)" [alt]="product.name" />
+                } @else {
+                  <div class="tile-icon" [style.color]="getCategoryColor(product.category)">
+                    {{ product.name.charAt(0) }}
+                  </div>
+                }
+              </div>
+              <div class="tile-info">
+                <span class="tile-name">{{ product.name }}</span>
+                <span class="tile-price">{{ getEffectivePrice(product) | currency }}</span>
+              </div>
+              <div class="tile-stock" [ngClass]="{'low': getStockLevel(product.id) < 5, 'out': getStockLevel(product.id) <= 0}">
+                @if (getStockLevel(product.id) <= 0) {
+                  OUT
+                } @else {
+                  {{ getStockLevel(product.id) }}
+                }
+              </div>
+            </button>
+          }
+        }
+      </div>
+    </main>
+
+    <!-- ── Right: Transaction Sidebar ── -->
+    <aside class="transaction-sidebar">
+      <div class="tc-header">
+        <h3>Ticket #{{ orderNumber }}</h3>
+        <button class="void-btn" (click)="clearCart()" [disabled]="cart.length === 0" type="button">VOID ALL</button>
+      </div>
+
+      <div class="tc-lines">
+        @if (cart.length === 0) {
+          <div class="empty-state">
+            <i class="pi pi-shopping-cart"></i>
+            <p>Ready for scanning</p>
+          </div>
+        } @else {
+          @for (item of cart; track item.product.id) {
+            <div class="tc-line">
+              <div class="line-data">
+                <span class="ln-name">{{ item.product.name }}</span>
+                <span class="ln-details">{{ item.quantity }} × {{ getEffectivePrice(item.product) | currency }}</span>
+              </div>
+              <div class="line-ctrl">
+                <span class="line-subtotal">{{ (getEffectivePrice(item.product) * item.quantity) | currency }}</span>
+                <div class="qty-control">
+                  <button type="button" (click)="decrease(item)">−</button>
+                  <span class="qty-val">{{ item.quantity }}</span>
+                  <button type="button" (click)="increase(item)" [disabled]="item.quantity >= getStockLevel(item.product.id)">+</button>
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+
+      <div class="tc-footer">
+        <div class="totals-area">
+          <div class="row">
+            <span>Subtotal ({{ itemCount }} items)</span>
+            <span>{{ subtotal | currency }}</span>
+          </div>
+          <div class="row">
+            <span>Tax (8%)</span>
+            <span>{{ tax | currency }}</span>
+          </div>
+          <div class="row grand">
+            <span>TOTAL DUE</span>
+            <span>{{ total | currency }}</span>
+          </div>
+        </div>
+
+        <!-- Payment Method Selection -->
+        <div class="payment-methods">
+          <button type="button" class="pay-btn cash" [class.selected]="paymentMethod === 'cash'" (click)="paymentMethod = 'cash'">
+            <i class="pi pi-money-bill"></i>
+            CASH
+          </button>
+          <button type="button" class="pay-btn card" [class.selected]="paymentMethod === 'card'" (click)="paymentMethod = 'card'">
+            <i class="pi pi-credit-card"></i>
+            CARD
+          </button>
+          <button type="button" class="pay-btn more" [class.selected]="paymentMethod === 'ewallet'" (click)="paymentMethod = 'ewallet'">
+            <i class="pi pi-wallet"></i>
+            WALLET
+          </button>
+        </div>
+
+        @if (paymentMethod === 'cash') {
+          <div class="cash-entry">
+            <label>Amount Tendered</label>
+            <div class="input-wrap">
+              <input type="number" [(ngModel)]="amountReceived" placeholder="0.00" min="0" />
+              <button type="button" (click)="amountReceived = total">EXACT</button>
+            </div>
+            <div class="change-display">
+              <span>CHANGE:</span>
+              <strong>{{ changeAmount | currency }}</strong>
+            </div>
+          </div>
+        }
+
+        <button
+          type="button"
+          class="complete-btn"
+          [disabled]="cart.length === 0 || placingOrder"
+          (click)="completeSale()"
+        >
+          <i class="pi" [ngClass]="placingOrder ? 'pi-spin pi-spinner' : 'pi-check'"></i>
+          {{ placingOrder ? 'PROCESSING...' : 'COMPLETE SALE' }}
+        </button>
+      </div>
+    </aside>
+
+  </div>
+</div>

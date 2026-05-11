@@ -1,0 +1,125 @@
+<div id="content-simulation" class="tab-content">
+    <div class="p-6">
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">3D Route Simulation</h2>
+            <p class="text-gray-600">Visualize and analyze delivery routes with interactive 3D simulation</p>
+            <p class="text-sm text-blue-600 mt-2" *ngIf="planId">Plan ID: {{ planId }}</p>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="loading" class="text-center py-20">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-500 mb-4"></div>
+            <p class="text-gray-600">Đang tải dữ liệu mô phỏng...</p>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="error && !loading" class="text-center py-20">
+            <svg class="w-20 h-20 mx-auto text-red-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <p class="text-red-600 text-lg font-semibold mb-2">Không thể tải dữ liệu mô phỏng</p>
+            <p class="text-gray-500 text-sm">{{ error }}</p>
+        </div>
+
+        <!-- Simulation Content -->
+        <div *ngIf="!loading && !error">
+
+        <!-- Simulation Controls -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+            <div class="flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex gap-3">
+                    <select id="routeSelector" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Select Route to Simulate</option>
+                        <!-- Routes will be loaded here -->
+                    </select>
+                    <button id="startSimulation" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-play mr-2"></i>Start Simulation
+                    </button>
+                    <button id="stopSimulation" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors" disabled>
+                        <i class="fas fa-stop mr-2"></i>Stop
+                    </button>
+                </div>
+                <div class="flex gap-2">
+                    <button id="resetCamera" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                        <i class="fas fa-home mr-2"></i>Reset View
+                    </button>
+                    <button id="toggleFullscreen" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                        <i class="fas fa-expand mr-2"></i>Fullscreen
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Simulation View -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="p-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">3D Route Visualization</h3>
+                    <div class="flex items-center gap-4 text-sm text-gray-600">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                            <span>Depots</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <span>Delivery Points</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                            <span>Routes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="simulationContainer" class="relative" style="height: 600px;">
+                <!-- 3D Scene will be rendered here -->
+                <div class="absolute inset-0 flex items-center justify-center bg-gray-100">
+                    <div class="text-center">
+                        <div class="text-6xl mb-4">🗺️</div>
+                        <div class="text-lg font-semibold text-gray-700 mb-2">3D Route Simulation</div>
+                        <div class="text-gray-500 mb-4">Select a route from the dropdown above to start the simulation</div>
+                        <div class="text-sm text-gray-400">Requires WebGL support</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Simulation Info Panel -->
+        <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Route Details -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h4 class="text-lg font-semibold text-gray-900 mb-4">Route Details</h4>
+                <div id="routeDetails" class="space-y-3">
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-route text-3xl mb-2"></i>
+                        <div>Select a route to view details</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simulation Stats -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h4 class="text-lg font-semibold text-gray-900 mb-4">Simulation Statistics</h4>
+                <div id="simulationStats" class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Total Distance:</span>
+                        <span class="font-semibold" id="totalDistance">0 km</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Estimated Time:</span>
+                        <span class="font-semibold" id="estimatedTime">0 min</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Fuel Consumption:</span>
+                        <span class="font-semibold" id="fuelConsumption">0 L</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">CO2 Emission:</span>
+                        <span class="font-semibold" id="co2Emission">0 kg</span>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>

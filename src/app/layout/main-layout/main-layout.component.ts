@@ -1,0 +1,172 @@
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterOutlet, Router, NavigationEnd } from "@angular/router";
+import { SidebarComponent } from "./sidebar/sidebar.component";
+import { FooterComponent } from "./footer/footer.component";
+import { Toast } from 'primeng/toast';
+import { ConfirmDialog } from 'primeng/confirmdialog';
+import { ThemeService } from '../../core/services/theme.service';
+import { LoadingService, LoadingState } from '../../core/services/loading.service';
+import { LoadingComponent } from '../../shared/component/loading/loading.component';
+import { Subject, takeUntil, filter } from 'rxjs';
+import { AppSwitcherService, AppKey } from '../../core/services/app-switcher.service';
+
+@Component({
+  selector: 'app-main-layout',
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    SidebarComponent,
+    FooterComponent,
+    Toast,
+    ConfirmDialog,
+    LoadingComponent
+  ],
+  templateUrl: './main-layout.component.html',
+  styleUrl: './main-layout.component.scss'
+})
+export class MainLayoutComponent implements OnInit, OnDestroy {
+  collapsed = false;
+  // Mobile: closed by default; desktop: sidebar is always visible via CSS (ignores this flag)
+  sidebarOpen = false;
+  currentApp: AppKey = 'all';
+  showFooter = true;
+  loadingState: LoadingState = {
+    isLoading: false,
+    message: 'Loading...',
+    type: 'default',
+    size: 'medium',
+    fullScreen: false,
+    overlay: false
+  };
+
+  // Array of cute animal animations for random selection
+  animalTypes: ('cat-running' | 'dog-running' | 'rabbit-hopping' | 'penguin-walking' | 'hamster-wheel' | 'fox-trotting' | 'unicorn-flying' | 'owl-flying' | 'butterfly-floating' | 'fish-swimming' | 'panda-rolling' | 'koala-climbing' | 'sloth-hanging' | 'duck-swimming')[] = [
+    'cat-running', 'dog-running', 'rabbit-hopping', 'penguin-walking', 'hamster-wheel',
+    'fox-trotting', 'unicorn-flying', 'owl-flying', 'butterfly-floating', 'fish-swimming',
+    'panda-rolling', 'koala-climbing', 'sloth-hanging', 'duck-swimming'
+  ];
+
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private themeService: ThemeService,
+    private loadingService: LoadingService,
+    private appSwitcher: AppSwitcherService,
+    private router: Router
+  ) { }
+
+  ngOnInit() {
+    // Subscribe to current app changes
+    this.appSwitcher.currentApp$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(appKey => {
+        this.currentApp = appKey;
+      });
+
+    // Subscribe to router events to hide footer on hotel routes
+    this.router.events
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((event: NavigationEnd) => {
+        // Hide footer for vertical app experiences that own full page layout.
+        this.showFooter = !(
+          event.url.startsWith('/hotel') ||
+          event.url.startsWith('/retail') ||
+          event.url.startsWith('/planning')
+        );
+        // Auto-close sidebar on mobile after navigation
+        if (window.innerWidth < 1024) {
+          this.sidebarOpen = false;
+        }
+      });
+
+    // Check initial route
+    this.showFooter = !(
+      this.router.url.startsWith('/hotel') ||
+      this.router.url.startsWith('/retail') ||
+      this.router.url.startsWith('/planning')
+    );
+
+    // Show beautiful loading animation on page refresh/initial load
+    this.showInitialLoading();
+
+    // Subscribe to theme changes and update sidebar state
+    this.themeService.currentSettings$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(settings => {
+        this.collapsed = settings.sidebarStyle === 'static' ? false : this.collapsed;
+      });
+
+    // Subscribe to loading state changes with random animal selection
+    this.loadingService.loading$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(loadingState => {
+        // If loading is starting and no specific type is set, use a random animal
+        if (loadingState.isLoading && loadingState.type === 'default') {
+          loadingState.type = this.getRandomAnimalType();
+        }
+
+        this.loadingState = { ...loadingState };
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  toggleSidebar() {
+    if (window.innerWidth < 1024) {
+      this.sidebarOpen = !this.sidebarOpen;
+    } else {
+      this.collapsed = !this.collapsed;
+    }
+  }
+
+  get currentAppLabel(): string {
+    const labels: Partial<Record<AppKey, string>> = {
+      all: 'All Apps',
+      explore: 'Explore',
+      retail: 'Retail Service',
+      loyalty: 'Loyalty Program',
+      governance: 'Governance',
+      blogger: 'Blogger',
+      hotel: 'Hotel',
+      chat: 'Chat',
+      inventory: 'Inventory',
+      notification: 'Notifications',
+      planning: 'Planning',
+      settings: 'Settings',
+      admanager: 'Ad Manager',
+      files: 'Files',
+      travel: 'Travel',
+    };
+    return labels[this.currentApp] ?? 'Menu';
+  }
+
+  private getRandomAnimalType(): 'cat-running' | 'dog-running' | 'rabbit-hopping' | 'penguin-walking' | 'hamster-wheel' | 'fox-trotting' | 'unicorn-flying' | 'owl-flying' | 'butterfly-floating' | 'fish-swimming' | 'panda-rolling' | 'koala-climbing' | 'sloth-hanging' | 'duck-swimming' {
+    const randomIndex = Math.floor(Math.random() * this.animalTypes.length);
+    return this.animalTypes[randomIndex];
+  }
+
+  /**
+   * Show beautiful loading animation on page refresh/initial load
+   */
+  private showInitialLoading(): void {
+    // Show loading for a beautiful initial experience
+    const randomAnimal = this.getRandomAnimalType();
+
+    this.loadingService.showFullScreen(
+      'Welcome back! Loading your awesome experience...',
+      randomAnimal
+    );
+
+    // Hide loading after a short delay to allow content to load
+    setTimeout(() => {
+      this.loadingService.hide();
+    }, 800);
+  }
+}

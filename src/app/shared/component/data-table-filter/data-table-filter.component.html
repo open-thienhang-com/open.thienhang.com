@@ -1,0 +1,7 @@
+<div class="flex justify-between items-center">
+  <app-title [title]="title"></app-title>
+  <div>
+    <p-button label="Add new" icon="pi pi-plus" styleClass="m-0" [outlined]="true" (click)="onAddNew.emit()"/>
+    <p-button icon="pi pi-refresh" styleClass="ml-2" severity="info" [outlined]="true" (click)="onRefresh.emit()"/>
+  </div>
+</div>

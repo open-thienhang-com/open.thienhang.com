@@ -1,0 +1,530 @@
+<!-- Hotel Data Product Detail - Modern Layout -->
+<div class="hotel-data-product-detail">
+  <!-- Header Section -->
+  <div class="product-header">
+    <div class="header-content">
+      <div class="header-main">
+        <div class="domain-icon">
+          <div class="icon-container" [ngClass]="getDomainIconClass(dataProduct.domain || product.domain)">
+            <i class="text-white text-3xl" [ngClass]="getDomainIcon(dataProduct.domain || product.domain)"></i>
+          </div>
+        </div>
+        
+        <div class="product-info">
+          <div class="breadcrumb">
+            <span class="domain-label">{{ getDomainLabel(dataProduct.domain || product.domain) }}</span>
+            <i class="pi pi-chevron-right"></i>
+            <span class="product-type">Hotel Data Product</span>
+          </div>
+          
+          <h1 class="product-title">{{ dataProduct.name || product.name }}</h1>
+          
+          <div class="product-meta">
+            <p-badge 
+              [value]="dataProduct.status || product.status" 
+              [severity]="getStatusSeverity(dataProduct.status || product.status)"
+              class="status-badge">
+            </p-badge>
+            <span class="version">Version {{ dataProduct.version || product.version }}</span>
+            <span class="owner">Owner: {{ dataProduct.owner || product.owner }}</span>
+          </div>
+          
+          <p class="product-description">{{ dataProduct.description || product.description }}</p>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <p-button 
+          label="Download Schema"
+          icon="pi pi-download" 
+          severity="secondary" 
+          [outlined]="true"
+          (click)="downloadSchema()"
+          class="action-btn">
+        </p-button>
+        
+        <p-button 
+          label="View Swagger"
+          icon="pi pi-code" 
+          severity="info"
+          [outlined]="true"
+          (click)="accessAPI()"
+          class="action-btn">
+        </p-button>
+        
+        <p-button 
+          [label]="isSubscribed ? 'Unsubscribe' : 'Subscribe'" 
+          [icon]="isSubscribed ? 'pi pi-minus' : 'pi pi-plus'"
+          [severity]="isSubscribed ? 'danger' : 'success'"
+          [outlined]="isSubscribed"
+          (click)="toggleSubscription()"
+          class="subscribe-btn">
+        </p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Tabs -->
+  <div class="product-content">
+    <p-tabView styleClass="hotel-tabs">
+      <!-- Overview Tab -->
+      <p-tabPanel header="Overview" leftIcon="pi pi-info-circle">
+        <div class="overview-content">
+          <!-- Key Metrics Row -->
+          <div class="metrics-grid">
+            <div class="metric-card subscribers">
+              <div class="metric-icon">
+                <i class="pi pi-users"></i>
+              </div>
+              <div class="metric-content">
+                <div class="metric-value">{{ (dataProduct.subscribers || product.subscribers) || 0 }}</div>
+                <div class="metric-label">Subscribers</div>
+              </div>
+            </div>
+            
+            <div class="metric-card quality">
+              <div class="metric-icon">
+                <i class="pi pi-star"></i>
+              </div>
+              <div class="metric-content">
+                <div class="metric-value">{{ (dataProduct.quality_score || product.quality_score) || 0 }}%</div>
+                <div class="metric-label">Quality Score</div>
+              </div>
+            </div>
+            
+            <div class="metric-card queries">
+              <div class="metric-icon">
+                <i class="pi pi-chart-line"></i>
+              </div>
+              <div class="metric-content">
+                <div class="metric-value">{{ (dataProduct.metrics?.monthly_queries || product.metrics?.monthly_queries) || 0 | number }}</div>
+                <div class="metric-label">Monthly Queries</div>
+              </div>
+            </div>
+            
+            <div class="metric-card sla">
+              <div class="metric-icon">
+                <i class="pi pi-clock"></i>
+              </div>
+              <div class="metric-content">
+                <div class="metric-value">{{ (dataProduct.sla || product.sla) || 'N/A' }}</div>
+                <div class="metric-label">SLA</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Features and Charts Grid -->
+          <div class="overview-grid">
+            <!-- Hotel Features -->
+            <div class="features-section">
+              <h3 class="section-title">Hotel Features</h3>
+              <div class="features-grid">
+                <div class="feature-card" *ngFor="let feature of getHotelFeatures()">
+                  <div class="feature-icon">
+                    <i [class]="feature.icon"></i>
+                  </div>
+                  <div class="feature-content">
+                    <h4 class="feature-name">{{ feature.name }}</h4>
+                    <p class="feature-description">{{ feature.description }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Usage Chart -->
+            <div class="chart-section">
+              <h3 class="section-title">Usage Metrics</h3>
+              <p-chart type="line" [data]="usageChart" [options]="{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    display: false
+                  }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true
+                  }
+                }
+              }" height="300px" class="usage-chart"></p-chart>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- API Documentation Tab -->
+      <p-tabPanel header="API Documentation" leftIcon="pi pi-code">
+        <div class="api-documentation">
+          <div class="api-header">
+            <h3>Hotel Management API</h3>
+            <p>Comprehensive API for hotel management operations</p>
+          </div>
+
+          <!-- API Endpoints by Category -->
+          <div class="api-categories">
+            <p-accordion>
+              <!-- Metadata Endpoints -->
+              <p-accordionTab>
+                <ng-template pTemplate="header">
+                  <div class="api-category-header">
+                    <i class="pi pi-info-circle text-blue-600"></i>
+                    <span>Metadata</span>
+                    <p-badge [value]="hotelApiEndpoints.metadata.length" severity="info"></p-badge>
+                  </div>
+                </ng-template>
+                
+                <div class="endpoints-list">
+                  <div class="endpoint-item" *ngFor="let endpoint of hotelApiEndpoints.metadata">
+                    <div class="endpoint-method">
+                      <p-badge [value]="endpoint.method" [severity]="getMethodSeverity(endpoint.method)"></p-badge>
+                    </div>
+                    <div class="endpoint-details">
+                      <code class="endpoint-path">{{ endpoint.path }}</code>
+                      <span class="endpoint-description">{{ endpoint.description }}</span>
+                    </div>
+                    <div class="endpoint-actions">
+                      <p-button 
+                        icon="pi pi-play" 
+                        [rounded]="true"
+                        [text]="true"
+                        severity="success"
+                        size="small"
+                        (click)="testEndpoint(endpoint)"
+                        pTooltip="Test Endpoint">
+                      </p-button>
+                      <p-button 
+                        icon="pi pi-copy" 
+                        [rounded]="true"
+                        [text]="true"
+                        severity="secondary"
+                        size="small"
+                        (click)="copyEndpointUrl(endpoint)"
+                        pTooltip="Copy URL">
+                      </p-button>
+                    </div>
+                  </div>
+                </div>
+              </p-accordionTab>
+
+              <!-- Apartments Endpoints -->
+              <p-accordionTab>
+                <ng-template pTemplate="header">
+                  <div class="api-category-header">
+                    <i class="pi pi-building text-amber-600"></i>
+                    <span>Apartments</span>
+                    <p-badge [value]="hotelApiEndpoints.apartments.length" severity="warning"></p-badge>
+                  </div>
+                </ng-template>
+                
+                <div class="endpoints-list">
+                  <div class="endpoint-item" *ngFor="let endpoint of hotelApiEndpoints.apartments">
+                    <div class="endpoint-method">
+                      <p-badge [value]="endpoint.method" [severity]="getMethodSeverity(endpoint.method)"></p-badge>
+                    </div>
+                    <div class="endpoint-details">
+                      <code class="endpoint-path">{{ endpoint.path }}</code>
+                      <span class="endpoint-description">{{ endpoint.description }}</span>
+                    </div>
+                    <div class="endpoint-actions">
+                      <p-button 
+                        icon="pi pi-play" 
+                        [rounded]="true"
+                        [text]="true"
+                        severity="success"
+                        size="small"
+                        (click)="testEndpoint(endpoint)"
+                        pTooltip="Test Endpoint">
+                      </p-button>
+                      <p-button 
+                        icon="pi pi-copy" 
+                        [rounded]="true"
+                        [text]="true"
+                        severity="secondary"
+                        size="small"
+                        (click)="copyEndpointUrl(endpoint)"
+                        pTooltip="Copy URL">
+                      </p-button>
+                    </div>
+                  </div>
+                </div>
+              </p-accordionTab>
+
+              <!-- Rooms Endpoints -->
+              <p-accordionTab>
+                <ng-template pTemplate="header">
+                  <div class="api-category-header">
+                    <i class="pi pi-home text-green-600"></i>
+                    <span>Rooms</span>
+                    <p-badge [value]="hotelApiEndpoints.rooms.length" severity="success"></p-badge>
+                  </div>
+                </ng-template>
+                
+                <div class="endpoints-list">
+                  <div class="endpoint-item" *ngFor="let endpoint of hotelApiEndpoints.rooms">
+                    <div class="endpoint-method">
+                      <p-badge [value]="endpoint.method" [severity]="getMethodSeverity(endpoint.method)"></p-badge>
+                    </div>
+                    <div class="endpoint-details">
+                      <code class="endpoint-path">{{ endpoint.path }}</code>
+                      <span class="endpoint-description">{{ endpoint.description }}</span>
+                    </div>
+                    <div class="endpoint-actions">
+                      <p-button 
+                        icon="pi pi-play" 
+                        [rounded]="true"
+                        [text]="true"
+                        severity="success"
+                        size="small"
+                        (click)="testEndpoint(endpoint)"
+                        pTooltip="Test Endpoint">
+                      </p-button>
+                      <p-button 
+                        icon="pi pi-copy" 
+                        [rounded]="true"
+                        [text]="true"
+                        severity="secondary"
+                        size="small"
+                        (click)="copyEndpointUrl(endpoint)"
+                        pTooltip="Copy URL">
+                      </p-button>
+                    </div>
+                  </div>
+                </div>
+              </p-accordionTab>
+
+              <!-- Bookings Endpoints -->
+              <p-accordionTab>
+                <ng-template pTemplate="header">
+                  <div class="api-category-header">
+                    <i class="pi pi-calendar text-purple-600"></i>
+                    <span>Bookings</span>
+                    <p-badge [value]="hotelApiEndpoints.bookings.length" severity="secondary"></p-badge>
+                  </div>
+                </ng-template>
+                
+                <div class="endpoints-list">
+                  <div class="endpoint-item" *ngFor="let endpoint of hotelApiEndpoints.bookings">
+                    <div class="endpoint-method">
+                      <p-badge [value]="endpoint.method" [severity]="getMethodSeverity(endpoint.method)"></p-badge>
+                    </div>
+                    <div class="endpoint-details">
+                      <code class="endpoint-path">{{ endpoint.path }}</code>
+                      <span class="endpoint-description">{{ endpoint.description }}</span>
+                    </div>
+                    <div class="endpoint-actions">
+                      <p-button 
+                        icon="pi pi-play" 
+                        [rounded]="true"
+                        [text]="true"
+                        severity="success"
+                        size="small"
+                        (click)="testEndpoint(endpoint)"
+                        pTooltip="Test Endpoint">
+                      </p-button>
+                      <p-button 
+                        icon="pi pi-copy" 
+                        [rounded]="true"
+                        [text]="true"
+                        severity="secondary"
+                        size="small"
+                        (click)="copyEndpointUrl(endpoint)"
+                        pTooltip="Copy URL">
+                      </p-button>
+                    </div>
+                  </div>
+                </div>
+              </p-accordionTab>
+
+              <!-- Ratings Endpoints -->
+              <p-accordionTab>
+                <ng-template pTemplate="header">
+                  <div class="api-category-header">
+                    <i class="pi pi-star text-orange-600"></i>
+                    <span>Ratings</span>
+                    <p-badge [value]="hotelApiEndpoints.ratings.length" severity="warning"></p-badge>
+                  </div>
+                </ng-template>
+                
+                <div class="endpoints-list">
+                  <div class="endpoint-item" *ngFor="let endpoint of hotelApiEndpoints.ratings">
+                    <div class="endpoint-method">
+                      <p-badge [value]="endpoint.method" [severity]="getMethodSeverity(endpoint.method)"></p-badge>
+                    </div>
+                    <div class="endpoint-details">
+                      <code class="endpoint-path">{{ endpoint.path }}</code>
+                      <span class="endpoint-description">{{ endpoint.description }}</span>
+                    </div>
+                    <div class="endpoint-actions">
+                      <p-button 
+                        icon="pi pi-play" 
+                        [rounded]="true"
+                        [text]="true"
+                        severity="success"
+                        size="small"
+                        (click)="testEndpoint(endpoint)"
+                        pTooltip="Test Endpoint">
+                      </p-button>
+                      <p-button 
+                        icon="pi pi-copy" 
+                        [rounded]="true"
+                        [text]="true"
+                        severity="secondary"
+                        size="small"
+                        (click)="copyEndpointUrl(endpoint)"
+                        pTooltip="Copy URL">
+                      </p-button>
+                    </div>
+                  </div>
+                </div>
+              </p-accordionTab>
+
+              <!-- Reviews Endpoints -->
+              <p-accordionTab>
+                <ng-template pTemplate="header">
+                  <div class="api-category-header">
+                    <i class="pi pi-comments text-indigo-600"></i>
+                    <span>Reviews</span>
+                    <p-badge [value]="hotelApiEndpoints.reviews.length" severity="info"></p-badge>
+                  </div>
+                </ng-template>
+                
+                <div class="endpoints-list">
+                  <div class="endpoint-item" *ngFor="let endpoint of hotelApiEndpoints.reviews">
+                    <div class="endpoint-method">
+                      <p-badge [value]="endpoint.method" [severity]="getMethodSeverity(endpoint.method)"></p-badge>
+                    </div>
+                    <div class="endpoint-details">
+                      <code class="endpoint-path">{{ endpoint.path }}</code>
+                      <span class="endpoint-description">{{ endpoint.description }}</span>
+                    </div>
+                    <div class="endpoint-actions">
+                      <p-button 
+                        icon="pi pi-play" 
+                        [rounded]="true"
+                        [text]="true"
+                        severity="success"
+                        size="small"
+                        (click)="testEndpoint(endpoint)"
+                        pTooltip="Test Endpoint">
+                      </p-button>
+                      <p-button 
+                        icon="pi pi-copy" 
+                        [rounded]="true"
+                        [text]="true"
+                        severity="secondary"
+                        size="small"
+                        (click)="copyEndpointUrl(endpoint)"
+                        pTooltip="Copy URL">
+                      </p-button>
+                    </div>
+                  </div>
+                </div>
+              </p-accordionTab>
+            </p-accordion>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Schema Tab -->
+      <p-tabPanel header="Schema" leftIcon="pi pi-database">
+        <div class="schema-section">
+          <div class="schema-header">
+            <h3>Database Schema</h3>
+            <p-button 
+              label="Download Schema"
+              icon="pi pi-download" 
+              severity="secondary"
+              (click)="downloadSchema()">
+            </p-button>
+          </div>
+
+          <div class="schema-overview">
+            <div class="schema-stats">
+              <div class="schema-stat">
+                <i class="pi pi-table"></i>
+                <div class="stat-content">
+                  <div class="stat-value">{{ (dataProduct.schema?.tables || product.schema?.tables) || 6 }}</div>
+                  <div class="stat-label">Tables</div>
+                </div>
+              </div>
+              
+              <div class="schema-stat">
+                <i class="pi pi-sitemap"></i>
+                <div class="stat-content">
+                  <div class="stat-value">{{ (dataProduct.schema?.columns || product.schema?.columns) || 48 }}</div>
+                  <div class="stat-label">Columns</div>
+                </div>
+              </div>
+              
+              <div class="schema-stat">
+                <i class="pi pi-link"></i>
+                <div class="stat-content">
+                  <div class="stat-value">{{ (dataProduct.schema?.relationships || product.schema?.relationships) || 12 }}</div>
+                  <div class="stat-label">Relationships</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Schema Tables -->
+            <div class="schema-tables">
+              <h4>Database Tables</h4>
+              <div class="tables-grid">
+                <div class="table-card">
+                  <i class="pi pi-building"></i>
+                  <h5>apartments</h5>
+                  <p>Apartment information and details</p>
+                </div>
+                <div class="table-card">
+                  <i class="pi pi-home"></i>
+                  <h5>rooms</h5>
+                  <p>Room data and availability</p>
+                </div>
+                <div class="table-card">
+                  <i class="pi pi-calendar"></i>
+                  <h5>bookings</h5>
+                  <p>Booking records and history</p>
+                </div>
+                <div class="table-card">
+                  <i class="pi pi-star"></i>
+                  <h5>ratings</h5>
+                  <p>User ratings and scores</p>
+                </div>
+                <div class="table-card">
+                  <i class="pi pi-comments"></i>
+                  <h5>reviews</h5>
+                  <p>Customer reviews and feedback</p>
+                </div>
+                <div class="table-card">
+                  <i class="pi pi-users"></i>
+                  <h5>users</h5>
+                  <p>User account information</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Swagger Documentation Tab -->
+      <p-tabPanel header="Swagger Documentation" leftIcon="pi pi-file-code">
+        <div class="swagger-section">
+          <div class="swagger-header">
+            <h3>API Documentation</h3>
+            <p>Interactive API documentation powered by Swagger</p>
+          </div>
+          
+          <div class="swagger-container">
+            <iframe 
+              [src]="dataProduct.swagger || product.swagger" 
+              width="100%" 
+              height="600px"
+              frameborder="0"
+              class="swagger-frame">
+            </iframe>
+          </div>
+        </div>
+      </p-tabPanel>
+    </p-tabView>
+  </div>
+</div>

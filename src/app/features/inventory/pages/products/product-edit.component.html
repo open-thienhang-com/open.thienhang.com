@@ -1,0 +1,138 @@
+<p-toast></p-toast>
+
+<div class="bg-gray-50 min-h-screen p-6">
+  <!-- Header Card -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+        <i class="pi pi-pencil text-white text-xl"></i>
+      </div>
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">Edit Product</h1>
+        <p class="text-gray-600">Update product details and manage media assets.</p>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <p-button label="Back to List" icon="pi pi-arrow-left" [outlined]="true" (onClick)="cancel()"></p-button>
+      <p-button label="Update Product" icon="pi pi-check" [loading]="saving" (onClick)="update()"></p-button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+    <i class="pi pi-spin pi-spinner text-blue-500 text-3xl mb-4"></i>
+    <p class="text-gray-500">Fetching product details...</p>
+  </div>
+
+  <div *ngIf="!loading" class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <!-- PRODUCT INFO SECTION -->
+    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+      <h2 class="text-lg font-semibold text-gray-900">Basic Information</h2>
+    </div>
+
+    <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="md:col-span-1">
+        <label class="block text-sm font-medium text-gray-700 mb-2">SKU <span class="text-red-500">*</span></label>
+        <input pInputText [(ngModel)]="form.sku" class="w-full" placeholder="e.g. PROD-123" />
+      </div>
+      <div class="md:col-span-1">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Barcode</label>
+        <input pInputText [(ngModel)]="form.barcode" class="w-full" placeholder="e.g. 893123456789" />
+      </div>
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Product Name <span class="text-red-500">*</span></label>
+        <input pInputText [(ngModel)]="form.name" class="w-full" placeholder="Full product title" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+        <p-dropdown [options]="categoryOptions" [(ngModel)]="form.category" optionLabel="label" optionValue="value" class="w-full" placeholder="Select category"></p-dropdown>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Subcategory</label>
+        <input pInputText [(ngModel)]="form.subcategory" class="w-full" placeholder="e.g. T-Shirts" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Cost Price</label>
+        <p-inputNumber [(ngModel)]="form.cost_price" mode="currency" currency="USD" locale="en-US" class="w-full"></p-inputNumber>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Selling Price</label>
+        <p-inputNumber [(ngModel)]="form.selling_price" mode="currency" currency="USD" locale="en-US" class="w-full"></p-inputNumber>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Reorder Level</label>
+        <p-inputNumber [(ngModel)]="form.reorder_level" class="w-full"></p-inputNumber>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Maximum Stock</label>
+        <p-inputNumber [(ngModel)]="form.maximum_stock" class="w-full"></p-inputNumber>
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+        <textarea pInputTextarea [(ngModel)]="form.description" rows="4" class="w-full" placeholder="Description"></textarea>
+      </div>
+    </div>
+
+    <!-- IMAGES & MEDIA SECTION -->
+    <div class="px-6 py-4 border-t border-b border-gray-200 bg-gray-50/50">
+      <h2 class="text-lg font-semibold text-gray-900">Images & Media</h2>
+    </div>
+
+    <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Thumbnail Upload -->
+      <div class="space-y-4">
+        <label class="block text-sm font-bold text-gray-900 uppercase tracking-widest text-[10px]">Product Thumbnail</label>
+        <div class="relative group h-64 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center overflow-hidden hover:border-blue-400 transition-all">
+          <img *ngIf="thumbnailPreview" [src]="thumbnailPreview" class="w-full h-full object-cover" />
+          
+          <div [class]="thumbnailPreview ? 'absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity' : ''" class="flex flex-col items-center">
+            <i class="pi pi-cloud-upload text-3xl" [class]="thumbnailPreview ? 'text-white' : 'text-gray-300'"></i>
+            <p class="mt-2 text-xs font-semibold" [class]="thumbnailPreview ? 'text-white' : 'text-gray-400'">
+              {{ uploadingThumbnail ? 'Uploading...' : 'Click to Update Thumbnail' }}
+            </p>
+            <input type="file" (change)="onThumbnailSelected($event)" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" />
+          </div>
+
+          <div *ngIf="uploadingThumbnail" class="absolute inset-0 bg-white/80 flex items-center justify-center">
+            <i class="pi pi-spin pi-spinner text-blue-500 text-2xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gallery Upload -->
+      <div class="space-y-4">
+        <label class="block text-sm font-bold text-gray-900 uppercase tracking-widest text-[10px]">Product Gallery</label>
+        <div class="grid grid-cols-3 gap-3">
+          <div *ngFor="let preview of imagePreviews; let i = index" class="relative aspect-square bg-gray-100 rounded-lg overflow-hidden group border border-gray-200">
+            <img *ngIf="preview" [src]="preview" class="w-full h-full object-cover" />
+            <div *ngIf="!preview" class="w-full h-full flex items-center justify-center bg-gray-50">
+              <i class="pi pi-spin pi-spinner text-blue-400 text-xs"></i>
+            </div>
+            <button (click)="removeImage(i)" class="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <i class="pi pi-times text-[10px]"></i>
+            </button>
+          </div>
+
+          <!-- Upload Button -->
+          <div class="relative aspect-square bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center hover:border-blue-400 transition-all cursor-pointer">
+            <i class="pi pi-plus text-gray-300"></i>
+            <span class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Add More</span>
+            <input type="file" (change)="onImagesSelected($event)" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" multiple />
+            
+            <div *ngIf="uploadingGallery" class="absolute inset-0 bg-white/80 flex items-center justify-center">
+              <i class="pi pi-spin pi-spinner text-blue-500 text-xl"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3">
+      <p-button label="Cancel" icon="pi pi-times" [outlined]="true" (onClick)="cancel()"></p-button>
+      <p-button label="Update Product" icon="pi pi-check" [loading]="saving" (onClick)="update()"></p-button>
+    </div>
+  </div>
+</div>

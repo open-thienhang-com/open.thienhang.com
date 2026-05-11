@@ -1,0 +1,201 @@
+<p-toast></p-toast>
+
+<div class="bg-gray-50 min-h-screen p-6">
+  <!-- Header Section -->
+  <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+    <div class="flex items-center justify-between flex-wrap gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-100">
+          <i class="pi pi-pencil text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">Notification Composer</h1>
+          <p class="text-gray-500 text-sm">Design and dispatch real-time notifications with high-fidelity visual previews</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <button pButton icon="pi pi-arrow-left" [outlined]="true" [rounded]="true" severity="secondary" routerLink="/notification/explorer" pTooltip="Back to Explorer"></button>
+        <button pButton icon="pi pi-refresh" [outlined]="true" [rounded]="true" severity="secondary" (click)="resetForm()" pTooltip="Clear Workspace"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-[380px,1fr] gap-8 items-start">
+    
+    <!-- Left: Configuration -->
+    <div class="space-y-6">
+      <!-- 1. Channel Selection -->
+      <p-card header="1. Delivery Channel" styleClass="rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="flex flex-col gap-2">
+          <p-selectButton [options]="channels" [(ngModel)]="channel" optionLabel="label" optionValue="value">
+            <ng-template let-item pTemplate="item">
+              <div class="flex flex-col items-center gap-1 p-2">
+                <i [class]="item.icon"></i>
+                <span class="text-[10px] font-bold">{{item.label}}</span>
+              </div>
+            </ng-template>
+          </p-selectButton>
+        </div>
+      </p-card>
+
+      <!-- 2. Content Source -->
+      <p-card header="2. Content Source" styleClass="rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="space-y-4">
+          <p-dropdown 
+            [options]="templates" 
+            [(ngModel)]="selectedTemplate" 
+            (onChange)="onTemplateSelect($event.value)"
+            optionLabel="code" 
+            placeholder="Select a template..."
+            styleClass="w-full rounded-xl border-gray-200"
+            [filter]="true"
+            filterBy="code"
+          ></p-dropdown>
+
+          <!-- Variables Area -->
+          <div *ngIf="variables.length > 0" class="pt-6 border-t border-gray-50 animate-in fade-in slide-in-from-top-2 duration-300">
+            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Variable Injection</h4>
+            <div class="space-y-4">
+              <div *ngFor="let v of variables">
+                <label class="text-xs font-bold text-gray-700 block mb-1">{{v.name}}</label>
+                <input type="text" pInputText [(ngModel)]="v.value" class="w-full p-inputtext-sm rounded-lg" [placeholder]="'Enter value for ' + v.name">
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- Dispatch Button -->
+      <button 
+        pButton 
+        (click)="send()" 
+        [loading]="sending"
+        [disabled]="loading || sending"
+        class="w-full p-button-primary rounded-2xl py-4 flex justify-center text-lg font-bold shadow-xl shadow-blue-100"
+      >
+        <i class="pi pi-send mr-3"></i>
+        Dispatch Notification
+      </button>
+    </div>
+
+    <!-- Right: Editor & Preview -->
+    <div class="space-y-8">
+      <!-- Editor Card -->
+      <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
+        <!-- Recipients -->
+        <div class="flex items-center gap-4 px-8 py-4 border-bottom border-gray-100 bg-gray-50/50">
+          <span class="text-xs font-bold text-gray-400 uppercase tracking-tight w-20">Recipients</span>
+          <input type="text" pInputText [(ngModel)]="recipient" placeholder="customer&#64;ghn.vn, 0912..." class="flex-1 p-inputtext-sm border-none bg-transparent font-medium focus:ring-0">
+        </div>
+
+        <!-- Subject (Email only) -->
+        <div *ngIf="channel === 'email'" class="flex items-center gap-4 px-8 py-4 border-bottom border-gray-100 border-t border-gray-50">
+          <span class="text-xs font-bold text-gray-400 uppercase tracking-tight w-20">Subject</span>
+          <input type="text" pInputText [(ngModel)]="subject" placeholder="Email subject line..." class="flex-1 p-inputtext-sm border-none bg-transparent font-medium focus:ring-0">
+        </div>
+
+        <!-- Body Area -->
+        <div class="p-8 min-h-[320px]">
+          <textarea 
+            pInputTextarea 
+            [(ngModel)]="body" 
+            [autoResize]="true" 
+            placeholder="Type your message content or select a template..."
+            class="w-full border-none bg-transparent p-0 text-gray-700 text-lg leading-relaxed focus:ring-0 resize-none min-h-[260px]"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Preview Section -->
+      <div class="flex flex-col items-center gap-6">
+        <div class="flex items-center gap-4 w-full">
+          <div class="h-px flex-1 bg-gray-100"></div>
+          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Live Channel Preview</span>
+          <div class="h-px flex-1 bg-gray-100"></div>
+        </div>
+
+        <!-- Preview Viewport -->
+        <div class="w-full flex justify-center py-8 perspective-1000">
+          
+          <!-- EMAIL PREVIEW (MacOS style) -->
+          <div *ngIf="channel === 'email'" class="w-full max-w-[800px] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-in zoom-in-95 duration-500">
+            <div class="bg-gray-100 px-4 py-3 flex items-center justify-between border-b border-gray-200">
+              <div class="flex gap-1.5">
+                <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                <div class="w-3 h-3 rounded-full bg-green-400"></div>
+              </div>
+              <div class="text-[10px] font-bold text-gray-400 font-sans tracking-wide">GHN Mail — Preview</div>
+              <div class="w-10"></div>
+            </div>
+            
+            <div class="p-8 border-b border-gray-50">
+              <h1 class="text-xl font-bold text-gray-800 mb-4">{{injectedSubject || 'Subject Line'}}</h1>
+              <div class="space-y-1 text-xs text-gray-400">
+                <p><span class="font-bold text-gray-500">From:</span> GHN Notification Service <span class="text-blue-500">&lt;no-reply&#64;ghn.vn&gt;</span></p>
+                <p><span class="font-bold text-gray-500">To:</span> {{recipient || 'Recipient'}}</p>
+              </div>
+            </div>
+
+            <div class="p-10 text-gray-700 leading-relaxed min-h-[300px]"
+                 [innerHTML]="getSafeHtml(injectedBody || 'Your message content will appear here...')">
+            </div>
+          </div>
+
+          <!-- SMS PREVIEW (iPhone style) -->
+          <div *ngIf="channel === 'sms'" class="relative w-[320px] h-[640px] bg-black rounded-[3rem] p-3 shadow-2xl border-4 border-gray-800 animate-in slide-in-from-bottom-5 duration-500">
+            <div class="w-full h-full bg-white rounded-[2.5rem] overflow-hidden flex flex-col relative">
+              <!-- Notch -->
+              <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-20"></div>
+              
+              <!-- Status Bar -->
+              <div class="flex justify-between items-center px-8 py-3 pt-4 text-[10px] font-bold text-black bg-white">
+                <span>9:41</span>
+                <div class="flex gap-1 items-center">
+                  <i class="pi pi-chart-bar"></i>
+                  <i class="pi pi-wifi"></i>
+                  <i class="pi pi-percentage text-[8px]">100</i>
+                </div>
+              </div>
+
+              <!-- SMS Header -->
+              <div class="flex flex-col items-center py-4 border-b border-gray-100 bg-gray-50/50">
+                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-lg font-bold mb-1">G</div>
+                <span class="text-[10px] font-bold text-gray-900">GHN Logistics</span>
+                <i class="pi pi-angle-right text-[8px] text-gray-300"></i>
+              </div>
+
+              <!-- Message Bubbles -->
+              <div class="flex-1 p-4 bg-white overflow-y-auto">
+                <div class="text-center text-[8px] font-bold text-gray-300 uppercase tracking-widest my-4">Today 9:41 AM</div>
+                
+                <div class="flex justify-start animate-in slide-in-from-left-2 duration-300">
+                  <div class="bg-gray-100 text-gray-800 text-[11px] p-3 rounded-2xl rounded-bl-none max-w-[85%] leading-snug"
+                       [innerHTML]="getSafeHtml(injectedBody || 'Awaiting message content...')">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Input Bar Sim -->
+              <div class="p-4 bg-white flex flex-col gap-4">
+                <div class="flex items-center gap-3">
+                  <i class="pi pi-camera text-gray-300"></i>
+                  <div class="flex-1 h-8 rounded-full border border-gray-100 bg-gray-50"></div>
+                </div>
+                <div class="w-24 h-1 bg-black rounded-full mx-auto mb-1"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PUSH PREVIEW Placeholder -->
+          <div *ngIf="channel === 'http_push'" class="w-full max-w-[500px] p-12 text-center border-2 border-dashed border-gray-200 rounded-3xl text-gray-400 italic">
+            Webhook / Push notification preview not available. Check the API payload in the Audit Log after dispatch.
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

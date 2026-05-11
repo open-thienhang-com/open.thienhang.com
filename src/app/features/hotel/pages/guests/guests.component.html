@@ -1,0 +1,199 @@
+<div class="guests-page">
+  <p-toast></p-toast>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1>Guests Management</h1>
+        <p class="subtitle">View and manage guest information and booking history</p>
+      </div>
+      <div class="header-actions">
+        <button pButton type="button" label="Refresh" icon="pi pi-refresh"
+          (click)="loadData()" class="p-button-secondary">
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards">
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ guests.length }}</span>
+        <span class="stat-label">Total Guests</span>
+      </div>
+    </p-card>
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ getActiveGuests() }}</span>
+        <span class="stat-label">Active Guests</span>
+      </div>
+    </p-card>
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ getTotalRevenue() | currency }}</span>
+        <span class="stat-label">Total Revenue</span>
+      </div>
+    </p-card>
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ getAverageSpending() | currency }}</span>
+        <span class="stat-label">Avg. Spending</span>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Search -->
+  <p-card class="search-card">
+    <div class="search-group">
+      <input pInputText type="text" placeholder="Search by Guest ID or Apartment"
+        [(ngModel)]="searchTerm" (input)="onSearch()" class="search-input">
+      <i class="pi pi-search search-icon"></i>
+    </div>
+  </p-card>
+
+  <!-- Guests Table -->
+  <p-card *ngIf="!loading; else loadingTemplate">
+    <p-table [value]="filteredGuests" [paginator]="true" [rows]="10" 
+      [rowsPerPageOptions]="[10, 25, 50]" [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} guests"
+      styleClass="p-datatable-sm">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Guest</th>
+          <th>Total Bookings</th>
+          <th>Total Spent</th>
+          <th>Favorite Apartment</th>
+          <th>Last Booking</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-guest>
+        <tr>
+          <td>
+            <div class="guest-info">
+              <p-avatar [label]="getInitials(guest.account_id)" 
+                styleClass="mr-2" shape="circle">
+              </p-avatar>
+              <span class="guest-id">{{ guest.account_id }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="booking-count">{{ guest.totalBookings }}</span>
+          </td>
+          <td>
+            <span class="total-spent">{{ guest.totalSpent | currency }}</span>
+          </td>
+          <td>
+            <span class="apartment-name">{{ getApartmentName(guest.favoriteApartment || '') }}</span>
+          </td>
+          <td>
+            <span *ngIf="guest.lastBooking">
+              {{ guest.lastBooking.check_in | date: 'short' }}
+            </span>
+            <span *ngIf="!guest.lastBooking" class="text-muted">N/A</span>
+          </td>
+          <td>
+            <p-badge [value]="guest.status | titlecase" 
+              [severity]="getStatusSeverity(guest.status)">
+            </p-badge>
+          </td>
+          <td>
+            <button pButton type="button" icon="pi pi-eye" 
+              label="View Details" class="p-button-sm p-button-info"
+              (click)="viewGuestDetails(guest)">
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="text-center">
+            <div class="empty-state">
+              <i class="pi pi-users"></i>
+              <p>No guests found</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <!-- Loading Template -->
+  <ng-template #loadingTemplate>
+    <div class="loading-container">
+      <p-skeleton height="300px"></p-skeleton>
+    </div>
+  </ng-template>
+
+  <!-- Guest Details Dialog -->
+  <p-dialog 
+    [(visible)]="showGuestDialog" 
+    [header]="'Guest Details: ' + (selectedGuest?.account_id || '')"
+    [modal]="true" 
+    [style]="{width: '80vw', maxWidth: '1000px'}"
+    [closable]="true"
+    (onHide)="closeGuestDialog()">
+    
+    <div class="guest-details-content" *ngIf="selectedGuest">
+      <div class="guest-summary">
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="label">Total Bookings:</span>
+            <span class="value">{{ selectedGuest.totalBookings }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Total Spent:</span>
+            <span class="value price">{{ selectedGuest.totalSpent | currency }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Favorite Apartment:</span>
+            <span class="value">{{ getApartmentName(selectedGuest.favoriteApartment || '') }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Status:</span>
+            <p-badge [value]="selectedGuest.status | titlecase" 
+              [severity]="getStatusSeverity(selectedGuest.status)">
+            </p-badge>
+          </div>
+        </div>
+      </div>
+
+      <p-divider></p-divider>
+
+      <h3>Booking History</h3>
+      <p-table [value]="guestBookings" [paginator]="true" [rows]="5" 
+        styleClass="p-datatable-sm">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Booking ID</th>
+            <th>Apartment</th>
+            <th>Check-in</th>
+            <th>Check-out</th>
+            <th>Total Price</th>
+            <th>Status</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-booking>
+          <tr>
+            <td>{{ booking.id }}</td>
+            <td>{{ getApartmentName(booking.apartment_id) }}</td>
+            <td>{{ booking.check_in | date: 'short' }}</td>
+            <td>{{ booking.check_out | date: 'short' }}</td>
+            <td>{{ booking.total_price | currency }}</td>
+            <td>
+              <p-badge [value]="booking.booking_status | titlecase" 
+                [severity]="getBookingStatusSeverity(booking.booking_status)">
+              </p-badge>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </p-dialog>
+</div>

@@ -1,0 +1,251 @@
+<!-- Branch Management - Organizational Structure -->
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="bg-gray-50 min-h-screen p-6">
+  <!-- Header Section -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
+          <i class="pi pi-sitemap text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 leading-none">Branch Management</h1>
+          <p class="text-gray-600 mt-1">Organize hubs, offices, and warehouses with hierarchical structure</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+        <p-button icon="pi pi-refresh" severity="info" [outlined]="true" [rounded]="true" (click)="refreshData()" pTooltip="Sync Data" class="hidden sm:inline-flex"></p-button>
+        <p-button icon="pi pi-download" severity="secondary" [outlined]="true" [rounded]="true" (click)="exportData()" pTooltip="Export branches" class="hidden sm:inline-flex"></p-button>
+        <p-button icon="pi pi-filter" severity="secondary" [outlined]="!showFilters" [rounded]="true" (click)="toggleFilters()" pTooltip="Toggle Filters" class="hidden sm:inline-flex"></p-button>
+        <p-button icon="pi pi-list" severity="secondary" [outlined]="viewMode !== 'list'" [rounded]="true" (click)="setViewMode('list')" pTooltip="List View" class="hidden sm:inline-flex"></p-button>
+        <p-button icon="pi pi-th-large" severity="secondary" [outlined]="viewMode !== 'card'" [rounded]="true" (click)="setViewMode('card')" pTooltip="Card View" class="hidden sm:inline-flex"></p-button>
+        <p-button icon="pi pi-plus" severity="primary" [rounded]="true" (click)="createNew()" pTooltip="Create Branch" class="hidden sm:inline-flex"></p-button>
+        <p-button label="Add Branch" icon="pi pi-plus" severity="primary" size="small" (click)="createNew()" class="sm:hidden"></p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+    <div class="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Total Hubs</p>
+          <p class="text-3xl font-bold text-gray-900">{{ stats.total || 0 }}</p>
+        </div>
+        <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-building text-indigo-600 text-xl font-bold"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Operating</p>
+          <p class="text-3xl font-bold text-green-600">{{ stats.active || 0 }}</p>
+        </div>
+        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-check-circle text-green-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Main Offices</p>
+          <p class="text-3xl font-bold text-blue-600">{{ stats.offices || 0 }}</p>
+        </div>
+        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-home text-blue-600 text-xl font-bold"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Logistics Hubs</p>
+          <p class="text-3xl font-bold text-teal-600">{{ stats.warehouses || 0 }}</p>
+        </div>
+        <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-box text-teal-600 text-xl font-bold"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6 animate-in slide-in-from-top duration-300" *ngIf="showFilters">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="flex flex-col gap-2">
+        <label class="text-sm font-bold text-gray-700">Search</label>
+        <div class="relative">
+          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          <input pInputText type="text" placeholder="By code, name..." [(ngModel)]="searchTerm" (input)="onSearch()" class="w-full pl-10" />
+        </div>
+      </div>
+      
+      <div class="flex flex-col gap-2">
+        <label class="text-sm font-bold text-gray-700">Branch Type</label>
+        <p-dropdown [options]="typeOptions" [(ngModel)]="selectedType" optionLabel="label" placeholder="All Types" [showClear]="true" (onChange)="onFilterChange()" class="w-full"></p-dropdown>
+      </div>
+      
+      <div class="flex flex-col gap-2">
+        <label class="text-sm font-bold text-gray-700">Status</label>
+        <p-dropdown [options]="statusOptions" [(ngModel)]="selectedStatus" optionLabel="label" placeholder="All Status" [showClear]="true" (onChange)="onFilterChange()" class="w-full"></p-dropdown>
+      </div>
+    </div>
+    <div class="flex items-center gap-3 mt-6">
+      <p-button label="Apply" icon="pi pi-check" severity="primary" size="small" (click)="applyFilters()"></p-button>
+      <p-button label="Clear" icon="pi pi-times" severity="secondary" [outlined]="true" size="small" (click)="clearFilters()"></p-button>
+    </div>
+  </div>
+
+  <!-- List View -->
+  <div *ngIf="viewMode === 'list'" class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+    <p-table 
+      [value]="branches" 
+      [loading]="loading"
+      [tableStyle]="{ 'min-width': '50rem' }"
+      styleClass="p-datatable-gridlines p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr class="bg-gray-50 border-b border-gray-200">
+          <th class="px-6 py-4 font-bold text-gray-700 uppercase tracking-tight text-[11px]">Identifer & Name</th>
+          <th class="px-6 py-4 font-bold text-gray-700 uppercase tracking-tight text-[11px]">Category</th>
+          <th class="px-6 py-4 font-bold text-gray-700 uppercase tracking-tight text-[11px]">Primary Contact</th>
+          <th class="px-6 py-4 font-bold text-gray-700 uppercase tracking-tight text-[11px]">Location</th>
+          <th class="px-6 py-4 font-bold text-gray-700 uppercase tracking-tight text-[11px]">Operations</th>
+          <th class="px-6 py-4 text-center font-bold text-gray-700 uppercase tracking-tight text-[11px]">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-b>
+        <tr class="hover:bg-gray-50/50 transition-colors">
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm font-black text-white text-xs">
+                {{ b.name.substring(0, 1).toUpperCase() }}
+              </div>
+              <div class="flex flex-col">
+                <span class="font-bold text-gray-900 cursor-pointer hover:text-indigo-600 transition-colors" (click)="viewDetail(b)">{{ b.name }}</span>
+                <code class="text-[10px] text-gray-400 font-mono">{{ b.code }}</code>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <span class="text-xs font-bold px-2 py-1 bg-gray-100 rounded-md text-gray-600 capitalize tabular-nums">{{ b.branch_type || 'General' }}</span>
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-2 text-xs text-gray-600">
+                <i class="pi pi-envelope text-[10px]"></i>
+                {{ b.contact_info?.email || '-' }}
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-2 text-xs text-gray-600">
+                <i class="pi pi-map-marker text-[10px]"></i>
+                <span class="font-semibold">{{ b.address?.city || 'No city info' }}</span>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <p-tag [value]="b.is_active !== false ? 'Active' : 'Suspended'" [severity]="getStatusSeverity(b)" styleClass="text-[9px] uppercase font-bold py-0.5 px-2 rounded-full shadow-sm"></p-tag>
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex items-center justify-center gap-1">
+              <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small" (click)="viewDetail(b)" pTooltip="Details"></p-button>
+              <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="secondary" size="small" (click)="viewDetail(b)" pTooltip="Edit Config"></p-button>
+              <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small" (click)="deleteBranch(b)" pTooltip="Remove Hub"></p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="text-center py-20 bg-gray-50/20">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-200 shadow-inner">
+              <i class="pi pi-map text-gray-400 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-1">Infrastructure Empty</h3>
+            <p class="text-gray-500 mb-6 text-sm">Register your first branch to start mapping organizational units.</p>
+            <p-button label="Add Hub" icon="pi pi-plus" severity="primary" (click)="createNew()"></p-button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- Card View -->
+  <div *ngIf="viewMode === 'card'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
+    <div *ngFor="let b of branches" 
+         class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 group">
+      
+      <!-- Card Header -->
+      <div class="p-6 border-b border-gray-200 bg-white group-hover:bg-gray-50 transition-colors">
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <i class="pi pi-building text-white text-lg"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors" (click)="viewDetail(b)">{{ b.name }}</h3>
+              <p class="text-xs font-mono text-gray-400">{{ b.code }}</p>
+            </div>
+          </div>
+          <p-tag [value]="b.is_active !== false ? 'ACTIVE' : 'SUSPENDED'" [severity]="getStatusSeverity(b)" styleClass="text-[8px] font-black px-2"></p-tag>
+        </div>
+        
+        <p class="text-sm text-gray-600 mb-5 line-clamp-2 h-10">{{ b.description || 'No specialized description provided for this organizational unit.' }}</p>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div class="text-center p-3 bg-gray-50 border border-gray-100 rounded-xl shadow-inner">
+            <div class="text-sm font-black text-gray-900 capitalize">{{ b.branch_type || 'Office' }}</div>
+            <div class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Classification</div>
+          </div>
+          <div class="text-center p-3 bg-gray-50 border border-gray-100 rounded-xl shadow-inner">
+            <div class="text-sm font-black text-gray-900">{{ b.address?.city || 'Global' }}</div>
+            <div class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Location</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Contact Details -->
+      <div class="px-6 py-4 border-b border-gray-200 space-y-2">
+        <div class="flex items-center gap-3 text-xs text-gray-600 font-medium">
+            <i class="pi pi-envelope text-indigo-300"></i>
+            <span>{{ b.contact_info?.email || 'No digital contact' }}</span>
+        </div>
+        <div class="flex items-center gap-3 text-xs text-gray-600 font-medium">
+            <i class="pi pi-phone text-indigo-300"></i>
+            <span>{{ b.contact_info?.phone || 'No phone info' }}</span>
+        </div>
+      </div>
+      
+      <!-- Card Actions -->
+      <div class="px-6 py-4 bg-gray-50/30">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1">
+            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small" (click)="viewDetail(b)" pTooltip="Overview"></p-button>
+            <p-button icon="pi pi-sitemap" [rounded]="true" [text]="true" severity="secondary" size="small" (click)="viewDetail(b)" pTooltip="Hierarchy"></p-button>
+          </div>
+          <div class="flex items-center gap-1">
+            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="secondary" size="small" (click)="viewDetail(b)" pTooltip="Edit Config"></p-button>
+            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small" (click)="deleteBranch(b)" pTooltip="Remove Hub"></p-button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="mt-8 flex justify-center" *ngIf="branches.length > 0">
+    <p-paginator 
+      [rows]="pageSize" 
+      [totalRecords]="totalRecords"
+      (onPageChange)="onPageChange($event)"
+      styleClass="border-none shadow-none bg-transparent">
+    </p-paginator>
+  </div>
+</div>

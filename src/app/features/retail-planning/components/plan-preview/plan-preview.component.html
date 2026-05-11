@@ -1,0 +1,422 @@
+<!-- Plan Preview & Overview Component -->
+<div class="bg-white border-2 border-gray-300 p-6 shadow mb-6" id="plan-summary-section">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-12">
+    <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent mb-3"></div>
+    <p class="text-sm text-gray-500">Đang tải plan...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="text-center py-12 text-red-600">
+    <p class="text-base font-medium">{{ error }}</p>
+  </div>
+
+  <!-- Plan Content -->
+  <div *ngIf="!loading && !error">
+    <h3 class="text-lg font-bold text-gray-900 uppercase mb-6 flex items-center gap-2">
+      <span>📊</span>
+      <span>Tổng quan lịch tải</span>
+    </h3>
+    
+    <!-- Summary Cards -->
+    <div *ngIf="plan && planStats" class="mb-6">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <!-- Total Vehicles -->
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200 shadow-sm">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+              <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z"/>
+            </svg>
+            <span class="text-xs font-semibold text-blue-700 uppercase">Tổng xe</span>
+          </div>
+          <div class="text-3xl font-bold text-blue-900 mb-1">{{ planStats.totalVehicles }}</div>
+          <div class="text-xs text-blue-600">NCC: {{ planStats.vehiclesNCC }} • GHN: {{ planStats.vehiclesGHN }}</div>
+        </div>
+
+        <!-- Pickup Quantity -->
+        <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200 shadow-sm">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xl">📥</span>
+            <span class="text-xs font-semibold text-green-700 uppercase">SL Lấy</span>
+          </div>
+          <div class="text-3xl font-bold text-green-900 mb-1">{{ planStats.totalPickupQty | number }}</div>
+          <div class="text-xs text-green-600">Số lượng đơn</div>
+        </div>
+
+        <!-- Pickup Weight -->
+        <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200 shadow-sm">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xl">⚖️</span>
+            <span class="text-xs font-semibold text-green-700 uppercase">KL Lấy</span>
+          </div>
+          <div class="text-2xl font-bold text-green-900 mb-1">
+            {{ planStats.totalPickupKg | number }} <span class="text-base font-normal">kg</span>
+          </div>
+          <div class="text-xs text-green-600">Khối lượng</div>
+        </div>
+
+        <!-- Delivery Quantity -->
+        <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200 shadow-sm">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xl">📦</span>
+            <span class="text-xs font-semibold text-orange-700 uppercase">SL Giao</span>
+          </div>
+          <div class="text-3xl font-bold text-orange-900 mb-1">{{ planStats.totalDeliveryQty | number }}</div>
+          <div class="text-xs text-orange-600">Số lượng đơn</div>
+        </div>
+
+        <!-- Delivery Weight -->
+        <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200 shadow-sm">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xl">⚖️</span>
+            <span class="text-xs font-semibold text-orange-700 uppercase">KL Giao</span>
+          </div>
+          <div class="text-2xl font-bold text-orange-900 mb-1">
+            {{ planStats.totalDeliveryKg | number }} <span class="text-base font-normal">kg</span>
+          </div>
+          <div class="text-xs text-orange-600">Khối lượng</div>
+        </div>
+
+        <!-- Total Distance -->
+        <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200 shadow-sm">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+            </svg>
+            <span class="text-xs font-semibold text-purple-700 uppercase">Tổng KM</span>
+          </div>
+          <div class="text-2xl font-bold text-purple-900 mb-1">
+            {{ planStats.totalDistanceKm | number:'1.1-1' }} <span class="text-base font-normal">km</span>
+          </div>
+          <div class="text-xs text-purple-600">{{ planStats.totalStops }} điểm dừng</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State for Summary Cards -->
+    <div *ngIf="!plan && !loading" class="mb-6">
+      <div class="text-center py-8 text-gray-400">
+        <p class="text-sm">Chọn plan để xem tổng quan</p>
+      </div>
+    </div>
+
+    <!-- PREVIEW Section -->
+    <div *ngIf="plan" class="border-t-2 border-gray-200 pt-6 mb-6">
+      <div class="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg p-4 mb-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-xl">
+              👁️
+            </div>
+            <div>
+              <h4 class="text-lg font-bold text-gray-900">Xem trước</h4>
+              <p class="text-xs text-gray-500 mt-0.5">Xem trước chi tiết lịch tải</p>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button 
+              type="button"
+              (click)="setPreviewView('timeline')"
+              class="px-4 py-2 text-sm font-medium rounded-lg transition-all"
+              [ngClass]="{
+                'bg-white text-orange-600 shadow-sm': previewView === 'timeline',
+                'text-gray-600 hover:bg-gray-100 border border-gray-200': previewView !== 'timeline'
+              }">
+              <span class="mr-1.5">📊</span> Timeline
+            </button>
+            <button 
+              type="button"
+              (click)="setPreviewView('table')"
+              class="px-4 py-2 text-sm font-medium rounded-lg transition-all"
+              [ngClass]="{
+                'bg-primary text-white shadow-sm hover:shadow-md': previewView === 'table',
+                'text-gray-600 hover:bg-gray-100 border border-gray-200': previewView !== 'table'
+              }">
+              <span class="mr-1.5">📋</span> Bảng
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shift Tabs -->
+      <div *ngIf="shifts && shifts.length > 0" class="mb-4">
+        <div class="bg-gradient-to-r from-gray-100 to-gray-50 rounded-t-xl px-2 py-2">
+          <nav class="flex gap-2" aria-label="Shift Tabs">
+            <button
+              *ngFor="let shift of shifts; let i = index"
+              type="button"
+              (click)="switchToShift(i)"
+              class="px-5 py-3 text-sm font-medium rounded-t-lg transition-all"
+              [ngClass]="{
+                'font-semibold bg-white text-primary border-t-2 border-x border-primary shadow-sm': activeShiftIndex === i,
+                'bg-gray-50 text-gray-600 border border-transparent hover:bg-gray-100 hover:text-gray-800': activeShiftIndex !== i
+              }">
+              <span class="text-base mr-2">{{ getShiftIcon(i) }}</span>
+              <span>{{ shift.shift_name || shift.name || ('Shift ' + (i + 1)) }}</span>
+              <span 
+                class="ml-2 text-xs px-2 py-0.5 rounded-full"
+                [ngClass]="{
+                  'bg-primary/10 text-primary': activeShiftIndex === i,
+                  'bg-gray-200 text-gray-600': activeShiftIndex !== i
+                }">
+                {{ (shift.vehicles || []).length }} xe
+              </span>
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg bg-white shadow-sm">
+        <!-- Timeline View -->
+        <div *ngIf="previewView === 'timeline'" class="p-6 space-y-6">
+          <ng-container *ngIf="getActiveShift(); let activeShift">
+            <!-- Shift Header -->
+            <div class="bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-xl p-4 mb-6">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center text-2xl shadow-sm">📅</div>
+                  <div>
+                    <div class="text-base font-bold text-gray-900">{{ activeShift.shift_name || activeShift.name || 'Shift' }}</div>
+                    <div class="text-xs text-gray-600 mt-0.5">{{ (activeShift.vehicles || []).length }} phương tiện</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Vehicles Timeline -->
+            <div class="space-y-4" *ngIf="activeShift.vehicles && activeShift.vehicles.length > 0">
+              <div *ngFor="let vehicle of activeShift.vehicles; let vIndex = index" 
+                   class="bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-primary/30 transition-all shadow-sm">
+                <!-- Vehicle Header -->
+                <div class="bg-gradient-to-r from-gray-50 to-white p-4 border-b border-gray-200">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-xl">🚚</div>
+                      <div class="font-bold text-gray-900">{{ vehicle.vehicle_id || vehicle.id || ('Xe ' + (vIndex + 1)) }}</div>
+                    </div>
+                    <!-- Summary Stats -->
+                    <div class="flex gap-4 text-xs">
+                      <div class="flex items-center gap-1.5 text-green-700 bg-green-50 px-3 py-1.5 rounded-lg font-medium">
+                        <span>📦</span>
+                        <span>{{ getVehiclePickupWeight(vehicle) | number:'1.0-0' }} kg</span>
+                      </div>
+                      <div class="flex items-center gap-1.5 text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg font-medium">
+                        <span>📬</span>
+                        <span>{{ getVehicleDeliveryWeight(vehicle) | number:'1.0-0' }} kg</span>
+                      </div>
+                      <div class="flex items-center gap-1.5 text-purple-700 bg-purple-50 px-3 py-1.5 rounded-lg font-medium">
+                        <span>🛣️</span>
+                        <span>{{ getVehicleDistance(vehicle) | number:'1.1-1' }} km</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Timeline Body with Stops -->
+                <div class="p-4">
+                  <div class="space-y-3" *ngIf="vehicle.demands && vehicle.demands.length > 0">
+                    <div *ngFor="let demand of vehicle.demands; let dIndex = index; let isLast = last" class="flex gap-4">
+                      <!-- Timeline Indicator -->
+                      <div class="flex flex-col items-center">
+                        <div 
+                          class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-sm text-white"
+                          [ngClass]="{
+                            'bg-green-500': demand.stop_type === 'pickup' || (demand.stop_type && demand.stop_type.toLowerCase().includes('lấy')),
+                            'bg-blue-500': demand.stop_type === 'delivery' || (demand.stop_type && demand.stop_type.toLowerCase().includes('giao')),
+                            'bg-gray-400': !demand.stop_type
+                          }">
+                          {{ demand.stt || (dIndex + 1) }}
+                        </div>
+                        <div *ngIf="!isLast" class="w-0.5 flex-1 bg-gray-300 mt-2"></div>
+                      </div>
+
+                      <!-- Stop Info -->
+                      <div class="flex-1 bg-gray-50 rounded-lg p-3 border border-gray-200">
+                        <div class="flex items-start justify-between gap-2 mb-2">
+                          <div class="font-semibold text-gray-900 text-sm">{{ demand.stop_name || ('Stop ' + (dIndex + 1)) }}</div>
+                          <span 
+                            class="text-xs px-2 py-1 rounded-full font-medium"
+                            [ngClass]="{
+                              'bg-green-100 text-green-700': demand.stop_type === 'pickup' || (demand.stop_type && demand.stop_type.toLowerCase().includes('lấy')),
+                              'bg-blue-100 text-blue-700': demand.stop_type === 'delivery' || (demand.stop_type && demand.stop_type.toLowerCase().includes('giao')),
+                              'bg-gray-100 text-gray-700': !demand.stop_type
+                            }">
+                            {{ demand.stop_type || 'N/A' }}
+                          </span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                          <div *ngIf="demand.pickup_weight_kg" class="flex items-center gap-1">
+                            <span class="text-green-600">↑</span>
+                            <span>Pickup: {{ demand.pickup_weight_kg }} kg</span>
+                          </div>
+                          <div *ngIf="demand.delivery_weight_kg" class="flex items-center gap-1">
+                            <span class="text-blue-600">↓</span>
+                            <span>Delivery: {{ demand.delivery_weight_kg }} kg</span>
+                          </div>
+                          <div *ngIf="demand.distance_km" class="flex items-center gap-1 col-span-2">
+                            <span class="text-gray-500">📍</span>
+                            <span>Khoảng cách: {{ demand.distance_km | number:'1.1-1' }} km</span>
+                          </div>
+                          <div *ngIf="demand.expected_checkin_time" class="flex items-center gap-1 col-span-2">
+                            <span class="text-gray-500">🕐</span>
+                            <span>Check-in: {{ formatTimeOfDay(demand.expected_checkin_time) }}</span>
+                          </div>
+                          <div *ngIf="demand.expected_checkout_time" class="flex items-center gap-1 col-span-2">
+                            <span class="text-gray-500">🕐</span>
+                            <span>Check-out: {{ formatTimeOfDay(demand.expected_checkout_time) }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+
+        <!-- Table View -->
+        <div *ngIf="previewView === 'table'" class="p-6">
+          <ng-container *ngIf="getActiveShift(); let activeShift">
+            <div class="overflow-x-auto" *ngIf="activeShift.vehicles && activeShift.vehicles.length > 0">
+              <table class="min-w-full text-xs border-collapse">
+                <thead class="bg-gray-100">
+                  <tr>
+                    <th class="px-3 py-2 text-left font-semibold text-gray-700 border border-gray-300">Vehicle</th>
+                    <th class="px-3 py-2 text-left font-semibold text-gray-700 border border-gray-300">#</th>
+                    <th class="px-3 py-2 text-left font-semibold text-gray-700 border border-gray-300">Stop</th>
+                    <th class="px-3 py-2 text-left font-semibold text-gray-700 border border-gray-300">Type</th>
+                    <th class="px-3 py-2 text-left font-semibold text-gray-700 border border-gray-300">Pickup</th>
+                    <th class="px-3 py-2 text-left font-semibold text-gray-700 border border-gray-300">Delivery</th>
+                    <th class="px-3 py-2 text-left font-semibold text-gray-700 border border-gray-300">Check-in</th>
+                    <th class="px-3 py-2 text-left font-semibold text-gray-700 border border-gray-300">Check-out</th>
+                    <th class="px-3 py-2 text-left font-semibold text-gray-700 border border-gray-300">Processing</th>
+                    <th class="px-3 py-2 text-left font-semibold text-gray-700 border border-gray-300">Travel</th>
+                    <th class="px-3 py-2 text-left font-semibold text-gray-700 border border-gray-300">Dist (km)</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <ng-container *ngFor="let vehicle of activeShift.vehicles; let vIndex = index">
+                    <tr *ngFor="let demand of vehicle.demands; let dIndex = index; let isFirst = first" 
+                        class="hover:bg-gray-50">
+                      <td *ngIf="isFirst" 
+                          [attr.rowspan]="vehicle.demands?.length || 1"
+                          class="px-3 py-2 font-semibold text-gray-900 bg-orange-50 border border-gray-300 align-top">
+                        {{ vehicle.vehicle_id || vehicle.id || ('Xe ' + (vIndex + 1)) }}
+                      </td>
+                      <td class="px-3 py-2 border border-gray-300">{{ demand.stt || (dIndex + 1) }}</td>
+                      <td class="px-3 py-2 border border-gray-300">{{ demand.stop_name || '-' }}</td>
+                      <td class="px-3 py-2 border border-gray-300">{{ demand.stop_type || '-' }}</td>
+                      <td class="px-3 py-2 border border-gray-300">{{ formatKg(demand.pickup_weight_kg) }}</td>
+                      <td class="px-3 py-2 border border-gray-300">{{ formatKg(demand.delivery_weight_kg) }}</td>
+                      <td class="px-3 py-2 border border-gray-300">
+                        {{ demand.expected_checkin_time ? formatTimeOfDay(demand.expected_checkin_time) : '-' }}
+                      </td>
+                      <td class="px-3 py-2 border border-gray-300">
+                        {{ demand.expected_checkout_time ? formatTimeOfDay(demand.expected_checkout_time) : '-' }}
+                      </td>
+                      <td class="px-3 py-2 border border-gray-300">
+                        {{ demand.processing_time ? formatDuration(demand.processing_time) : '-' }}
+                      </td>
+                      <td class="px-3 py-2 border border-gray-300">
+                        {{ demand.travel_time ? formatDuration(demand.travel_time) : '-' }}
+                      </td>
+                      <td class="px-3 py-2 border border-gray-300">
+                        {{ demand.distance_km ? (demand.distance_km | number:'1.3-3') : '-' }}
+                      </td>
+                    </tr>
+                  </ng-container>
+                </tbody>
+              </table>
+            </div>
+          </ng-container>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!plan || !shifts || shifts.length === 0" class="text-center py-16 text-gray-400">
+          <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+          </svg>
+          <p class="text-base font-medium text-gray-500">Chưa chọn plan</p>
+          <p class="text-sm text-gray-400 mt-2">Chọn hoặc upload plan để xem preview</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trip Overview Cards -->
+    <div *ngIf="plan && planStats && overviewStats" class="mb-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Vehicle Utilization Rate -->
+        <div class="bg-gradient-to-br from-teal-50 to-teal-100 p-5 rounded-xl border border-teal-200 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="p-2 bg-teal-200 rounded-lg">
+              <svg class="w-6 h-6 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+            </div>
+            <span class="text-sm font-semibold text-teal-700 uppercase">Tỷ lệ lấp đầy</span>
+          </div>
+          <div class="text-4xl font-bold text-teal-900 mb-2">{{ overviewStats.vehicleUtilization | number:'1.1-1' }}%</div>
+          <div class="w-full bg-teal-200 rounded-full h-2 mb-2">
+            <div class="bg-teal-600 h-2 rounded-full transition-all" [style.width.%]="Math.min(overviewStats.vehicleUtilization, 100)"></div>
+          </div>
+          <div class="text-xs text-teal-600">Tải trọng sử dụng TB</div>
+        </div>
+
+        <!-- NCC Vehicle Ratio -->
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-xl border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="p-2 bg-blue-200 rounded-lg">
+              <svg class="w-6 h-6 text-blue-700" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z"/>
+              </svg>
+            </div>
+            <span class="text-sm font-semibold text-blue-700 uppercase">Tỷ lệ xe NCC</span>
+          </div>
+          <div class="text-4xl font-bold text-blue-900 mb-2">{{ overviewStats.nccRatio | number:'1.1-1' }}%</div>
+          <div class="w-full bg-blue-200 rounded-full h-2 mb-2">
+            <div class="bg-blue-600 h-2 rounded-full transition-all" [style.width.%]="overviewStats.nccRatio"></div>
+          </div>
+          <div class="text-xs text-blue-600">{{ planStats.vehiclesNCC }} NCC / {{ planStats.vehiclesGHN }} GHN</div>
+        </div>
+
+        <!-- Pickup Weight Ratio -->
+        <div class="bg-gradient-to-br from-green-50 to-green-100 p-5 rounded-xl border border-green-200 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="p-2 bg-green-200 rounded-lg">
+              <span class="text-2xl">📥</span>
+            </div>
+            <span class="text-sm font-semibold text-green-700 uppercase">Tỷ lệ lấy hàng</span>
+          </div>
+          <div class="text-4xl font-bold text-green-900 mb-2">{{ overviewStats.pickupRatio | number:'1.1-1' }}%</div>
+          <div class="w-full bg-green-200 rounded-full h-2 mb-2">
+            <div class="bg-green-600 h-2 rounded-full transition-all" [style.width.%]="overviewStats.pickupRatio"></div>
+          </div>
+          <div class="text-xs text-green-600">
+            {{ planStats.totalPickupKg | number }} kg / {{ (planStats.totalPickupKg + planStats.totalDeliveryKg) | number }} kg
+          </div>
+        </div>
+
+        <!-- Delivery Weight Ratio -->
+        <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-5 rounded-xl border border-orange-200 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="p-2 bg-orange-200 rounded-lg">
+              <span class="text-2xl">📦</span>
+            </div>
+            <span class="text-sm font-semibold text-orange-700 uppercase">Tỷ lệ giao hàng</span>
+          </div>
+          <div class="text-4xl font-bold text-orange-900 mb-2">{{ overviewStats.deliveryRatio | number:'1.1-1' }}%</div>
+          <div class="w-full bg-orange-200 rounded-full h-2 mb-2">
+            <div class="bg-orange-600 h-2 rounded-full transition-all" [style.width.%]="overviewStats.deliveryRatio"></div>
+          </div>
+          <div class="text-xs text-orange-600">
+            {{ planStats.totalDeliveryKg | number }} kg / {{ (planStats.totalPickupKg + planStats.totalDeliveryKg) | number }} kg
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

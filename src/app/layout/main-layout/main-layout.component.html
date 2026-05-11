@@ -1,0 +1,42 @@
+<div class="layout-root">
+  <!-- Mobile/tablet overlay backdrop -->
+  <div class="mobile-overlay" [class.active]="sidebarOpen" (click)="sidebarOpen = false"></div>
+
+  <!-- Sidebar wrapper — overlay on mobile, inline on desktop -->
+  <div class="sidebar-wrapper" [class.open]="sidebarOpen" [class.collapsed]="collapsed">
+    <app-sidebar [collapsed]="collapsed" (toggle)="toggleSidebar()"></app-sidebar>
+  </div>
+
+  <!-- Main content area -->
+  <div class="layout-main">
+  <!-- Mobile/tablet top bar -->
+  <div class="mobile-topbar">
+    <button class="hamburger-btn" (click)="toggleSidebar()" type="button" aria-label="Toggle sidebar">
+      <i class="pi pi-bars"></i>
+    </button>
+    <span class="topbar-label">{{ currentAppLabel }}</span>
+    <button class="profile-btn" routerLink="/settings?tab=profile" type="button" aria-label="Go to Profile">
+      <i class="pi pi-user"></i>
+    </button>
+  </div>
+
+    <!-- Page content -->
+    <main class="layout-content">
+      <router-outlet></router-outlet>
+      <app-footer *ngIf="showFooter"></app-footer>
+    </main>
+  </div>
+
+  <!-- Global Loading -->
+  <app-loading
+    *ngIf="loadingState.isLoading"
+    [type]="loadingState.type"
+    [message]="loadingState.message"
+    [size]="loadingState.size"
+    [overlay]="loadingState.overlay"
+    [fullScreen]="loadingState.fullScreen">
+  </app-loading>
+
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+</div>

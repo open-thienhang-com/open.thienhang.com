@@ -1,0 +1,376 @@
+.calendar-page {
+  padding: 2rem;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, var(--p-surface-0) 0%, rgba(var(--p-primary-500), 0.05) 100%);
+    padding: 2rem;
+    border-radius: 12px;
+    border-bottom: 2px solid rgba(var(--p-primary-500), 0.2);
+
+    .header-content {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 2rem;
+
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--p-surface-900);
+      }
+
+      .subtitle {
+        margin: 0;
+        font-size: 0.95rem;
+        color: var(--p-surface-600);
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        .apartment-filter {
+          min-width: 200px;
+        }
+      }
+    }
+  }
+
+  .calendar-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    align-items: start;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;
+    }
+
+    .calendar-card {
+      width: 100%;
+      
+      ::ng-deep {
+        .p-card {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .p-card-body {
+          padding: 2rem;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .booking-calendar {
+          width: 100%;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          
+          .p-calendar {
+            width: 100%;
+            font-size: 1.3rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+          }
+
+          .p-datepicker {
+            width: 100%;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            font-size: 1.3rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+          }
+
+          .p-datepicker-calendar {
+            width: 100%;
+            font-size: 1.3rem;
+            table-layout: fixed;
+            flex: 1;
+
+            thead th {
+              padding: 1.5rem 1rem;
+              font-size: 1.2rem;
+              font-weight: 600;
+              text-align: center;
+              background: var(--p-surface-50);
+            }
+
+            tbody {
+              flex: 1;
+              
+              td {
+                position: relative;
+                padding: 1.5rem;
+                width: calc(100% / 7);
+                height: 100px;
+                text-align: center;
+                vertical-align: middle;
+
+                span {
+                  font-size: 1.3rem;
+                  padding: 1rem;
+                  width: 100%;
+                  height: 100%;
+                  min-height: 70px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  border-radius: 8px;
+                  transition: all 0.2s ease;
+                  font-weight: 500;
+                }
+
+                &.p-datepicker-day-selected {
+                  span {
+                    background: var(--p-primary-500);
+                    color: white;
+                    font-weight: 700;
+                  }
+                }
+
+                span.p-highlight {
+                  background: rgba(var(--p-primary-500), 0.15);
+                  color: var(--p-primary-600);
+                  font-weight: 700;
+                }
+
+                &:hover {
+                  span {
+                    background: var(--p-surface-100);
+                    transform: scale(1.05);
+                  }
+                }
+              }
+            }
+          }
+
+          .p-datepicker-header {
+            padding: 1.5rem;
+            font-size: 1.4rem;
+            border-bottom: 2px solid var(--p-surface-200);
+            background: var(--p-surface-50);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+
+            .p-datepicker-title {
+              font-size: 1.4rem;
+              font-weight: 700;
+              flex: 1;
+              text-align: center;
+              white-space: nowrap;
+              overflow: visible;
+              text-overflow: clip;
+              min-width: 200px;
+              padding: 0 1rem;
+            }
+
+            button {
+              width: 3rem;
+              height: 3rem;
+              font-size: 1.4rem;
+              flex-shrink: 0;
+              
+              &:hover {
+                background: var(--p-surface-100);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .summary-card {
+      position: sticky;
+      top: 2rem;
+      max-height: calc(100vh - 4rem);
+      overflow-y: auto;
+
+      ::ng-deep .p-card-body {
+        padding: 1.5rem;
+      }
+
+      .summary-content {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+
+        .summary-stat {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 1.25rem;
+          background: var(--p-surface-50);
+          border-radius: 8px;
+
+          .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--p-primary-600);
+          }
+
+          .stat-label {
+            font-size: 0.85rem;
+            color: var(--p-surface-600);
+            margin-top: 0.5rem;
+          }
+        }
+      }
+
+      h4 {
+        margin: 1.5rem 0 1rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--p-surface-900);
+      }
+
+      .upcoming-bookings {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+
+        .upcoming-item {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          padding: 1rem;
+          background: var(--p-surface-50);
+          border-radius: 8px;
+          border-left: 3px solid var(--p-primary-500);
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: var(--p-surface-100);
+            transform: translateX(4px);
+          }
+
+          .upcoming-date {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 70px;
+            padding: 0.75rem;
+            background: var(--p-surface-0);
+            border-radius: 6px;
+
+            i {
+              color: var(--p-primary-500);
+              margin-bottom: 0.25rem;
+              font-size: 1.2rem;
+            }
+
+            span {
+              font-size: 0.9rem;
+              font-weight: 600;
+              color: var(--p-surface-900);
+            }
+          }
+
+          .upcoming-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            .apartment-name {
+              font-weight: 500;
+              color: var(--p-surface-900);
+            }
+          }
+        }
+
+        .no-upcoming {
+          text-align: center;
+          padding: 2rem;
+          color: var(--p-surface-600);
+          font-style: italic;
+        }
+      }
+    }
+
+  }
+
+  .loading-container {
+    padding: 2rem;
+  }
+
+  .bookings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 70vh;
+    overflow-y: auto;
+
+    .booking-card {
+      .booking-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--p-surface-200);
+
+        h3 {
+          margin: 0 0 0.25rem;
+          font-size: 1.1rem;
+          color: var(--p-surface-900);
+        }
+
+        .booking-id {
+          font-size: 0.85rem;
+          color: var(--p-surface-600);
+          font-family: 'Courier New', monospace;
+        }
+
+        .booking-badges {
+          display: flex;
+          gap: 0.5rem;
+        }
+      }
+
+      .booking-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 0.75rem;
+
+        .detail-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 0.5rem 0;
+
+          .label {
+            font-weight: 500;
+            color: var(--p-surface-600);
+            font-size: 0.9rem;
+          }
+
+          .value {
+            color: var(--p-surface-900);
+            font-weight: 600;
+            text-align: right;
+
+            &.price {
+              color: var(--p-primary-600);
+              font-size: 1.1rem;
+            }
+          }
+        }
+      }
+    }
+  }
+}

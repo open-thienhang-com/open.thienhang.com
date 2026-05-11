@@ -1,0 +1,628 @@
+<ng-container *ngIf="inline; else dialogTemplate">
+  <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Breadcrumb -->
+        <div class="py-3 border-b border-gray-100">
+          <div class="flex items-center gap-2 text-sm">
+            <a href="/governance" class="text-gray-500 hover:text-gray-700">Governance</a>
+            <i class="pi pi-angle-right text-gray-400 text-xs"></i>
+            <a href="/governance/roles" class="text-gray-500 hover:text-gray-700">Roles</a>
+            <i class="pi pi-angle-right text-gray-400 text-xs"></i>
+            <span class="text-gray-900 font-medium">{{ title }}</span>
+          </div>
+        </div>
+        
+        <!-- Title & Actions -->
+        <div class="flex items-center justify-between py-5">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+              <i class="pi pi-shield text-white text-xl"></i>
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold text-gray-900">{{ title }}</h1>
+              <div class="flex items-center gap-3 mt-1">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  <i class="pi pi-check-circle mr-1"></i>
+                  {{ getSelectedPermissionsCount() }} permissions selected
+                </span>
+                <span *ngIf="role.name" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  <i class="pi pi-pencil mr-1"></i>
+                  {{ role.name }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <p-button 
+              label="Cancel" 
+              icon="pi pi-times"
+              severity="secondary" 
+              [outlined]="true"
+              (click)="onCancelClick()">
+            </p-button>
+            <p-button 
+              label="Save Role" 
+              icon="pi pi-save"
+              severity="primary" 
+              (click)="save()"
+              [disabled]="!isFormValid() || saving"
+              [loading]="saving">
+            </p-button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" *ngIf="role">
+      <!-- Basic Information -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden hover:shadow-md transition-shadow">
+        <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-white border-b border-gray-200">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+              <i class="pi pi-info-circle text-blue-600"></i>
+            </div>
+            <div>
+              <h3 class="text-base font-semibold text-gray-900">Basic Information</h3>
+              <p class="text-xs text-gray-500 mt-0.5">Define the role's identity and purpose</p>
+            </div>
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="group">
+              <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <i class="pi pi-tag text-gray-400 text-xs"></i>
+                Role Name *
+              </label>
+              <input 
+                class="w-full transition-all focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                pInputText 
+                [(ngModel)]="role.name" 
+                placeholder="e.g., Data Analyst, Admin, Viewer" 
+                autocomplete="off" 
+                required/>
+              <p class="text-xs text-gray-500 mt-1.5">Choose a clear, descriptive name for this role</p>
+            </div>
+
+            <div class="group">
+              <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <i class="pi pi-sitemap text-gray-400 text-xs"></i>
+                Role Type
+              </label>
+              <p-dropdown 
+                [options]="typeOptions" 
+                [(ngModel)]="role.type" 
+                placeholder="Select type"
+                class="w-full"
+                [style]="{'width': '100%'}">
+              </p-dropdown>
+              <p class="text-xs text-gray-500 mt-1.5">Categorize the role for better organization</p>
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <i class="pi pi-align-left text-gray-400 text-xs"></i>
+                Description
+              </label>
+              <textarea 
+                pTextarea 
+                [(ngModel)]="role.description" 
+                rows="4" 
+                placeholder="Describe the role's purpose, responsibilities, and typical use cases..."
+                style="resize: none" 
+                class="w-full transition-all focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+              <p class="text-xs text-gray-500 mt-1.5">Provide context to help others understand this role's purpose</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Permissions Table with RowSpan -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+        <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-white border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                <i class="pi pi-lock text-purple-600"></i>
+              </div>
+              <div>
+                <h3 class="text-base font-semibold text-gray-900">Permissions & Access Control</h3>
+                <p class="text-xs text-gray-500 mt-0.5">Select permissions to grant to this role</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-lg border border-blue-200">
+                <i class="pi pi-check-circle text-blue-600 text-sm"></i>
+                <span class="text-sm font-medium text-blue-900">{{ getSelectedPermissionsCount() }} selected</span>
+              </div>
+              <p-button 
+                label="Select All" 
+                icon="pi pi-check" 
+                severity="secondary" 
+                size="small"
+                [outlined]="true"
+                (click)="selectAllPermissions()">
+              </p-button>
+              <p-button 
+                label="Clear All" 
+                icon="pi pi-times" 
+                severity="danger" 
+                size="small"
+                [outlined]="true"
+                (click)="clearAllPermissions()">
+              </p-button>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6 bg-gray-50">
+          <!-- Search -->
+          <div class="mb-5">
+            <div class="relative">
+              <i class="pi pi-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+              <input 
+                pInputText 
+                type="text" 
+                class="w-full pl-11 pr-4 py-3 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                placeholder="🔍 Search permissions by name, code, or description..." 
+                (input)="onPermSearch($any($event.target).value)" />
+            </div>
+          </div>
+
+          <!-- Loading state -->
+          <div *ngIf="permLoading" class="text-center py-16 bg-white rounded-lg border border-gray-200">
+            <i class="pi pi-spin pi-spinner text-5xl text-blue-500 mb-4"></i>
+            <p class="text-gray-600 font-medium">Loading permissions...</p>
+            <p class="text-sm text-gray-400 mt-1">Please wait while we fetch available permissions</p>
+          </div>
+
+          <!-- Permissions Table with RowSpan -->
+          <div *ngIf="!permLoading && permissions.length > 0" class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+            <p-table 
+              [value]="permissions"
+              dataKey="kid"
+              [tableStyle]="{ 'min-width': '100%' }"
+              styleClass="p-datatable-sm p-datatable-gridlines p-datatable-striped"
+              [rowHover]="true"
+              [rowExpandMode]="'multiple'"
+              [(expandedRows)]="expandedRows">
+              
+              <ng-template pTemplate="header">
+                <tr class="bg-gray-50">
+                  <th style="width: 3rem" class="text-center">
+                    <i class="pi pi-chevron-down text-gray-400"></i>
+                  </th>
+                  <th style="width: 3rem" class="text-center">
+                    <i class="pi pi-check-square text-gray-400"></i>
+                  </th>
+                  <th style="width: 25%">
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-bookmark text-gray-400 text-xs"></i>
+                      Permission Name
+                    </div>
+                  </th>
+                  <th style="width: 15%">
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-code text-gray-400 text-xs"></i>
+                      Code
+                    </div>
+                  </th>
+                  <th style="width: 10%" class="text-center">
+                    <div class="flex items-center gap-2 justify-center">
+                      <i class="pi pi-bolt text-gray-400 text-xs"></i>
+                      Action
+                    </div>
+                  </th>
+                  <th style="width: 30%">
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-align-left text-gray-400 text-xs"></i>
+                      Description
+                    </div>
+                  </th>
+                  <th style="width: 12%" class="text-center">
+                    <div class="flex items-center gap-2 justify-center">
+                      <i class="pi pi-database text-gray-400 text-xs"></i>
+                      Assets
+                    </div>
+                  </th>
+                </tr>
+              </ng-template>
+              
+              <ng-template pTemplate="body" let-item>
+                <tr class="hover:bg-blue-50 transition-colors">
+                  <!-- Row toggler -->
+                  <td class="text-center">
+                    <button 
+                      pRowToggler 
+                      class="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
+                      (click)="$event.preventDefault()">
+                      <i class="pi pi-angle-right text-sm"></i>
+                    </button>
+                  </td>
+                  <!-- Checkbox -->
+                  <td class="text-center">
+                    <p-checkbox 
+                      [ngModel]="isPermissionSelected(item.kid || item.code)"
+                      (ngModelChange)="togglePermissionSelection(item.kid || item.code, $event)"
+                      [binary]="true">
+                    </p-checkbox>
+                  </td>
+                  
+                  <!-- Permission Name -->
+                  <td>
+                    <div class="py-1">
+                      <div class="font-semibold text-gray-900">{{ item.name || item.kid }}</div>
+                      <div class="text-xs text-gray-500 font-mono mt-0.5">{{ item.kid }}</div>
+                    </div>
+                  </td>
+                  
+                  <!-- Code -->
+                  <td>
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono bg-gray-100 text-gray-700 border border-gray-200">
+                      {{ item.code || item.kid }}
+                    </span>
+                  </td>
+                  
+                  <!-- Action -->
+                  <td class="text-center">
+                    <span class="inline-flex items-center px-3 py-1 text-xs font-bold rounded-full shadow-sm"
+                          [ngClass]="{
+                            'bg-gradient-to-r from-blue-500 to-blue-600 text-white': item.action === 'read',
+                            'bg-gradient-to-r from-orange-500 to-orange-600 text-white': item.action === 'write',
+                            'bg-gradient-to-r from-red-500 to-red-600 text-white': item.action === 'delete',
+                            'bg-gradient-to-r from-green-500 to-green-600 text-white': item.action === 'view',
+                            'bg-gradient-to-r from-purple-500 to-purple-600 text-white': item.action === '*',
+                            'bg-gray-200 text-gray-700': !['read', 'write', 'delete', 'view', '*'].includes(item.action)
+                          }">
+                      <i class="pi pi-bolt mr-1 text-[10px]"></i>
+                      {{ item.action || 'N/A' }}
+                    </span>
+                  </td>
+                  
+                  <!-- Description -->
+                  <td>
+                    <div class="text-sm text-gray-600 line-clamp-2">
+                      {{ item.description || 'No description available' }}
+                    </div>
+                  </td>
+                  
+                  <!-- Assets summary -->
+                  <td class="text-center">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-200">
+                      <i class="pi pi-database text-[10px]"></i>
+                      {{ item.asset_total || 0 }}
+                    </span>
+                  </td>
+                </tr>
+              </ng-template>
+              
+              <!-- Row expansion: show assets for this permission -->
+              <ng-template pTemplate="rowexpansion" let-perm>
+                <tr>
+                  <td colspan="7" class="p-0 bg-gradient-to-b from-blue-50 to-white">
+                    <div class="px-6 py-5 border-t-2 border-blue-200">
+                      <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center shadow-md">
+                          <i class="pi pi-database text-white text-sm"></i>
+                        </div>
+                        <div>
+                          <h4 class="text-sm font-bold text-gray-900">Assets for: {{ perm.name || perm.kid }}</h4>
+                          <p class="text-xs text-gray-500">Showing {{ perm.assets?.length || 0 }} of {{ perm.asset_total || 0 }} assets</p>
+                        </div>
+                      </div>
+                      
+                      <div *ngIf="isLoadingAssets(perm)" class="py-8 text-center">
+                        <i class="pi pi-spin pi-spinner text-3xl text-blue-500 mb-3"></i>
+                        <div class="text-sm font-medium text-gray-600">Loading assets...</div>
+                        <div class="text-xs text-gray-400 mt-1">Please wait</div>
+                      </div>
+
+                      <div *ngIf="!isLoadingAssets(perm) && perm.assets && perm.assets.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <div *ngFor="let a of perm.assets" 
+                             class="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-blue-300 transition-all group">
+                          <div class="flex items-start justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                              <div class="w-6 h-6 bg-indigo-100 rounded flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
+                                <i class="pi pi-box text-indigo-600 text-xs"></i>
+                              </div>
+                              <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-700">
+                                {{ a.type || 'route' }}
+                              </span>
+                            </div>
+                            <span *ngIf="a.status" 
+                                  class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                                  [ngClass]="{
+                                    'bg-green-100 text-green-700': a.status === 'active',
+                                    'bg-gray-100 text-gray-700': a.status !== 'active'
+                                  }">
+                              {{ a.status }}
+                            </span>
+                          </div>
+                          <div class="font-medium text-sm text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
+                            {{ a.name || a.kid || a.title || 'Unnamed asset' }}
+                          </div>
+                          <div class="text-xs font-mono text-gray-500 bg-gray-50 px-2 py-1 rounded border border-gray-100 truncate">
+                            {{ a.location || a.kid || a.id || '-' }}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div *ngIf="!isLoadingAssets(perm) && (!perm.assets || perm.assets.length === 0)" 
+                           class="text-center py-8 bg-white rounded-lg border-2 border-dashed border-gray-200">
+                        <i class="pi pi-inbox text-4xl text-gray-300 mb-2"></i>
+                        <p class="text-sm font-medium text-gray-500">No assets available</p>
+                        <p class="text-xs text-gray-400 mt-1">This permission has no associated assets</p>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+              
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="7" class="text-center py-12 bg-white">
+                    <i class="pi pi-inbox text-5xl text-gray-300 mb-3"></i>
+                    <p class="text-gray-600 font-medium">No permissions found</p>
+                    <p class="text-sm text-gray-400 mt-1">Try adjusting your search criteria</p>
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+
+          <!-- Empty state -->
+          <div *ngIf="!permLoading && permissions.length === 0" class="text-center py-16 bg-white rounded-lg border-2 border-dashed border-gray-300">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="pi pi-inbox text-4xl text-gray-400"></i>
+            </div>
+            <p class="text-lg font-semibold text-gray-700">No permissions available</p>
+            <p class="text-sm text-gray-500 mt-2">Try adjusting your search or contact your administrator</p>
+            <p-button 
+              label="Clear Search" 
+              icon="pi pi-refresh" 
+              severity="secondary" 
+              [outlined]="true"
+              class="mt-4"
+              (click)="onPermSearch('')">
+            </p-button>
+          </div>
+
+          <!-- Pagination -->
+          <div *ngIf="!permLoading && permTotal > permPageSize" class="mt-5">
+            <p-paginator 
+              [rows]="permPageSize" 
+              [totalRecords]="permTotal" 
+              [rowsPerPageOptions]="[10, 20, 50, 100]"
+              (onPageChange)="onPermPage($event)"
+              styleClass="rounded-lg border border-gray-200">
+            </p-paginator>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<ng-template #dialogTemplate>
+  <p-dialog [(visible)]="visible" [modal]="true" [style]="{ width: '80rem', maxHeight: '90vh' }" [closable]="true" [resizable]="false" (onHide)="onDialogHide()">
+    <ng-template #header>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
+          <i class="pi pi-shield text-white text-lg"></i>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold text-gray-900">{{ title }}</h2>
+          <p class="text-sm text-gray-500">Configure role permissions and settings</p>
+        </div>
+      </div>
+    </ng-template>
+
+    <div class="space-y-6 p-1" *ngIf="role">
+      <!-- original dialog content inserted here (same as inline content) -->
+      <!-- Basic Information -->
+      <div class="bg-gray-50 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <p-floatlabel>
+            <input class="w-full" pInputText id="name" [(ngModel)]="role.name" autocomplete="off" required/>
+            <label for="name">Role Name *</label>
+          </p-floatlabel>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Role Type</label>
+            <p-dropdown 
+              [options]="typeOptions" 
+              [(ngModel)]="role.type" 
+              placeholder="Select type"
+              class="w-full">
+            </p-dropdown>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Access Level</label>
+            <p-dropdown 
+              [options]="levelOptions" 
+              [(ngModel)]="role.level" 
+              placeholder="Select level"
+              class="w-full">
+            </p-dropdown>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Scope</label>
+            <p-dropdown 
+              [options]="scopeOptions" 
+              [(ngModel)]="role.scope" 
+              placeholder="Select scope"
+              class="w-full">
+            </p-dropdown>
+          </div>
+
+          <div class="md:col-span-2">
+            <p-floatlabel>
+              <textarea pTextarea id="description" [(ngModel)]="role.description" rows="3" 
+                       style="resize: none" class="w-full"></textarea>
+              <label for="description">Description</label>
+            </p-floatlabel>
+          </div>
+        </div>
+      </div>
+
+      <!-- Role Inheritance -->
+      <div class="bg-gray-50 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Role Inheritance</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Inherits From</label>
+            <p-dropdown 
+              [options]="inheritanceOptions" 
+              [(ngModel)]="role.inherits_from" 
+              placeholder="Select parent role (optional)"
+              [showClear]="true"
+              class="w-full">
+            </p-dropdown>
+            <small class="text-gray-500 mt-1">This role will inherit all permissions from the selected parent role</small>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Risk Level</label>
+            <p-dropdown 
+              [options]="riskOptions" 
+              [(ngModel)]="role.risk_level" 
+              placeholder="Select risk level"
+              class="w-full">
+            </p-dropdown>
+          </div>
+        </div>
+      </div>
+
+      <!-- Permissions -->
+      <div class="bg-gray-50 rounded-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">Permissions</h3>
+          <div class="flex items-center gap-2">
+            <p-button 
+              label="Select All" 
+              icon="pi pi-check" 
+              severity="secondary" 
+              size="small"
+              [text]="true"
+              (click)="selectAllPermissions()">
+            </p-button>
+            <p-button 
+              label="Clear All" 
+              icon="pi pi-times" 
+              severity="secondary" 
+              size="small"
+              [text]="true"
+              (click)="clearAllPermissions()">
+            </p-button>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <!-- API-driven permissions search and list -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search Permissions</label>
+            <div class="flex items-center gap-2">
+              <input pInputText type="text" class="w-full" placeholder="Search permissions by name/code" (input)="onPermSearch($any($event.target).value)" />
+              <p-button icon="pi pi-search" [disabled]="true" [text]="true"></p-button>
+            </div>
+          </div>
+
+          <div class="border border-gray-200 rounded-lg overflow-hidden">
+            <p-table [value]="permissions" [tableStyle]="{'min-width':'100%'}" [loading]="permLoading" styleClass="p-datatable-sm">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th style="width:3rem"></th>
+                  <th>Name</th>
+                  <th>Code</th>
+                  <th>Action</th>
+                  <th>Description</th>
+                  <th style="width:8rem">Assets</th>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="body" let-perm>
+                <tr>
+                  <td>
+                    <p-checkbox [ngModel]="isPermissionSelected(perm.code || perm.kid)" (ngModelChange)="togglePermission(perm.code || perm.kid, $event)" [binary]="true"></p-checkbox>
+                  </td>
+                  <td>
+                    <div class="font-medium text-gray-900">{{ perm.name || perm.kid }}</div>
+                  </td>
+                  <td>
+                    <div class="text-sm text-gray-600">{{ perm.code || perm.kid }}</div>
+                  </td>
+                  <td>
+                    <p-tag [value]="perm.action" styleClass="text-sm px-3"></p-tag>
+                  </td>
+                  <td>
+                    <div class="text-sm text-gray-600">{{ perm.description }}</div>
+                  </td>
+                  <td>
+                    <p-tag [value]="(perm.asset_total || 0) + ' assets'" severity="info"></p-tag>
+                  </td>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="6" class="p-4 text-center text-gray-500">No permissions found</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+
+          <div class="flex justify-end pt-2">
+            <p-paginator [rows]="permPageSize" [totalRecords]="permTotal" [rowsPerPageOptions]="[10,20,50]" (onPageChange)="onPermPage($event)"></p-paginator>
+          </div>
+
+          <!-- legacy grouped permissions removed: UI now uses API-driven list above -->
+        </div>
+      </div>
+
+      <!-- User Assignment Preview -->
+      <div class="bg-gray-50 rounded-lg p-6" *ngIf="role.users && role.users.length > 0">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Current Assignments</h3>
+        <div class="flex flex-wrap gap-2">
+          <p-chip *ngFor="let user of role.users" [label]="user" [removable]="true" 
+                  (onRemove)="removeUser(user)">
+          </p-chip>
+        </div>
+      </div>
+
+    </div>
+
+    <ng-template #footer>
+      <div class="flex items-center justify-between w-full">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-info-circle text-blue-500"></i>
+          <span class="text-sm text-gray-600">
+            {{ getSelectedPermissionsCount() }} permissions selected
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <p-button 
+            label="Cancel" 
+            [text]="true" 
+            severity="secondary" 
+            (click)="onCancelClick()">
+          </p-button>
+          <p-button 
+            label="Save Role" 
+            icon="pi pi-save"
+            severity="primary" 
+            (click)="save()"
+            [disabled]="!isFormValid()">
+          </p-button>
+        </div>
+      </div>
+    </ng-template>
+
+    <ng-container *ngTemplateOutlet="footer"></ng-container>
+  </p-dialog>
+</ng-template>

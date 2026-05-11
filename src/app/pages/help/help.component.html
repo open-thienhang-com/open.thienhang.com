@@ -1,0 +1,227 @@
+<div class="help-page">
+  <!-- Animated Background -->
+  <div class="animated-background">
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+    <div class="gradient-orb orb-3"></div>
+  </div>
+
+  <div class="help-container">
+    <!-- Header -->
+    <div class="help-header">
+      <div class="help-icon">
+        <i class="pi pi-question-circle"></i>
+      </div>
+      <h1>Authentication Help</h1>
+      <p>Step-by-step guides for all authentication flows</p>
+      <a routerLink="/login" class="back-link">
+        <i class="pi pi-arrow-left"></i> Back to Login
+      </a>
+    </div>
+
+    <!-- Flow 1: Login -->
+    <div class="help-card">
+      <div class="card-header login-header">
+        <div class="flow-icon"><i class="pi pi-sign-in"></i></div>
+        <div>
+          <h2>Đăng nhập (Login)</h2>
+          <span class="badge">Flow 1</span>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="flow-step">
+          <span class="step-number">1</span>
+          <div class="step-content">
+            <strong>Nhập thông tin</strong>
+            <p>Điền email và mật khẩu vào form đăng nhập.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <span class="step-number">2</span>
+          <div class="step-content">
+            <strong>Chọn môi trường API</strong>
+            <p>Chọn Production hoặc Localhost tùy theo nhu cầu.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <span class="step-number">3</span>
+          <div class="step-content">
+            <strong>Xác thực email nếu cần</strong>
+            <p>Nếu tài khoản chưa xác thực email (<code>is_verified = false</code>), hệ thống sẽ chuyển sang trang Verify Email để nhập OTP.</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-actions">
+        <a routerLink="/login" pButton label="Đi tới Login" icon="pi pi-sign-in" class="p-button-primary"></a>
+        <a routerLink="/register" pButton label="Chưa có tài khoản?" icon="pi pi-user-plus" class="p-button-outlined"></a>
+      </div>
+    </div>
+
+    <!-- Flow 2: Register -->
+    <div class="help-card">
+      <div class="card-header register-header">
+        <div class="flow-icon"><i class="pi pi-user-plus"></i></div>
+        <div>
+          <h2>Đăng ký (Register)</h2>
+          <span class="badge">Flow 2</span>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="flow-step">
+          <span class="step-number">1</span>
+          <div class="step-content">
+            <strong>Điền form đăng ký</strong>
+            <p>Nhập họ tên, email, và mật khẩu (tối thiểu 8 ký tự).</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <span class="step-number">2</span>
+          <div class="step-content">
+            <strong>Chấp nhận điều khoản</strong>
+            <p>Tick vào checkbox "I agree to the Terms of Service" để tiếp tục.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <span class="step-number">3</span>
+          <div class="step-content">
+            <strong>Nhận OTP qua email</strong>
+            <p>Sau khi đăng ký thành công, hệ thống gửi mã OTP 6 chữ số về email. Kiểm tra hộp thư đến (và spam).</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <span class="step-number">4</span>
+          <div class="step-content">
+            <strong>Xác thực email</strong>
+            <p>Nhập OTP trong vòng 10 phút để kích hoạt tài khoản.</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-actions">
+        <a routerLink="/register" pButton label="Đi tới Register" icon="pi pi-user-plus" class="p-button-primary"></a>
+      </div>
+    </div>
+
+    <!-- Flow 3: Verify Email -->
+    <div class="help-card">
+      <div class="card-header verify-header">
+        <div class="flow-icon"><i class="pi pi-envelope"></i></div>
+        <div>
+          <h2>Xác thực email (Verify Email)</h2>
+          <span class="badge">Flow 3</span>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="flow-step">
+          <span class="step-number">1</span>
+          <div class="step-content">
+            <strong>Kiểm tra email</strong>
+            <p>Mở email chứa mã OTP 6 chữ số từ hệ thống.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <span class="step-number">2</span>
+          <div class="step-content">
+            <strong>Nhập mã OTP</strong>
+            <p>Điền 6 chữ số vào các ô trên trang Verify Email. OTP có hiệu lực trong 10 phút.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <span class="step-number">3</span>
+          <div class="step-content">
+            <strong>Gửi lại OTP nếu hết hạn</strong>
+            <p>Nhấn nút <strong>Resend</strong>. Nút có thời gian chờ 60 giây trước khi có thể gửi lại.</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-actions">
+        <a routerLink="/verify" pButton label="Đi tới Verify Email" icon="pi pi-envelope" class="p-button-primary"></a>
+      </div>
+    </div>
+
+    <!-- Flow 4: Forgot Password -->
+    <div class="help-card">
+      <div class="card-header forgot-header">
+        <div class="flow-icon"><i class="pi pi-lock"></i></div>
+        <div>
+          <h2>Quên mật khẩu (Forgot Password)</h2>
+          <span class="badge">Flow 4</span>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="flow-step">
+          <span class="step-number">1</span>
+          <div class="step-content">
+            <strong>Nhập email</strong>
+            <p>Điền địa chỉ email đã đăng ký vào ô "Email Address" và nhấn <strong>Send Reset OTP</strong>.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <span class="step-number">2</span>
+          <div class="step-content">
+            <strong>Nhận OTP qua email</strong>
+            <p>Kiểm tra hộp thư, sao chép mã OTP 6 chữ số.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <span class="step-number">3</span>
+          <div class="step-content">
+            <strong>Đặt mật khẩu mới</strong>
+            <p>Nhập OTP và mật khẩu mới (+ xác nhận). Nhấn <strong>Reset Password</strong>.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <span class="step-number">4</span>
+          <div class="step-content">
+            <strong>Đăng nhập lại</strong>
+            <p>Sau khi đổi mật khẩu thành công, hệ thống chuyển về trang Login.</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-actions">
+        <a routerLink="/forgot-password" pButton label="Đi tới Forgot Password" icon="pi pi-key" class="p-button-primary"></a>
+      </div>
+    </div>
+
+    <!-- Flow 5: Logout -->
+    <div class="help-card">
+      <div class="card-header logout-header">
+        <div class="flow-icon"><i class="pi pi-sign-out"></i></div>
+        <div>
+          <h2>Đăng xuất (Logout)</h2>
+          <span class="badge">Flow 5</span>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="flow-step">
+          <span class="step-number">1</span>
+          <div class="step-content">
+            <strong>Mở sidebar</strong>
+            <p>Khi đã đăng nhập, sidebar xuất hiện ở phía trái màn hình.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <span class="step-number">2</span>
+          <div class="step-content">
+            <strong>Nhấn Logout</strong>
+            <p>Click vào nút <strong>Logout</strong> ở cuối sidebar. Hệ thống sẽ xử lý việc đăng xuất ở trang <code>/logout</code>.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <span class="step-number">3</span>
+          <div class="step-content">
+            <strong>Chuyển về Login</strong>
+            <p>Sau khi đăng xuất thành công, session được xóa và bạn được chuyển về trang Login.</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-actions">
+        <a routerLink="/login" pButton label="Về trang Login" icon="pi pi-home" class="p-button-outlined"></a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="help-footer">
+      <p>Cần hỗ trợ thêm? Liên hệ <a href="mailto:support@thienhang.com">support&#64;thienhang.com</a></p>
+    </div>
+  </div>
+</div>

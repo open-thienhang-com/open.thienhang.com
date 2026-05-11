@@ -1,0 +1,640 @@
+<!-- Planning - Demands Page -->
+<div class="planning-page" id="planning-demands">
+
+  <!-- Page Header -->
+  <div class="planning-page-header">
+    <div class="planning-page-title">
+      <div class="planning-title-icon">📦</div>
+      <div>
+        <h2>Demands Processing</h2>
+        <p>Upload pickup and delivery files to process demands by time shifts</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Section -->
+  <div class="demands-upload-section">
+    <h4>📤 Upload Files</h4>
+
+    <div class="demands-upload-grid">
+      <!-- Pickup File -->
+      <div class="demands-upload-box">
+        <div class="upload-icon green">📄</div>
+        <h5>Pickup File</h5>
+        <p class="upload-hint">TB_Lấy.xlsx</p>
+        <input type="file" id="demand_pickup_file" accept=".xlsx,.xls" style="display:none" onchange="handleDemandFile('pickup', this)">
+        <button class="planning-btn planning-btn-outline" onclick="document.getElementById('demand_pickup_file').click()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          Choose File
+        </button>
+        <div id="demand_pickup_name" class="upload-filename"></div>
+      </div>
+
+      <!-- Delivery File -->
+      <div class="demands-upload-box">
+        <div class="upload-icon blue">📄</div>
+        <h5>Delivery File</h5>
+        <p class="upload-hint">TB_Giao.xlsx</p>
+        <input type="file" id="demand_delivery_file" accept=".xlsx,.xls" style="display:none" onchange="handleDemandFile('delivery', this)">
+        <button class="planning-btn planning-btn-outline" onclick="document.getElementById('demand_delivery_file').click()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          Choose File
+        </button>
+        <div id="demand_delivery_name" class="upload-filename"></div>
+      </div>
+    </div>
+
+    <!-- Depot Selection -->
+    <div class="demands-depot-grid">
+      <div class="demands-depot-group">
+        <label>📍 Start Depot</label>
+        <div class="depot-search-wrapper">
+          <input type="text" id="demand_start_depot_search" class="planning-input" placeholder="Search start depot..." onfocus="showDepotDropdown('start')" oninput="filterDepotDropdown('start')">
+          <div id="demand_start_dropdown" class="depot-dropdown"></div>
+        </div>
+        <input type="hidden" id="demand_start_depot">
+      </div>
+      <div class="demands-depot-group">
+        <label>🏁 End Depot</label>
+        <div class="depot-search-wrapper">
+          <input type="text" id="demand_end_depot_search" class="planning-input" placeholder="Search end depot..." onfocus="showDepotDropdown('end')" oninput="filterDepotDropdown('end')">
+          <div id="demand_end_dropdown" class="depot-dropdown"></div>
+        </div>
+        <input type="hidden" id="demand_end_depot">
+      </div>
+    </div>
+
+    <!-- Process Button -->
+    <div class="demands-process-section">
+      <button id="demand_process_btn" class="planning-btn planning-btn-primary planning-btn-lg" onclick="processDemands()" disabled>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Process Demands
+      </button>
+      <p class="upload-hint">ℹ️ Both files and depots are required</p>
+    </div>
+  </div>
+
+  <!-- Results Section (Hidden by default) -->
+  <div id="demands_results" class="demands-results-section" style="display:none;">
+
+    <!-- Success Banner -->
+    <div class="demands-success-banner">
+      <div class="banner-content">
+        <h4>✅ Demands Processed Successfully</h4>
+        <p>Ready to create a new plan with processed demands and vehicle recommendations</p>
+        <div class="banner-shifts">
+          <span>Create plan from:</span>
+          <button class="planning-btn planning-btn-light" onclick="exportShiftToPlan('morning')">🌅 Morning</button>
+          <button class="planning-btn planning-btn-light" onclick="exportShiftToPlan('lunch')">☀️ Lunch</button>
+          <button class="planning-btn planning-btn-light" onclick="exportShiftToPlan('afternoon')">🌇 Afternoon</button>
+          <button class="planning-btn planning-btn-light" onclick="exportShiftToPlan('evening')">🌙 Evening</button>
+        </div>
+      </div>
+      <button class="planning-btn planning-btn-light planning-btn-lg" onclick="exportAllToPlan()">
+        ➡️ Export All to Create Plan
+      </button>
+    </div>
+
+    <!-- Vehicle Need -->
+    <div class="demands-vehicle-section">
+      <h4>🚛 Vehicle Need</h4>
+      <div id="demands_vehicle_need" class="vehicle-need-grid">
+        <!-- Vehicle cards will be rendered here -->
+      </div>
+    </div>
+
+    <!-- Demands by Time Shifts -->
+    <div class="demands-shifts-section">
+      <div class="shifts-header">
+        <h4>⏰ Demands by Time Shifts</h4>
+        <div class="shifts-tabs">
+          <button class="shift-tab active" onclick="selectShiftTab('morning')" data-shift="morning">
+            🌅 Morning
+          </button>
+          <button class="shift-tab" onclick="selectShiftTab('lunch')" data-shift="lunch">
+            ☀️ Lunch
+          </button>
+          <button class="shift-tab" onclick="selectShiftTab('afternoon')" data-shift="afternoon">
+            🌇 Afternoon
+          </button>
+          <button class="shift-tab" onclick="selectShiftTab('evening')" data-shift="evening">
+            🌙 Evening
+          </button>
+        </div>
+      </div>
+
+      <div id="demands_shift_content" class="shift-content">
+        <div class="planning-empty-state">
+          <p>Select a shift to view demands</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<style>
+/* Demands Page Styles */
+.demands-upload-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.demands-upload-section h4 {
+  margin: 0 0 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.demands-upload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.demands-upload-box {
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  background: #f9fafb;
+  transition: border-color 0.2s;
+}
+
+.demands-upload-box:hover {
+  border-color: #f97316;
+}
+
+.upload-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.upload-icon.green {
+  color: #10b981;
+}
+
+.upload-icon.blue {
+  color: #3b82f6;
+}
+
+.demands-upload-box h5 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.upload-hint {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 16px;
+}
+
+.upload-filename {
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #059669;
+}
+
+/* Depot Selection */
+.demands-depot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.demands-depot-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.demands-depot-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.depot-search-wrapper {
+  position: relative;
+}
+
+.depot-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 100;
+}
+
+.depot-dropdown.show {
+  display: block;
+}
+
+.depot-dropdown-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.depot-dropdown-item:hover {
+  background: #f9fafb;
+}
+
+.depot-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+/* Process Section */
+.demands-process-section {
+  text-align: center;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.demands-process-section .upload-hint {
+  margin: 12px 0 0;
+}
+
+/* Results Section */
+.demands-results-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.demands-success-banner {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.banner-content h4 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.banner-content p {
+  margin: 0 0 12px;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.banner-shifts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.banner-shifts span {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.planning-btn-light {
+  background: rgba(255,255,255,0.9);
+  color: #059669;
+  border: none;
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: 6px;
+}
+
+.planning-btn-light:hover {
+  background: white;
+}
+
+/* Vehicle Need Section */
+.demands-vehicle-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.demands-vehicle-section h4 {
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.vehicle-need-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.vehicle-need-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+}
+
+.vehicle-need-card .vehicle-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.vehicle-need-card .vehicle-capacity {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.vehicle-need-card .vehicle-count {
+  font-size: 24px;
+  font-weight: 700;
+  color: #f97316;
+}
+
+/* Shifts Section */
+.demands-shifts-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.shifts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.shifts-header h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.shifts-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.shift-tab {
+  padding: 8px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.shift-tab:hover {
+  border-color: #f97316;
+}
+
+.shift-tab.active {
+  background: #f97316;
+  color: white;
+  border-color: #f97316;
+}
+
+.shift-content {
+  min-height: 200px;
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .demands-upload-grid,
+  .demands-depot-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .demands-success-banner {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+
+  .banner-shifts {
+    justify-content: center;
+  }
+
+  .shifts-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .shifts-tabs {
+    flex-wrap: wrap;
+  }
+}
+</style>
+
+<script>
+// Demands Page Logic
+let demandFiles = { pickup: null, delivery: null };
+let demandDepots = { start: null, end: null };
+
+// Handle file selection
+function handleDemandFile(type, input) {
+  const file = input.files[0];
+  if (file) {
+    demandFiles[type] = file;
+    document.getElementById(`demand_${type}_name`).textContent = `✓ ${file.name}`;
+    checkProcessReady();
+  }
+}
+
+// Check if ready to process
+function checkProcessReady() {
+  const ready = demandFiles.pickup && demandFiles.delivery &&
+                demandDepots.start && demandDepots.end;
+  document.getElementById('demand_process_btn').disabled = !ready;
+}
+
+// Show depot dropdown
+function showDepotDropdown(type) {
+  const dropdown = document.getElementById(`demand_${type}_dropdown`);
+
+  // Sample depots
+  const depots = [
+    { id: 'WH001', name: 'Hub HCM - Q7' },
+    { id: 'WH002', name: 'Hub HCM - Q12' },
+    { id: 'WH003', name: 'Sorting Center TĐ' },
+    { id: 'WH004', name: 'Hub Bình Dương' }
+  ];
+
+  dropdown.innerHTML = depots.map(d => `
+    <div class="depot-dropdown-item" onclick="selectDepot('${type}', '${d.id}', '${d.name}')">
+      <strong>${d.id}</strong> - ${d.name}
+    </div>
+  `).join('');
+
+  dropdown.classList.add('show');
+}
+
+// Hide dropdowns when clicking outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.depot-search-wrapper')) {
+    document.querySelectorAll('.depot-dropdown').forEach(d => d.classList.remove('show'));
+  }
+});
+
+// Filter depot dropdown
+function filterDepotDropdown(type) {
+  const search = document.getElementById(`demand_${type}_depot_search`).value.toLowerCase();
+  const dropdown = document.getElementById(`demand_${type}_dropdown`);
+
+  dropdown.querySelectorAll('.depot-dropdown-item').forEach(item => {
+    const text = item.textContent.toLowerCase();
+    item.style.display = text.includes(search) ? 'block' : 'none';
+  });
+}
+
+// Select depot
+function selectDepot(type, id, name) {
+  document.getElementById(`demand_${type}_depot_search`).value = `${id} - ${name}`;
+  document.getElementById(`demand_${type}_depot`).value = id;
+  document.getElementById(`demand_${type}_dropdown`).classList.remove('show');
+  demandDepots[type] = id;
+  checkProcessReady();
+}
+
+// Process demands
+async function processDemands() {
+  const btn = document.getElementById('demand_process_btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="planning-spinner" style="width:20px;height:20px;"></span> Processing...';
+
+  try {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Show results
+    document.getElementById('demands_results').style.display = 'flex';
+
+    // Render vehicle need
+    renderVehicleNeed();
+
+    // Select morning shift by default
+    selectShiftTab('morning');
+
+  } catch (error) {
+    console.error('[Demands] Error:', error);
+    alert('Error processing demands');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '▶️ Process Demands';
+  }
+}
+
+// Render vehicle need
+function renderVehicleNeed() {
+  const container = document.getElementById('demands_vehicle_need');
+
+  const vehicles = [
+    { capacity: '500kg', count: 3, icon: '🛻' },
+    { capacity: '1000kg', count: 5, icon: '🚚' },
+    { capacity: '1500kg', count: 2, icon: '🚛' },
+    { capacity: '2000kg', count: 4, icon: '🚐' }
+  ];
+
+  container.innerHTML = vehicles.map(v => `
+    <div class="vehicle-need-card">
+      <div class="vehicle-icon">${v.icon}</div>
+      <div class="vehicle-capacity">${v.capacity}</div>
+      <div class="vehicle-count">${v.count}</div>
+    </div>
+  `).join('');
+}
+
+// Select shift tab
+function selectShiftTab(shift) {
+  // Update tabs
+  document.querySelectorAll('.shift-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.shift === shift);
+  });
+
+  // Update content
+  const content = document.getElementById('demands_shift_content');
+
+  // Sample data
+  const shiftData = {
+    morning: { time: '06:00 - 10:00', pickups: 45, deliveries: 120 },
+    lunch: { time: '10:00 - 14:00', pickups: 30, deliveries: 85 },
+    afternoon: { time: '14:00 - 18:00', pickups: 55, deliveries: 150 },
+    evening: { time: '18:00 - 22:00', pickups: 20, deliveries: 60 }
+  };
+
+  const data = shiftData[shift];
+
+  content.innerHTML = `
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+      <div style="background: white; padding: 20px; border-radius: 10px; text-align: center;">
+        <div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">⏰ Time Range</div>
+        <div style="font-size: 20px; font-weight: 700; color: #1e293b;">${data.time}</div>
+      </div>
+      <div style="background: #d1fae5; padding: 20px; border-radius: 10px; text-align: center;">
+        <div style="font-size: 14px; color: #065f46; margin-bottom: 8px;">📥 Pickups</div>
+        <div style="font-size: 28px; font-weight: 700; color: #065f46;">${data.pickups}</div>
+      </div>
+      <div style="background: #dbeafe; padding: 20px; border-radius: 10px; text-align: center;">
+        <div style="font-size: 14px; color: #1e40af; margin-bottom: 8px;">📤 Deliveries</div>
+        <div style="font-size: 28px; font-weight: 700; color: #1e40af;">${data.deliveries}</div>
+      </div>
+    </div>
+    <div style="margin-top: 20px; background: white; padding: 16px; border-radius: 10px;">
+      <p style="margin: 0; color: #6b7280; font-size: 14px;">
+        📊 Total demands for ${shift} shift: <strong>${data.pickups + data.deliveries}</strong> items
+      </p>
+    </div>
+  `;
+}
+
+// Export functions
+function exportShiftToPlan(shift) {
+  console.log('[Demands] Export shift to plan:', shift);
+  alert(`Exporting ${shift} shift to Create Plan...`);
+}
+
+function exportAllToPlan() {
+  console.log('[Demands] Export all to plan');
+  alert('Exporting all demands to Create Plan...');
+}
+
+// Initialize page
+function initDemandsPage() {
+  console.log('[Planning] Initializing Demands page...');
+}
+
+initDemandsPage();
+</script>

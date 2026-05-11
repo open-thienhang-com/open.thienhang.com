@@ -1,0 +1,38 @@
+<p-menu #menu [model]="menuItems" [popup]="true" styleClass="user-dropdown-menu">
+  <ng-template pTemplate="start">
+    <div class="user-menu-header">
+      <div class="user-menu-avatar">
+        <div *ngIf="user?.avatar || user?.image" class="avatar-img">
+          <p-avatar [image]="user.avatar || user.image" shape="circle" size="large"></p-avatar>
+        </div>
+        <div *ngIf="!user?.avatar && !user?.image" class="avatar-default">
+          <i class="pi pi-user"></i>
+        </div>
+      </div>
+      <div class="user-menu-info">
+        <div class="user-menu-name">
+          {{ user?.full_name || user?.fullName || user?.name || user?.email?.split('@')[0] || 'Anonymous User' }}
+        </div>
+        <div class="user-menu-email">
+          {{ user?.email || 'No email' }}
+        </div>
+        <div class="user-menu-id">
+          ID: {{ user?.identify || user?.tid || user?.id || 'N/A' }}
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</p-menu>
+
+<button
+  type="button"
+  (click)="menu.toggle($event)"
+  class="user-menu-button">
+  <div *ngIf="user?.avatar || user?.image" class="button-avatar">
+    <p-avatar [image]="user.avatar || user.image" shape="circle" size="normal"></p-avatar>
+  </div>
+  <div *ngIf="!user?.avatar && !user?.image" class="button-avatar-default">
+    <i class="pi pi-user"></i>
+  </div>
+  <i class="pi pi-angle-down"></i>
+</button>

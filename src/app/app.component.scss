@@ -1,0 +1,26 @@
+/* App Component Styles */
+.app-container {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Note: removed global "* { transition: opacity }" — it interferes with
+   fixed-position elements when parent has transform/opacity animations */
+
+/* Loading page transitions */
+app-loading-page {
+  animation: fadeOut 0.5s ease-in-out;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}

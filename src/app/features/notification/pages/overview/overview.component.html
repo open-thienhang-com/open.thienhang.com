@@ -1,0 +1,110 @@
+<div class="bg-gray-50 min-h-screen p-6 space-y-8">
+  <!-- Header Section -->
+  <header class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
+    <div class="space-y-2 text-center md:text-left">
+      <div class="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 rounded-full text-blue-600 text-xs font-bold uppercase tracking-wider">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+        </span>
+        System Live
+      </div>
+      <h1 class="text-4xl font-black text-gray-900 tracking-tight">Notification <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Command Center</span></h1>
+      <p class="text-gray-500 font-medium">Unified communication infrastructure for the GHN Ecosystem</p>
+    </div>
+    <div class="flex gap-3">
+      <button pButton label="Compose Message" icon="pi pi-send" routerLink="/notification/composer" [rounded]="true" size="large" class="px-8 shadow-lg shadow-blue-100"></button>
+      <button pButton icon="pi pi-ellipsis-h" [outlined]="true" [rounded]="true" severity="secondary"></button>
+    </div>
+  </header>
+
+  <!-- Key Metrics Row -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div *ngFor="let stat of deliveryStats" class="bg-white rounded-3xl p-6 shadow-sm border border-gray-50 group hover:shadow-xl transition-all duration-500">
+      <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">{{stat.label}}</p>
+      <div class="flex items-end justify-between">
+        <h2 class="text-3xl font-black text-gray-900 leading-none">{{stat.value}}</h2>
+        <span [class]="'text-xs font-bold px-2.5 py-1 rounded-lg bg-' + stat.color + '-50 text-' + stat.color + '-600'">
+          {{stat.trend}}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- System Health -->
+    <div class="lg:col-span-2 space-y-6">
+      <div class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100">
+        <h3 class="text-xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+          <i class="pi pi-shield text-emerald-500"></i>
+          Infrastructure Health
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div *ngFor="let service of systemHealth" class="flex items-center justify-between p-5 rounded-2xl bg-gray-50/50 border border-gray-100/50 hover:bg-white hover:shadow-md transition-all cursor-default group">
+            <div class="flex items-center gap-4">
+              <div class="w-2 h-2 rounded-full" [class]="'bg-' + (service.color === 'success' ? 'emerald' : 'blue') + '-500 shadow-lg shadow-' + (service.color === 'success' ? 'emerald' : 'blue') + '-200'"></div>
+              <span class="font-bold text-gray-700">{{service.name}}</span>
+            </div>
+            <div class="flex items-center gap-4">
+              <span class="text-[10px] font-black text-gray-400 uppercase">{{service.latency}}</span>
+              <p-tag [value]="service.status" [severity]="service.color" class="rounded-lg px-2 text-[10px]"></p-tag>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Nav -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div *ngFor="let flow of businessFlows" class="relative group overflow-hidden bg-white rounded-3xl p-6 shadow-sm border border-gray-50 flex flex-col h-full hover:shadow-xl transition-all duration-500" [routerLink]="flow.route">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-6 transition-all duration-500 group-hover:scale-110 shadow-lg" [style.backgroundColor]="flow.color + '1a'" [style.color]="flow.color">
+            <i [class]="flow.icon + ' text-xl'"></i>
+          </div>
+          <h4 class="text-lg font-bold text-gray-900 mb-2">{{flow.title}}</h4>
+          <p class="text-xs text-gray-500 leading-relaxed mb-6">{{flow.description}}</p>
+          <div class="mt-auto pt-4 flex items-center gap-2 text-xs font-bold" [style.color]="flow.color">
+            Access Module <i class="pi pi-arrow-right text-[10px]"></i>
+          </div>
+          <div class="absolute -right-8 -bottom-8 w-24 h-24 rounded-full transition-all duration-700 opacity-5 group-hover:opacity-10 group-hover:scale-[3]" [style.backgroundColor]="flow.color"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="space-y-6">
+      <!-- Integrations Widget -->
+      <div class="bg-gray-900 rounded-[2.5rem] p-8 text-white shadow-xl relative overflow-hidden">
+        <h3 class="text-xl font-bold mb-8 relative z-10">Connected Gateways</h3>
+        <div class="space-y-6 relative z-10">
+          <div *ngFor="let integration of integrations" class="space-y-3">
+            <div class="flex items-center gap-3">
+              <i [class]="integration.icon + ' text-blue-400'"></i>
+              <span class="text-sm font-bold opacity-90">{{integration.name}}</span>
+            </div>
+            <div class="flex flex-wrap gap-1.5 pl-7">
+              <span *ngFor="let item of integration.items" class="text-[9px] font-bold bg-white/10 px-2 py-0.5 rounded-full border border-white/5 opacity-60">{{item}}</span>
+            </div>
+          </div>
+        </div>
+        <!-- Abstract gradient circles -->
+        <div class="absolute -top-10 -right-10 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-500/20 rounded-full blur-3xl"></div>
+      </div>
+
+      <!-- Values Widget -->
+      <div class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100">
+        <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Core Capabilities</h3>
+        <div class="space-y-5">
+          <div *ngFor="let value of businessValues" class="flex items-start gap-4 p-2">
+            <div class="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center bg-gray-50 text-gray-400 group-hover:text-blue-500 transition-colors">
+               <i [class]="value.icon + ' text-sm'"></i>
+            </div>
+            <div>
+              <h5 class="font-bold text-gray-900 text-sm mb-0.5">{{value.title}}</h5>
+              <p class="text-[10px] text-gray-500 leading-tight">{{value.description}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,32 @@
+import { Routes } from '@angular/router';
+
+export const retailPlanningRoutes: Routes = [
+  { path: '', loadComponent: () => import('./components/planning-welcome/planning-welcome.component').then(m => m.PlanningWelcomeComponent) },
+  { path: 'cost-estimation', loadComponent: () => import('./components/cost-estimation/cost-estimation.component').then(m => m.CostEstimationComponent) },
+  { path: 'stochastic', redirectTo: 'forecast/demand', pathMatch: 'full' },
+  { path: 'forecast', redirectTo: 'forecast/demand', pathMatch: 'full' },
+  { path: 'forecast/demand', loadComponent: () => import('./components/demand-forecast/demand-forecast.component').then(m => m.DemandForecastComponent) },
+
+  { path: 'stochastic/:id', loadComponent: () => import('./components/dataset-detail/dataset-detail.component').then(m => m.DatasetDetailComponent) },
+  { path: 'dataset/:id', loadComponent: () => import('./components/dataset-detail/dataset-detail.component').then(m => m.DatasetDetailComponent) },
+  { path: 'datasets/:id', loadComponent: () => import('./components/dataset-detail/dataset-detail.component').then(m => m.DatasetDetailComponent) },
+  { path: 'datasets/:id/edit', loadComponent: () => import('./components/dataset-form/dataset-form.component').then(m => m.DatasetFormComponent) },
+  { path: 'dataset-detail', loadComponent: () => import('./components/dataset-detail/dataset-detail.component').then(m => m.DatasetDetailComponent) },
+  { path: 'dataset-form', loadComponent: () => import('./components/dataset-form/dataset-form.component').then(m => m.DatasetFormComponent) },
+  { path: 'delivery-points', loadComponent: () => import('./components/delivery-points/delivery-points.component').then(m => m.DeliveryPointsComponent) },
+  { path: 'demand', loadComponent: () => import('./components/demand/demand.component').then(m => m.DemandComponent) },
+  { path: 'demands', loadComponent: () => import('./components/demands/demands.component').then(m => m.DemandsComponent) },
+  { path: 'fleet', loadComponent: () => import('./components/fleet/fleet.component').then(m => m.FleetComponent) },
+  { path: 'marketplace', loadComponent: () => import('./components/marketplace/marketplace.component').then(m => m.MarketplaceComponent) },
+  { path: 'evaluate', loadComponent: () => import('./components/plan/plan.component').then(m => m.PlanComponent) },
+  { path: 'evaluate/:id', loadComponent: () => import('./components/plan-preview/plan-preview.component').then(m => m.PlanPreviewComponent) },
+  { path: 'plan-preview/:id', loadComponent: () => import('./components/plan-preview/plan-preview.component').then(m => m.PlanPreviewComponent) },
+  { path: 'simulation/:id', loadComponent: () => import('./components/simulation/simulation.component').then(m => m.SimulationComponent) },
+  { path: 'schedule-evaluation/:id', loadComponent: () => import('./components/schedule-evaluation/schedule-evaluation.component').then(m => m.ScheduleEvaluationComponent) },
+  { path: 'cost-estimation/:id', loadComponent: () => import('./components/cost-estimation/cost-estimation.component').then(m => m.CostEstimationComponent) },
+  { path: 'trip-simulation/:id', loadComponent: () => import('./components/trip-simulation/trip-simulation.component').then(m => m.TripSimulationComponent) },
+  { path: 'auto-planning', loadComponent: () => import('./components/planning-create-plan/planning-create-plan.component').then(m => m.PlanningCreatePlanComponent) },
+  { path: 'vehicles', loadComponent: () => import('./components/vehicles/vehicles.component').then(m => m.VehiclesComponent) },
+  { path: 'planning-productivity-wrapper', loadComponent: () => import('./components/planning-productivity-wrapper/planning-productivity-wrapper').then(m => m.PlanningProductivityWrapper) },
+  { path: 'planning-productivity', loadComponent: () => import('./components/planning-productivity/planning-productivity').then(m => m.PlanningProductivity) },
+];

@@ -1,0 +1,261 @@
+<div class="chat-main">
+  <div class="chat-content-wrapper">
+    <div class="chat-content-inner">
+      <section class="chat-hero">
+        <div class="chat-hero-copy">
+          <div class="chat-hero-badge"><i class="pi pi-file-edit"></i></div>
+          <div>
+            <p class="chat-eyebrow">Automation assets</p>
+            <h1 class="chat-title">Unified Templates</h1>
+            <p class="chat-subtitle">Manage reusable replies across Telegram, Facebook, Email, and SMS from one screen.</p>
+          </div>
+        </div>
+        <button pButton type="button" icon="pi pi-refresh" label="Refresh" class="p-button-sm p-button-outlined"
+                (click)="loadTemplates()" [loading]="loading()"></button>
+      </section>
+
+      <ng-container *ngIf="loading() && templates().length === 0; else templatesContent">
+        <div class="chat-panel">
+          <div class="chat-panel-content"><p-skeleton height="34rem"></p-skeleton></div>
+        </div>
+      </ng-container>
+
+      <ng-template #templatesContent>
+        <!-- Channel tabs -->
+        <div class="channel-tab-row mb-4">
+          <button *ngFor="let tab of channelTabs"
+                  type="button"
+                  class="channel-tab-btn"
+                  [class.active]="selectedChannel() === tab.value"
+                  (click)="setChannel(tab.value)">
+            {{ tab.label }}
+          </button>
+        </div>
+
+        <!-- Bulk actions bar -->
+        <div *ngIf="someSelected" class="bulk-action-bar mb-3">
+          <span class="text-sm text-gray-600">{{ selectedIds.size }} selected</span>
+          <button type="button" class="ghost-action text-xs ml-4" (click)="bulkEnable()" [disabled]="bulkProcessing">
+            <i class="pi pi-check-circle mr-1"></i>Enable selected
+          </button>
+          <button type="button" class="ghost-action text-xs ml-2" (click)="bulkDisable()" [disabled]="bulkProcessing">
+            <i class="pi pi-ban mr-1"></i>Disable selected
+          </button>
+          <button type="button" class="ghost-action text-xs ml-2 text-gray-400" (click)="selectedIds = emptySet()">
+            Clear
+          </button>
+        </div>
+
+        <div class="chat-panel">
+          <div class="chat-panel-content">
+            <div class="dual-grid">
+              <!-- Template list -->
+              <article class="flat-card">
+                <div class="card-header">
+                  <div class="card-icon icon-blue"><i class="pi pi-book"></i></div>
+                  <div class="card-title-group">
+                    <h3 class="card-title">Template Library</h3>
+                    <p class="card-subtitle">{{ total() }} templates{{ selectedChannel() ? ' in ' + selectedChannel() : ' across all channels' }}</p>
+                  </div>
+                  <label class="flex items-center gap-2 text-sm text-gray-500 ml-auto cursor-pointer">
+                    <p-checkbox [binary]="true" [ngModel]="allSelected" (ngModelChange)="toggleAll($event)"></p-checkbox>
+                    All
+                  </label>
+                </div>
+                <div class="card-body">
+                  <div *ngIf="loading()" class="flex flex-col gap-2">
+                    <p-skeleton height="3rem" *ngFor="let i of [1,2,3]"></p-skeleton>
+                  </div>
+
+                  <div *ngIf="!loading() && templates().length" class="stack-list">
+                    <div *ngFor="let template of templates()" class="list-item">
+                      <div class="list-item-top">
+                        <p-checkbox [binary]="true"
+                                    [ngModel]="selectedIds.has(template.id)"
+                                    (ngModelChange)="toggleOne(template.id, $event)"
+                                    class="mr-2 flex-shrink-0">
+                        </p-checkbox>
+                        <div class="list-item-copy flex-1 min-w-0">
+                          <h4 class="list-item-title">{{ template.name }}</h4>
+                          <span class="list-item-meta">{{ template.code }} | {{ template.category }} | {{ template.updated_at | date:'short' }}</span>
+                        </div>
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                          <p-tag [value]="template.channel" [severity]="getChannelSeverity(template.channel)"></p-tag>
+                          <p-tag [value]="template.enabled ? 'On' : 'Off'" [severity]="template.enabled ? 'success' : 'secondary'"></p-tag>
+                          <button type="button" class="ghost-action text-xs" (click)="openEditDialog(template)">
+                            <i class="pi pi-pencil"></i>
+                          </button>
+                          <button type="button" class="ghost-action text-xs text-red-400" (click)="deleteTemplate(template)">
+                            <i class="pi pi-trash"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <p class="meta-text mt-1">{{ template.content }}</p>
+                      <div class="pill-row" *ngIf="template.variables?.length">
+                        <span class="pill" *ngFor="let v of template.variables">{{ '{{'  + v + '}}' }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div *ngIf="!loading() && !templates().length" class="empty-state">
+                    <i class="pi pi-file"></i>
+                    <h3>No templates</h3>
+                    <p>{{ selectedChannel() ? 'No ' + selectedChannel() + ' templates yet.' : 'Create the first template.' }}</p>
+                  </div>
+
+                  <!-- Pagination -->
+                  <p-paginator *ngIf="total() > limit"
+                               [rows]="limit"
+                               [totalRecords]="total()"
+                               [first]="skip()"
+                               (onPageChange)="onPageChange($event)"
+                               [showCurrentPageReport]="true"
+                               currentPageReportTemplate="{first}-{last} of {totalRecords}">
+                  </p-paginator>
+                </div>
+              </article>
+
+              <!-- Create form -->
+              <article class="flat-card">
+                <div class="card-header">
+                  <div class="card-icon icon-emerald"><i class="pi pi-plus-circle"></i></div>
+                  <div class="card-title-group">
+                    <h3 class="card-title">Create Template</h3>
+                    <p class="card-subtitle">Add a reusable reply for any connected channel.</p>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="form-stack">
+                    <div class="form-grid">
+                      <div>
+                        <label class="form-label">Name *</label>
+                        <input type="text" class="form-input" [(ngModel)]="createForm.name" placeholder="Support Handoff" />
+                      </div>
+                      <div>
+                        <label class="form-label">Channel *</label>
+                        <p-dropdown [options]="channelOptions" [(ngModel)]="createForm.channel"
+                                    optionLabel="label" optionValue="value"
+                                    placeholder="Select channel" class="w-full"></p-dropdown>
+                      </div>
+                    </div>
+                    <div class="form-grid">
+                      <div>
+                        <label class="form-label">Code</label>
+                        <input type="text" class="form-input" [(ngModel)]="createForm.code" placeholder="auto-generated" />
+                        <p class="form-hint">Unique identifier. Auto-generated from name if empty.</p>
+                      </div>
+                      <div>
+                        <label class="form-label">Category</label>
+                        <p-dropdown [options]="categoryOptions" [(ngModel)]="createForm.category"
+                                    optionLabel="label" optionValue="value"
+                                    class="w-full"></p-dropdown>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="form-label">Content *</label>
+                      <textarea class="form-input" rows="5" [(ngModel)]="createForm.content"
+                                (ngModelChange)="onContentChange(createForm)"
+                                placeholder="Hi {{first_name}}, your request has been received..."></textarea>
+                    </div>
+                    <div class="form-grid">
+                      <div>
+                        <label class="form-label">Variables</label>
+                        <input type="text" class="form-input" [(ngModel)]="createForm.variablesText" placeholder="first_name, store_name" />
+                        <p class="form-hint">Detected from {{'{{variable}}'}} in content.</p>
+                      </div>
+                      <div>
+                        <label class="form-label">Tags</label>
+                        <input type="text" class="form-input" [(ngModel)]="createForm.tagsText" placeholder="onboarding, vip" />
+                      </div>
+                    </div>
+
+                    <!-- Preview -->
+                    <div *ngIf="createForm.content.trim()" class="template-preview-block">
+                      <p class="form-label mb-2">Preview</p>
+                      <div *ngFor="let v of extractVariables(createForm.content)" class="flex items-center gap-2 mb-1">
+                        <label class="text-xs text-gray-500 w-28 flex-shrink-0">{{ v }}</label>
+                        <input type="text" class="form-input text-xs flex-1"
+                               [ngModel]="createForm.previewVars[v] || ''"
+                               (ngModelChange)="createForm.previewVars[v] = $event"
+                               [placeholder]="'Value for ' + v" />
+                      </div>
+                      <div class="preview-rendered mt-2 p-3 bg-gray-50 rounded text-sm text-gray-700 whitespace-pre-wrap">{{ createPreview }}</div>
+                    </div>
+
+                    <label class="checkbox-row">
+                      <input type="checkbox" [(ngModel)]="createForm.enabled" />
+                      <span>Enable immediately</span>
+                    </label>
+                    <button pButton type="button" label="Create Template" icon="pi pi-check" class="w-full"
+                            (click)="createTemplate()" [loading]="creating"></button>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- Edit dialog -->
+  <p-dialog [(visible)]="editDialogVisible" [modal]="true" [style]="{width:'600px'}" header="Edit Template" [closable]="true">
+    <div class="form-stack p-4" *ngIf="editingTemplate">
+      <div class="form-grid">
+        <div>
+          <label class="form-label">Name</label>
+          <input type="text" class="form-input" [(ngModel)]="editForm.name" />
+        </div>
+        <div>
+          <label class="form-label">Channel</label>
+          <p-tag [value]="editingTemplate.channel" [severity]="getChannelSeverity(editingTemplate.channel)"></p-tag>
+          <p class="form-hint mt-1">Channel cannot be changed after creation.</p>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Category</label>
+        <p-dropdown [options]="categoryOptions" [(ngModel)]="editForm.category" optionLabel="label" optionValue="value" class="w-full"></p-dropdown>
+      </div>
+      <div>
+        <label class="form-label">Content</label>
+        <textarea class="form-input" rows="5" [(ngModel)]="editForm.content"
+                  (ngModelChange)="onContentChange(editForm)"></textarea>
+      </div>
+      <div class="form-grid">
+        <div>
+          <label class="form-label">Variables</label>
+          <input type="text" class="form-input" [(ngModel)]="editForm.variablesText" />
+        </div>
+        <div>
+          <label class="form-label">Tags</label>
+          <input type="text" class="form-input" [(ngModel)]="editForm.tagsText" />
+        </div>
+      </div>
+
+      <!-- Edit preview -->
+      <div *ngIf="editForm.content.trim()" class="template-preview-block">
+        <p class="form-label mb-2">Preview</p>
+        <div *ngFor="let v of extractVariables(editForm.content)" class="flex items-center gap-2 mb-1">
+          <label class="text-xs text-gray-500 w-28 flex-shrink-0">{{ v }}</label>
+          <input type="text" class="form-input text-xs flex-1"
+                 [ngModel]="editForm.previewVars[v] || ''"
+                 (ngModelChange)="editForm.previewVars[v] = $event"
+                 [placeholder]="'Value for ' + v" />
+        </div>
+        <div class="preview-rendered mt-2 p-3 bg-gray-50 rounded text-sm text-gray-700 whitespace-pre-wrap">{{ getEditPreview() }}</div>
+      </div>
+
+      <label class="checkbox-row">
+        <input type="checkbox" [(ngModel)]="editForm.enabled" />
+        <span>Enabled</span>
+      </label>
+    </div>
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Cancel" class="p-button-text" (click)="editDialogVisible = false"></button>
+      <button pButton type="button" label="Save" icon="pi pi-check" (click)="saveEdit()" [loading]="saving"></button>
+    </ng-template>
+  </p-dialog>
+
+  <p-confirmDialog></p-confirmDialog>
+  <p-toast></p-toast>
+</div>

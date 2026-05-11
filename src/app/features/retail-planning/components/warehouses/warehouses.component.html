@@ -1,0 +1,111 @@
+<div id="content-warehouses" class="tab-content">
+    <div class="p-6">
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Warehouse Management</h2>
+            <p class="text-gray-600">Configure and manage warehouse locations, capacities, and operations</p>
+        </div>
+
+        <!-- Warehouse Controls -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+            <div class="flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex gap-3">
+                    <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Add Warehouse
+                    </button>
+                    <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                        <i class="fas fa-upload mr-2"></i>Import Warehouses
+                    </button>
+                    <button class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                        <i class="fas fa-download mr-2"></i>Export Warehouses
+                    </button>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" placeholder="Search warehouses..." class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <select class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">All Types</option>
+                        <option value="depot">Start Depot</option>
+                        <option value="end-depot">End Depot</option>
+                        <option value="intermediate">Intermediate</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Warehouses Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="warehousesGrid">
+            <!-- Sample warehouse card -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-blue-100 rounded-lg mr-3">
+                            <i class="fas fa-building text-blue-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Main Depot</h3>
+                            <p class="text-sm text-gray-600">Start Depot</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="p-1 text-gray-400 hover:text-blue-600">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="p-1 text-gray-400 hover:text-red-600">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Location:</span>
+                        <span class="font-medium">Hanoi, Vietnam</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Capacity:</span>
+                        <span class="font-medium">10,000 kg</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Operating Hours:</span>
+                        <span class="font-medium">06:00 - 22:00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Coordinates:</span>
+                        <span class="font-medium text-xs">21.0285, 105.8542</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add new warehouse card -->
+            <div class="bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 p-6 flex items-center justify-center hover:bg-gray-100 transition-colors cursor-pointer">
+                <div class="text-center">
+                    <div class="text-4xl text-gray-400 mb-2">+</div>
+                    <div class="text-gray-600 font-medium">Add New Warehouse</div>
+                    <div class="text-sm text-gray-500 mt-1">Configure depot locations</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Warehouse Statistics -->
+        <div class="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Warehouse Statistics</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600" id="totalWarehouses">1</div>
+                    <div class="text-sm text-gray-600">Total Warehouses</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600" id="totalCapacity">10,000</div>
+                    <div class="text-sm text-gray-600">Total Capacity (kg)</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-yellow-600" id="activeRoutes">0</div>
+                    <div class="text-sm text-gray-600">Active Routes</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600" id="utilizationRate">0%</div>
+                    <div class="text-sm text-gray-600">Avg Utilization</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

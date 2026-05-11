@@ -1,0 +1,348 @@
+<div class="dashboard-container">
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1 class="dashboard-title">Data Mesh Dashboard</h1>
+      <p class="dashboard-subtitle">Monitor and manage your data mesh ecosystem</p>
+    </div>
+    <div class="header-actions">
+      <p-button 
+        label="View All Domains" 
+        icon="pi pi-external-link"
+        class="p-button-outlined"
+        routerLink="/domains">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Key Metrics Cards -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <p-card>
+        <div class="metric-content">
+          <div class="metric-icon domains">
+            <i class="pi pi-sitemap"></i>
+          </div>
+          <div class="metric-details">
+            <h3>{{metrics.totalDomains}}</h3>
+            <p>Active Domains</p>
+            <span class="metric-change positive">+2 this month</span>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="metric-card">
+      <p-card>
+        <div class="metric-content">
+          <div class="metric-icon products">
+            <i class="pi pi-database"></i>
+          </div>
+          <div class="metric-details">
+            <h3>{{metrics.activeDataProducts}}</h3>
+            <p>Data Products</p>
+            <span class="metric-change positive">+5 this week</span>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="metric-card">
+      <p-card>
+        <div class="metric-content">
+          <div class="metric-icon quality">
+            <i class="pi pi-chart-line"></i>
+          </div>
+          <div class="metric-details">
+            <h3>{{metrics.dataQualityScore}}%</h3>
+            <p>Data Quality</p>
+            <span class="metric-change positive">+3% this month</span>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="metric-card">
+      <p-card>
+        <div class="metric-content">
+          <div class="metric-icon compliance">
+            <i class="pi pi-shield"></i>
+          </div>
+          <div class="metric-details">
+            <h3>{{metrics.complianceRate}}%</h3>
+            <p>Compliance Rate</p>
+            <span class="metric-change positive">+1% this month</span>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="metric-card">
+      <p-card>
+        <div class="metric-content">
+          <div class="metric-icon api">
+            <i class="pi pi-globe"></i>
+          </div>
+          <div class="metric-details">
+            <h3>{{(metrics.apiCalls / 1000000).toFixed(1)}}M</h3>
+            <p>API Calls</p>
+            <span class="metric-change positive">+12% this month</span>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="metric-card">
+      <p-card>
+        <div class="metric-content">
+          <div class="metric-icon users">
+            <i class="pi pi-users"></i>
+          </div>
+          <div class="metric-details">
+            <h3>{{metrics.totalUsers}}</h3>
+            <p>Active Users</p>
+            <span class="metric-change positive">+8 this month</span>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="dashboard-content">
+    <div class="content-grid">
+      <!-- Quality & Compliance Trends -->
+      <div class="chart-section">
+        <p-card>
+          <div class="card-header">
+            <h3>Quality & Compliance Trends</h3>
+            <p-button 
+              icon="pi pi-external-link" 
+              class="p-button-text p-button-sm"
+              routerLink="/data-mesh/quality">
+            </p-button>
+          </div>
+          <p-chart 
+            type="line" 
+            [data]="qualityTrendData"
+            [options]="chartOptions"
+            [style]="{'height': '300px'}">
+          </p-chart>
+        </p-card>
+      </div>
+
+      <!-- Domain Health Overview -->
+      <div class="chart-section">
+        <p-card>
+          <div class="card-header">
+            <h3>Domain Health Overview</h3>
+            <p-button 
+              icon="pi pi-external-link" 
+              class="p-button-text p-button-sm"
+              routerLink="/domains">
+            </p-button>
+          </div>
+          <div class="health-overview">
+            <div class="health-chart">
+              <p-chart 
+                type="doughnut" 
+                [data]="domainHealthData"
+                [options]="chartOptions"
+                [style]="{'height': '200px'}">
+              </p-chart>
+            </div>
+            <div class="health-summary">
+              <div class="health-item">
+                <div class="health-indicator healthy"></div>
+                <span>3 Healthy</span>
+              </div>
+              <div class="health-item">
+                <div class="health-indicator warning"></div>
+                <span>2 Warning</span>
+              </div>
+              <div class="health-item">
+                <div class="health-indicator critical"></div>
+                <span>1 Critical</span>
+              </div>
+            </div>
+          </div>
+        </p-card>
+      </div>
+
+      <!-- Usage Distribution -->
+      <div class="chart-section">
+        <p-card>
+          <div class="card-header">
+            <h3>Usage Distribution by Domain</h3>
+            <p-button 
+              icon="pi pi-external-link" 
+              class="p-button-text p-button-sm"
+              routerLink="/observability/monitoring">
+            </p-button>
+          </div>
+          <p-chart 
+            type="bar" 
+            [data]="usageDistributionData"
+            [options]="chartOptions"
+            [style]="{'height': '300px'}">
+          </p-chart>
+        </p-card>
+      </div>
+
+      <!-- Compliance Scores -->
+      <div class="compliance-section">
+        <p-card>
+          <div class="card-header">
+            <h3>Compliance Scores</h3>
+            <p-button 
+              icon="pi pi-external-link" 
+              class="p-button-text p-button-sm"
+              routerLink="/governance/policies">
+            </p-button>
+          </div>
+          <div class="compliance-grid">
+            <div class="compliance-item">
+              <div class="compliance-label">GDPR</div>
+              <p-knob 
+                [(ngModel)]="complianceData.datasets[0].data[0]"
+                [readonly]="true"
+                [size]="80"
+                valueTemplate="{value}%"
+                strokeWidth="8"
+                fill="#4CAF50">
+              </p-knob>
+            </div>
+            <div class="compliance-item">
+              <div class="compliance-label">SOX</div>
+              <p-knob 
+                [(ngModel)]="complianceData.datasets[0].data[1]"
+                [readonly]="true"
+                [size]="80"
+                valueTemplate="{value}%"
+                strokeWidth="8"
+                fill="#2196F3">
+              </p-knob>
+            </div>
+            <div class="compliance-item">
+              <div class="compliance-label">HIPAA</div>
+              <p-knob 
+                [(ngModel)]="complianceData.datasets[0].data[2]"
+                [readonly]="true"
+                [size]="80"
+                valueTemplate="{value}%"
+                strokeWidth="8"
+                fill="#FF9800">
+              </p-knob>
+            </div>
+            <div class="compliance-item">
+              <div class="compliance-label">PCI DSS</div>
+              <p-knob 
+                [(ngModel)]="complianceData.datasets[0].data[3]"
+                [readonly]="true"
+                [size]="80"
+                valueTemplate="{value}%"
+                strokeWidth="8"
+                fill="#9C27B0">
+              </p-knob>
+            </div>
+          </div>
+        </p-card>
+      </div>
+
+      <!-- Domain Overview Table -->
+      <div class="table-section">
+        <p-card>
+          <div class="card-header">
+            <h3>Domain Overview</h3>
+            <p-button 
+              label="View All" 
+              icon="pi pi-external-link"
+              class="p-button-outlined p-button-sm"
+              routerLink="/domains">
+            </p-button>
+          </div>
+          <p-table 
+            [value]="domainOverview"
+            [paginator]="false"
+            dataKey="name"
+            styleClass="dashboard-table">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Domain</th>
+                <th>Data Products</th>
+                <th>Quality Score</th>
+                <th>Usage</th>
+                <th>Status</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-domain>
+              <tr>
+                <td>
+                  <div class="domain-name">{{domain.name}}</div>
+                </td>
+                <td>
+                  <p-badge [value]="domain.dataProducts"></p-badge>
+                </td>
+                <td>
+                  <div class="quality-score">
+                    <span>{{domain.qualityScore}}%</span>
+                    <p-progressBar 
+                      [value]="domain.qualityScore"
+                      [style]="{'height': '4px', 'width': '60px'}"
+                      [styleClass]="domain.qualityScore >= 80 ? 'quality-good' : domain.qualityScore >= 60 ? 'quality-medium' : 'quality-poor'">
+                    </p-progressBar>
+                  </div>
+                </td>
+                <td>
+                  <span>{{domain.usage}}%</span>
+                </td>
+                <td>
+                  <p-tag 
+                    [value]="domain.status"
+                    [severity]="getStatusSeverity(domain.status)"
+                    class="status-tag">
+                  </p-tag>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </p-card>
+      </div>
+
+      <!-- Recent Activities -->
+      <div class="activity-section">
+        <p-card>
+          <div class="card-header">
+            <h3>Recent Activities</h3>
+            <p-button 
+              icon="pi pi-external-link" 
+              class="p-button-text p-button-sm">
+            </p-button>
+          </div>
+          <p-timeline 
+            [value]="recentActivities"
+            align="left"
+            styleClass="dashboard-timeline">
+            <ng-template pTemplate="marker" let-activity>
+              <div class="activity-marker" [style.background-color]="activity.color">
+                <i [class]="'pi ' + activity.icon"></i>
+              </div>
+            </ng-template>
+            <ng-template pTemplate="content" let-activity>
+              <div class="activity-content">
+                <div class="activity-header">
+                  <h4>{{activity.description}}</h4>
+                  <span class="activity-time">{{activity.timestamp | date:'MMM d, h:mm a'}}</span>
+                </div>
+                <div class="activity-meta">
+                  <p-tag [value]="activity.type" class="activity-type"></p-tag>
+                  <span class="activity-user">by {{activity.user}}</span>
+                </div>
+              </div>
+            </ng-template>
+          </p-timeline>
+        </p-card>
+      </div>
+    </div>
+  </div>
+</div>

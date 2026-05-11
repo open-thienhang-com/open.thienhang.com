@@ -1,0 +1,236 @@
+<div class="inventory-page">
+  <p-toast></p-toast>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1>Inventory Management</h1>
+        <p class="subtitle">Track and manage hotel inventory items</p>
+      </div>
+      <div class="header-actions">
+        <button pButton type="button" label="New Item" icon="pi pi-plus"
+          (click)="openDialog()" class="p-button-primary">
+        </button>
+        <button pButton type="button" label="Refresh" icon="pi pi-refresh"
+          (click)="loadData()" class="p-button-secondary">
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards">
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ items.length }}</span>
+        <span class="stat-label">Total Items</span>
+      </div>
+    </p-card>
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ getInStockItems() }}</span>
+        <span class="stat-label">In Stock</span>
+      </div>
+    </p-card>
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ getLowStockItems() }}</span>
+        <span class="stat-label">Low Stock</span>
+      </div>
+    </p-card>
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ getOutOfStockItems() }}</span>
+        <span class="stat-label">Out of Stock</span>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Filters -->
+  <p-card class="filters-card">
+    <div class="filters">
+      <div class="filter-group">
+        <label>Search</label>
+        <input pInputText type="text" placeholder="Search items..."
+          [(ngModel)]="searchTerm" (input)="onSearch()">
+      </div>
+      <div class="filter-group">
+        <label>Category</label>
+        <p-dropdown [options]="categoryOptions" optionLabel="label" optionValue="value"
+          [(ngModel)]="selectedCategory" (onChange)="onCategoryChange()"
+          placeholder="All Categories">
+        </p-dropdown>
+      </div>
+      <div class="filter-group">
+        <label>Status</label>
+        <p-dropdown [options]="statusOptions" optionLabel="label" optionValue="value"
+          [(ngModel)]="selectedStatus" (onChange)="onStatusChange()"
+          placeholder="All Statuses">
+        </p-dropdown>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Items Table -->
+  <p-card *ngIf="!loading; else loadingTemplate">
+    <p-table [value]="filteredItems" [paginator]="true" [rows]="10" 
+      [rowsPerPageOptions]="[10, 25, 50]" [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} items"
+      styleClass="p-datatable-sm">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Item ID</th>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Quantity</th>
+          <th>Min Stock</th>
+          <th>Max Stock</th>
+          <th>Location</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>
+            <span class="item-id">{{ item.id }}</span>
+          </td>
+          <td>
+            <span class="item-name">{{ item.name }}</span>
+          </td>
+          <td>
+            <p-tag [value]="item.category | titlecase" severity="info"></p-tag>
+          </td>
+          <td>
+            <span class="quantity">{{ item.quantity }} {{ item.unit }}</span>
+          </td>
+          <td>
+            <span class="min-stock">{{ item.minStock }}</span>
+          </td>
+          <td>
+            <span class="max-stock">{{ item.maxStock }}</span>
+          </td>
+          <td>
+            <span class="location">{{ item.location || 'N/A' }}</span>
+          </td>
+          <td>
+            <p-badge [value]="item.status | titlecase" 
+              [severity]="getStatusSeverity(item.status)">
+            </p-badge>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button pButton type="button" icon="pi pi-pencil" 
+                class="p-button-sm p-button-text p-button-info"
+                (click)="editItem(item)" pTooltip="Edit">
+              </button>
+              <button pButton type="button" icon="pi pi-plus" 
+                class="p-button-sm p-button-text p-button-success"
+                (click)="restockItem(item, 10)" pTooltip="Restock +10">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="9" class="text-center">
+            <div class="empty-state">
+              <i class="pi pi-box"></i>
+              <p>No inventory items found</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <!-- Loading Template -->
+  <ng-template #loadingTemplate>
+    <div class="loading-container">
+      <p-skeleton height="300px"></p-skeleton>
+    </div>
+  </ng-template>
+
+  <!-- Item Dialog -->
+  <p-dialog 
+    [(visible)]="showDialog" 
+    [header]="isEditMode ? 'Edit Inventory Item' : 'Create Inventory Item'"
+    [modal]="true" 
+    [style]="{width: '60vw'}"
+    [closable]="true"
+    (onHide)="closeDialog()">
+    
+    <div class="item-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Name *</label>
+          <input pInputText type="text" [(ngModel)]="formData.name" 
+            placeholder="Enter item name">
+        </div>
+        <div class="form-group">
+          <label>Category *</label>
+          <p-dropdown [options]="categoryOptions.slice(1)" optionLabel="label" optionValue="value"
+            [(ngModel)]="formData.category" placeholder="Select Category">
+          </p-dropdown>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Quantity *</label>
+          <p-inputNumber [(ngModel)]="formData.quantity" 
+            [min]="0" [showButtons]="true" placeholder="Enter quantity">
+          </p-inputNumber>
+        </div>
+        <div class="form-group">
+          <label>Unit *</label>
+          <p-dropdown [options]="unitOptions" optionLabel="label" optionValue="value"
+            [(ngModel)]="formData.unit" placeholder="Select Unit">
+          </p-dropdown>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Min Stock</label>
+          <p-inputNumber [(ngModel)]="formData.minStock" 
+            [min]="0" [showButtons]="true" placeholder="Min stock">
+          </p-inputNumber>
+        </div>
+        <div class="form-group">
+          <label>Max Stock</label>
+          <p-inputNumber [(ngModel)]="formData.maxStock" 
+            [min]="0" [showButtons]="true" placeholder="Max stock">
+          </p-inputNumber>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Location</label>
+          <input pInputText type="text" [(ngModel)]="formData.location" 
+            placeholder="Storage location">
+        </div>
+        <div class="form-group">
+          <label>Supplier</label>
+          <input pInputText type="text" [(ngModel)]="formData.supplier" 
+            placeholder="Supplier name">
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Cancel" icon="pi pi-times"
+        (click)="closeDialog()" class="p-button-secondary">
+      </button>
+      <button pButton type="button" label="Save" icon="pi pi-check"
+        (click)="saveItem()" class="p-button-primary">
+      </button>
+    </ng-template>
+  </p-dialog>
+</div>

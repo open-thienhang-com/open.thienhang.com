@@ -1,0 +1,364 @@
+import { Injectable, signal, inject, AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { animate, query, stagger, style, transition, trigger } from '@angular/animations';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
+import { TagModule } from 'primeng/tag';
+import { SkeletonModule } from 'primeng/skeleton';
+import { TooltipModule } from 'primeng/tooltip';
+import { InputTextModule } from 'primeng/inputtext';
+import { TravelService, TripApiItem } from '../../services/travel.service';
+import { TripStoreService } from '../../services/trip-store.service';
+
+interface CheckpointPlace {
+  display_name: string;
+  lat: string;
+  lon: string;
+  type?: string;
+  class?: string;
+}
+
+@Component({
+  selector: 'app-trip-list',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    ButtonModule,
+    TagModule,
+    SkeletonModule,
+    TooltipModule,
+    InputTextModule,
+    FormsModule
+  ],
+  animations: [
+    trigger('listAnimation', [
+      transition('* <=> *', [
+        query(':enter', [
+          style({ opacity: 0, transform: 'translateY(20px)' }),
+          stagger('100ms', [
+            animate('400ms cubic-bezier(0.35, 0, 0.25, 1)', style({ opacity: 1, transform: 'translateY(0)' }))
+          ])
+        ], { optional: true })
+      ])
+    ])
+  ],
+  template: `
+    <div class="explorer-container">
+      <!-- Main Content: Split Pane -->
+      <div class="split-pane">
+        
+        <!-- Left Pane: Map (Immersive) -->
+        <div class="map-pane">
+          <div #checkpointMap class="full-map"></div>
+          
+          <!-- Floating Command Palette / Search -->
+          <div class="floating-search-box blur-effect">
+            <div class="p-input-icon-left w-full">
+              <i class="pi pi-search"></i>
+              <input 
+                pInputText 
+                type="text" 
+                [(ngModel)]="searchQuery" 
+                (keydown.enter)="searchPlaces()"
+                placeholder="Search destinations..." 
+                class="w-full border-none bg-transparent focus:shadow-none" />
+            </div>
+            <p-button icon="pi pi-directions" [loading]="searching" (onClick)="searchPlaces()" severity="primary" [rounded]="true" [text]="true"></p-button>
+          </div>
+
+          <!-- Map Overlay: Selected Place Info -->
+          <div class="selected-place-card blur-effect" *ngIf="selectedPlace">
+            <div class="flex justify-between items-start">
+              <div>
+                <h4 class="text-sm font-bold text-gray-900 m-0">{{ selectedPlace.display_name }}</h4>
+                <p class="text-xs text-gray-500 m-0 mt-1 uppercase tracking-wider">{{ selectedPlace.type || selectedPlace.class }}</p>
+              </div>
+              <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="secondary" size="small" (onClick)="selectedPlace = null"></p-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Pane: List & Stats (Glassmorphic) -->
+        <div class="list-pane border-left border-200">
+          <div class="pane-header p-4 flex justify-between items-center border-bottom border-200">
+            <div>
+              <h1 class="text-2xl font-bold text-gray-900 m-0">Travel Explorer</h1>
+              <p class="text-gray-500 text-sm m-0">{{ trips().length }} trips · Manage your journeys</p>
+            </div>
+            <p-button icon="pi pi-plus" label="New Trip" severity="primary" [rounded]="true" size="small" (onClick)="goToCreateTrip()"></p-button>
+          </div>
+
+          <div class="pane-scrollable p-4">
+            <!-- Status Filters -->
+            <div class="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+              <button 
+                *ngFor="let s of statusFilters"
+                (click)="filterByStatus(s)"
+                class="px-4 py-2 rounded-full text-xs font-bold transition-all border whitespace-nowrap"
+                [class.bg-blue-600]="selectedStatus() === s"
+                [class.text-white]="selectedStatus() === s"
+                [class.border-blue-600]="selectedStatus() === s"
+                [class.bg-white]="selectedStatus() !== s"
+                [class.text-gray-500]="selectedStatus() !== s"
+                [class.border-gray-200]="selectedStatus() !== s">
+                {{ s | uppercase }}
+              </button>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 gap-3 mb-6">
+              <div class="stat-mini-card bg-blue-50">
+                <span class="text-xs text-blue-600 font-bold uppercase">Total Trips</span>
+                <span class="text-xl font-bold block">{{ trips().length }}</span>
+              </div>
+              <div class="stat-mini-card bg-purple-50">
+                <span class="text-xs text-purple-600 font-bold uppercase">Destinations</span>
+                <span class="text-xl font-bold block">{{ trips().length }}</span>
+              </div>
+            </div>
+
+            <!-- Loading Skeleton -->
+            <div *ngIf="loading()" class="space-y-4">
+              <div *ngFor="let i of [1,2,3]" class="p-4 border border-200 rounded-xl">
+                <p-skeleton width="80%" height="1.5rem" styleClass="mb-3"></p-skeleton>
+                <div class="flex gap-2">
+                  <p-skeleton width="40" height="40" shape="circle"></p-skeleton>
+                  <p-skeleton width="40%" height="1rem"></p-skeleton>
+                </div>
+              </div>
+            </div>
+
+            <!-- Trip Cards (Real API Data) -->
+            <div *ngIf="!loading()" class="space-y-4" [@listAnimation]="trips().length">
+              <div *ngFor="let trip of trips()" 
+                   class="trip-card group flex gap-4 p-3" 
+                   (click)="selectTrip(trip)">
+                <!-- Thumbnail -->
+                <div class="h-20 w-20 rounded-lg bg-gradient-to-br from-blue-100 to-purple-100 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                  <img *ngIf="trip.thumbnail_image_urls?.[0]" [src]="trip.thumbnail_image_urls[0]" class="w-full h-full object-cover" />
+                  <i *ngIf="!trip.thumbnail_image_urls?.[0]" class="pi pi-map-marker text-2xl text-blue-300"></i>
+                </div>
+                <!-- Info -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex justify-between items-start">
+                    <h3 class="text-sm font-bold text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+                      {{ trip.name }}
+                    </h3>
+                  </div>
+                  <p class="text-xs text-blue-500 font-medium mt-0.5 flex items-center gap-1">
+                    <i class="pi pi-map-marker text-[9px]"></i> {{ trip.destination }}
+                  </p>
+                  <div class="flex items-center gap-3 mt-2">
+                    <div class="flex items-center gap-1 text-[10px] text-gray-400 font-medium">
+                      <i class="pi pi-calendar text-[8px]"></i>
+                      <span>{{ formatDate(trip.start_date) }}</span>
+                    </div>
+                    <div class="flex items-center gap-1 text-[10px] text-gray-400 font-medium">
+                      <i class="pi pi-users text-[8px]"></i>
+                      <span>{{ trip.people_count }} người</span>
+                    </div>
+                    <div class="flex items-center gap-1 text-[10px] text-gray-400 font-medium">
+                      <i class="pi pi-wallet text-[8px]"></i>
+                      <span>{{ trip.budget | number:'1.0-0' }} ₫</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Actions -->
+                <div class="flex flex-col justify-between items-end">
+                   <p-tag [value]="trip.status" [severity]="getStatusSeverity(trip.status)" styleClass="text-[8px] uppercase font-black px-2 py-0.5 rounded-sm"></p-tag>
+                   <p-button icon="pi pi-arrow-up-right" [rounded]="true" [text]="true" size="small" (onClick)="openTrip(trip); $event.stopPropagation()"></p-button>
+                </div>
+              </div>
+
+              <!-- Empty State -->
+              <div *ngIf="trips().length === 0" class="text-center py-10 glass-card mx-2">
+                <i class="pi pi-compass text-4xl text-blue-200 mb-3 block"></i>
+                <p class="text-gray-500 font-medium">No trips found</p>
+                <p-button label="Create Your First Trip" severity="primary" size="small" (onClick)="goToCreateTrip()"></p-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    :host { display: block; height: calc(100vh - 64px); }
+    .explorer-container { height: 100%; overflow: hidden; }
+    .split-pane { display: grid; grid-template-columns: 1fr 400px; height: 100%; }
+    .map-pane { position: relative; height: 100%; background: #eef2ff; }
+    .full-map { width: 100%; height: 100%; }
+    .floating-search-box { position: absolute; top: 1.5rem; left: 1.5rem; right: 1.5rem; max-width: 400px; z-index: 1000; padding: 0.5rem 1rem; border-radius: 999px; display: flex; align-items: center; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.4); }
+    .selected-place-card { position: absolute; bottom: 1.5rem; left: 1.5rem; width: 320px; z-index: 1000; padding: 1rem; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.4); }
+    .blur-effect { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    .list-pane { display: flex; flex-direction: column; background: #fff; }
+    .pane-scrollable { flex: 1; overflow-y: auto; }
+    .stat-mini-card { padding: 0.75rem; border-radius: 0.75rem; }
+    .trip-card { padding: 1rem; border-radius: 1rem; border: 1px solid #f1f5f9; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .trip-card:hover { border-color: #e2e8f0; background: #f8fafc; transform: translateY(-1px); }
+    .trip-card.active { border-color: #3b82f6; background: #eff6ff; box-shadow: 0 4px 6px -1px rgba(59,130,246,0.1); }
+    @media (max-width: 1024px) { .split-pane { grid-template-columns: 1fr; } .list-pane { height: 50%; } .map-pane { height: 50%; } }
+  `]
+})
+export class TripListComponent implements OnInit, AfterViewInit, OnDestroy {
+  private travelService = inject(TravelService);
+  private tripStore = inject(TripStoreService);
+  private router = inject(Router);
+
+  @ViewChild('checkpointMap') checkpointMapRef?: ElementRef<HTMLDivElement>;
+
+  // Use real Travel API trips signal
+  trips = this.travelService.trips;
+  loading = this.travelService.loading;
+  statusFilters = ['all', 'draft', 'upcoming', 'ongoing', 'completed'];
+  selectedStatus = signal<string>('all');
+
+  searchQuery = '';
+  searching = false;
+  searchResults: CheckpointPlace[] = [];
+  selectedPlace: CheckpointPlace | null = null;
+
+  private map: any;
+  private L: any;
+  private mapMarker: any;
+  private resizeObserver?: ResizeObserver;
+
+  ngOnInit(): void {
+    this.loadTrips();
+  }
+
+  loadTrips(): void {
+    const status = this.selectedStatus() === 'all' ? undefined : this.selectedStatus();
+    this.travelService.listTrips({ limit: 50, status }).subscribe();
+  }
+
+  filterByStatus(status: string): void {
+    this.selectedStatus.set(status);
+    this.loadTrips();
+  }
+
+  // legacy alias kept for template compatibility
+  filterByCategory = this.filterByStatus.bind(this);
+  loadPosts = this.loadTrips.bind(this);
+
+  async ngAfterViewInit(): Promise<void> {
+    await this.initMap();
+    this.setupResizeObserver();
+  }
+
+  ngOnDestroy(): void {
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
+    }
+    this.resizeObserver?.disconnect();
+  }
+
+  selectTrip(trip: TripApiItem): void {
+    this.tripStore.setActiveTrip({
+      id: trip._id,
+      title: trip.name,
+      destination: trip.destination,
+      start_date: trip.start_date?.split('T')[0],
+      end_date: trip.end_date?.split('T')[0],
+      budget: trip.budget,
+      cover_image: trip.thumbnail_image_urls?.[0],
+      status: trip.status
+    });
+    if (trip.destination) {
+      this.searchQuery = trip.destination;
+      this.searchPlaces();
+    }
+  }
+
+  openTrip(trip: TripApiItem): void {
+    this.selectTrip(trip);
+    this.router.navigate(['/travel', trip._id]);
+  }
+
+  goToCreateTrip(): void {
+    this.router.navigate(['/travel/new']);
+  }
+
+  getStatusSeverity(status?: string): 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast' {
+    switch ((status || '').toLowerCase()) {
+      case 'upcoming': return 'info';
+      case 'ongoing': return 'warning';
+      case 'completed': return 'success';
+      case 'draft': return 'secondary';
+      default: return 'secondary';
+    }
+  }
+
+  formatDate(date?: string): string {
+    if (!date) return '-';
+    return new Date(date).toLocaleDateString();
+  }
+
+  trackByPost = (_: number, post: any): string => post.id || String(_);
+  trackByPlace = (_: number, place: CheckpointPlace): string => `${place.lat},${place.lon},${place.display_name}`;
+
+  async searchPlaces(): Promise<void> {
+    const keyword = this.searchQuery.trim();
+    if (!keyword || this.searching) return;
+
+    this.searching = true;
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&q=${encodeURIComponent(keyword)}`;
+      const response = await fetch(url, { headers: { Accept: 'application/json' } });
+      const data = await response.json();
+      this.searchResults = Array.isArray(data) ? data : [];
+      if (this.searchResults.length) this.selectPlace(this.searchResults[0]);
+    } catch (error) {
+      console.error('Search places failed:', error);
+      this.searchResults = [];
+    } finally {
+      this.searching = false;
+    }
+  }
+
+  selectPlace(place: CheckpointPlace): void {
+    this.selectedPlace = place;
+    if (!this.map || !this.L) return;
+
+    const lat = Number(place.lat);
+    const lon = Number(place.lon);
+    if (Number.isNaN(lat) || Number.isNaN(lon)) return;
+
+    this.map.setView([lat, lon], 13);
+    if (this.mapMarker) this.map.removeLayer(this.mapMarker);
+
+    this.mapMarker = this.L.circleMarker([lat, lon], {
+      radius: 8,
+      color: '#3b82f6',
+      fillColor: '#60a5fa',
+      fillOpacity: 0.9,
+      weight: 2
+    }).addTo(this.map);
+  }
+
+  private setupResizeObserver(): void {
+    if (this.checkpointMapRef?.nativeElement) {
+      this.resizeObserver = new ResizeObserver(() => this.map?.invalidateSize());
+      this.resizeObserver.observe(this.checkpointMapRef.nativeElement);
+    }
+  }
+
+  private async initMap(): Promise<void> {
+    if (this.map || !this.checkpointMapRef?.nativeElement) return;
+
+    const leaflet = await import('leaflet');
+    this.L = leaflet;
+    this.map = leaflet.map(this.checkpointMapRef.nativeElement, {
+      zoomControl: false
+    }).setView([16.0471, 108.2068], 6);
+
+    leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(this.map);
+
+    leaflet.control.zoom({ position: 'bottomright' }).addTo(this.map);
+  }
+}

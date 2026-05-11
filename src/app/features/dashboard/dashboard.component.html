@@ -1,0 +1,190 @@
+<div class="landing-page">
+  <!-- Hero Section with Slider -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="welcome-text">
+        <h1>Welcome to Open Thienhang</h1>
+        <p class="lead">Your unified platform for data management, retail services, and content creation.</p>
+      </div>
+      
+      <div class="hero-slider">
+        <p-carousel 
+          [value]="featuredArticles" 
+          [numVisible]="1" 
+          [numScroll]="1" 
+          [circular]="true" 
+          [autoplayInterval]="6000"
+          [responsiveOptions]="responsiveOptions">
+          <ng-template pTemplate="item" let-article>
+            <div class="slide-card">
+              <div class="slide-image" [style.backgroundImage]="'url(' + article.image + ')'"></div>
+              <div class="slide-overlay">
+                <div class="slide-content">
+                  <div class="slide-tags">
+                    <p-chip *ngFor="let tag of article.tags" [label]="tag" styleClass="slide-chip"></p-chip>
+                  </div>
+                  <h2>{{ article.title }}</h2>
+                  <p class="excerpt">{{ article.excerpt }}</p>
+                  <div class="slide-footer">
+                    <div class="author-info">
+                      <p-avatar 
+                        [label]="initials(article.author)" 
+                        shape="circle" 
+                        size="normal"
+                        styleClass="author-avatar">
+                      </p-avatar>
+                      <div class="author-meta">
+                        <span class="author-name">{{ article.author }}</span>
+                        <span class="post-date">{{ article.date | date:'MMM d, y' }}</span>
+                      </div>
+                    </div>
+                    <button 
+                      pButton 
+                      label="Read Article" 
+                      icon="pi pi-arrow-right" 
+                      iconPos="right"
+                      [routerLink]="['/posts', article.id]"
+                      class="p-button-rounded read-btn">
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </p-carousel>
+      </div>
+    </div>
+  </section>
+
+  <!-- User Profile Section -->
+  <section class="profile-section">
+    <p-card styleClass="profile-card">
+      <ng-template pTemplate="header">
+        <div class="profile-header">
+          <p-avatar 
+            *ngIf="!user.avatar"
+            [label]="initials(user.name)" 
+            size="xlarge" 
+            shape="circle"
+            styleClass="profile-avatar">
+          </p-avatar>
+          <img *ngIf="user.avatar" [src]="user.avatar" alt="Profile" class="profile-avatar-img">
+          <div class="profile-info">
+            <h3>{{ user.name }}</h3>
+            <p class="user-role">{{ user.role }}</p>
+            <p class="user-email">{{ user.email }}</p>
+          </div>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="content">
+        <div class="profile-stats">
+          <div class="stat-item">
+            <i class="pi pi-file stat-icon"></i>
+            <div class="stat-info">
+              <span class="stat-value">{{ user.stats.posts }}</span>
+              <span class="stat-label">Posts</span>
+            </div>
+          </div>
+          <p-divider layout="vertical"></p-divider>
+          <div class="stat-item">
+            <i class="pi pi-briefcase stat-icon"></i>
+            <div class="stat-info">
+              <span class="stat-value">{{ user.stats.projects }}</span>
+              <span class="stat-label">Projects</span>
+            </div>
+          </div>
+          <p-divider layout="vertical"></p-divider>
+          <div class="stat-item">
+            <i class="pi pi-database stat-icon"></i>
+            <div class="stat-info">
+              <span class="stat-value">{{ user.stats.datasets }}</span>
+              <span class="stat-label">Datasets</span>
+            </div>
+          </div>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="footer">
+        <button pButton label="View Profile" icon="pi pi-user" class="p-button-outlined w-full"></button>
+      </ng-template>
+    </p-card>
+  </section>
+
+  <!-- Apps Grid Section -->
+  <section class="apps-section">
+    <div class="section-header">
+      <h2>Your Applications</h2>
+      <p>Access all your tools and services in one place</p>
+    </div>
+    
+    <div class="apps-grid">
+      <div *ngFor="let app of apps" class="app-card" (click)="navigateToApp(app.key)">
+        <div class="app-icon" [style.background]="app.color">
+          <i [class]="app.icon"></i>
+        </div>
+        <div class="app-content">
+          <h4>{{ app.label }}</h4>
+          <p>{{ app.description }}</p>
+        </div>
+        <div class="app-action">
+          <i class="pi pi-arrow-right"></i>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Blog Posts Section -->
+  <section class="blog-section">
+    <div class="section-header">
+      <h2>Latest Blog Posts</h2>
+      <p>Stay updated with our latest insights and stories</p>
+    </div>
+
+    <div class="blog-grid">
+      <article *ngFor="let article of articles.slice(0, 6)" class="blog-card">
+        <p-card>
+          <ng-template pTemplate="header">
+            <div class="blog-image" [style.backgroundImage]="'url(' + article.image + ')'"></div>
+          </ng-template>
+          <ng-template pTemplate="title">
+            <h3 class="blog-title">{{ article.title }}</h3>
+          </ng-template>
+          <ng-template pTemplate="content">
+            <p class="blog-excerpt">{{ article.excerpt }}</p>
+            <div class="blog-meta">
+              <p-avatar 
+                [label]="initials(article.author)" 
+                shape="circle" 
+                size="small">
+              </p-avatar>
+              <div class="meta-text">
+                <span class="author">{{ article.author }}</span>
+                <span class="date">{{ article.date | date:'MMM d, y' }}</span>
+              </div>
+            </div>
+          </ng-template>
+          <ng-template pTemplate="footer">
+            <div class="blog-footer">
+              <div class="blog-tags">
+                <p-chip 
+                  *ngFor="let tag of article.tags?.slice(0, 2)" 
+                  [label]="tag" 
+                  styleClass="blog-tag">
+                </p-chip>
+              </div>
+              <button 
+                pButton 
+                icon="pi pi-arrow-right" 
+                [routerLink]="['/posts', article.id]"
+                class="p-button-text p-button-rounded">
+              </button>
+            </div>
+          </ng-template>
+        </p-card>
+      </article>
+    </div>
+
+    <div class="section-footer">
+      <button pButton label="View All Posts" icon="pi pi-arrow-right" iconPos="right" class="p-button-outlined"></button>
+    </div>
+  </section>
+</div>

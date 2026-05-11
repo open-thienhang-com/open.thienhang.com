@@ -1,0 +1,87 @@
+<div class="bg-gray-50 min-h-screen p-6">
+
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center">
+          <i class="pi pi-bolt text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Campaign Automation</h1>
+          <p class="text-gray-500 text-sm">Trigger-based rules that run automatically</p>
+        </div>
+      </div>
+      <p-button label="New Rule" icon="pi pi-plus" severity="primary"></p-button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Total Rules</p>
+      <p class="text-2xl font-bold text-gray-900 mt-1">{{ rules.length }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <p class="text-xs font-semibold text-green-600 uppercase tracking-wide">Active</p>
+      <p class="text-2xl font-bold text-green-600 mt-1">{{ countByStatus('active') }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Paused</p>
+      <p class="text-2xl font-bold text-amber-600 mt-1">{{ countByStatus('paused') }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Total Triggered</p>
+      <p class="text-2xl font-bold text-indigo-600 mt-1">{{ totalFired() | number }}</p>
+    </div>
+  </div>
+
+  <!-- Rules list -->
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100">
+      <h2 class="text-base font-semibold text-gray-900">Automation Rules</h2>
+    </div>
+    <div class="divide-y divide-gray-50">
+      <div *ngFor="let r of rules" class="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors">
+
+        <!-- Icon -->
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+          [style.background]="r.bg">
+          <i [class]="r.icon" [style.color]="r.color"></i>
+        </div>
+
+        <!-- Name + trigger → action -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-0.5">
+            <span class="font-semibold text-gray-900 text-sm">{{ r.name }}</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold"
+              [style.background]="getStatusStyle(r.status).bg"
+              [style.color]="getStatusStyle(r.status).color">{{ r.status }}</span>
+          </div>
+          <div class="flex items-center gap-1.5 text-xs text-gray-500 flex-wrap">
+            <span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-medium">{{ r.trigger }}</span>
+            <i class="pi pi-arrow-right text-gray-400"></i>
+            <span class="bg-green-50 text-green-700 px-2 py-0.5 rounded font-medium">{{ r.action }}</span>
+          </div>
+        </div>
+
+        <!-- Fired + last fired -->
+        <div class="text-right flex-shrink-0 hidden md:block">
+          <p class="text-sm font-bold text-indigo-600">{{ r.firedCount | number }}</p>
+          <p class="text-xs text-gray-400">fired</p>
+        </div>
+        <div class="text-right flex-shrink-0 hidden lg:block w-28">
+          <p class="text-xs text-gray-400">Last</p>
+          <p class="text-xs font-medium text-gray-600">{{ r.lastFired ? (r.lastFired | date:'dd/MM/yyyy') : '—' }}</p>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-1.5 flex-shrink-0">
+          <p-button [icon]="r.status === 'active' ? 'pi pi-pause' : 'pi pi-play'" [outlined]="true" size="small"
+            [pTooltip]="r.status === 'active' ? 'Pause' : 'Activate'"></p-button>
+          <p-button icon="pi pi-pencil" [outlined]="true" size="small" pTooltip="Edit"></p-button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

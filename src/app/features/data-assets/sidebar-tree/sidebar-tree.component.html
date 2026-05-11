@@ -1,0 +1,15 @@
+<mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+  <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
+    <button mat-icon-button disabled></button>
+    <span (click)="onSelectAsset(node)">{{ node.name }}</span>
+  </mat-tree-node>
+
+  <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodeToggle>
+    <button mat-icon-button [attr.aria-label]="'toggle ' + node.name" matTreeNodeToggle>
+      <mat-icon>
+        {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+      </mat-icon>
+    </button>
+    <span>{{ node.name }}</span>
+  </mat-tree-node>
+</mat-tree>

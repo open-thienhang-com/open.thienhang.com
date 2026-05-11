@@ -1,0 +1,138 @@
+<!-- Planning - Plan List Page -->
+<div id="content-plan-list" class="tab-content">
+  <div class="p-6">
+    <!-- Page Header -->
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-gray-900 mb-2">Plan Management</h2>
+      <p class="text-gray-600">View, manage, and analyze your delivery plans</p>
+    </div>
+
+    <!-- Plan Filters and Actions -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      <div class="flex flex-wrap gap-4 items-center justify-between">
+        <div class="flex gap-3">
+          <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <i class="fas fa-plus mr-2"></i>Create New Plan
+          </button>
+          <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+            <i class="fas fa-upload mr-2"></i>Import Plan
+          </button>
+          <button class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+            <i class="fas fa-download mr-2"></i>Export All
+          </button>
+        </div>
+        <div class="flex gap-2">
+          <input type="text" placeholder="Search plans..." class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          <select class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <option value="">All Status</option>
+            <option value="draft">Draft</option>
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+            <option value="archived">Archived</option>
+          </select>
+          <select class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <option value="">Date Range</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="custom">Custom Range</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plans Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="plansGrid">
+      <!-- Plan cards -->
+      <div *ngFor="let plan of plans" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+        <div class="flex items-start justify-between mb-4">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">{{ plan.name }}</h3>
+            <p class="text-sm text-gray-600">{{ plan.id }}</p>
+          </div>
+          <div class="flex gap-2">
+            <span class="px-2 py-1 text-xs font-medium rounded-full {{ getStatusBadgeClass(plan.status) }}">
+              {{ plan.status | titlecase }}
+            </span>
+          </div>
+        </div>
+
+        <div class="space-y-3 mb-4">
+          <div class="flex justify-between">
+            <span class="text-gray-600">Routes:</span>
+            <span class="font-semibold">{{ plan.routes }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Total Distance:</span>
+            <span class="font-semibold">{{ plan.totalDistance | number }} km</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Total Cost:</span>
+            <span class="font-semibold">{{ formatCurrency(plan.totalCost) }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Created:</span>
+            <span class="font-semibold text-sm">{{ plan.created }}</span>
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <button (click)="viewPlan(plan.id)" class="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors">
+            <i class="fas fa-eye mr-1"></i>View
+          </button>
+          <button (click)="simulatePlan(plan.id)" class="flex-1 px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors">
+            <i class="fas fa-play mr-1"></i>Simulate
+          </button>
+          <button (click)="evaluatePlan(plan.id)" class="px-3 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition-colors">
+            <i class="fas fa-chart-line"></i>
+          </button>
+          <button (click)="estimateCost(plan.id)" class="px-3 py-2 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 transition-colors">
+            <i class="fas fa-dollar-sign"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Add new plan card -->
+      <div class="bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 p-6 flex items-center justify-center hover:bg-gray-100 transition-colors cursor-pointer">
+        <div class="text-center">
+          <div class="text-4xl text-gray-400 mb-2">+</div>
+          <div class="text-gray-600 font-medium">Create New Plan</div>
+          <div class="text-sm text-gray-500 mt-1">Start planning delivery routes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plan Statistics -->
+    <div class="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Plan Statistics</h3>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-blue-600">{{ totalPlans }}</div>
+          <div class="text-sm text-gray-600">Total Plans</div>
+        </div>
+        <div class="text-center">
+          <div class="text-2xl font-bold text-green-600">{{ activePlans }}</div>
+          <div class="text-sm text-gray-600">Active Plans</div>
+        </div>
+        <div class="text-center">
+          <div class="text-2xl font-bold text-yellow-600">{{ draftPlans }}</div>
+          <div class="text-sm text-gray-600">Draft Plans</div>
+        </div>
+        <div class="text-center">
+          <div class="text-2xl font-bold text-purple-600">{{ totalSavings }}%</div>
+          <div class="text-sm text-gray-600">Avg Cost Savings</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+      <div class="space-y-3" id="recentActivity">
+        <div class="text-center py-8 text-gray-500">
+          <p>No recent activity</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

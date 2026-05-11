@@ -1,0 +1,51 @@
+/* Data Contracts Component Styles */
+
+.contract-card {
+    transition: all 0.2s ease-in-out;
+}
+
+.contract-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.quality-meter {
+    position: relative;
+    overflow: hidden;
+}
+
+.quality-meter::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, #ef4444 0%, #f97316 25%, #eab308 50%, #84cc16 75%, #22c55e 100%);
+    border-radius: inherit;
+}
+
+.status-badge {
+    position: relative;
+    z-index: 1;
+}
+
+.filter-section {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.dark .filter-section {
+    background: rgba(17, 24, 39, 0.9);
+}
+
+@media (max-width: 768px) {
+    .contract-table {
+        font-size: 0.875rem;
+    }
+
+    .contract-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}

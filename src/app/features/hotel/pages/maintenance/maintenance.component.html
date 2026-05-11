@@ -1,0 +1,238 @@
+<div class="maintenance-page">
+  <p-toast></p-toast>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1>Maintenance Management</h1>
+        <p class="subtitle">Track and manage maintenance requests</p>
+      </div>
+      <div class="header-actions">
+        <button pButton type="button" label="New Request" icon="pi pi-plus"
+          (click)="openDialog()" class="p-button-primary">
+        </button>
+        <button pButton type="button" label="Refresh" icon="pi pi-refresh"
+          (click)="loadData()" class="p-button-secondary">
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards">
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ requests.length }}</span>
+        <span class="stat-label">Total Requests</span>
+      </div>
+    </p-card>
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ getPendingRequests() }}</span>
+        <span class="stat-label">Pending</span>
+      </div>
+    </p-card>
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ getInProgressRequests() }}</span>
+        <span class="stat-label">In Progress</span>
+      </div>
+    </p-card>
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ getCompletedRequests() }}</span>
+        <span class="stat-label">Completed</span>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Filters -->
+  <p-card class="filters-card">
+    <div class="filters">
+      <div class="filter-group">
+        <label>Search</label>
+        <input pInputText type="text" placeholder="Search requests..."
+          [(ngModel)]="searchTerm" (input)="onSearch()">
+      </div>
+      <div class="filter-group">
+        <label>Status</label>
+        <p-dropdown [options]="statusOptions" optionLabel="label" optionValue="value"
+          [(ngModel)]="selectedStatus" (onChange)="onStatusChange()"
+          placeholder="All Statuses">
+        </p-dropdown>
+      </div>
+      <div class="filter-group">
+        <label>Priority</label>
+        <p-dropdown [options]="priorityOptions" optionLabel="label" optionValue="value"
+          [(ngModel)]="selectedPriority" (onChange)="onPriorityChange()"
+          placeholder="All Priorities">
+        </p-dropdown>
+      </div>
+      <div class="filter-group">
+        <label>Type</label>
+        <p-dropdown [options]="typeOptions" optionLabel="label" optionValue="value"
+          [(ngModel)]="selectedType" (onChange)="onTypeChange()"
+          placeholder="All Types">
+        </p-dropdown>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Requests Table -->
+  <p-card *ngIf="!loading; else loadingTemplate">
+    <p-table [value]="filteredRequests" [paginator]="true" [rows]="10" 
+      [rowsPerPageOptions]="[10, 25, 50]" [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} requests"
+      styleClass="p-datatable-sm">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Request ID</th>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Location</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-request>
+        <tr>
+          <td>
+            <span class="request-id">{{ request.id }}</span>
+          </td>
+          <td>
+            <span class="request-title">{{ request.title }}</span>
+          </td>
+          <td>
+            <p-tag [value]="request.type | titlecase" severity="info"></p-tag>
+          </td>
+          <td>
+            <span *ngIf="request.apartment_id">{{ getApartmentName(request.apartment_id) }}</span>
+            <span *ngIf="request.room_id">{{ getRoomName(request.room_id) }}</span>
+            <span *ngIf="!request.apartment_id && !request.room_id">General</span>
+          </td>
+          <td>
+            <p-badge [value]="request.priority | titlecase" 
+              [severity]="getPrioritySeverity(request.priority)">
+            </p-badge>
+          </td>
+          <td>
+            <p-badge [value]="request.status | titlecase" 
+              [severity]="getStatusSeverity(request.status)">
+            </p-badge>
+          </td>
+          <td>
+            {{ request.created_at | date: 'short' }}
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button pButton type="button" icon="pi pi-pencil" 
+                class="p-button-sm p-button-text p-button-info"
+                (click)="editRequest(request)" pTooltip="Edit">
+              </button>
+              <button pButton type="button" icon="pi pi-check" 
+                class="p-button-sm p-button-text p-button-success"
+                (click)="updateStatus(request, 'completed')" 
+                *ngIf="request.status !== 'completed'"
+                pTooltip="Mark Completed">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8" class="text-center">
+            <div class="empty-state">
+              <i class="pi pi-wrench"></i>
+              <p>No maintenance requests found</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <!-- Loading Template -->
+  <ng-template #loadingTemplate>
+    <div class="loading-container">
+      <p-skeleton height="300px"></p-skeleton>
+    </div>
+  </ng-template>
+
+  <!-- Request Dialog -->
+  <p-dialog 
+    [(visible)]="showDialog" 
+    [header]="isEditMode ? 'Edit Maintenance Request' : 'Create Maintenance Request'"
+    [modal]="true" 
+    [style]="{width: '60vw'}"
+    [closable]="true"
+    (onHide)="closeDialog()">
+    
+    <div class="request-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Type *</label>
+          <p-dropdown [options]="typeOptions" optionLabel="label" optionValue="value"
+            [(ngModel)]="formData.type" placeholder="Select Type">
+          </p-dropdown>
+        </div>
+        <div class="form-group">
+          <label>Priority *</label>
+          <p-dropdown [options]="priorityOptions.slice(1)" optionLabel="label" optionValue="value"
+            [(ngModel)]="formData.priority" placeholder="Select Priority">
+          </p-dropdown>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Title *</label>
+        <input pInputText type="text" [(ngModel)]="formData.title" 
+          placeholder="Enter request title">
+      </div>
+
+      <div class="form-group">
+        <label>Description *</label>
+        <textarea pInputTextarea [(ngModel)]="formData.description" 
+          rows="5" placeholder="Enter request description...">
+        </textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group" *ngIf="formData.type === 'apartment'">
+          <label>Apartment</label>
+          <p-dropdown [options]="apartmentsForDropdown" optionLabel="title" 
+            optionValue="id"
+            [(ngModel)]="formData.apartment_id" placeholder="Select Apartment">
+          </p-dropdown>
+        </div>
+        <div class="form-group" *ngIf="formData.type === 'room'">
+          <label>Room</label>
+          <p-dropdown [options]="rooms" optionLabel="name" optionValue="id"
+            [(ngModel)]="formData.room_id" placeholder="Select Room">
+          </p-dropdown>
+        </div>
+        <div class="form-group">
+          <label>Scheduled Date</label>
+          <p-calendar [(ngModel)]="formData.scheduled_date" 
+            [showIcon]="true" [showClear]="true" placeholder="Select Date">
+          </p-calendar>
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Cancel" icon="pi pi-times"
+        (click)="closeDialog()" class="p-button-secondary">
+      </button>
+      <button pButton type="button" label="Save" icon="pi pi-check"
+        (click)="saveRequest()" class="p-button-primary">
+      </button>
+    </ng-template>
+  </p-dialog>
+</div>

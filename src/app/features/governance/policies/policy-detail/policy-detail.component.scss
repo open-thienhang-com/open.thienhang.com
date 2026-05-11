@@ -1,0 +1,310 @@
+:host {
+  .policy-detail-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .policy-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    
+    .policy-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      
+      @media (max-width: 768px) {
+        flex-direction: column;
+        width: 100%;
+        
+        ::ng-deep p-button {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  .policy-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+    
+    .metric-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      
+      .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+      }
+      
+      .metric-label {
+        font-size: 0.875rem;
+        opacity: 0.9;
+      }
+    }
+  }
+
+  .policy-id-section {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+    
+    .policy-id {
+      font-family: 'Courier New', monospace;
+      background: #e2e8f0;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+    }
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    
+    .info-item {
+      .info-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        display: block;
+      }
+      
+      .info-value {
+        color: #6b7280;
+        
+        &.code {
+          font-family: 'Courier New', monospace;
+          background: #f3f4f6;
+          padding: 0.25rem 0.5rem;
+          border-radius: 4px;
+          font-size: 0.875rem;
+        }
+      }
+    }
+  }
+
+  .priority-indicator {
+    .priority-bar {
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+      
+      .priority-fill {
+        height: 100%;
+        transition: width 0.3s ease;
+        
+        &.low { background: #10b981; }
+        &.medium { background: #f59e0b; }
+        &.high { background: #ef4444; }
+      }
+    }
+  }
+
+  .tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .conditions-json {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    
+    pre {
+      margin: 0;
+      font-size: 0.875rem;
+      line-height: 1.4;
+      color: #374151;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6b7280;
+    
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+    
+    .empty-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #374151;
+    }
+    
+    .empty-description {
+      font-size: 0.875rem;
+    }
+  }
+
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    
+    .resource-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1rem;
+      
+      .resource-name {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+      }
+      
+      .resource-type {
+        font-size: 0.875rem;
+        color: #6b7280;
+      }
+    }
+  }
+
+  .permission-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    
+    .permission-item {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 1rem;
+      
+      .permission-name {
+        font-weight: 600;
+        color: #166534;
+        margin-bottom: 0.5rem;
+      }
+      
+      .permission-description {
+        font-size: 0.875rem;
+        color: #15803d;
+      }
+    }
+  }
+
+  .audit-section {
+    .audit-timeline {
+      border-left: 2px solid #e2e8f0;
+      padding-left: 1rem;
+      margin-left: 1rem;
+      
+      .audit-item {
+        position: relative;
+        padding-bottom: 1rem;
+        
+        &::before {
+          content: '';
+          position: absolute;
+          left: -1.5rem;
+          top: 0.5rem;
+          width: 12px;
+          height: 12px;
+          background: #3b82f6;
+          border-radius: 50%;
+          border: 3px solid white;
+          box-shadow: 0 0 0 2px #e2e8f0;
+        }
+        
+        .audit-date {
+          font-weight: 600;
+          color: #374151;
+          margin-bottom: 0.25rem;
+        }
+        
+        .audit-user {
+          font-size: 0.875rem;
+          color: #6b7280;
+        }
+      }
+    }
+  }
+
+  ::ng-deep {
+    .p-tabview {
+      .p-tabview-nav {
+        background: transparent;
+        border: none;
+        
+        .p-tabview-nav-link {
+          background: transparent;
+          border: 1px solid #e2e8f0;
+          border-bottom: none;
+          margin-right: 0.25rem;
+          
+          &:not(.p-highlight):hover {
+            background: #f8fafc;
+          }
+        }
+        
+        .p-highlight .p-tabview-nav-link {
+          background: white;
+          border-color: #e2e8f0;
+        }
+      }
+      
+      .p-tabview-panels {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-top: none;
+        
+        .p-tabview-panel {
+          padding: 0;
+        }
+      }
+    }
+    
+    .p-progressbar {
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      
+      .p-progressbar-value {
+        border-radius: 0;
+      }
+    }
+    
+    .p-skeleton {
+      border-radius: 8px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  :host {
+    .policy-metrics {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .resource-grid,
+    .permission-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

@@ -1,0 +1,96 @@
+<p-toast></p-toast>
+
+<div class="bg-gray-50 min-h-screen p-6 space-y-8">
+  <!-- Header Section -->
+  <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+    <div class="flex items-center justify-between flex-wrap gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-slate-700 to-slate-900 rounded-xl flex items-center justify-center shadow-lg shadow-slate-100">
+          <i class="pi pi-code text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">API Discovery & Playground</h1>
+          <p class="text-gray-500 text-sm">Directly interface with life-cycle endpoints for rapid integration and debugging</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <button pButton icon="pi pi-refresh" [outlined]="true" [rounded]="true" severity="secondary" pTooltip="Reset State"></button>
+        <button pButton label="Documentation" icon="pi pi-book" [rounded]="true" severity="secondary" [outlined]="true" class="px-4"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
+    <!-- Top Configuration Bar -->
+    <div class="flex flex-wrap gap-6 items-end p-8 border-b border-gray-50 bg-gray-50/20">
+      <div class="flex-1 min-w-[320px]">
+        <label class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-3">Target Endpoint</label>
+        <p-dropdown 
+          [options]="endpoints" 
+          [(ngModel)]="selectedEndpoint" 
+          (onChange)="onEndpointChange()"
+          styleClass="w-full rounded-2xl border-gray-100 shadow-sm"
+        ></p-dropdown>
+      </div>
+      <button 
+        pButton 
+        (click)="sendRequest()" 
+        [loading]="loading"
+        class="p-button-primary rounded-2xl px-12 py-4 font-black shadow-xl shadow-blue-100 flex gap-2"
+        icon="pi pi-send"
+        label="Execute Call"
+      ></button>
+    </div>
+
+    <div class="p-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Request Body Container -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <label class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block">Payload JSON</label>
+            <span class="text-[10px] font-bold text-blue-500 px-2 py-1 rounded bg-blue-50">APPLICATION/JSON</span>
+          </div>
+          <div class="bg-gray-900 rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
+            <textarea 
+              pInputTextarea 
+              [(ngModel)]="requestBody" 
+              (ngModelChange)="updateCurl()"
+              class="w-full bg-transparent p-8 text-blue-300 font-mono text-sm border-none focus:ring-0 min-h-[350px] resize-none leading-relaxed"
+              spellcheck="false"
+              placeholder="{ ... }"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Response Area Container -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <label class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block">Server Response</label>
+            <p-tag *ngIf="response" [value]="loading ? 'WAITING' : 'READY'" severity="info" class="rounded-lg px-2 text-[9px] font-black"></p-tag>
+          </div>
+          <div class="bg-slate-50 rounded-3xl overflow-hidden border border-slate-100 min-h-[350px] relative">
+            <div *ngIf="loading" class="absolute inset-0 bg-white/50 backdrop-blur-[2px] z-10 flex items-center justify-center">
+              <i class="pi pi-spin pi-spinner text-blue-500 text-3xl"></i>
+            </div>
+            <pre class="p-8 text-slate-600 font-mono text-[11px] whitespace-pre-wrap leading-relaxed overflow-auto max-h-[450px]">{{response || '// Response will be displayed here...'}}</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- cURL Simulation -->
+      <div class="mt-10 pt-10 border-t border-gray-50">
+        <div class="flex items-center gap-3 mb-6 font-black text-gray-400 text-[10px] uppercase tracking-[0.2em]">
+          <i class="pi pi-terminal"></i>
+          Equivalent cURL Command
+        </div>
+        <div class="group relative">
+          <div class="bg-gray-900/5 rounded-3xl p-6 border border-gray-100 text-gray-500 font-mono text-[11px] overflow-auto transition-all group-hover:bg-gray-100">
+            <pre class="whitespace-pre-wrap">{{curlCommand}}</pre>
+          </div>
+          <button pButton icon="pi pi-copy" [rounded]="true" severity="secondary" [outlined]="true" size="small" class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity" pTooltip="Copy to Clipboard"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

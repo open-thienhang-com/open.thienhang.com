@@ -1,0 +1,39 @@
+<!-- Retail Services Management Page -->
+<div class="retail-services-container">
+  <!-- Header Section -->
+  <div class="services-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <i class="pi pi-shopping-bag"></i>
+        Retail Services Management
+      </h1>
+      <p class="page-subtitle">
+        Manage and monitor retail services, integrations, and business operations
+      </p>
+    </div>
+  </div>
+
+  <!-- Submenu Navigation (for Inventory) -->
+  <div class="services-submenu" *ngIf="activeTab === 'inventory' && getCurrentCategory()?.submenus?.length">
+    <div class="submenu-tabs">
+      <div
+        *ngFor="let submenu of getCurrentCategory()?.submenus"
+        class="submenu-tab"
+        [class.active]="activeSubTab === submenu.key"
+        (click)="navigateToSubmenu(submenu.key)">
+        <div class="submenu-content">
+          <i [class]="submenu.icon"></i>
+          <div class="submenu-info">
+            <span class="submenu-label">{{ submenu.label }}</span>
+            <span class="submenu-description">{{ submenu.description }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Router Outlet for Child Components -->
+  <div class="services-content">
+    <router-outlet></router-outlet>
+  </div>
+</div>

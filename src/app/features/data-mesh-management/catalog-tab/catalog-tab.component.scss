@@ -1,0 +1,10 @@
+/* Catalog Tab Component Styles */
+.explorer-card {
+  @apply bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-2 border border-gray-200 dark:border-gray-700;
+}
+.metadata-tag {
+  @apply px-2 py-1 rounded bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300;
+}
+.status-online { @apply text-green-600 dark:text-green-300; }
+.status-warning { @apply text-yellow-600 dark:text-yellow-300; }
+.status-offline { @apply text-red-600 dark:text-red-300; }

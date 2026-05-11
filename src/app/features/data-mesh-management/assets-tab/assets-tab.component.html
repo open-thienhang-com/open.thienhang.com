@@ -1,0 +1,85 @@
+<!-- Assets Tab Component: Asset Detail, Bulk Actions, Monitoring -->
+<div class="flex flex-col gap-4">
+  <!-- Asset Filters & Bulk Actions -->
+  <div class="flex flex-wrap gap-2 mb-4 items-center">
+    <input type="text" pInputText class="w-48" placeholder="Search asset..." [(ngModel)]="searchQuery">
+    <p-dropdown [options]="ownerOptions" [(ngModel)]="selectedOwner" optionLabel="label" optionValue="value" placeholder="Owner"></p-dropdown>
+    <p-dropdown [options]="statusOptions" [(ngModel)]="selectedStatus" optionLabel="label" optionValue="value" placeholder="Status"></p-dropdown>
+    <input type="number" pInputText class="w-32" placeholder="Min health" [(ngModel)]="minHealth">
+    <button pButton class="p-button-sm p-button-outlined" icon="pi pi-sync" label="Bulk Sync" (click)="bulkSync()"></button>
+    <button pButton class="p-button-sm p-button-outlined" icon="pi pi-trash" label="Bulk Delete" (click)="bulkDelete()"></button>
+  </div>
+  <!-- Asset Type Selector -->
+  <div class="flex flex-wrap gap-2 mb-2 items-center justify-end">
+    <span class="font-semibold text-xs mr-2">Asset Type:</span>
+    <p-dropdown [options]="assetTypeOptions" [(ngModel)]="selectedAssetType" (onChange)="onAssetTypeChange($event.value)" placeholder="Select type" class="w-40"></p-dropdown>
+  </div>
+  <!-- Loading/Error -->
+  <div *ngIf="loadingAssets" class="text-center text-blue-500 mb-2"><i class="pi pi-spin pi-spinner"></i> Loading assets...</div>
+  <div *ngIf="errorAssets" class="text-center text-red-500 mb-2">{{ errorAssets }}</div>
+  <!-- Asset Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div *ngFor="let asset of assets" class="explorer-card flex flex-col items-center text-center p-4 rounded-lg shadow-md bg-white dark:bg-gray-900 hover:shadow-lg transition">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="font-bold text-lg text-blue-700 dark:text-blue-300">{{ asset.name }}</span>
+        <span class="metadata-tag bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-2 py-1 rounded">{{ asset.type }}</span>
+      </div>
+      <div class="flex flex-wrap gap-2 justify-center text-xs mb-2">
+        <span class="metadata-tag" aria-label="Owner"><i class="pi pi-user mr-1"></i>{{ asset.owner }}</span>
+        <span class="metadata-tag" aria-label="Assets"><i class="pi pi-database mr-1"></i>{{ asset.assets }}</span>
+        <span class="metadata-tag"
+          [ngClass]="{
+            'status-online': asset.status==='online',
+            'status-warning': asset.status==='warning',
+            'status-offline': asset.status==='offline'
+          }"
+          aria-label="Status">
+          <i class="pi pi-circle-on text-xs"
+            [ngStyle]="{
+              color: asset.status==='online' ? '#22c55e' : asset.status==='warning' ? '#f59e42' : '#ef4444'
+            }"></i>
+          {{ asset.status }}
+        </span>
+        <span class="metadata-tag" aria-label="Last Synced"><i class="pi pi-calendar mr-1"></i>{{ formatDate(asset.lastSynced) }}</span>
+        <span [ngClass]="getHealthClass(asset.health)" aria-label="Health"><i class="pi pi-heart mr-1"></i>{{ asset.health }}%</span>
+      </div>
+      <div class="flex flex-wrap gap-1 justify-center mb-2">
+        <span *ngFor="let tag of asset.tags" class="metadata-tag bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-1 rounded" aria-label="Tag">#{{ tag }}</span>
+      </div>
+      <span class="text-xs text-gray-500 dark:text-gray-400 mb-2" aria-label="Description">{{ asset.description }}</span>
+      <div class="flex gap-2 mt-2 justify-center">
+        <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm" pTooltip="View details" (click)="openDetailModal(asset)"></button>
+        <button pButton icon="pi pi-sync" class="p-button-rounded p-button-text p-button-sm" pTooltip="Sync now"></button>
+        <button pButton icon="pi pi-cog" class="p-button-rounded p-button-text p-button-sm" pTooltip="Settings"></button>
+      </div>
+    </div>
+    <div *ngIf="assets.length === 0" class="col-span-full text-center p-8 flex flex-col items-center justify-center">
+      <i class="pi pi-search text-5xl text-gray-300 mb-4 animate-bounce"></i>
+      <p class="text-gray-500 mb-2">No assets found matching your criteria</p>
+      <button pButton class="p-button-sm p-button-outlined" (click)="resetFilters()">Reset Filters</button>
+    </div>
+  </div>
+  <div class="flex justify-center mt-4">
+    <p-paginator [rows]="10" [totalRecords]="assets.length" (onPageChange)="onPageChange($event)"></p-paginator>
+  </div>
+  <!-- Modal chi tiết asset -->
+  <p-dialog header="Asset Details" [(visible)]="detailModalVisible" [modal]="true" [style]="{width: '400px'}" [baseZIndex]="10000" *ngIf="selectedAsset">
+    <div class="flex flex-col gap-3 items-center text-center">
+      <span class="font-bold text-lg">{{ selectedAsset.name }}</span>
+      <div class="flex flex-wrap gap-2 justify-center text-xs mb-2">
+        <span class="metadata-tag bg-blue-50 text-blue-700">Type: {{ selectedAsset.type }}</span>
+        <span class="metadata-tag">Owner: {{ selectedAsset.owner }}</span>
+        <span class="metadata-tag">Assets: {{ selectedAsset.assets }}</span>
+        <span class="metadata-tag"
+          [ngClass]="{
+            'status-online': selectedAsset.status==='online',
+            'status-warning': selectedAsset.status==='warning',
+            'status-offline': selectedAsset.status==='offline'
+          }">Status: {{ selectedAsset.status }}</span>
+        <span class="metadata-tag">Last Synced: {{ formatDate(selectedAsset.lastSynced) }}</span>
+        <span [ngClass]="getHealthClass(selectedAsset.health)">Health: {{ selectedAsset.health }}%</span>
+      </div>
+      <div class="mt-2 text-sm text-gray-600">(Thêm các thông tin metadata, mô tả, lịch sử, v.v. tại đây nếu cần)</div>
+    </div>
+  </p-dialog>
+</div>

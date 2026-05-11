@@ -1,0 +1,110 @@
+<div class="blogger-page">
+  <p-toast position="top-right"></p-toast>
+
+  <section class="page-hero">
+    <div>
+      <p class="eyebrow">Blogger workspace</p>
+      <h1>Authors Management</h1>
+      <p class="subtitle">Browse connected Blogger authors, inspect profile metadata, and verify publishing identities.</p>
+    </div>
+    <button pButton type="button" icon="pi pi-refresh" label="Refresh" class="p-button-sm p-button-outlined" (click)="loadAuthors()" [loading]="loading"></button>
+  </section>
+
+  <section class="page-stats">
+    <article class="stat-card">
+      <span class="stat-label">Authors loaded</span>
+      <strong>{{ authors.length }}</strong>
+    </article>
+    <article class="stat-card">
+      <span class="stat-label">Total records</span>
+      <strong>{{ total }}</strong>
+    </article>
+    <article class="stat-card">
+      <span class="stat-label">Page size</span>
+      <strong>{{ limit }}</strong>
+    </article>
+  </section>
+
+  <section class="surface-card">
+    <div *ngIf="loading" class="state-box">
+      <div class="spinner"></div>
+      <span>Loading authors...</span>
+    </div>
+
+    <div *ngIf="error" class="error-box">
+      <p>{{ error }}</p>
+      <button pButton type="button" label="Retry" icon="pi pi-refresh" class="p-button-sm p-button-danger" (click)="loadAuthors()"></button>
+    </div>
+
+    <p-table
+      *ngIf="!loading && !error"
+      [value]="authors"
+      [rows]="10"
+      [paginator]="true"
+      [globalFilterFields]="['display_name', 'id']"
+      [loading]="loading"
+      responsiveLayout="scroll"
+      styleClass="p-datatable-striped p-datatable-gridlines"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="display_name">Name <p-sortIcon field="display_name"></p-sortIcon></th>
+          <th pSortableColumn="id">ID <p-sortIcon field="id"></p-sortIcon></th>
+          <th>Image</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-author>
+        <tr>
+          <td>
+            <div class="author-cell">
+              <div class="author-avatar">
+                <img *ngIf="author.image" [src]="'https:' + author.image" [alt]="author.display_name">
+                <i *ngIf="!author.image" class="pi pi-user"></i>
+              </div>
+              <div>
+                <a [href]="author.url" target="_blank" class="author-link">{{ author.display_name }}</a>
+                <div class="author-subtitle">Blogger author profile</div>
+              </div>
+            </div>
+          </td>
+          <td><code>{{ author.id }}</code></td>
+          <td>{{ author.image ? 'Available' : 'No image' }}</td>
+          <td>
+            <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text" (click)="viewAuthor(author)" pTooltip="View Details" tooltipPosition="top"></button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4" class="text-center p-4">No authors found</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </section>
+
+  <p-dialog
+    [visible]="displayDialog"
+    [header]="selectedAuthor?.display_name"
+    [modal]="true"
+    [style]="{ width: '40rem', maxWidth: '92vw' }"
+    (onHide)="displayDialog = false"
+  >
+    <div *ngIf="selectedAuthor" class="dialog-stack">
+      <div class="dialog-profile">
+        <div class="dialog-avatar">
+          <img *ngIf="selectedAuthor.image" [src]="'https:' + selectedAuthor.image" [alt]="selectedAuthor.display_name">
+          <i *ngIf="!selectedAuthor.image" class="pi pi-user"></i>
+        </div>
+        <div>
+          <h3>{{ selectedAuthor.display_name }}</h3>
+          <p>Blogger author identity</p>
+        </div>
+      </div>
+      <div class="detail-row"><span>Author ID</span><code>{{ selectedAuthor.id }}</code></div>
+      <div class="detail-row"><span>Profile URL</span><a [href]="selectedAuthor.url" target="_blank">{{ selectedAuthor.url }}</a></div>
+    </div>
+  </p-dialog>
+</div>

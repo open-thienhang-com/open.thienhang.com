@@ -1,0 +1,208 @@
+<div class="reviews-page">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1>Reviews Management</h1>
+        <p class="subtitle">Manage guest reviews and feedback</p>
+      </div>
+      <button pButton type="button" label="Add New Review" icon="pi pi-plus"
+        (click)="openDialog()" class="p-button-primary p-button-lg"></button>
+    </div>
+  </div>
+
+  <!-- Search and Filter Section -->
+  <div class="search-section">
+    <div class="search-container">
+      <i class="pi pi-search"></i>
+      <input type="text" placeholder="Search reviews..." [(ngModel)]="searchQuery" class="search-input">
+    </div>
+    <p-dropdown 
+      [options]="apartmentsForDropdown" 
+      optionLabel="title" 
+      optionValue="id"
+      placeholder="Filter by Apartment"
+      [(ngModel)]="selectedApartmentFilter"
+      [showClear]="true"
+      class="apartment-filter">
+    </p-dropdown>
+    <p class="result-count">{{ filteredReviews.length }} reviews found</p>
+  </div>
+
+  <!-- Reviews Table -->
+  <div class="table-container" *ngIf="!loading; else loadingTemplate">
+    <p-table 
+      [value]="filteredReviews" 
+      [paginator]="true" 
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} reviews"
+      styleClass="p-datatable-striped">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Title</th>
+          <th>Apartment</th>
+          <th>Review</th>
+          <th>Guest ID</th>
+          <th>Date Posted</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-review>
+        <tr>
+          <td>
+            <strong>{{ review.title }}</strong>
+            <br>
+            <small class="text-muted" *ngIf="review.id">ID: {{ review.id }}</small>
+          </td>
+          <td>{{ getApartmentName(review.apartment_id) }}</td>
+          <td>
+            <div class="review-content">
+              {{ review.review.length > 100 ? (review.review.substring(0, 100) + '...') : review.review }}
+            </div>
+          </td>
+          <td>
+            <span class="account-id">{{ review.account_id }}</span>
+          </td>
+          <td>
+            <span>{{ review.date_posted | date: 'short' }}</span>
+            <br>
+            <small class="text-muted" *ngIf="review.date_updated">
+              Updated: {{ review.date_updated | date: 'short' }}
+            </small>
+          </td>
+          <td>
+            <button pButton type="button" icon="pi pi-pencil" 
+              (click)="editReview(review)" 
+              class="p-button-rounded p-button-text p-button-warning"
+              pTooltip="Edit Review">
+            </button>
+            <button pButton type="button" icon="pi pi-trash" 
+              (click)="deleteReview(review)" 
+              class="p-button-rounded p-button-text p-button-danger"
+              pTooltip="Delete Review">
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="text-center">
+            <div class="empty-state">
+              <i class="pi pi-comment" style="font-size: 3rem; color: #ccc;"></i>
+              <p>No reviews found</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- Loading Template -->
+  <ng-template #loadingTemplate>
+    <div class="loading-container">
+      <p-skeleton width="100%" height="50px" styleClass="mb-3"></p-skeleton>
+      <p-skeleton width="100%" height="50px" styleClass="mb-3"></p-skeleton>
+      <p-skeleton width="100%" height="50px"></p-skeleton>
+    </div>
+  </ng-template>
+
+  <!-- Create/Edit Dialog -->
+  <p-dialog 
+    [(visible)]="showDialog" 
+    [header]="isEditMode ? 'Edit Review' : 'Create New Review'"
+    [modal]="true" 
+    [style]="{width: '600px'}"
+    [closable]="true"
+    (onHide)="closeDialog()">
+    
+    <form class="review-form">
+      <div class="form-group">
+        <label for="title">Title *</label>
+        <input 
+          id="title"
+          type="text" 
+          pInputText 
+          [(ngModel)]="formData.title" 
+          name="title"
+          placeholder="Review title"
+          required>
+      </div>
+
+      <div class="form-group">
+        <label for="review">Review Content *</label>
+        <textarea 
+          id="review"
+          pInputTextarea 
+          [(ngModel)]="formData.review" 
+          name="review"
+          rows="5"
+          placeholder="Write your review here..."
+          required>
+        </textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="apartment_id">Apartment ID *</label>
+          <p-dropdown 
+            id="apartment_id"
+            [options]="apartmentsForDropdown" 
+            optionLabel="title" 
+            optionValue="id"
+            placeholder="Select Apartment"
+            [(ngModel)]="formData.apartment_id"
+            name="apartment_id"
+            [required]="true">
+          </p-dropdown>
+        </div>
+
+        <div class="form-group">
+          <label for="account_id">Guest Account ID *</label>
+          <input 
+            id="account_id"
+            type="text" 
+            pInputText 
+            [(ngModel)]="formData.account_id" 
+            name="account_id"
+            placeholder="e.g., acc_001"
+            required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="booking_id">Booking ID *</label>
+        <p-dropdown 
+          id="booking_id"
+          [options]="bookings" 
+          optionLabel="id" 
+          optionValue="id"
+          placeholder="Select Booking"
+          [(ngModel)]="formData.booking_id"
+          name="booking_id"
+          [showClear]="true"
+          [required]="true">
+        </p-dropdown>
+      </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Cancel" icon="pi pi-times" 
+        (click)="closeDialog()" class="p-button-text"></button>
+      <button pButton type="button" 
+        [label]="isEditMode ? 'Update' : 'Create'" 
+        [icon]="isEditMode ? 'pi pi-check' : 'pi pi-plus'"
+        (click)="saveReview()" 
+        [disabled]="loading"
+        class="p-button-primary">
+      </button>
+    </ng-template>
+  </p-dialog>
+</div>

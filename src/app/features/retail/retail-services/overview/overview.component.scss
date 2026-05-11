@@ -1,0 +1,80 @@
+:host {
+  display: block;
+}
+
+.tracking-tight {
+  letter-spacing: -0.025em;
+}
+
+.tracking-tighter {
+  letter-spacing: -0.05em;
+}
+
+.tracking-widest {
+  letter-spacing: 0.1em;
+}
+
+// Custom animations for a "living document" feel
+@keyframes pulse-subtle {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+.animate-pulse {
+  animation: pulse-subtle 2s infinite ease-in-out;
+}
+
+// Notebook-specific layout enhancements
+.bg-white {
+  &.rounded-lg {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  }
+}
+
+// Deep styling for PrimeNG elements to match the theme
+:host ::ng-deep {
+  .p-button {
+    &.shadow-md {
+      box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.1), 0 2px 4px -2px rgba(79, 70, 229, 0.1);
+    }
+    
+    &.p-button-text {
+      font-weight: 600;
+      color: #4f46e5;
+      
+      &:hover {
+        background: rgba(79, 70, 229, 0.05);
+      }
+    }
+  }
+
+  .p-tag {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+
+  .p-progressbar {
+    background: #f3f4f6;
+    height: 0.75rem !important;
+    border-radius: 9999px;
+    
+    .p-progressbar-value {
+      transition: width 1s ease-in-out;
+    }
+  }
+}
+
+// Hover effects for the sitemap links
+a.group:hover {
+  transform: translateY(-1px);
+}
+
+// Responsiveness tweaks
+@media (max-width: 768px) {
+  .max-w-6xl {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}

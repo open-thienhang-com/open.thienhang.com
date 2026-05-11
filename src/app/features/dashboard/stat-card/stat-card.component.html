@@ -1,0 +1,23 @@
+<div class="relative flex flex-col items-center">
+  <div
+    class="icon-wrapper absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full flex items-center justify-center text-white text-xl shadow-md z-10"
+    [ngStyle]="{ backgroundColor: iconBg }"
+  >
+    <i [class]="icon"></i>
+  </div>
+
+  <div
+    class="card relative bg-white rounded-xl shadow-md p-6  text-center overflow-hidden w-full"
+    (click)="handleRipple($event)"
+  >
+    <div class="text-3xl font-bold" [ngStyle]="{ color: iconBg }">{{ value }}</div>
+    <div class="text-md text-gray-600 font-medium mt-1">{{ label }}</div>
+
+    <button
+      *ngIf="buttonLabel"
+      class="mt-6 bg-[#EFE8E1] text-sm font-semibold px-4 py-2 rounded" [ngStyle]="{ color: iconBg, backgroundColor: iconBg+'20' }"
+    >
+      {{ buttonLabel }}
+    </button>
+  </div>
+</div>

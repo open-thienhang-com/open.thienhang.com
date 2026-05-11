@@ -1,0 +1,189 @@
+<div class="omnichannel-chat p-4 lg:p-6">
+  <div class="topbar">
+    <div>
+      <h1>Omnichannel Inbox</h1>
+      <p>One team inbox for Facebook, Instagram, WhatsApp, Telegram, and other channels.</p>
+      <div class="platform-pills mt-2">
+        <span class="pill" *ngFor="let platform of apiPlatforms">{{ platform }}</span>
+      </div>
+    </div>
+    <div class="topbar-stats">
+      <span class="chip">Unread: {{ totalUnread }}</span>
+      <span class="chip chip-risk">SLA Risk: {{ waitingSlaRiskCount }}</span>
+      <span class="chip">Conversations: {{ chatStats.totalConversations }}</span>
+      <span class="chip">Messages: {{ chatStats.totalMessages }}</span>
+      <span class="chip">Agents Online: {{ chatStats.onlineAgents }}</span>
+      <span class="chip">Avg Response: {{ chatStats.averageResponseTime }}</span>
+    </div>
+  </div>
+
+  <div class="chat-shell">
+    <aside class="conversation-pane">
+      <div class="channel-filters">
+        <button
+          *ngFor="let channel of channelFilters"
+          type="button"
+          class="channel-filter"
+          [class.active]="selectedChannel === channel.key"
+          (click)="selectChannel(channel.key)">
+          <i [class]="channel.icon"></i>
+          <span>{{ channel.label }}</span>
+          <b>{{ channelCount(channel.key) }}</b>
+        </button>
+      </div>
+
+      <div class="search-box">
+        <i class="pi pi-search"></i>
+        <input [(ngModel)]="searchTerm" placeholder="Search conversation...">
+      </div>
+
+      <div class="conversation-list">
+        <button
+          type="button"
+          class="conversation-item"
+          *ngFor="let item of filteredConversations"
+          [class.active]="item.id === selectedConversationId"
+          (click)="selectConversation(item.id)">
+          <div class="avatar" [style.background]="item.channelColor">
+            <i [class]="item.channelIcon"></i>
+          </div>
+          <div class="conversation-content">
+            <div class="row">
+              <p class="name">{{ item.customer }}</p>
+              <p class="time">{{ item.lastMessageTime ? (item.lastMessageTime | date:'HH:mm') : '-' }}</p>
+            </div>
+            <p class="preview">{{ item.lastMessage }}</p>
+            <div class="row meta">
+              <p-tag [value]="item.channelLabel" severity="info"></p-tag>
+              <p-tag [value]="item.waitingMinutes + 'm'" [severity]="getWaitingSeverity(item.waitingMinutes)"></p-tag>
+              <span class="unread" *ngIf="item.unread > 0">{{ item.unread }}</span>
+            </div>
+          </div>
+        </button>
+      </div>
+    </aside>
+
+    <section class="chat-pane" *ngIf="activeConversation as conv">
+      <header class="chat-header">
+        <div class="left">
+          <div class="avatar" [style.background]="conv.channelColor">
+            <i [class]="conv.channelIcon"></i>
+          </div>
+          <div>
+            <p class="name">{{ conv.customer }}</p>
+            <p class="sub">{{ conv.channelLabel }} • Waiting {{ conv.waitingMinutes }} min</p>
+          </div>
+        </div>
+        <div class="right">
+          <p-tag *ngFor="let tag of conv.tags" [value]="tag" severity="success"></p-tag>
+        </div>
+      </header>
+
+      <div class="messages">
+        <div
+          *ngFor="let msg of conv.messages"
+          class="bubble-row"
+          [class.customer]="msg.from === 'customer'"
+          [class.agent]="msg.from === 'agent'"
+          [class.system]="msg.from === 'system'">
+          <div class="bubble">
+            <p>{{ msg.text }}</p>
+            <small>{{ msg.time }} <span *ngIf="msg.status">• {{ msg.status }}</span></small>
+          </div>
+        </div>
+      </div>
+
+      <footer class="composer">
+        <textarea
+          [(ngModel)]="draftMessage"
+          rows="2"
+          placeholder="Reply to customer..."></textarea>
+        <div class="actions">
+          <p-button label="Template" icon="pi pi-file-edit" [outlined]="true"></p-button>
+          <p-button label="Send" icon="pi pi-send" (onClick)="sendMessage()"></p-button>
+        </div>
+      </footer>
+    </section>
+
+    <aside class="context-pane" *ngIf="activeConversation as conv">
+      <div class="card action-status" *ngIf="actionMessage" [class.success]="actionMessageSeverity === 'success'" [class.error]="actionMessageSeverity === 'error'">
+        {{ actionMessage }}
+      </div>
+
+      <div class="card">
+        <h3>Conversation Detail</h3>
+        <p class="line"><span>User</span><b>{{ conv.userId }}</b></p>
+        <p class="line"><span>Status</span><b>{{ conv.status }}</b></p>
+        <p class="line"><span>Agent</span><b>{{ conv.agent }}</b></p>
+        <p class="line"><span>Category</span><b>{{ conv.category }}</b></p>
+        <p class="line"><span>Sentiment</span><b>{{ conv.sentiment }}</b></p>
+        <p class="line"><span>Messages</span><b>{{ conv.messageCount }}</b></p>
+        <p class="line"><span>Response Time</span><b>{{ conv.responseTime }}</b></p>
+        <p class="line"><span>Resolution</span><b>{{ conv.resolutionTime || '-' }}</b></p>
+        <p class="line"><span>Duration</span><b>{{ conv.conversationDuration || '-' }}</b></p>
+        <p class="line"><span>First Response</span><b>{{ conv.firstResponseTime || '-' }}</b></p>
+        <p class="line"><span>CSAT</span><b>{{ conv.customerSatisfaction ?? '-' }}</b></p>
+      </div>
+
+      <div class="card">
+        <h3>Send Product</h3>
+        <div class="control-group">
+          <label>Product</label>
+          <select [(ngModel)]="selectedProductId">
+            <option value="" disabled>Select product</option>
+            <option *ngFor="let p of catalogProducts" [value]="p.id">
+              {{ p.name }} ({{ p.sku }}) - {{ formatCurrency(p.price) }}
+            </option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Quantity</label>
+          <input type="number" min="1" [(ngModel)]="selectedProductQty" />
+        </div>
+        <div class="quick-actions">
+          <p-button label="Send To Customer" icon="pi pi-send" class="w-full" (onClick)="sendProductToCustomer()"></p-button>
+          <p-button label="Add To Order" icon="pi pi-plus" [outlined]="true" class="w-full" (onClick)="addSelectedProductToOrder()"></p-button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Create Order</h3>
+        <div class="order-list" *ngIf="orderItems.length; else emptyOrder">
+          <div class="order-row" *ngFor="let item of orderItems">
+            <div class="order-main">
+              <p>{{ item.product.name }}</p>
+              <small>{{ item.product.sku }} • {{ formatCurrency(item.product.price) }}</small>
+            </div>
+            <div class="order-qty">
+              <button type="button" (click)="decreaseOrderItem(item)">-</button>
+              <span>{{ item.quantity }}</span>
+              <button type="button" (click)="increaseOrderItem(item)">+</button>
+            </div>
+            <button type="button" class="remove-btn" (click)="removeOrderItem(item)">x</button>
+          </div>
+        </div>
+        <ng-template #emptyOrder>
+          <p class="empty-order">No items in order draft.</p>
+        </ng-template>
+
+        <p class="line"><span>Subtotal</span><b>{{ formatCurrency(orderSubtotal) }}</b></p>
+        <p-button
+          label="Create Order"
+          icon="pi pi-check"
+          class="w-full"
+          [loading]="creatingOrder"
+          [disabled]="!orderItems.length"
+          (onClick)="createOrderFromConversation()">
+        </p-button>
+      </div>
+
+      <div class="card">
+        <h3>Top Agents</h3>
+        <div class="agent-row" *ngFor="let agent of agents">
+          <p class="agent-name">{{ agent.name }}</p>
+          <p class="agent-meta">{{ agent.status }} • {{ agent.average_response_time }} • {{ agent.active_conversations }} active</p>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>

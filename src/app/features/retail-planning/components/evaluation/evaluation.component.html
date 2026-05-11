@@ -1,0 +1,210 @@
+<!-- Schedule Evaluation Component - Redesigned -->
+<div class="evaluation-container">
+  <!-- Header Section -->
+  <div class="evaluation-header">
+    <div class="header-content">
+      <div class="header-left">
+        <div class="header-icon">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+        <div class="header-text">
+          <h2 class="header-title">Đánh Giá Lịch Tải</h2>
+          <p class="header-subtitle">Phân tích hiệu suất theo 7 nhóm tiêu chí KPI</p>
+        </div>
+      </div>
+      <button 
+        type="button"
+        (click)="evaluateSchedule()"
+        [disabled]="!canEvaluate || loading"
+        class="evaluate-button"
+        [class.disabled]="!canEvaluate || loading">
+        <span class="button-content">
+          <svg *ngIf="!loading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+          </svg>
+          <div *ngIf="loading" class="spinner"></div>
+          <span>{{ loading ? 'Đang đánh giá...' : 'Thực Hiện Đánh Giá' }}</span>
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Overall Score Dashboard -->
+  <div *ngIf="showDashboard" class="dashboard-section">
+    <div class="dashboard-grid">
+      <!-- Overall Score Card -->
+      <div class="score-card-main">
+        <div class="score-content">
+          <div class="score-label">Tổng Điểm</div>
+          <div class="score-value">{{ overallScore }}</div>
+          <div class="score-max">/ 100 điểm</div>
+          <div class="score-progress">
+            <div class="score-progress-bar" [style.width.%]="overallScore"></div>
+          </div>
+          <div class="score-grade" [ngClass]="getScoreGradeClass(overallScore)">
+            {{ getScoreGrade(overallScore) }}
+          </div>
+        </div>
+      </div>
+      
+      <!-- Metric Cards -->
+      <div class="metric-card" [class.metric-green]="true">
+        <div class="metric-header">
+          <div class="metric-icon">✅</div>
+          <div class="metric-label">Hiệu Quả</div>
+        </div>
+        <div class="metric-value">{{ efficiency }}</div>
+        <div class="metric-bar">
+          <div class="metric-bar-fill" [style.width.%]="parseFloat(efficiency)"></div>
+        </div>
+      </div>
+
+      <div class="metric-card" [class.metric-blue]="true">
+        <div class="metric-header">
+          <div class="metric-icon">⏰</div>
+          <div class="metric-label">Đúng Giờ</div>
+        </div>
+        <div class="metric-value">{{ ontime }}</div>
+        <div class="metric-bar">
+          <div class="metric-bar-fill" [style.width.%]="parseFloat(ontime)"></div>
+        </div>
+      </div>
+
+      <div class="metric-card" [class.metric-yellow]="true">
+        <div class="metric-header">
+          <div class="metric-icon">💰</div>
+          <div class="metric-label">Chi Phí</div>
+        </div>
+        <div class="metric-value">{{ cost }}</div>
+        <div class="metric-bar">
+          <div class="metric-bar-fill" [style.width.%]="parseFloat(cost)"></div>
+        </div>
+      </div>
+
+      <div class="metric-card" [class.metric-purple]="true">
+        <div class="metric-header">
+          <div class="metric-icon">🎯</div>
+          <div class="metric-label">Chất Lượng</div>
+        </div>
+        <div class="metric-value">{{ quality }}</div>
+        <div class="metric-bar">
+          <div class="metric-bar-fill" [style.width.%]="parseFloat(quality)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Groups Section -->
+  <div class="kpi-section">
+    <div class="kpi-header">
+      <h3 class="kpi-title">Chi Tiết Đánh Giá KPI</h3>
+      <div class="kpi-stats">
+        <span class="stat-item">
+          <span class="stat-value">{{ getAchievedCount() }}</span>
+          <span class="stat-label">Đạt</span>
+        </span>
+        <span class="stat-divider">/</span>
+        <span class="stat-item">
+          <span class="stat-value">{{ evaluationResults.length }}</span>
+          <span class="stat-label">Tổng</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- KPI Groups as Cards -->
+    <div class="kpi-groups-container">
+      <ng-container *ngFor="let group of kpiGroups; let groupIndex = index">
+        <div class="kpi-group-card" [ngClass]="'group-' + group.color">
+          <div class="group-header" (click)="toggleGroup(group.id)">
+            <div class="group-header-left">
+              <div class="group-number">{{ group.id }}</div>
+              <div class="group-info">
+                <div class="group-name">
+                  <span class="group-icon">{{ group.icon }}</span>
+                  <span>{{ group.name }}</span>
+                </div>
+                <div class="group-description">{{ group.description }}</div>
+              </div>
+            </div>
+            <div class="group-header-right">
+              <div class="group-summary">
+                <span class="group-achieved">{{ getGroupAchievedCount(group.id) }}</span>
+                <span class="group-total">/ {{ getKPIsForGroup(group.id).length }}</span>
+              </div>
+              <svg class="group-toggle-icon" [class.expanded]="isGroupExpanded(group.id)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="group-content" [class.expanded]="isGroupExpanded(group.id)">
+            <div class="kpi-table-wrapper">
+              <table class="kpi-table">
+                <thead>
+                  <tr>
+                    <th class="col-stt">STT</th>
+                    <th class="col-name">Chỉ Số KPI</th>
+                    <th class="col-history">Lịch Sử</th>
+                    <th class="col-plan">Kế Hoạch</th>
+                    <th class="col-actual">Thực Tế</th>
+                    <th class="col-diff">Chênh Lệch</th>
+                    <th class="col-status">Trạng Thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let result of getKPIsForGroup(group.id); let i = index"
+                      class="kpi-row"
+                      [class.has-data]="hasActualData"
+                      [attr.data-kpi-key]="result.kpiKey">
+                    <td class="col-stt">{{ result.kpiIndex }}</td>
+                    <td class="col-name">
+                      <div class="kpi-name">{{ result.kpiName }}</div>
+                      <div *ngIf="result.formula" class="kpi-formula">{{ result.formula }}</div>
+                    </td>
+                    <td class="col-history">
+                      <span [class.empty]="!hasActualData || result.history === '--'">
+                        {{ result.history || '--' }}
+                      </span>
+                    </td>
+                    <td class="col-plan">
+                      <span [class.empty]="!hasActualData || result.plan === '--'">
+                        {{ result.plan }}{{ result.plan !== '--' ? ' ' + result.unit : '' }}
+                      </span>
+                    </td>
+                    <td class="col-actual">
+                      <span [class.empty]="!hasActualData">
+                        {{ result.actual }}{{ result.actual !== '--' ? ' ' + result.unit : '' }}
+                      </span>
+                    </td>
+                    <td class="col-diff">
+                      <span *ngIf="hasActualData && result.diff !== '--'" 
+                            class="diff-badge"
+                            [ngClass]="{
+                              'diff-positive': result.diff.startsWith('+') && !result.inverse,
+                              'diff-negative': result.diff.startsWith('-') || (result.diff.startsWith('+') && result.inverse),
+                              'diff-neutral': result.diff === '0'
+                            }">
+                        {{ result.diff }}
+                        <span *ngIf="result.diffPercent !== undefined && result.diff !== '0' && result.diff !== '--'" class="diff-percent">
+                          ({{ result.diffPercent >= 0 ? '+' : '' }}{{ result.diffPercent.toFixed(1) }}%)
+                        </span>
+                      </span>
+                      <span *ngIf="!hasActualData || result.diff === '--'" class="empty">--</span>
+                    </td>
+                    <td class="col-status">
+                      <span *ngIf="hasActualData && result.achieved === '✓'" class="status-badge status-success">✓</span>
+                      <span *ngIf="hasActualData && result.achieved === '✗'" class="status-badge status-fail">✗</span>
+                      <span *ngIf="!hasActualData || result.achieved === '○'" class="status-badge status-pending">○</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,177 @@
+<p-toast></p-toast>
+
+<div class="bg-gray-50 min-h-screen p-6">
+
+  <!-- Header -->
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-rose-600 rounded-xl flex items-center justify-center">
+          <i class="pi pi-megaphone text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Campaigns</h1>
+          <p class="text-gray-500 text-sm">Point multipliers, bonus events and seasonal promotions</p>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <p-button icon="pi pi-refresh" severity="secondary" [outlined]="true" [rounded]="true" (onClick)="load()" class="hidden sm:inline-flex"></p-button>
+        <p-button label="New Campaign" icon="pi pi-plus" severity="primary" (onClick)="openCreate()"></p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Active</p>
+      <p class="text-2xl font-bold text-green-600 mt-1">{{ countByStatus('active') }}</p>
+      <p class="text-xs text-gray-400 mt-0.5">running now</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Scheduled</p>
+      <p class="text-2xl font-bold text-blue-600 mt-1">{{ countByStatus('scheduled') }}</p>
+      <p class="text-xs text-gray-400 mt-0.5">upcoming</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Total Enrolled</p>
+      <p class="text-2xl font-bold text-violet-600 mt-1">{{ totalEnrolled() | number }}</p>
+      <p class="text-xs text-gray-400 mt-0.5">members</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Total Budget</p>
+      <p class="text-2xl font-bold text-orange-600 mt-1">{{ totalBudget() | number:'1.0-0' }}</p>
+      <p class="text-xs text-gray-400 mt-0.5">VND allocated</p>
+    </div>
+  </div>
+
+  <!-- Campaign cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mb-6" *ngIf="!loading">
+    <div *ngFor="let c of filtered"
+      class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
+      (click)="viewCampaign(c)">
+      <!-- Header band -->
+      <div class="px-5 py-4 border-b border-gray-100 flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+            [class]="c.status === 'active' ? 'bg-orange-100 text-orange-600' : c.status === 'scheduled' ? 'bg-blue-100 text-blue-600' : c.status === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-500'">
+            <i [class]="getTypeIcon(c.type)"></i>
+          </div>
+          <div class="min-w-0">
+            <h3 class="font-bold text-gray-900 truncate">{{ c.name }}</h3>
+            <span class="text-xs text-gray-400">{{ getTypeLabel(c.type) }}</span>
+          </div>
+        </div>
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold flex-shrink-0"
+          [style.background]="getStatusStyle(c.status).bg"
+          [style.color]="getStatusStyle(c.status).color">
+          {{ c.status }}
+        </span>
+      </div>
+
+      <!-- Body -->
+      <div class="px-5 py-4">
+        <p class="text-sm text-gray-500 mb-4 line-clamp-2">{{ c.description }}</p>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <p class="text-xs text-gray-400">Segment</p>
+            <p class="text-sm font-semibold text-gray-700 truncate">{{ c.segment }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400">Enrolled</p>
+            <p class="text-sm font-semibold text-violet-600">{{ c.enrolledCount | number }} members</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400">Multiplier</p>
+            <p class="text-sm font-bold text-orange-600">{{ c.pointMultiplier }}×
+              <span *ngIf="c.bonusPoints" class="text-gray-600 font-normal">+ {{ c.bonusPoints }} bonus</span>
+            </p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400">Budget</p>
+            <p class="text-sm font-semibold text-gray-700">{{ c.budget | number:'1.0-0' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="px-5 py-3 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+        <span class="text-xs text-gray-500">{{ c.startDate | date:'dd/MM/yy' }} → {{ c.endDate | date:'dd/MM/yy' }}</span>
+        <i class="pi pi-arrow-right text-gray-400 text-xs"></i>
+      </div>
+    </div>
+
+    <div *ngIf="filtered.length === 0" class="col-span-3 py-20 text-center">
+      <i class="pi pi-megaphone text-gray-300 text-5xl"></i>
+      <p class="text-gray-500 mt-4">No campaigns found</p>
+    </div>
+  </div>
+
+  <!-- Filters (compact) -->
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm px-6 py-4 flex flex-wrap gap-4 items-end">
+    <div class="flex-1 min-w-48">
+      <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Search</label>
+      <span class="p-input-icon-left w-full">
+        <i class="pi pi-search"></i>
+        <input pInputText [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Campaign name..." class="w-full" />
+      </span>
+    </div>
+    <div class="min-w-40">
+      <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Status</label>
+      <p-dropdown [(ngModel)]="selectedStatus" [options]="statusOptions" optionLabel="label" optionValue="value" (onChange)="applyFilters()" class="w-full"></p-dropdown>
+    </div>
+    <div class="min-w-44">
+      <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Type</label>
+      <p-dropdown [(ngModel)]="selectedType" [options]="typeOptions" optionLabel="label" optionValue="value" (onChange)="applyFilters()" class="w-full"></p-dropdown>
+    </div>
+    <p-button label="Clear" icon="pi pi-times" severity="secondary" [outlined]="true" (onClick)="clearFilters()"></p-button>
+  </div>
+
+  <!-- Dialog -->
+  <p-dialog [(visible)]="showDialog" [header]="dialogMode === 'create' ? 'New Campaign' : 'Campaign Detail'"
+    [modal]="true" [style]="{width:'640px'}">
+    <div *ngIf="editingCampaign" class="grid grid-cols-2 gap-4">
+      <div class="col-span-2">
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Campaign Name *</label>
+        <input pInputText [(ngModel)]="editingCampaign.name" [disabled]="dialogMode === 'view'" class="w-full" />
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Type</label>
+        <select [(ngModel)]="editingCampaign.type" [disabled]="dialogMode === 'view'" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+          <option *ngFor="let t of typeOptions.slice(1)" [value]="t.value">{{ t.label }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Status</label>
+        <select [(ngModel)]="editingCampaign.status" [disabled]="dialogMode === 'view'" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+          <option *ngFor="let s of statusOptions.slice(1)" [value]="s.value">{{ s.label }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Point Multiplier</label>
+        <input pInputText type="number" [(ngModel)]="editingCampaign.pointMultiplier" [disabled]="dialogMode === 'view'" class="w-full" />
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Bonus Points</label>
+        <input pInputText type="number" [(ngModel)]="editingCampaign.bonusPoints" [disabled]="dialogMode === 'view'" class="w-full" />
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Segment</label>
+        <input pInputText [(ngModel)]="editingCampaign.segment" [disabled]="dialogMode === 'view'" class="w-full" />
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Budget (VND)</label>
+        <input pInputText type="number" [(ngModel)]="editingCampaign.budget" [disabled]="dialogMode === 'view'" class="w-full" />
+      </div>
+      <div class="col-span-2">
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Description</label>
+        <textarea [(ngModel)]="editingCampaign.description" [disabled]="dialogMode === 'view'" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none"></textarea>
+      </div>
+    </div>
+    <ng-template pTemplate="footer">
+      <p-button label="Close" [outlined]="true" (onClick)="showDialog = false"></p-button>
+      <p-button *ngIf="dialogMode === 'create'" label="Create" icon="pi pi-check" severity="primary"></p-button>
+    </ng-template>
+  </p-dialog>
+
+</div>

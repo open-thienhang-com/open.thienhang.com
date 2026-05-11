@@ -1,0 +1,63 @@
+<nav class="sidebar-nav" [class.collapsed]="collapsed" aria-label="Sidebar navigation">
+  @for (group of groups; track trackByGroup($index, group)) {
+    <div class="nav-section">
+
+      <!-- Standalone item (no group wrapper, e.g. Overview) -->
+      @if (group._isStandalone && group._flattened?.length) {
+        @for (item of group._flattened; track trackByItem($index, item)) {
+          <a
+            [routerLink]="getPath(item.url)"
+            [queryParams]="getQueryParams(item.url)"
+            class="nav-link standalone"
+            routerLinkActive="active"
+            [pTooltip]="getTooltip(item)"
+            tooltipPosition="right">
+            <i [class]="item.icon" class="nav-icon"></i>
+            @if (!collapsed) { <span class="nav-label">{{ item.label }}</span> }
+          </a>
+        }
+      }
+
+      <!-- Group header (collapsible) -->
+      @if (!group._noHeader && !group._isStandalone) {
+        <button
+          class="group-header"
+          [class.is-expanded]="group.expanded"
+          [attr.aria-expanded]="group.expanded"
+          (click)="toggleGroup(group)"
+          type="button"
+          [pTooltip]="collapsed ? group.label : ''"
+          tooltipPosition="right">
+          <span class="group-title">
+            <i [class]="group.icon" class="group-icon"></i>
+            @if (!collapsed) { <span class="group-label">{{ group.label }}</span> }
+          </span>
+          @if (!collapsed && hasItems(group)) {
+            <i class="pi pi-chevron-down chevron" [class.rotated]="group.expanded"></i>
+          }
+        </button>
+      }
+
+      <!-- Sub-items (only when expanded or _noHeader) -->
+      @if (!group._isStandalone && !collapsed) {
+        <ul class="nav-list" [class.open]="group.expanded || group._noHeader" role="list">
+          @for (item of group._flattened; track trackByItem($index, item)) {
+            @if (item.url) {
+              <li>
+                <a
+                  [routerLink]="getPath(item.url)"
+                  [queryParams]="getQueryParams(item.url)"
+                  class="nav-link sub-link"
+                  routerLinkActive="active">
+                  <i [class]="item.icon" class="nav-icon"></i>
+                  <span class="nav-label">{{ item.label }}</span>
+                </a>
+              </li>
+            }
+          }
+        </ul>
+      }
+
+    </div>
+  }
+</nav>

@@ -1,0 +1,124 @@
+<div class="customers-page">
+  <p-toast></p-toast>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1>Customer Analytics</h1>
+        <p class="subtitle">Analyze customer behavior and segmentation</p>
+      </div>
+      <div class="header-actions">
+        <p-dropdown [options]="periodOptions" optionLabel="label" optionValue="value"
+          [(ngModel)]="selectedPeriod" (onChange)="onPeriodChange()"
+          class="period-selector">
+        </p-dropdown>
+        <button pButton type="button" label="Refresh" icon="pi pi-refresh"
+          (click)="loadData()" class="p-button-secondary">
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards">
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ totalCustomers }}</span>
+        <span class="stat-label">Total Customers</span>
+      </div>
+    </p-card>
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ newCustomers }}</span>
+        <span class="stat-label">New Customers</span>
+      </div>
+    </p-card>
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ returningCustomers }}</span>
+        <span class="stat-label">Returning Customers</span>
+      </div>
+    </p-card>
+    <p-card>
+      <div class="summary-stat">
+        <span class="stat-value">{{ averageRating | number: '1.1-1' }}</span>
+        <span class="stat-label">Average Rating</span>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="charts-row">
+    <p-card header="Customer Acquisition Trend" *ngIf="!loading">
+      <div class="chart-container">
+        <p-chart type="bar" [data]="customerTrendChartData" [options]="customerTrendChartOptions"></p-chart>
+      </div>
+    </p-card>
+
+    <p-card header="Customer Segmentation" *ngIf="!loading">
+      <div class="chart-container">
+        <p-chart type="doughnut" [data]="segmentChartData" [options]="segmentChartOptions"></p-chart>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Customer Segments Table -->
+  <p-card header="Customer Segments Details" *ngIf="!loading">
+    <p-table [value]="customerSegments" [paginator]="true" [rows]="10" 
+      styleClass="p-datatable-sm">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Segment</th>
+          <th>Number of Customers</th>
+          <th>Total Revenue</th>
+          <th>Average Rating</th>
+          <th>Average Revenue per Customer</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-segment>
+        <tr>
+          <td>
+            <p-tag [value]="segment.segment" 
+              [severity]="getSegmentSeverity(segment.segment)">
+            </p-tag>
+          </td>
+          <td>
+            <span class="customer-count">{{ segment.count }}</span>
+          </td>
+          <td>
+            <span class="revenue-amount">{{ segment.revenue | currency }}</span>
+          </td>
+          <td>
+            <span class="rating-value">{{ segment.averageRating | number: '1.1-1' }}</span>
+          </td>
+          <td>
+            <span class="avg-revenue">
+              {{ getAverageRevenuePerCustomer(segment) | currency }}
+            </span>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="text-center">
+            <div class="empty-state">
+              <i class="pi pi-users"></i>
+              <p>No customer data available</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <!-- Loading Template -->
+  <ng-template #loadingTemplate>
+    <div class="loading-container">
+      <p-skeleton height="400px"></p-skeleton>
+    </div>
+  </ng-template>
+</div>

@@ -1,0 +1,284 @@
+<div class="ratings-page">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1>Ratings Management</h1>
+        <p class="subtitle">Manage guest ratings and feedback scores</p>
+      </div>
+      <button pButton type="button" label="Add New Rating" icon="pi pi-plus"
+        (click)="openDialog()" class="p-button-primary p-button-lg"></button>
+    </div>
+  </div>
+
+  <!-- Search and Filter Section -->
+  <div class="search-section">
+    <div class="search-container">
+      <i class="pi pi-search"></i>
+      <input type="text" placeholder="Search ratings..." [(ngModel)]="searchQuery" class="search-input">
+    </div>
+    <p-dropdown 
+      [options]="apartmentsForDropdown" 
+      optionLabel="title" 
+      optionValue="id"
+      placeholder="Filter by Apartment"
+      [(ngModel)]="selectedApartmentFilter"
+      [showClear]="true"
+      class="apartment-filter">
+    </p-dropdown>
+    <p class="result-count">{{ filteredRatings.length }} ratings found</p>
+  </div>
+
+  <!-- Ratings Table -->
+  <div class="table-container" *ngIf="!loading; else loadingTemplate">
+    <p-table 
+      [value]="filteredRatings" 
+      [paginator]="true" 
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} ratings"
+      styleClass="p-datatable-striped">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Apartment</th>
+          <th>Cleanliness</th>
+          <th>Location</th>
+          <th>Value</th>
+          <th>Facilities</th>
+          <th>Average</th>
+          <th>Guest ID</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-rating>
+        <tr>
+          <td>
+            <strong>{{ getApartmentName(rating.apartment_id) }}</strong>
+            <br>
+            <small class="text-muted" *ngIf="rating.id">ID: {{ rating.id }}</small>
+          </td>
+          <td>
+            <div class="rating-display">
+              <p-rating [(ngModel)]="rating.cleanliness" [readonly]="true"></p-rating>
+              <span class="rating-value">({{ rating.cleanliness }})</span>
+            </div>
+          </td>
+          <td>
+            <div class="rating-display">
+              <p-rating [(ngModel)]="rating.location" [readonly]="true"></p-rating>
+              <span class="rating-value">({{ rating.location }})</span>
+            </div>
+          </td>
+          <td>
+            <div class="rating-display">
+              <p-rating [(ngModel)]="rating.value" [readonly]="true"></p-rating>
+              <span class="rating-value">({{ rating.value }})</span>
+            </div>
+          </td>
+          <td>
+            <div class="rating-display">
+              <p-rating [(ngModel)]="rating.facilities" [readonly]="true"></p-rating>
+              <span class="rating-value">({{ rating.facilities }})</span>
+            </div>
+          </td>
+          <td>
+            <div class="avg-rating">
+              <p-badge [value]="rating.avg_rating.toFixed(1)" severity="success"></p-badge>
+            </div>
+          </td>
+          <td>
+            <span class="account-id">{{ rating.account_id }}</span>
+          </td>
+          <td>
+            <button pButton type="button" icon="pi pi-pencil" 
+              (click)="editRating(rating)" 
+              class="p-button-rounded p-button-text p-button-warning"
+              pTooltip="Edit Rating">
+            </button>
+            <button pButton type="button" icon="pi pi-trash" 
+              (click)="deleteRating(rating)" 
+              class="p-button-rounded p-button-text p-button-danger"
+              pTooltip="Delete Rating">
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8" class="text-center">
+            <div class="empty-state">
+              <i class="pi pi-star" style="font-size: 3rem; color: #ccc;"></i>
+              <p>No ratings found</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- Loading Template -->
+  <ng-template #loadingTemplate>
+    <div class="loading-container">
+      <p-skeleton width="100%" height="50px" styleClass="mb-3"></p-skeleton>
+      <p-skeleton width="100%" height="50px" styleClass="mb-3"></p-skeleton>
+      <p-skeleton width="100%" height="50px"></p-skeleton>
+    </div>
+  </ng-template>
+
+  <!-- Create/Edit Dialog -->
+  <p-dialog 
+    [(visible)]="showDialog" 
+    [header]="isEditMode ? 'Edit Rating' : 'Create New Rating'"
+    [modal]="true" 
+    [style]="{width: '600px'}"
+    [closable]="true"
+    (onHide)="closeDialog()">
+    
+    <form class="rating-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="apartment_id">Apartment ID *</label>
+          <p-dropdown 
+            id="apartment_id"
+            [options]="apartmentsForDropdown" 
+            optionLabel="title" 
+            optionValue="id"
+            placeholder="Select Apartment"
+            [(ngModel)]="formData.apartment_id"
+            name="apartment_id"
+            [required]="true">
+          </p-dropdown>
+        </div>
+
+        <div class="form-group">
+          <label for="account_id">Guest Account ID *</label>
+          <input 
+            id="account_id"
+            type="text" 
+            pInputText 
+            [(ngModel)]="formData.account_id" 
+            name="account_id"
+            placeholder="e.g., acc_001"
+            required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="booking_id">Booking ID *</label>
+        <p-dropdown 
+          id="booking_id"
+          [options]="bookings" 
+          optionLabel="id" 
+          optionValue="id"
+          placeholder="Select Booking"
+          [(ngModel)]="formData.booking_id"
+          name="booking_id"
+          [showClear]="true"
+          [required]="true">
+        </p-dropdown>
+      </div>
+
+      <div class="ratings-section">
+        <h4>Rating Scores (1-5)</h4>
+        
+        <div class="form-group">
+          <label for="cleanliness">Cleanliness *</label>
+          <div class="rating-input-group">
+            <p-rating [(ngModel)]="formData.cleanliness" name="cleanliness"></p-rating>
+            <p-inputNumber 
+              [(ngModel)]="formData.cleanliness" 
+              name="cleanliness"
+              [min]="1"
+              [max]="5"
+              [showButtons]="true"
+              styleClass="rating-number">
+            </p-inputNumber>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="location">Location *</label>
+          <div class="rating-input-group">
+            <p-rating [(ngModel)]="formData.location" name="location"></p-rating>
+            <p-inputNumber 
+              [(ngModel)]="formData.location" 
+              name="location"
+              [min]="1"
+              [max]="5"
+              [showButtons]="true"
+              styleClass="rating-number">
+            </p-inputNumber>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="value">Value *</label>
+          <div class="rating-input-group">
+            <p-rating [(ngModel)]="formData.value" name="value"></p-rating>
+            <p-inputNumber 
+              [(ngModel)]="formData.value" 
+              name="value"
+              [min]="1"
+              [max]="5"
+              [showButtons]="true"
+              styleClass="rating-number">
+            </p-inputNumber>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="facilities">Facilities *</label>
+          <div class="rating-input-group">
+            <p-rating [(ngModel)]="formData.facilities" name="facilities"></p-rating>
+            <p-inputNumber 
+              [(ngModel)]="formData.facilities" 
+              name="facilities"
+              [min]="1"
+              [max]="5"
+              [showButtons]="true"
+              styleClass="rating-number">
+            </p-inputNumber>
+          </div>
+        </div>
+
+        <div class="avg-display" *ngIf="formData.cleanliness && formData.location && formData.value && formData.facilities">
+          <strong>Average Rating: </strong>
+          <span class="avg-value">
+            {{ ((formData.cleanliness + formData.location + formData.value + formData.facilities) / 4).toFixed(1) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="comment">Comment</label>
+        <textarea 
+          id="comment"
+          pInputTextarea 
+          [(ngModel)]="formData.comment" 
+          name="comment"
+          rows="3"
+          placeholder="Additional comments...">
+        </textarea>
+      </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Cancel" icon="pi pi-times" 
+        (click)="closeDialog()" class="p-button-text"></button>
+      <button pButton type="button" 
+        [label]="isEditMode ? 'Update' : 'Create'" 
+        [icon]="isEditMode ? 'pi pi-check' : 'pi pi-plus'"
+        (click)="saveRating()" 
+        [disabled]="loading"
+        class="p-button-primary">
+      </button>
+    </ng-template>
+  </p-dialog>
+</div>

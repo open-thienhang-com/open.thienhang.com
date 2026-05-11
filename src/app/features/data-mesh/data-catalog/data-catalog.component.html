@@ -1,0 +1,253 @@
+<div class="data-catalog-container">
+  <!-- Header -->
+  <div class="catalog-header">
+    <div class="header-content">
+      <h1 class="page-title">📦 Data Catalog</h1>
+      <p class="page-description">Explore and manage all data domains across your organization</p>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="filter-row">
+      <!-- Search Input -->
+      <div class="search-box">
+        <i class="pi pi-search"></i>
+        <input 
+          type="text" 
+          pInputText 
+          placeholder="Search domains by name, description..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearch()"
+          class="search-input">
+      </div>
+
+      <!-- Status Filter -->
+      <div class="filter-group">
+        <label>Status:</label>
+        <select 
+          [(ngModel)]="selectedStatus"
+          (change)="onStatusChange()"
+          class="status-filter">
+          <option value="">All Status</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+          <option value="Archived">Archived</option>
+        </select>
+      </div>
+
+      <!-- Clear Filters Button -->
+      <button 
+        pButton 
+        type="button" 
+        label="Clear Filters"
+        icon="pi pi-times"
+        class="p-button-secondary clear-btn"
+        (click)="clearFilters()">
+      </button>
+    </div>
+
+    <!-- Results Count -->
+    <div class="results-info">
+      <span class="result-count">
+        Showing <strong>{{ filteredDomains.length }}</strong> of <strong>{{ domains.length }}</strong> domains
+      </span>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-skeleton">
+    <p-skeleton [repeat]="3" height="300px" styleClass="mb-2"></p-skeleton>
+  </div>
+
+  <!-- Domains Grid -->
+  <div *ngIf="!loading" class="domains-grid">
+    <!-- Empty State -->
+    <div *ngIf="filteredDomains.length === 0" class="empty-state">
+      <i class="pi pi-inbox"></i>
+      <h3>No domains found</h3>
+      <p>Try adjusting your search or filters</p>
+      <button 
+        pButton 
+        type="button" 
+        label="Clear Filters"
+        icon="pi pi-refresh"
+        class="p-button-outlined"
+        (click)="clearFilters()">
+      </button>
+    </div>
+
+    <!-- Domain Cards -->
+    <div *ngFor="let domain of filteredDomains" class="domain-card">
+      <p-card class="card-wrapper">
+        <!-- Card Header with Status Badge -->
+        <ng-template pTemplate="header">
+          <div class="card-header-content">
+            <div class="header-left">
+              <h3 class="domain-name">{{ domain.name }}</h3>
+              <p-tag 
+                [value]="domain.status" 
+                [severity]="getStatusSeverity(domain.status)"
+                class="status-badge">
+              </p-tag>
+            </div>
+            <div class="quality-badge">
+              <p-tag 
+                [value]="domain.metrics.quality_score" 
+                [severity]="getQualityScore(domain.metrics.quality_score)"
+                class="quality-tag">
+              </p-tag>
+            </div>
+          </div>
+        </ng-template>
+
+        <!-- Card Content -->
+        <div class="card-body">
+          <!-- Display Name -->
+          <div class="info-group">
+            <label class="info-label">Display Name</label>
+            <p class="info-value">{{ domain.display_name }}</p>
+          </div>
+
+          <!-- Description -->
+          <div class="info-group">
+            <label class="info-label">Description</label>
+            <p class="info-value description">{{ domain.description }}</p>
+          </div>
+
+          <!-- Owner & Team -->
+          <div class="owner-team">
+            <div class="owner-info">
+              <span class="label">👤 Owner:</span>
+              <span class="value">{{ domain.owner }}</span>
+            </div>
+            <div class="team-info">
+              <span class="label">👥 Team:</span>
+              <span class="value">{{ domain.team }}</span>
+            </div>
+          </div>
+
+          <!-- Metrics -->
+          <p-divider></p-divider>
+          <div class="metrics-section">
+            <h4 class="section-title">📊 Metrics</h4>
+            <div class="metrics-grid">
+              <div class="metric-item">
+                <span class="metric-label">Subscribers</span>
+                <span class="metric-value">{{ domain.metrics.subscribers }}</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Quality Score</span>
+                <span class="metric-value">{{ domain.metrics.quality_score }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SLA -->
+          <p-divider></p-divider>
+          <div class="sla-section">
+            <h4 class="section-title">⚙️ SLA</h4>
+            <div class="sla-grid">
+              <div class="sla-item">
+                <span class="sla-label">Availability</span>
+                <span class="sla-value">{{ domain.sla.availability }}</span>
+              </div>
+              <div class="sla-item">
+                <span class="sla-label">Freshness</span>
+                <span class="sla-value">{{ domain.sla.freshness }}</span>
+              </div>
+              <div class="sla-item">
+                <span class="sla-label">Version</span>
+                <span class="sla-value">{{ domain.sla.version }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tags -->
+          <p-divider></p-divider>
+          <div class="tags-section">
+            <h4 class="section-title">🏷️ Tags</h4>
+            <div class="tags-container">
+              <p-tag 
+                *ngFor="let tag of domain.tags" 
+                [value]="tag"
+                class="tag-item">
+              </p-tag>
+            </div>
+          </div>
+
+          <!-- Data Products -->
+          <p-divider></p-divider>
+          <div class="products-section">
+            <h4 class="section-title">📦 Data Products ({{ domain.data_products.length }})</h4>
+            <div class="products-list">
+              <div *ngFor="let product of domain.data_products" class="product-item">
+                <div class="product-header">
+                  <span class="product-name">{{ product.name }}</span>
+                  <span class="endpoints-count" 
+                    [pTooltip]="'Number of API endpoints'"
+                    tooltipPosition="top">
+                    {{ product.endpoints_count }} endpoints
+                  </span>
+                </div>
+                <p class="product-description">{{ product.description }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact -->
+          <p-divider></p-divider>
+          <div class="contact-section">
+            <h4 class="section-title">📧 Contact</h4>
+            <div class="contact-items">
+              <div class="contact-item" *ngIf="domain.contact.email">
+                <span class="contact-label">Email:</span>
+                <a [href]="'mailto:' + domain.contact.email" class="contact-value">
+                  {{ domain.contact.email }}
+                </a>
+              </div>
+              <div class="contact-item" *ngIf="domain.contact.slack">
+                <span class="contact-label">Slack:</span>
+                <span class="contact-value">{{ domain.contact.slack }}</span>
+              </div>
+              <div class="contact-item" *ngIf="domain.contact.support">
+                <span class="contact-label">Support:</span>
+                <a *ngIf="domain.contact.support.startsWith('http')" 
+                   [href]="domain.contact.support" 
+                   target="_blank"
+                   class="contact-value">
+                  {{ domain.contact.support }}
+                </a>
+                <span *ngIf="!domain.contact.support.startsWith('http')" 
+                      class="contact-value">
+                  {{ domain.contact.support }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Footer with Action Buttons -->
+        <ng-template pTemplate="footer">
+          <div class="card-footer">
+            <button 
+              pButton 
+              type="button" 
+              label="View Details"
+              icon="pi pi-arrow-right"
+              class="p-button-primary"
+              [routerLink]="['/data-mesh/domains', domain.domain_key]">
+            </button>
+            <button 
+              pButton 
+              type="button" 
+              label="Data Products"
+              icon="pi pi-shopping-cart"
+              class="p-button-secondary">
+            </button>
+          </div>
+        </ng-template>
+      </p-card>
+    </div>
+  </div>
+</div>

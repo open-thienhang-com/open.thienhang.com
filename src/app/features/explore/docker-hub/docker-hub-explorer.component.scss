@@ -1,0 +1,593 @@
+:host {
+  display: block;
+}
+
+.dockerhub-main {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(14, 165, 233, 0.12), transparent 28%),
+    radial-gradient(circle at top right, rgba(16, 185, 129, 0.1), transparent 24%),
+    linear-gradient(180deg, #f5f7fb 0%, #eef3f8 100%);
+  color: #0f172a;
+}
+
+.dockerhub-content-wrapper {
+  padding: 1.75rem;
+}
+
+.dockerhub-content-inner,
+.dockerhub-panel-content,
+.dockerhub-section,
+.alert-stack,
+.script-grid,
+.feature-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.script-grid {
+  gap: 1.25rem;
+}
+
+.script-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.script-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.script-label {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.script-desc {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.script-code-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1e293b;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  gap: 1rem;
+}
+
+.script-code {
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: #e2e8f0;
+  word-break: break-all;
+}
+
+.script-code-block {
+  background: #1e293b;
+  padding: 1.25rem;
+  border-radius: 12px;
+  position: relative;
+}
+
+.script-code-block pre {
+  margin: 0;
+  color: #e2e8f0;
+  font-family: monospace;
+  font-size: 0.9rem;
+  overflow-x: auto;
+}
+
+.nav-menu,
+.select-list,
+.kv-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-menu,
+.select-list {
+  gap: 0.6rem;
+}
+
+.dockerhub-content-inner,
+.dockerhub-panel-content,
+.dockerhub-section,
+.alert-stack {
+  gap: 1rem;
+}
+
+.dockerhub-hero,
+.summary-card,
+.dockerhub-sidebar-panel,
+.dockerhub-panel,
+.flat-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.dockerhub-hero,
+.dockerhub-panel-header,
+.card-header,
+.summary-card,
+.dockerhub-hero-copy,
+.dockerhub-hero-actions,
+.dockerhub-sidebar,
+.stats-grid,
+.grid-2,
+.dockerhub-workspace,
+.pill-list,
+.metric-card,
+.select-card,
+.kv-item {
+  display: flex;
+}
+
+.dockerhub-hero,
+.dockerhub-panel-header,
+.card-header,
+.summary-card,
+.dockerhub-hero-copy,
+.metric-card,
+.select-card,
+.kv-item {
+  justify-content: space-between;
+}
+
+.dockerhub-hero,
+.dockerhub-panel-header,
+.card-header,
+.dockerhub-hero-copy,
+.dockerhub-hero-actions,
+.metric-card,
+.select-card,
+.kv-item {
+  align-items: center;
+}
+
+.dockerhub-hero {
+  border-radius: 28px;
+  padding: 1.5rem 1.75rem;
+  gap: 1.5rem;
+}
+
+.dockerhub-hero-copy {
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.dockerhub-hero-badge,
+.summary-icon,
+.nav-icon,
+.card-icon {
+  display: grid;
+  place-items: center;
+}
+
+.dockerhub-hero-badge {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 1.1rem;
+  background: linear-gradient(135deg, #0284c7, #10b981);
+  color: #fff;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.dockerhub-eyebrow,
+.panel-eyebrow,
+.sidebar-eyebrow,
+.summary-label,
+.metric-label,
+.list-title {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #64748b;
+  margin: 0 0 0.35rem;
+}
+
+.dockerhub-title,
+.panel-title {
+  margin: 0;
+  font-size: clamp(1.9rem, 3vw, 2.5rem);
+  line-height: 1.08;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.dockerhub-subtitle,
+.panel-subtitle,
+.summary-caption,
+.nav-description,
+.card-subtitle {
+  margin: 0.35rem 0 0;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.dockerhub-hero-actions,
+.pill-list {
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.dockerhub-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.summary-card {
+  border-radius: 22px;
+  padding: 1.2rem 1.25rem;
+  gap: 0.75rem;
+  min-height: 132px;
+}
+
+.summary-card[data-tone="blue"] .summary-icon {
+  background: rgba(14, 165, 233, 0.12);
+  color: #0369a1;
+}
+
+.summary-card[data-tone="orange"] .summary-icon {
+  background: rgba(249, 115, 22, 0.12);
+  color: #c2410c;
+}
+
+.summary-card[data-tone="emerald"] .summary-icon {
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+}
+
+.summary-card[data-tone="purple"] .summary-icon {
+  background: rgba(99, 102, 241, 0.12);
+  color: #4338ca;
+}
+
+.summary-value {
+  margin: 0;
+  font-size: 1.95rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.summary-icon,
+.card-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.dockerhub-workspace {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.dockerhub-sidebar {
+  gap: 1rem;
+  position: sticky;
+  top: 1.25rem;
+  align-items: stretch;
+}
+
+.dockerhub-sidebar-panel,
+.dockerhub-panel,
+.flat-card {
+  border-radius: 26px;
+}
+
+.dockerhub-sidebar-panel {
+  padding: 1rem;
+}
+
+.sidebar-heading,
+.card-title,
+.nav-label,
+.select-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.nav-menu,
+.select-list,
+.feature-list {
+  gap: 0.6rem;
+}
+
+.nav-menu {
+  margin-top: 0.9rem;
+}
+
+.nav-item {
+  width: 100%;
+  text-align: left;
+  display: grid;
+  grid-template-columns: 2.75rem 1fr auto;
+  gap: 0.8rem;
+  padding: 0.9rem 0.95rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: #f8fbff;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.nav-item:hover,
+.nav-item.active,
+.select-card:hover,
+.select-card.active {
+  transform: translateY(-1px);
+  border-color: rgba(2, 132, 199, 0.3);
+  box-shadow: 0 12px 28px rgba(14, 165, 233, 0.12);
+}
+
+.nav-item.active {
+  background: linear-gradient(135deg, rgba(224, 242, 254, 0.95), rgba(236, 253, 245, 0.95));
+}
+
+.nav-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.9rem;
+  background: linear-gradient(135deg, #e0f2fe, #dcfce7);
+  color: #0369a1;
+}
+
+.nav-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+.nav-chevron,
+.select-subtitle,
+.kv-item span {
+  color: #64748b;
+}
+
+.dockerhub-panel {
+  padding: 1.2rem;
+}
+
+.dockerhub-panel-header {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  margin-bottom: 1rem;
+  align-items: flex-start;
+}
+
+.card-header {
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.panel-chip,
+.info-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  border-radius: 999px;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.panel-chip {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.flat-card {
+  padding: 1.15rem;
+}
+
+.card-title-group {
+  flex: 1;
+}
+
+.card-body {
+  margin-top: 1rem;
+}
+
+.card-icon {
+  color: #0f172a;
+  background: rgba(148, 163, 184, 0.14);
+}
+
+.overview-icon,
+.workspace-icon,
+.sql-icon {
+  background: rgba(14, 165, 233, 0.14);
+  color: #0369a1;
+}
+
+.jobs-icon,
+.quality-icon {
+  background: rgba(16, 185, 129, 0.14);
+  color: #047857;
+}
+
+.version-icon,
+.feature-icon {
+  background: rgba(99, 102, 241, 0.14);
+  color: #4338ca;
+}
+
+.cost-icon,
+.detail-icon {
+  background: rgba(249, 115, 22, 0.14);
+  color: #c2410c;
+}
+
+.stats-grid,
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.metric-card,
+.select-card {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 18px;
+  padding: 0.95rem 1rem;
+  background: #fbfdff;
+}
+
+.metric-card {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.metric-card strong,
+.kv-item strong,
+.cost-amount {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.info-pill {
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.kv-list {
+  gap: 0.8rem;
+}
+
+.kv-item {
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px dashed rgba(148, 163, 184, 0.28);
+}
+
+.kv-item:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.feature-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  gap: 0.55rem;
+  color: #334155;
+}
+
+.tag-code {
+  background: #f1f5f9;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.select-card {
+  width: 100%;
+  text-align: left;
+  gap: 1rem;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.select-card.active {
+  background: linear-gradient(135deg, rgba(224, 242, 254, 0.95), rgba(236, 253, 245, 0.95));
+  border-color: rgba(2, 132, 199, 0.3);
+}
+
+.select-subtitle {
+  margin-top: 0.2rem;
+  font-size: 0.88rem;
+  word-break: break-all;
+}
+
+.digest-box {
+  background: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.digest-text {
+  font-family: monospace;
+  font-size: 0.8rem;
+  word-break: break-all;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.empty-state {
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  gap: 0.75rem;
+}
+
+.empty-state i {
+  font-size: 2.5rem;
+  opacity: 0.5;
+}
+
+@media (max-width: 1200px) {
+  .dockerhub-overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dockerhub-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .dockerhub-sidebar {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .dockerhub-content-wrapper {
+    padding: 1rem;
+  }
+
+  .dockerhub-hero,
+  .dockerhub-panel,
+  .flat-card,
+  .dockerhub-sidebar-panel {
+    border-radius: 22px;
+  }
+
+  .dockerhub-hero,
+  .dockerhub-panel-header,
+  .card-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dockerhub-overview-grid,
+  .stats-grid,
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}

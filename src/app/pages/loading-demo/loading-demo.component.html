@@ -1,0 +1,109 @@
+<div class="loading-demo-container">
+  <div class="demo-header">
+    <h1>🎨 Loading Animation Showcase</h1>
+    <p>Explore all the cute animal loading animations and classic loading styles!</p>
+  </div>
+
+  <div class="demo-controls">
+    <div class="control-group">
+      <label>Animation Type:</label>
+      <div class="type-buttons">
+        <button 
+          *ngFor="let item of loadingTypes" 
+          [class.active]="currentType === item.type"
+          (click)="changeType(item.type)"
+          class="type-btn">
+          {{ item.label }}
+        </button>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label>Size:</label>
+      <div class="size-buttons">
+        <button 
+          [class.active]="currentSize === 'small'"
+          (click)="changeSize('small')"
+          class="size-btn">
+          Small
+        </button>
+        <button 
+          [class.active]="currentSize === 'medium'"
+          (click)="changeSize('medium')"
+          class="size-btn">
+          Medium
+        </button>
+        <button 
+          [class.active]="currentSize === 'large'"
+          (click)="changeSize('large')"
+          class="size-btn">
+          Large
+        </button>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label>Options:</label>
+      <div class="option-buttons">
+        <button 
+          [class.active]="overlay"
+          (click)="toggleOverlay()"
+          class="option-btn">
+          {{ overlay ? 'Disable' : 'Enable' }} Overlay
+        </button>
+        <button 
+          [class.active]="fullScreen"
+          (click)="toggleFullScreen()"
+          class="option-btn">
+          {{ fullScreen ? 'Exit' : 'Enter' }} Full Screen
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-preview">
+    <div class="preview-container">
+      <app-loading 
+        [type]="currentType" 
+        [size]="currentSize"
+        [overlay]="overlay"
+        [fullScreen]="fullScreen"
+        message="Loading...">
+      </app-loading>
+    </div>
+  </div>
+
+  <div class="demo-info">
+    <h3>Currently Viewing: {{ currentTypeLabel }}</h3>
+    <p>Each animal has its own unique personality and loading messages!</p>
+    
+    <div class="animal-descriptions" *ngIf="shouldShowAnimalDescriptions">
+      <div class="animal-card">
+        <div class="animal-info">
+          <h4>🐱 Cat Running</h4>
+          <p>Graceful and quick, our cat gracefully runs back and forth with purr-fect timing!</p>
+        </div>
+        <div class="animal-info">
+          <h4>🐕 Dog Running</h4>
+          <p>Loyal and energetic, this good boy fetches your data with enthusiasm!</p>
+        </div>
+        <div class="animal-info">
+          <h4>🐰 Rabbit Hopping</h4>
+          <p>Bouncy and cute, hopping through your loading with spring-like energy!</p>
+        </div>
+        <div class="animal-info">
+          <h4>🐧 Penguin Walking</h4>
+          <p>Adorable waddle with perfect precision - ice-cold data processing!</p>
+        </div>
+        <div class="animal-info">
+          <h4>🐹 Hamster Wheel</h4>
+          <p>Tiny but mighty, running in circles... but productively!</p>
+        </div>
+        <div class="animal-info">
+          <h4>🦊 Fox Trotting</h4>
+          <p>Sly and smooth, fox-trotting through your data with cunning grace!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

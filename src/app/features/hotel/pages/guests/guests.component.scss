@@ -1,0 +1,165 @@
+.guests-page {
+  padding: 2rem;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, var(--p-surface-0) 0%, rgba(var(--p-primary-500), 0.05) 100%);
+    padding: 2rem;
+    border-radius: 12px;
+    border-bottom: 2px solid rgba(var(--p-primary-500), 0.2);
+
+    .header-content {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--p-surface-900);
+      }
+
+      .subtitle {
+        margin: 0;
+        font-size: 0.95rem;
+        color: var(--p-surface-600);
+      }
+    }
+  }
+
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+
+    p-card {
+      .summary-stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem;
+
+        .stat-value {
+          font-size: 2rem;
+          font-weight: 700;
+          color: var(--p-primary-600);
+        }
+
+        .stat-label {
+          font-size: 0.85rem;
+          color: var(--p-surface-600);
+          margin-top: 0.5rem;
+        }
+      }
+    }
+  }
+
+  .search-card {
+    margin-bottom: 2rem;
+
+    .search-group {
+      position: relative;
+
+      .search-input {
+        width: 100%;
+        padding-right: 2.5rem;
+      }
+
+      .search-icon {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--p-surface-400);
+      }
+    }
+  }
+
+  .loading-container {
+    padding: 2rem;
+  }
+
+  .empty-state {
+    padding: 3rem;
+    text-align: center;
+    color: var(--p-surface-600);
+
+    i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: var(--p-surface-400);
+    }
+  }
+
+  .guest-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .guest-id {
+      font-weight: 500;
+      font-family: 'Courier New', monospace;
+    }
+  }
+
+  .booking-count {
+    font-weight: 600;
+    color: var(--p-primary-600);
+  }
+
+  .total-spent {
+    font-weight: 600;
+    color: var(--p-success-600);
+  }
+
+  .apartment-name {
+    font-weight: 500;
+  }
+
+  .guest-details-content {
+    .guest-summary {
+      margin-bottom: 1.5rem;
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+
+        .summary-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1rem;
+          background: var(--p-surface-50);
+          border-radius: 6px;
+
+          .label {
+            font-weight: 500;
+            color: var(--p-surface-600);
+          }
+
+          .value {
+            font-weight: 600;
+            color: var(--p-surface-900);
+
+            &.price {
+              color: var(--p-primary-600);
+              font-size: 1.1rem;
+            }
+          }
+        }
+      }
+    }
+
+    h3 {
+      margin: 1.5rem 0 1rem;
+      color: var(--p-surface-900);
+    }
+  }
+}

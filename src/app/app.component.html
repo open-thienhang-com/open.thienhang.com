@@ -1,0 +1,10 @@
+<!-- Simple Loading Screen -->
+<app-simple-loading *ngIf="showLoading"></app-simple-loading>
+
+<!-- Main App Content -->
+<div *ngIf="!showLoading" class="app-container">
+  <router-outlet></router-outlet>
+</div>
+
+<!-- Global Toast notifications -->
+<app-toast></app-toast>

@@ -1,0 +1,194 @@
+<!-- Policies Management -->
+<div class="min-h-screen bg-gray-50 p-6">
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Header Section -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center">
+            <i class="pi pi-file-text text-white text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">Policy Management</h1>
+            <p class="text-gray-600">Manage data governance policies and compliance rules</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <p-button 
+            label="Create Policy" 
+            icon="pi pi-plus" 
+            severity="primary"
+            (click)="policyDetail.show()">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-file-text text-red-600 text-xl"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-gray-900">{{ stats.totalPolicies || 0 }}</div>
+            <div class="text-sm text-gray-500">Total Policies</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-check-circle text-green-600 text-xl"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-gray-900">{{ stats.activePolicies || 0 }}</div>
+            <div class="text-sm text-gray-500">Active Policies</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-exclamation-triangle text-yellow-600 text-xl"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-gray-900">{{ stats.violations || 0 }}</div>
+            <div class="text-sm text-gray-500">Violations</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-shield text-blue-600 text-xl"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-gray-900">{{ stats.enforcedPolicies || 0 }}</div>
+            <div class="text-sm text-gray-500">Enforced</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Search Policies</label>
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-search"></i>
+            <input type="text" pInputText placeholder="Search by name..." 
+                   [(ngModel)]="searchTerm" class="w-full" />
+          </span>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
+          <p-dropdown 
+            [options]="typeOptions" 
+            [(ngModel)]="selectedType" 
+            placeholder="All Types"
+            [showClear]="true"
+            class="w-full">
+          </p-dropdown>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+          <p-dropdown 
+            [options]="statusOptions" 
+            [(ngModel)]="selectedStatus" 
+            placeholder="All Status"
+            [showClear]="true"
+            class="w-full">
+          </p-dropdown>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Domain</label>
+          <p-dropdown 
+            [options]="domainOptions" 
+            [(ngModel)]="selectedDomain" 
+            placeholder="All Domains"
+            [showClear]="true"
+            class="w-full">
+          </p-dropdown>
+        </div>
+      </div>
+    </div>
+
+    <!-- Policies Table -->
+    <div class="bg-white rounded-xl border border-gray-200">
+      <p-table [value]="policies" [loading]="loading">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Policy Name</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Domain</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-policy>
+          <tr>
+            <td>
+              <div class="font-medium text-gray-900">{{ policy.name }}</div>
+              <div class="text-sm text-gray-500">{{ policy.description }}</div>
+            </td>
+            <td>
+              <p-badge [value]="policy.type" severity="info"></p-badge>
+            </td>
+            <td>
+              <p-badge [value]="policy.status" [severity]="getStatusSeverity(policy.status)"></p-badge>
+            </td>
+            <td>{{ policy.domain }}</td>
+            <td>{{ policy.created_at | date }}</td>
+            <td>
+              <div class="flex gap-2">
+                <p-button 
+                  icon="pi pi-eye" 
+                  [rounded]="true" 
+                  [text]="true" 
+                  severity="info" 
+                  size="small">
+                </p-button>
+                <p-button 
+                  icon="pi pi-pencil" 
+                  [rounded]="true" 
+                  [text]="true" 
+                  severity="secondary" 
+                  size="small"
+                  (click)="policyDetail.show(policy._id)">
+                </p-button>
+                <p-button 
+                  icon="pi pi-trash" 
+                  [rounded]="true" 
+                  [text]="true" 
+                  severity="danger" 
+                  size="small">
+                </p-button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="6" class="text-center py-8">
+              <div class="text-gray-500">No policies found</div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+
+<!-- Policy Detail Modal -->
+<app-policy #policyDetail (onSave)="refreshPolicies()"></app-policy>

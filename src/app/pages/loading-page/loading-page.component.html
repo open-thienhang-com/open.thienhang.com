@@ -1,0 +1,70 @@
+<!-- Loading Page - Beautiful full-screen loading experience -->
+<div class="loading-page-container">
+  <!-- Background with animated gradient -->
+  <div class="animated-background">
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+    <div class="gradient-orb orb-3"></div>
+    <div class="gradient-orb orb-4"></div>
+  </div>
+
+  <!-- Main content -->
+  <div class="loading-content">
+    <!-- Logo/Brand section -->
+    <div class="brand-section">
+      <div class="brand-logo">
+        <div class="logo-icon">
+          <i class="pi pi-database"></i>
+        </div>
+        <h1 class="brand-title">{{ getMainTitle() }}</h1>
+        <p class="brand-subtitle">{{ getMainSubtitle() }}</p>
+      </div>
+    </div>
+
+    <!-- Loading component -->
+    <div class="loading-animation-section">
+      <app-loading
+        [type]="currentType"
+        [message]="currentMessage"
+        size="large"
+        [fullScreen]="false">
+      </app-loading>
+    </div>
+
+    <!-- Fun facts or tips while loading -->
+    <div class="loading-tips">
+      <div class="tip-content">
+        <i class="pi pi-lightbulb"></i>
+        <p *ngIf="!isRefresh">Pro tip: Use our search feature to quickly find any data asset or policy!</p>
+        <p *ngIf="isRefresh">Tip: Press Ctrl+Shift+R for a hard refresh to clear all cache!</p>
+      </div>
+    </div>
+
+    <!-- Progress indicator -->
+    <div class="progress-section">
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="progress"></div>
+      </div>
+      <p class="progress-text">{{ currentMessage }}</p>
+      <p class="progress-percentage">{{ progress.toFixed(0) }}%</p>
+    </div>
+
+    <!-- Refresh indicator -->
+    <div class="refresh-indicator" *ngIf="isRefresh">
+      <i class="pi pi-refresh spin"></i>
+      <span>Refreshing content...</span>
+    </div>
+  </div>
+
+  <!-- Floating particles -->
+  <div class="floating-particles">
+    <div class="particle particle-1">📊</div>
+    <div class="particle particle-2">🔍</div>
+    <div class="particle particle-3">⚡</div>
+    <div class="particle particle-4">🛡️</div>
+    <div class="particle particle-5">📈</div>
+    <div class="particle particle-6">🎯</div>
+    <div class="particle particle-7">💎</div>
+    <div class="particle particle-8">🚀</div>
+  </div>
+</div>

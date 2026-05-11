@@ -1,0 +1,606 @@
+<!-- Asset Management - Enhanced UI with Mobile Support -->
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="bg-gray-50 min-h-screen p-6">
+    
+    <!-- Header Section -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+            <i class="pi pi-database text-white text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">Asset Management</h1>
+            <p class="text-gray-600">Manage data assets, resources, and digital inventory</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+          <!-- 1. Refresh Button -->
+          <p-button 
+            icon="pi pi-refresh" 
+            severity="info" 
+            [outlined]="true"
+            [rounded]="true"
+            (click)="refreshAssets()"
+            pTooltip="Refresh Assets"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <!-- 2. Clear Cache Button -->
+          <p-button 
+            icon="pi pi-trash" 
+            severity="warning" 
+            [outlined]="true"
+            [rounded]="true"
+            (click)="clearCache()"
+            pTooltip="Clear Cache"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <!-- 3. Export Button -->
+          <p-button 
+            icon="pi pi-download" 
+            severity="secondary" 
+            [outlined]="true"
+            [rounded]="true"
+            (click)="exportAssets()"
+            pTooltip="Export Assets"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <!-- 4. Toggle Filters Button -->
+          <p-button 
+            icon="pi pi-filter" 
+            severity="secondary"
+            [outlined]="!showFilters"
+            [rounded]="true"
+            (click)="toggleFilters()"
+            pTooltip="Toggle Filters"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <!-- 5. List View Button -->
+          <p-button 
+            icon="pi pi-list" 
+            severity="secondary"
+            [outlined]="viewMode !== 'list'"
+            [rounded]="true"
+            (click)="setViewMode('list')"
+            pTooltip="List View"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <!-- 6. Card View Button -->
+          <p-button 
+            icon="pi pi-th-large" 
+            severity="secondary"
+            [outlined]="viewMode !== 'card'"
+            [rounded]="true"
+            (click)="setViewMode('card')"
+            pTooltip="Card View"
+            class="hidden sm:inline-flex">
+          </p-button>
+          <!-- 7. Add New Button (Mobile) -->
+          <p-button
+            label="Add Asset"
+            icon="pi pi-plus"
+            severity="primary"
+            size="small"
+            (click)="router.navigate(['/governance/assets/new'])"
+            class="sm:hidden">
+          </p-button>
+          <!-- 7. Add New Button (Desktop) -->
+          <p-button
+            icon="pi pi-plus"
+            severity="primary"
+            [rounded]="true"
+            (click)="router.navigate(['/governance/assets/new'])"
+            pTooltip="Add Asset"
+            class="hidden sm:inline-flex">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Total Assets</p>
+            <p class="text-3xl font-bold text-gray-900">{{ stats.totalAssets }}</p>
+          </div>
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-database text-green-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Active Assets</p>
+            <p class="text-3xl font-bold text-green-600">{{ stats.activeAssets }}</p>
+          </div>
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-check-circle text-green-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Critical Assets</p>
+            <p class="text-3xl font-bold text-red-600">{{ stats.criticalAssets }}</p>
+          </div>
+          <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-exclamation-triangle text-red-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Pending Review</p>
+            <p class="text-3xl font-bold text-yellow-600">{{ stats.pendingAssets }}</p>
+          </div>
+          <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-clock text-yellow-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search and Filter Controls (renders only when filters are visible) -->
+    <div class="bg-white rounded-lg shadow-sm mb-6" *ngIf="showFilters">
+      <div class="p-4 sm:p-6">
+        <div class="mt-4 pt-4 border-t border-gray-200">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+              <span class="p-input-icon-left w-full">
+                <i class="pi pi-search"></i>
+                <input 
+                  type="text" 
+                  pInputText 
+                  placeholder="Search assets..." 
+                  [(ngModel)]="searchTerm"
+                  (input)="onSearchChange()"
+                  class="w-full" />
+              </span>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
+              <p-dropdown 
+                [options]="typeOptions" 
+                [(ngModel)]="selectedType"
+                optionLabel="label" 
+                optionValue="value"
+                placeholder="All Types"
+                [showClear]="true"
+                (onChange)="filterAssets()"
+                class="w-full">
+              </p-dropdown>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Sensitivity</label>
+              <p-dropdown 
+                [options]="sensitivityOptions" 
+                [(ngModel)]="selectedSensitivity"
+                optionLabel="label" 
+                optionValue="value"
+                placeholder="All Levels"
+                [showClear]="true"
+                (onChange)="filterAssets()"
+                class="w-full">
+              </p-dropdown>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <p-dropdown 
+                [options]="statusOptions" 
+                [(ngModel)]="selectedStatus"
+                optionLabel="label" 
+                optionValue="value"
+                placeholder="All Status"
+                [showClear]="true"
+                (onChange)="filterAssets()"
+                class="w-full">
+              </p-dropdown>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-3 mt-4">
+            <p-button 
+              label="Apply Filters" 
+              icon="pi pi-check" 
+              size="small"
+              (click)="applyFilters()">
+            </p-button>
+            <p-button 
+              label="Clear" 
+              icon="pi pi-times" 
+              [outlined]="true" 
+              size="small"
+              (click)="clearFilters()">
+            </p-button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="bg-white rounded-xl border border-gray-200 p-8 sm:p-12 text-center" *ngIf="loading">
+      <div class="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="pi pi-spin pi-spinner text-blue-500 text-xl sm:text-2xl"></i>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">Loading assets...</h3>
+      <p class="text-gray-500">Please wait while we fetch your data.</p>
+    </div>
+
+    <!-- Assets Content -->
+    <div *ngIf="!loading">
+      <!-- List View -->
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" *ngIf="viewMode === 'list' && (assets?.data?.length || 0) > 0">
+        <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <h2 class="text-lg font-semibold text-gray-900">Assets List ({{ (filteredAssets?.length || 0) }} items)</h2>
+              <p-tag 
+                *ngIf="isFromCache" 
+                value="Cached" 
+                severity="info" 
+                icon="pi pi-database"
+                size="small"
+                pTooltip="Data loaded from cache">
+              </p-tag>
+              <p-tag 
+                *ngIf="!isFromCache && filteredAssets?.length > 0" 
+                value="Fresh" 
+                severity="success" 
+                icon="pi pi-refresh"
+                size="small"
+                pTooltip="Data loaded from API">
+              </p-tag>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-button 
+                icon="pi pi-refresh" 
+                [rounded]="true" 
+                [text]="true" 
+                severity="secondary"
+                (click)="refreshAssets()"
+                pTooltip="Refresh">
+              </p-button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Desktop Table View -->
+        <div class="overflow-x-auto hidden sm:block">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asset</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sensitivity</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr *ngFor="let asset of (filteredAssets || [])" class="hover:bg-gray-50 transition-colors">
+                <!-- Asset Info -->
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br rounded-lg flex items-center justify-center"
+                         [ngClass]="getAssetColor(asset.type)">
+                      <i class="text-white" [ngClass]="getAssetIcon(asset.type)"></i>
+                    </div>
+                    <div>
+                      <div class="font-medium text-gray-900">{{ asset.name || 'Untitled Asset' }}</div>
+                      <div class="text-sm text-gray-500">{{ asset.description || 'No description' }}</div>
+                    </div>
+                  </div>
+                </td>
+                
+                <!-- Type -->
+                <td class="px-6 py-4">
+                  <div class="text-sm text-gray-900">{{ asset.type }}</div>
+                  <div class="text-sm text-gray-500">{{ asset.source || 'Unknown' }}</div>
+                </td>
+                
+                <!-- Location with truncation and tooltip -->
+                <td class="px-6 py-4">
+                  <div class="text-sm text-gray-900 cursor-help" 
+                       [pTooltip]="getFullLocation(asset.location)" 
+                       tooltipPosition="top">
+                    {{ truncateLocation(asset.location) }}
+                  </div>
+                  <div class="text-sm text-gray-500" *ngIf="asset.source">
+                    <i class="pi pi-link text-xs mr-1"></i>{{ asset.source }}
+                  </div>
+                </td>
+                
+                <!-- Owner -->
+                <td class="px-6 py-4">
+                  <div class="text-sm text-gray-900">{{ asset.owner || 'Unassigned' }}</div>
+                </td>
+                
+                <!-- Sensitivity -->
+                <td class="px-6 py-4">
+                  <p-tag 
+                    [value]="asset.sensitivity || 'Low'" 
+                    [severity]="getSensitivitySeverity(asset.sensitivity)">
+                  </p-tag>
+                </td>
+                
+                <!-- Status -->
+                <td class="px-6 py-4">
+                  <p-tag 
+                    [value]="asset.status || 'Active'" 
+                    [severity]="getSeverity(asset.status)">
+                  </p-tag>
+                </td>
+                
+                <!-- Actions -->
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-2">
+                    <p-button 
+                      icon="pi pi-eye" 
+                      [rounded]="true" 
+                      [text]="true" 
+                      severity="info" 
+                      size="small"
+                      (click)="router.navigate(['/governance/assets', asset.identify || asset._id || asset.id || asset.kid])"
+                      pTooltip="View Asset">
+                    </p-button>
+                    <p-button
+                      icon="pi pi-pencil"
+                      [rounded]="true"
+                      [text]="true"
+                      severity="secondary"
+                      size="small"
+                      (click)="router.navigate(['/governance/assets', asset.identify || asset._id || asset.id || asset.kid, 'edit'])"
+                      pTooltip="Edit Asset">
+                    </p-button>
+                    <p-button 
+                      icon="pi pi-trash" 
+                      [rounded]="true" 
+                      [text]="true" 
+                      severity="danger" 
+                      size="small"
+                      (click)="onDeleteAsset($event, asset._id)"
+                      pTooltip="Delete Asset">
+                    </p-button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile List View -->
+        <div class="sm:hidden">
+          <div *ngFor="let asset of (filteredAssets || [])" class="p-4 border-b border-gray-200 last:border-b-0">
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 bg-gradient-to-br rounded-lg flex items-center justify-center flex-shrink-0"
+                   [ngClass]="getAssetColor(asset.type)">
+                <i class="text-white text-sm" [ngClass]="getAssetIcon(asset.type)"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <h3 class="font-medium text-gray-900 truncate">{{ asset.name || 'Untitled Asset' }}</h3>
+                  <p-tag 
+                    [value]="asset.status || 'Active'" 
+                    [severity]="getSeverity(asset.status)"
+                    size="small">
+                  </p-tag>
+                </div>
+                <p class="text-sm text-gray-500 mt-1">{{ asset.description || 'No description' }}</p>
+                <div class="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                  <span><i class="pi pi-tag mr-1"></i>{{ asset.type }}</span>
+                  <span><i class="pi pi-shield mr-1"></i>{{ asset.sensitivity || 'Low' }}</span>
+                  <span><i class="pi pi-user mr-1"></i>{{ asset.owner || 'Unassigned' }}</span>
+                </div>
+                <div class="text-xs text-gray-500 mt-1" *ngIf="asset.location">
+                  <i class="pi pi-map-marker mr-1"></i>
+                  <span class="cursor-help" 
+                        [pTooltip]="getFullLocation(asset.location)" 
+                        tooltipPosition="top">
+                    {{ truncateLocation(asset.location, 25) }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-2 mt-3">
+                  <p-button 
+                    icon="pi pi-eye" 
+                    [text]="true" 
+                    severity="info" 
+                    size="small"
+                    (click)="router.navigate(['/governance/assets', asset.identify || asset._id || asset.id || asset.kid])"
+                    pTooltip="View">
+                  </p-button>
+                  <p-button 
+                    icon="pi pi-pencil" 
+                    [text]="true" 
+                    severity="secondary" 
+                    size="small"
+                    (click)="router.navigate(['/governance/assets', asset.identify || asset._id || asset.id || asset.kid, 'edit'])"
+                    pTooltip="Edit">
+                  </p-button>
+                  <p-button 
+                    icon="pi pi-trash" 
+                    [text]="true" 
+                    severity="danger" 
+                    size="small"
+                    (click)="onDeleteAsset($event, asset._id)"
+                    pTooltip="Delete">
+                  </p-button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card View with larger cards and better layout -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" *ngIf="viewMode === 'card' && (assets?.data?.length || 0) > 0">
+     <div *ngFor="let asset of (filteredAssets || [])" 
+              class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 hover:border-green-300 hover:scale-[1.02] cursor-pointer"
+        (click)="router.navigate(['/governance/assets', asset.identify || asset._id || asset.id || asset.kid])">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              <div class="w-14 h-14 bg-gradient-to-br rounded-lg flex items-center justify-center animate-pulse"
+                   [ngClass]="getAssetColor(asset.type)">
+                <i class="text-white text-lg" [ngClass]="getAssetIcon(asset.type)"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-gray-900 truncate text-lg">{{ asset.name || 'Untitled Asset' }}</h3>
+                <p class="text-sm text-gray-500 truncate">{{ asset.type || 'Unknown' }}</p>
+              </div>
+            </div>
+            <p-tag 
+              [value]="asset.status || 'Active'" 
+              [severity]="getSeverity(asset.status)"
+              size="small">
+            </p-tag>
+          </div>
+          
+          <!-- Description -->
+          <div class="mb-4" *ngIf="asset.description">
+            <p class="text-sm text-gray-600 line-clamp-2">{{ asset.description }}</p>
+          </div>
+          
+          <!-- Asset Details -->
+          <div class="space-y-3 mb-4">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-shield text-sm" [ngClass]="getSensitivityColor(asset.sensitivity)"></i>
+              <span class="text-sm font-medium" [ngClass]="getSensitivityColor(asset.sensitivity)">{{ asset.sensitivity || 'Low' }} Sensitivity</span>
+            </div>
+            
+            <div class="flex items-center gap-2" *ngIf="asset.location">
+              <i class="pi pi-map-marker text-gray-400 text-sm"></i>
+              <span class="text-sm text-gray-600 truncate cursor-help" 
+                    [pTooltip]="getFullLocation(asset.location)" 
+                    tooltipPosition="top">
+                {{ truncateLocation(asset.location, 35) }}
+              </span>
+            </div>
+            
+            <div class="flex items-center gap-2" *ngIf="asset.owner">
+              <i class="pi pi-user text-gray-400 text-sm"></i>
+              <span class="text-sm text-gray-600 truncate">{{ asset.owner }}</span>
+            </div>
+            
+            <div class="flex items-center gap-2" *ngIf="asset.source">
+              <i class="pi pi-link text-gray-400 text-sm"></i>
+              <span class="text-sm text-gray-600 truncate">{{ asset.source }}</span>
+            </div>
+            
+            <!-- Tags -->
+            <div class="flex flex-wrap gap-1 mt-2" *ngIf="asset.tags && asset.tags.length > 0">
+              <p-tag 
+                *ngFor="let tag of asset.tags.slice(0, 3)" 
+                [value]="tag" 
+                severity="secondary" 
+                size="small">
+              </p-tag>
+              <p-tag 
+                *ngIf="asset.tags.length > 3" 
+                [value]="'+' + (asset.tags.length - 3)" 
+                severity="secondary" 
+                size="small">
+              </p-tag>
+            </div>
+          </div>
+          
+          <!-- Actions -->
+          <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
+                    <p-button 
+              icon="pi pi-eye" 
+              [text]="true" 
+              severity="info" 
+              size="small"
+              (click)="router.navigate(['/governance/assets', asset.identify || asset._id || asset.id || asset.kid]); $event.stopPropagation()"
+              pTooltip="View Asset Details">
+            </p-button>
+            <p-button 
+              icon="pi pi-pencil" 
+              [text]="true" 
+              severity="secondary" 
+              size="small"
+              (click)="router.navigate(['/governance/assets', asset.identify || asset._id || asset.id || asset.kid, 'edit']); $event.stopPropagation()"
+              pTooltip="Edit Asset">
+            </p-button>
+            <p-button 
+              icon="pi pi-trash" 
+              [text]="true" 
+              severity="danger" 
+              size="small"
+              (click)="onDeleteAsset($event, asset._id)"
+              pTooltip="Delete Asset">
+            </p-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="bg-white rounded-xl border border-gray-200 p-8 sm:p-12 text-center" *ngIf="(assets?.data?.length || 0) === 0">
+        <div class="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="pi pi-database text-green-500 text-xl sm:text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No assets found</h3>
+        <p class="text-gray-500 mb-6">Create your first asset to start managing your data resources.</p>
+        <p-button 
+          label="Create First Asset" 
+          icon="pi pi-plus" 
+          severity="primary"
+          (click)="assetDetail.show()">
+        </p-button>
+      </div>
+
+      <!-- Pagination -->
+      <div class="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mt-6" *ngIf="(assets?.data?.length || 0) > 0 && totalRecords > tableRowsPerPage">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <!-- Page Size Selector -->
+          <div class="flex items-center gap-3">
+            <label class="text-sm font-medium text-gray-700">Items per page:</label>
+            <p-dropdown 
+              [options]="pageSizeOptions" 
+              [(ngModel)]="tableRowsPerPage"
+              optionLabel="label" 
+              optionValue="value"
+              (onChange)="onPageSizeChange($event)"
+              class="w-40">
+            </p-dropdown>
+          </div>
+          
+          <!-- Paginator -->
+          <div class="flex-1 flex justify-center sm:justify-end">
+            <p-paginator 
+              [rows]="tableRowsPerPage" 
+              [totalRecords]="totalRecords"
+              [first]="firstRecord"
+              (onPageChange)="onPageChange($event)">
+            </p-paginator>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cache Status (Development Only) -->
+      <div class="bg-gray-100 rounded-lg border border-gray-200 p-3 mt-4 text-xs text-gray-600" *ngIf="getCacheStats().cacheSize > 0">
+        <div class="flex items-center gap-4">
+          <span><i class="pi pi-database mr-1"></i>Cache: {{ getCacheStats().cacheSize }} entries</span>
+          <span><i class="pi pi-clock mr-1"></i>TTL: {{ getCacheStats().ttl }}min</span>
+          <span *ngIf="getCacheStats().pendingRequests > 0"><i class="pi pi-spin pi-spinner mr-1"></i>Pending: {{ getCacheStats().pendingRequests }}</span>
+        </div>
+      </div>
+    </div>
+</div>
+
+<!-- Asset Detail Modal -->
+<app-asset #assetDetail (onSave)="refreshAssets()"></app-asset>

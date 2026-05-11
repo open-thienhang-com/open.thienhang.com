@@ -1,0 +1,7 @@
+<!-- SVG placeholder for room images -->
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200">
+  <rect width="400" height="200" fill="#f1f5f9"/>
+  <rect x="50" y="50" width="300" height="100" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="2"/>
+  <circle cx="200" cy="100" r="20" fill="#6366f1"/>
+  <text x="200" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#64748b">Room Placeholder</text>
+</svg>

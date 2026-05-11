@@ -1,0 +1,234 @@
+import { Component, Injector, OnInit, ViewChild } from '@angular/core';
+import { UserComponent } from './user/user.component';
+import { Button } from 'primeng/button';
+import { TableModule } from 'primeng/table';
+import { AppBaseComponent } from '../../../core/base/app-base.component';
+import { GovernanceServices } from '../../../core/services/governance.services';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { InputTextModule } from 'primeng/inputtext';
+import { DropdownModule } from 'primeng/dropdown';
+import { BadgeModule } from 'primeng/badge';
+import { PaginatorModule } from 'primeng/paginator';
+import { TooltipModule } from 'primeng/tooltip';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+
+@Component({
+  selector: 'app-users',
+  imports: [
+    CommonModule,
+    FormsModule,
+    UserComponent,
+    Button,
+    TableModule,
+    InputTextModule,
+    DropdownModule,
+    BadgeModule,
+    PaginatorModule,
+    TooltipModule,
+    ToastModule,
+    ConfirmDialogModule
+  ],
+  templateUrl: './users.component.html',
+})
+export class UsersComponent extends AppBaseComponent implements OnInit {
+  @ViewChild('userDetail') userDetail!: UserComponent;
+
+  users: any[] = [];
+  filteredUsers: any[] = [];
+
+  // Stats
+  totalUsers: number = 0;
+  activeUsers: number = 0;
+  pendingUsers: number = 0;
+  adminUsers: number = 0;
+
+  // Filters
+  searchTerm: string = '';
+  selectedStatus: any = null;
+  selectedRole: any = null;
+  selectedTeam: any = null;
+
+  // View mode
+  viewMode: 'list' | 'card' = 'list';
+
+  // Options for dropdowns
+  statusOptions = [
+    { label: 'Active', value: 'active' },
+    { label: 'Inactive', value: 'inactive' },
+    { label: 'Pending', value: 'pending' },
+    { label: 'Suspended', value: 'suspended' }
+  ];
+
+  roleOptions = [
+    { label: 'Admin', value: 'admin' },
+    { label: 'Manager', value: 'manager' },
+    { label: 'User', value: 'user' },
+    { label: 'Viewer', value: 'viewer' }
+  ];
+
+  teamOptions: any[] = [];
+
+  // Pagination
+  totalRecords: number = 0;
+  tableRowsPerPage: number = 10;
+  currentPage: number = 0;
+
+  // Loading state
+  isTableLoading: boolean = false;
+
+  constructor(
+    private injector: Injector,
+    private governanceServices: GovernanceServices,
+    private router: Router
+  ) {
+    super(injector)
+  }
+
+  ngOnInit() {
+    this.getUserStats();
+    this.getUsers();
+  }
+
+  getUserStats() {
+    this.governanceServices.getUserStats().subscribe({
+      next: (res) => {
+        if (res && res.data) {
+          this.totalUsers = res.data.total_users || 0;
+          this.activeUsers = res.data.active_users || 0;
+          this.pendingUsers = res.data.pending_users || 0;
+          this.adminUsers = res.data.admin_users || 0;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading user stats:', error);
+        this.showError('Failed to load user statistics');
+      }
+    });
+  }
+
+  getUsers = (page = 0) => {
+    this.isTableLoading = true;
+    const params = {
+      size: this.tableRowsPerPage,
+      offset: page * this.tableRowsPerPage,
+      search: this.searchTerm || undefined,
+      status: this.selectedStatus?.value || undefined,
+      role: this.selectedRole?.value || undefined,
+      team_id: this.selectedTeam?.value || undefined
+    };
+
+    this.governanceServices.getUsers(params).subscribe({
+      next: (res) => {
+        if (res && res.data) {
+          this.users = res.data;
+          this.filteredUsers = [...this.users];
+          this.totalRecords = res.total || this.users.length;
+        }
+        this.isTableLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading users:', error);
+        this.showError('Failed to load users');
+        this.isTableLoading = false;
+      }
+    });
+  }
+
+  filterUsers() {
+    this.filteredUsers = this.users.filter(user => {
+      const matchesSearch = !this.searchTerm ||
+        `${user.first_name} ${user.last_name}`.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(this.searchTerm.toLowerCase());
+
+      const matchesStatus = !this.selectedStatus ||
+        user.status === this.selectedStatus ||
+        (this.selectedStatus === 'active' && user.is_active);
+
+      const matchesRole = !this.selectedRole || user.role === this.selectedRole;
+
+      const matchesTeam = !this.selectedTeam ||
+        (user.teams && user.teams.some(team => team === this.selectedTeam));
+
+      return matchesSearch && matchesStatus && matchesRole && matchesTeam;
+    });
+  }
+
+  refreshUsers() {
+    this.getUsers();
+  }
+
+  exportUsers() {
+    console.log('Exporting users...');
+    // Implement export functionality
+  }
+
+  viewUser(user: any) {
+    const id = user.kid || user._id || user.id;
+    if (id) this.router.navigate(['/governance/users', id]);
+  }
+
+  managePermissions(user: any) {
+    this.viewUser(user);
+  }
+
+  deleteUser(user: any) {
+    this.confirmOnDelete(null, this.governanceServices.deleteUser(user._id), this.getUsers);
+  }
+
+  onDeleteUser(event: Event, id) {
+    this.confirmOnDelete(event, this.governanceServices.deleteUser(id), this.getUsers);
+  }
+
+  onPageChange(event: any) {
+    this.getUsers(event.page);
+  }
+
+  toggleViewMode() {
+    this.viewMode = this.viewMode === 'list' ? 'card' : 'list';
+  }
+
+  setViewMode(mode: 'list' | 'card'): void {
+    this.viewMode = mode;
+  }
+
+  showFilters: boolean = false;
+
+  toggleFilters(): void {
+    this.showFilters = !this.showFilters;
+  }
+
+  applyFilters(): void {
+    this.getUsers(0);
+  }
+
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.selectedRole = '';
+    this.selectedStatus = '';
+    this.getUsers(0);
+  }
+
+  getRoleSeverity(role: string): string {
+    switch (role?.toLowerCase()) {
+      case 'admin': return 'danger';
+      case 'manager': return 'warning';
+      case 'user': return 'info';
+      case 'viewer': return 'secondary';
+      default: return 'secondary';
+    }
+  }
+
+  getStatusSeverity(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'active': return 'success';
+      case 'inactive': return 'secondary';
+      case 'pending': return 'warning';
+      case 'suspended': return 'danger';
+      default: return 'success';
+    }
+  }
+}
+

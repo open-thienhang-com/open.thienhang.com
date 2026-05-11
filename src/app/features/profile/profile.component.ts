@@ -1,0 +1,333 @@
+import { Component, Injector, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AppBaseComponent } from '../../core/base/app-base.component';
+import { ProfileServices } from '../../core/services/profile.services';
+import { UserService } from '../../core/services/user.service';
+import { I18nService } from '../../core/services/i18n.service';
+import { AuthServices } from '../../core/services/auth.services';
+import { SidebarPermissionService, SidebarCheck } from '../../core/services/sidebar-permission.service';
+import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { AvatarModule } from 'primeng/avatar';
+import { BadgeModule } from 'primeng/badge';
+import { ButtonModule } from 'primeng/button';
+import { TableModule } from 'primeng/table';
+import { InputTextModule } from 'primeng/inputtext';
+import { DropdownModule } from 'primeng/dropdown';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
+import { CardModule } from 'primeng/card';
+import { DividerModule } from 'primeng/divider';
+import { forkJoin } from 'rxjs';
+
+@Component({
+  selector: 'app-profile',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslatePipe,
+    AvatarModule,
+    BadgeModule,
+    ButtonModule,
+    TableModule,
+    InputTextModule,
+    DropdownModule,
+    TagModule,
+    TooltipModule,
+    CardModule,
+    DividerModule
+  ],
+  templateUrl: './profile.component.html',
+  styleUrls: ['./profile.component.scss']
+})
+export class ProfileComponent extends AppBaseComponent implements OnInit {
+  profile: any = {};
+  allUsers: any[] = [];
+  filteredUsers: any[] = [];
+  currentDate = new Date();
+  loading = false;
+  userSearchText = '';
+  currentUserData: any = null;
+  // Sessions display control
+  showAllSessions = false;
+  _sessionsPreviewCount = 4; // show first 4 sessions by default
+
+  // Table columns for users
+  userColumns = [
+    { field: 'full_name', header: 'profile.users.fullName' },
+    { field: 'email', header: 'profile.users.email' },
+    { field: 'role', header: 'profile.users.role' },
+    { field: 'is_active', header: 'profile.users.status' },
+    { field: 'created_at', header: 'profile.users.joinedDate' }
+  ];
+
+  switchingUserId: string | null = null;
+  permissionList: Array<SidebarCheck & { allowed: boolean | null }> = [];
+  permissionsLoaded = false;
+
+  constructor(
+    private injector: Injector,
+    private dataProdServices: ProfileServices,
+    private userService: UserService,
+    private authServices: AuthServices,
+    private sidebarPermSvc: SidebarPermissionService,
+    public i18nService: I18nService,
+    private router: Router,
+  ) {
+    super(injector);
+  }
+
+  ngOnInit() {
+    // Subscribe to permissions observable — updates whenever sidebar loads/reloads perms
+    this.sidebarPermSvc.getPermissions$().subscribe(map => {
+      if (map !== null) {
+        this.permissionList = this.sidebarPermSvc.getPermissionList();
+        this.permissionsLoaded = true;
+      }
+    });
+
+    this.authServices.getUser().subscribe(user => {
+      if (user) {
+        this.currentUserData = user;
+        this.profile = user;
+        // Load permissions if not yet loaded by sidebar
+        if (!this.permissionsLoaded) {
+          const userId = (user as any).identify || (user as any).id || '';
+          const tenantId = (user as any).tenant_id || 'system';
+          if (userId) {
+            this.sidebarPermSvc.loadPermissions(userId, tenantId).subscribe();
+          }
+        }
+      }
+    });
+    if (this.authServices.isLoggedIn()) {
+      this.authServices.getCurrentUser().subscribe(res => {
+        const data = (res as any)?.data || res;
+        if (data) {
+          this.profile = data;
+          this.currentUserData = data;
+        }
+      });
+    }
+    this.loadProfileData();
+  }
+
+  get permissionsBySection(): { section: string; items: Array<SidebarCheck & { allowed: boolean | null }> }[] {
+    const map = new Map<string, Array<SidebarCheck & { allowed: boolean | null }>>();
+    for (const item of this.permissionList) {
+      if (!map.has(item.section)) map.set(item.section, []);
+      map.get(item.section)!.push(item);
+    }
+    return Array.from(map.entries()).map(([section, items]) => ({ section, items }));
+  }
+
+  loadProfileData() {
+    this.loading = true;
+    this.authServices.getAccountUsers().subscribe({
+      next: (res) => {
+        this.allUsers = res?.data || [];
+        this.filteredUsers = [...this.allUsers];
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading account users:', err);
+        this.loading = false;
+      }
+    });
+  }
+
+  switchActiveUser(userId: string): void {
+    if (this.switchingUserId) return;
+    this.switchingUserId = userId;
+    this.authServices.switchUser(userId).subscribe({
+      next: () => {
+        this.switchingUserId = null;
+        // Force re-login so new JWT (with updated user_id claim) takes effect
+        this.authServices.logout().subscribe(() => {
+          this.router.navigate(['/login']);
+        });
+      },
+      error: (err) => {
+        console.error('Switch user failed:', err);
+        this.switchingUserId = null;
+      }
+    });
+  }
+
+  // Filter users based on search text
+  filterUsers() {
+    if (!this.userSearchText) {
+      this.filteredUsers = [...this.allUsers];
+      return;
+    }
+
+    const searchTerm = this.userSearchText.toLowerCase();
+    this.filteredUsers = this.allUsers.filter(user =>
+      user.full_name?.toLowerCase().includes(searchTerm) ||
+      user.email?.toLowerCase().includes(searchTerm) ||
+      user.role?.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  // Get user avatar initials
+  getUserInitials(user: any): string {
+    const name = user?.full_name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : null);
+    if (!name) return 'U';
+    return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  // Check if a user is the currently active user
+  isActiveUser(user: any): boolean {
+    if (!user) return false;
+    const userId = user.id || user.identify;
+    // Priority: active_user_id from profile (account doc), then active_user.id from JWT info
+    const activeId = (this.profile as any)?.active_user_id
+      || (this.profile as any)?.active_user?.id
+      || (this.currentUserData as any)?.active_user_id
+      || (this.currentUserData as any)?.active_user?.id
+      || (this.currentUserData as any)?.user_id;
+    return !!activeId && userId === activeId;
+  }
+
+  // Get user status for display
+  getUserStatus(user: any): string {
+    return user.is_active ? 'profile.users.active' : 'profile.users.inactive';
+  }
+
+  // Get user status severity for styling
+  getUserStatusSeverity(user: any): string {
+    return user.is_active ? 'success' : 'danger';
+  }
+
+  // Get role display text
+  getRoleDisplayText(role: string): string {
+    const roleMap: { [key: string]: string } = {
+      'admin': 'profile.roles.admin',
+      'manager': 'profile.roles.manager',
+      'analyst': 'profile.roles.analyst',
+      'viewer': 'profile.roles.viewer',
+      'user': 'profile.roles.user'
+    };
+    return roleMap[role] || 'profile.roles.user';
+  }
+
+  // Get role severity for styling
+  getRoleSeverity(role: string): string {
+    const severityMap: { [key: string]: string } = {
+      'admin': 'danger',
+      'manager': 'warning',
+      'analyst': 'info',
+      'viewer': 'success',
+      'user': 'secondary'
+    };
+    return severityMap[role] || 'secondary';
+  }
+
+  // Format date for display
+  formatDate(dateString: string): string {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString();
+  }
+
+  terminateSession(sessionId: string) {
+    console.log('Terminate session:', sessionId);
+    // Add your session termination logic here
+  }
+
+  editProfile() {
+    console.log('Edit profile clicked');
+    // Add edit profile logic here
+  }
+
+  changePassword() {
+    console.log('Change password clicked');
+    // Add change password logic here
+  }
+
+  openSettings() {
+    console.log('Open settings clicked');
+    // Add open settings logic here
+  }
+
+  downloadData() {
+    console.log('Download data clicked');
+    // Add download data logic here
+  }
+
+  refreshData() {
+    this.loadProfileData();
+  }
+
+  formatRemainingTime(seconds: number): string {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    } else if (minutes > 0) {
+      return `${minutes}m`;
+    } else {
+      return `${Math.floor(seconds)}s`;
+    }
+  }
+
+  getDeviceInfo(deviceString: string): string {
+    if (deviceString.includes('Chrome')) {
+      return 'Chrome Browser';
+    } else if (deviceString.includes('Firefox')) {
+      return 'Firefox Browser';
+    } else if (deviceString.includes('Safari')) {
+      return 'Safari Browser';
+    }
+    return 'Unknown Device';
+  }
+
+  // Visible sessions for the profile page (limits rendering when many sessions exist)
+  get visibleSessions(): any[] {
+    if (!this.profile || !Array.isArray(this.profile.sessions)) return [];
+    return this.showAllSessions ? this.profile.sessions : this.profile.sessions.slice(0, this._sessionsPreviewCount);
+  }
+
+  // Toggle showing all sessions
+  toggleShowAllSessions() {
+    this.showAllSessions = !this.showAllSessions;
+  }
+
+  // Helper to compute the global session index (1-based) for display
+  getSessionIndex(session: any): number {
+    if (!this.profile || !Array.isArray(this.profile.sessions)) return 0;
+    const idx = this.profile.sessions.indexOf(session);
+    return idx >= 0 ? idx : 0;
+  }
+
+  getAccessLevel(level: string): string {
+    switch (level) {
+      case 'admin': return 'Administrator';
+      case 'manager': return 'Manager';
+      case 'analyst': return 'Data Analyst';
+      case 'viewer': return 'Viewer';
+      default: return 'User';
+    }
+  }
+
+  getAccessSeverity(level: string): string {
+    switch (level) {
+      case 'admin': return 'danger';
+      case 'manager': return 'warning';
+      case 'analyst': return 'info';
+      case 'viewer': return 'success';
+      default: return 'secondary';
+    }
+  }
+
+  getStatusSeverity(status: string): string {
+    switch (status) {
+      case 'active': return 'success';
+      case 'inactive': return 'danger';
+      case 'pending': return 'warning';
+      default: return 'secondary';
+    }
+  }
+}

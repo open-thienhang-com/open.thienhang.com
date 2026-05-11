@@ -1,0 +1,460 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="catalog-main">
+  <div class="catalog-content-wrapper">
+    <div class="catalog-content-inner">
+      <section class="catalog-hero">
+        <div class="catalog-hero-copy">
+          <div class="catalog-hero-badge">
+            <i class="pi pi-sitemap"></i>
+          </div>
+          <div>
+            <p class="catalog-eyebrow">Workspace discovery</p>
+            <h1 class="catalog-title">Domain Catalog</h1>
+            <p class="catalog-subtitle">
+              Explore governed data domains, their stewards, published products, and service exposure from one curated mesh surface.
+            </p>
+          </div>
+        </div>
+
+        <div class="catalog-hero-actions">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-refresh"
+            label="Refresh"
+            class="p-button-sm p-button-outlined"
+            (click)="refreshDomains()"
+            [loading]="loading">
+          </button>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-download"
+            label="Export"
+            class="p-button-sm"
+            (click)="exportDomains()">
+          </button>
+        </div>
+      </section>
+
+      <section class="catalog-overview-grid">
+        <article class="summary-card" data-tone="blue">
+          <div>
+            <p class="summary-label">Total domains</p>
+            <h3 class="summary-value">{{ stats.totalDomains }}</h3>
+            <p class="summary-caption">All registered mesh domains</p>
+          </div>
+          <div class="summary-icon">
+            <i class="pi pi-sitemap"></i>
+          </div>
+        </article>
+
+        <article class="summary-card" data-tone="emerald">
+          <div>
+            <p class="summary-label">Active domains</p>
+            <h3 class="summary-value">{{ stats.activeDomains }}</h3>
+            <p class="summary-caption">Currently operating in production</p>
+          </div>
+          <div class="summary-icon">
+            <i class="pi pi-check-circle"></i>
+          </div>
+        </article>
+
+        <article class="summary-card" data-tone="orange">
+          <div>
+            <p class="summary-label">Data products</p>
+            <h3 class="summary-value">{{ stats.totalDataProducts }}</h3>
+            <p class="summary-caption">Published products across domains</p>
+          </div>
+          <div class="summary-icon">
+            <i class="pi pi-box"></i>
+          </div>
+        </article>
+
+        <article class="summary-card" data-tone="purple">
+          <div>
+            <p class="summary-label">Published APIs</p>
+            <h3 class="summary-value">{{ stats.totalApis }}</h3>
+            <p class="summary-caption">Endpoints exposed by all products</p>
+          </div>
+          <div class="summary-icon">
+            <i class="pi pi-code"></i>
+          </div>
+        </article>
+      </section>
+
+      <section class="catalog-workspace">
+        <aside class="catalog-sidebar">
+          <div class="catalog-sidebar-panel">
+            <p class="sidebar-eyebrow">Catalog controls</p>
+            <div class="sidebar-heading">Filter domains</div>
+
+            <div class="filter-stack">
+              <div class="filter-field">
+                <label for="catalog-search">Search</label>
+                <span class="p-input-icon-left">
+                  <i class="pi pi-search"></i>
+                  <input
+                    id="catalog-search"
+                    type="text"
+                    pInputText
+                    [(ngModel)]="searchTerm"
+                    (input)="onSearch()"
+                    placeholder="Name, team, owner, tags..."
+                    class="w-full" />
+                </span>
+              </div>
+
+              <div class="filter-field">
+                <label for="catalog-status">Status</label>
+                <p-dropdown
+                  id="catalog-status"
+                  [options]="statusOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  [(ngModel)]="filters.status"
+                  (onChange)="onFilterChange()"
+                  placeholder="All status"
+                  [showClear]="true"
+                  class="w-full">
+                </p-dropdown>
+              </div>
+
+              <div class="filter-field">
+                <label for="catalog-team">Team</label>
+                <p-dropdown
+                  id="catalog-team"
+                  [options]="teamOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  [(ngModel)]="filters.team"
+                  (onChange)="onFilterChange()"
+                  placeholder="All teams"
+                  [showClear]="true"
+                  class="w-full">
+                </p-dropdown>
+              </div>
+            </div>
+
+            <div class="sidebar-actions">
+              <button pButton type="button" label="Clear filters" class="p-button-sm p-button-outlined" (click)="clearFilters()"></button>
+            </div>
+          </div>
+
+          <div class="catalog-sidebar-panel sidebar-help">
+            <div class="sidebar-help-icon">
+              <i class="pi pi-compass"></i>
+            </div>
+            <div>
+              <div class="sidebar-help-title">Curated discovery</div>
+              <p class="sidebar-help-text">
+                Review domain ownership, SLA posture, and product inventory before drilling into operational details.
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        <div class="catalog-panel">
+          <div class="catalog-panel-header">
+            <div>
+              <p class="panel-eyebrow">Catalog surface</p>
+              <h2 class="panel-title">Governed domain list</h2>
+              <p class="panel-subtitle">
+                Showing {{ filteredDomains.length }} of {{ domains.length }} domains with structured ownership and product metadata.
+              </p>
+            </div>
+
+            <div class="panel-chip">
+              <i class="pi" [ngClass]="viewMode === 'list' ? 'pi-list' : 'pi-th-large'"></i>
+              <span>{{ viewMode === 'list' ? 'List view' : 'Card view' }}</span>
+            </div>
+          </div>
+
+          <div class="catalog-panel-content">
+            <div class="content-toolbar">
+              <div class="content-toolbar-copy">
+                <h3>Domains</h3>
+                <p>Stewardship, team assignment, products, and quality signals in one place.</p>
+              </div>
+
+              <div class="content-toolbar-actions">
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-list"
+                  class="p-button-sm"
+                  [class.p-button-outlined]="viewMode !== 'list'"
+                  (click)="setViewMode('list')">
+                </button>
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-th-large"
+                  class="p-button-sm"
+                  [class.p-button-outlined]="viewMode !== 'card'"
+                  (click)="setViewMode('card')">
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="loading" class="loading-panel">
+              <p-skeleton height="4rem"></p-skeleton>
+              <p-skeleton height="4rem"></p-skeleton>
+              <p-skeleton height="4rem"></p-skeleton>
+            </div>
+
+            <div *ngIf="!loading && filteredDomains.length === 0" class="empty-state">
+              <i class="pi pi-inbox"></i>
+              <h3>No domains found</h3>
+              <p>Adjust filters or clear search criteria to restore the full catalog.</p>
+              <button pButton type="button" label="Clear filters" class="p-button-sm p-button-outlined" (click)="clearFilters()"></button>
+            </div>
+
+            <div *ngIf="!loading && filteredDomains.length > 0 && viewMode === 'list'" class="domain-list">
+              <article *ngFor="let domain of filteredDomains; trackBy: trackByDomainKey" class="domain-list-item">
+                <div class="domain-list-main">
+                  <div class="domain-icon-shell">
+                    <i [class]="'pi ' + getDomainIcon(domain.domain_key)"></i>
+                  </div>
+
+                  <div class="domain-copy">
+                    <div class="domain-copy-header">
+                      <button type="button" class="domain-link" (click)="showDomainDetails(domain)">
+                        {{ domain.display_name }}
+                      </button>
+                      <p-tag [value]="domain.status" [severity]="getStatusSeverity(domain.status)"></p-tag>
+                    </div>
+
+                    <p class="domain-key">{{ domain.domain_key }}</p>
+                    <p class="domain-description">{{ domain.description }}</p>
+
+                    <div class="domain-tags">
+                      <p-tag *ngFor="let tag of (domain.tags || []).slice(0, 4)" [value]="tag" severity="secondary"></p-tag>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="domain-metrics-grid">
+                  <div class="metric-block">
+                    <span class="metric-label">Owner</span>
+                    <strong>{{ domain.owner || 'Unassigned' }}</strong>
+                  </div>
+                  <div class="metric-block">
+                    <span class="metric-label">Team</span>
+                    <strong>{{ domain.team || 'No team' }}</strong>
+                  </div>
+                  <div class="metric-block">
+                    <span class="metric-label">Products</span>
+                    <strong>{{ getDomainDataProductsCount(domain) }}</strong>
+                  </div>
+                  <div class="metric-block">
+                    <span class="metric-label">APIs</span>
+                    <strong>{{ getDomainApiCount(domain) }}</strong>
+                  </div>
+                  <div class="metric-block">
+                    <span class="metric-label">Quality</span>
+                    <strong>{{ domain.metrics?.quality_score || 'N/A' }}</strong>
+                  </div>
+                  <div class="metric-block">
+                    <span class="metric-label">Subscribers</span>
+                    <strong>{{ domain.metrics?.subscribers || 0 }}</strong>
+                  </div>
+                </div>
+
+                <div class="domain-actions">
+                  <button
+                    pButton
+                    type="button"
+                    label="View details"
+                    icon="pi pi-eye"
+                    class="p-button-sm"
+                    (click)="showDomainDetails(domain)">
+                  </button>
+                  <button
+                    pButton
+                    type="button"
+                    label="Products"
+                    icon="pi pi-box"
+                    class="p-button-sm p-button-outlined"
+                    (click)="viewDomainDataProducts(domain)">
+                  </button>
+                </div>
+              </article>
+            </div>
+
+            <div *ngIf="!loading && filteredDomains.length > 0 && viewMode === 'card'" class="domain-card-grid">
+              <article 
+                *ngFor="let domain of filteredDomains; trackBy: trackByDomainKey" 
+                class="domain-card"
+                (click)="showDomainDetails(domain)">
+                <div class="domain-card-header-premium">
+                  <div class="domain-card-header-glow" [style.background]="getDomainGradient(domain.domain_key)"></div>
+                  <div class="domain-card-header-overlay"></div>
+                  
+                  <div class="domain-card-badge">
+                    <i [class]="'pi ' + getDomainIcon(domain.domain_key)"></i>
+                  </div>
+
+                  <div class="domain-status-pill">
+                    <p-tag [value]="domain.status" [severity]="getStatusSeverity(domain.status)"></p-tag>
+                  </div>
+                </div>
+
+                <div class="domain-card-body">
+                  <div class="domain-card-title-group">
+                    <h3 class="domain-card-title">{{ domain.display_name }}</h3>
+                    <p class="domain-card-key">{{ domain.domain_key }}</p>
+                  </div>
+                  
+                  <!-- Simplified card content: hide description and metrics by default -->
+                  <div class="product-info-hint">
+                    <i class="pi pi-info-circle"></i>
+                    <span>Click for details</span>
+                  </div>
+                </div>
+
+                <!-- card-products and domain-tags hidden in simplified card view -->
+
+                <div class="domain-actions">
+                  <button
+                    pButton
+                    type="button"
+                    label="View details"
+                    icon="pi pi-eye"
+                    class="p-button-sm"
+                    (click)="showDomainDetails(domain)">
+                  </button>
+                  <button
+                    pButton
+                    type="button"
+                    label="Products"
+                    icon="pi pi-box"
+                    class="p-button-sm p-button-outlined"
+                    (click)="viewDomainDataProducts(domain)">
+                  </button>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<p-dialog
+  header="Domain details"
+  [(visible)]="showDetailDialog"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: 'min(980px, 96vw)' }"
+  (onHide)="closeDomainDetails()">
+  <ng-container *ngIf="selectedDomain as domain">
+    <div class="quick-view-header" [style.background]="getDomainGradient(domain.domain_key)">
+      <div class="quick-view-badge">
+        <i [class]="'pi ' + getDomainIcon(domain.domain_key)"></i>
+      </div>
+    </div>
+
+    <div class="dialog-layout">
+      <div class="dialog-main">
+        <div class="dialog-hero">
+          <div>
+            <h3>{{ domain.display_name }}</h3>
+            <p>{{ domain.domain_key }}</p>
+          </div>
+        </div>
+
+        <p class="dialog-description">{{ domain.description }}</p>
+
+        <div class="dialog-kpi-grid">
+          <div class="metric-block">
+            <span class="metric-label">Availability</span>
+            <strong>{{ domain.sla?.availability || 'N/A' }}</strong>
+          </div>
+          <div class="metric-block">
+            <span class="metric-label">Freshness</span>
+            <strong>{{ domain.sla?.freshness || 'N/A' }}</strong>
+          </div>
+          <div class="metric-block">
+            <span class="metric-label">Version</span>
+            <strong>{{ domain.sla?.version || 'N/A' }}</strong>
+          </div>
+          <div class="metric-block">
+            <span class="metric-label">Subscribers</span>
+            <strong>{{ domain.metrics?.subscribers || 0 }}</strong>
+          </div>
+        </div>
+
+        <div class="dialog-section">
+          <div class="dialog-section-header">
+            <h4>Published products</h4>
+            <span>{{ getDomainDataProductsCount(domain) }} total</span>
+          </div>
+
+          <div class="product-stack">
+            <div *ngFor="let product of domain.data_products || []" class="product-item">
+              <div>
+                <h4>{{ product.name }}</h4>
+                <p>{{ product.description }}</p>
+              </div>
+              <span>{{ product.endpoints_count || 0 }} APIs</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="dialog-side">
+        <div class="dialog-side-card">
+          <h4>Stewardship</h4>
+          <div class="side-list">
+            <div class="side-item">
+              <span>Status</span>
+              <p-tag [value]="domain.status" [severity]="getStatusSeverity(domain.status)"></p-tag>
+            </div>
+            <div class="side-item">
+              <span>Owner</span>
+              <strong>{{ domain.owner || 'Unassigned' }}</strong>
+            </div>
+            <div class="side-item">
+              <span>Team</span>
+              <strong>{{ domain.team || 'No team' }}</strong>
+            </div>
+            <div class="side-item">
+              <span>Quality</span>
+              <strong>{{ domain.metrics?.quality_score || 'N/A' }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="dialog-side-card">
+          <h4>Contact</h4>
+          <div class="side-list">
+            <div class="side-item" *ngIf="domain.contact?.email">
+              <span>Email</span>
+              <a [href]="'mailto:' + domain.contact.email">{{ domain.contact.email }}</a>
+            </div>
+            <div class="side-item" *ngIf="domain.contact?.slack">
+              <span>Slack</span>
+              <strong>{{ domain.contact.slack }}</strong>
+            </div>
+            <div class="side-item" *ngIf="domain.contact?.support">
+              <span>Support</span>
+              <strong>{{ domain.contact.support }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="dialog-side-card">
+          <h4>Tags</h4>
+          <div class="domain-tags">
+            <p-tag *ngFor="let tag of domain.tags || []" [value]="tag" severity="secondary"></p-tag>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </ng-container>
+</p-dialog>

@@ -1,0 +1,170 @@
+<div class="settings-page">
+  <p-toast></p-toast>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1>Settings</h1>
+        <p class="subtitle">Configure hotel system settings and preferences</p>
+      </div>
+      <div class="header-actions">
+        <button pButton type="button" label="Reset" icon="pi pi-refresh"
+          (click)="resetSettings()" class="p-button-secondary">
+        </button>
+        <button pButton type="button" label="Save Changes" icon="pi pi-check"
+          (click)="saveSettings()" class="p-button-primary">
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- General Settings -->
+  <p-card header="General Settings">
+    <div class="settings-section">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Hotel Name</label>
+          <input pInputText type="text" [(ngModel)]="settings.general.hotelName" 
+            placeholder="Enter hotel name">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input pInputText type="email" [(ngModel)]="settings.general.email" 
+            placeholder="Enter email address">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Phone</label>
+          <input pInputText type="text" [(ngModel)]="settings.general.phone" 
+            placeholder="Enter phone number">
+        </div>
+        <div class="form-group">
+          <label>Timezone</label>
+          <p-dropdown [options]="timezoneOptions" optionLabel="label" optionValue="value"
+            [(ngModel)]="settings.general.timezone" placeholder="Select Timezone">
+          </p-dropdown>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Currency</label>
+          <p-dropdown [options]="currencyOptions" optionLabel="label" optionValue="value"
+            [(ngModel)]="settings.general.currency" placeholder="Select Currency">
+          </p-dropdown>
+        </div>
+        <div class="form-group">
+          <label>Language</label>
+          <p-dropdown [options]="languageOptions" optionLabel="label" optionValue="value"
+            [(ngModel)]="settings.general.language" placeholder="Select Language">
+          </p-dropdown>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Address</label>
+        <textarea pInputTextarea [(ngModel)]="settings.general.address" 
+          rows="2" placeholder="Enter address">
+        </textarea>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Booking Settings -->
+  <p-card header="Booking Settings">
+    <div class="settings-section">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Default Check-in Time</label>
+          <input pInputText type="time" [(ngModel)]="settings.booking.defaultCheckInTime">
+        </div>
+        <div class="form-group">
+          <label>Default Check-out Time</label>
+          <input pInputText type="time" [(ngModel)]="settings.booking.defaultCheckOutTime">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Cancellation Policy</label>
+        <textarea pInputTextarea [(ngModel)]="settings.booking.cancellationPolicy" 
+          rows="3" placeholder="Enter cancellation policy">
+        </textarea>
+      </div>
+
+      <div class="toggle-group">
+        <div class="toggle-item">
+          <label>Require Payment Confirmation</label>
+          <p-toggleButton [(ngModel)]="settings.booking.requirePaymentConfirmation"
+            onLabel="Yes" offLabel="No">
+          </p-toggleButton>
+        </div>
+        <div class="toggle-item">
+          <label>Auto Confirm Bookings</label>
+          <p-toggleButton [(ngModel)]="settings.booking.autoConfirmBookings"
+            onLabel="Yes" offLabel="No">
+          </p-toggleButton>
+        </div>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Notification Settings -->
+  <p-card header="Notification Settings">
+    <div class="settings-section">
+      <div class="toggle-group">
+        <div class="toggle-item">
+          <label>Email Notifications</label>
+          <p-toggleButton [(ngModel)]="settings.notifications.emailNotifications"
+            onLabel="On" offLabel="Off">
+          </p-toggleButton>
+        </div>
+        <div class="toggle-item">
+          <label>SMS Notifications</label>
+          <p-toggleButton [(ngModel)]="settings.notifications.smsNotifications"
+            onLabel="On" offLabel="Off">
+          </p-toggleButton>
+        </div>
+        <div class="toggle-item">
+          <label>Booking Confirmation</label>
+          <p-toggleButton [(ngModel)]="settings.notifications.bookingConfirmation"
+            onLabel="On" offLabel="Off">
+          </p-toggleButton>
+        </div>
+        <div class="toggle-item">
+          <label>Booking Cancellation</label>
+          <p-toggleButton [(ngModel)]="settings.notifications.bookingCancellation"
+            onLabel="On" offLabel="Off">
+          </p-toggleButton>
+        </div>
+        <div class="toggle-item">
+          <label>Payment Reminder</label>
+          <p-toggleButton [(ngModel)]="settings.notifications.paymentReminder"
+            onLabel="On" offLabel="Off">
+          </p-toggleButton>
+        </div>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Maintenance Settings -->
+  <p-card header="Maintenance Settings">
+    <div class="settings-section">
+      <div class="toggle-group">
+        <div class="toggle-item">
+          <label>Auto Maintenance Reminders</label>
+          <p-toggleButton [(ngModel)]="settings.maintenance.autoMaintenanceReminders"
+            onLabel="On" offLabel="Off">
+          </p-toggleButton>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Maintenance Schedule (Days)</label>
+        <input pInputText type="number" [(ngModel)]="settings.maintenance.maintenanceScheduleDays" 
+          placeholder="Enter days">
+      </div>
+    </div>
+  </p-card>
+</div>

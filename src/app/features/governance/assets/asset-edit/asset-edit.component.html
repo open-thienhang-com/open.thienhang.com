@@ -1,0 +1,51 @@
+<p-toast></p-toast>
+<div class="bg-gray-50 min-h-screen">
+  <div class="bg-white border-b border-gray-200">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center gap-4">
+      <p-button icon="pi pi-arrow-left" [text]="true" [rounded]="true" severity="secondary" (click)="cancel()"></p-button>
+      <div class="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
+        <i class="pi pi-database text-white"></i>
+      </div>
+      <h1 class="text-xl font-bold text-gray-900">Edit Asset</h1>
+    </div>
+  </div>
+
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div *ngIf="loading" class="flex justify-center py-20"><p-progressSpinner strokeWidth="4"></p-progressSpinner></div>
+    <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Name <span class="text-red-500">*</span></label>
+          <input pInputText formControlName="name" class="w-full" />
+          <p *ngIf="invalid('name')" class="text-red-500 text-xs mt-1">Name is required</p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Code / Identifier</label>
+          <input pInputText formControlName="identify" class="w-full font-mono bg-gray-50" readonly />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Type <span class="text-red-500">*</span></label>
+          <p-dropdown formControlName="type" [options]="typeOptions" optionLabel="label" optionValue="value" styleClass="w-full"></p-dropdown>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Domain ID</label>
+          <input pInputText formControlName="domain_id" class="w-full font-mono" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <textarea pTextarea formControlName="description" rows="3" class="w-full"></textarea>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <p-button type="submit" label="Save Changes" icon="pi pi-check" [loading]="saving"></p-button>
+          <p-button type="button" label="Cancel" severity="secondary" [outlined]="true" (click)="cancel()"></p-button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

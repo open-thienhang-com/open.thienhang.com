@@ -1,0 +1,235 @@
+<p-toast></p-toast>
+<div class="ecommerce-platform">
+
+  <!-- ── Top Dashboard Header ── -->
+  <header class="dash-header">
+    <div class="header-left">
+      <div class="brand-tag">
+        <i class="pi pi-shopping-bag"></i>
+        <span>SALES HUB</span>
+      </div>
+      <div class="store-selector">
+        <label for="warehouseSelect">Location:</label>
+        <select id="warehouseSelect" [(ngModel)]="selectedWarehouseId" (change)="onWarehouseChange()">
+          @for (wh of warehouses; track wh.id) {
+            <option [value]="wh.id">{{ wh.name }} ({{ wh.location }})</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="search-box">
+        <i class="pi pi-search"></i>
+        <input 
+          type="text" 
+          placeholder="Lookup products by name, SKU or barcode..." 
+          [(ngModel)]="searchQuery" 
+          (ngModelChange)="applyFilters()" 
+        />
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="status-summary">
+        <div class="stat-item">
+          <span class="stat-label">Stock Status:</span>
+          <span class="stat-value text-green">Online</span>
+        </div>
+        <div class="stat-item border-left">
+          <span class="stat-label">Active Sales:</span>
+          <span class="stat-value">24</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-stage">
+    
+    <!-- ── Left Side: Product Catalog ── -->
+    <section class="catalog-section">
+      <div class="catalog-sub-header">
+        <div class="filter-pills">
+          <button 
+            class="pill-btn" 
+            [class.active]="selectedCategory === ''" 
+            (click)="selectedCategory = ''; applyFilters()"
+          >All Products</button>
+          @for (cat of categories; track cat) {
+            <button 
+              class="pill-btn" 
+              [class.active]="selectedCategory === cat" 
+              (click)="selectedCategory = cat; applyFilters()"
+            >{{ cat }}</button>
+          }
+        </div>
+        <div class="catalog-sort">
+          <select [(ngModel)]="sortBy" (change)="applyFilters()">
+            @for (opt of sortOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="product-grid" [class.loading]="isLoading">
+        @if (isLoading) {
+          @for (n of [1,2,3,4,5,6]; track n) {
+            <div class="loading-card ghost"></div>
+          }
+        } @else {
+          @for (product of filteredProducts; track product.id) {
+            <div class="p-card" [class.out-of-stock]="getStockLevel(product) <= 0">
+              <div class="pf-thumb">
+                @if (getProductImage(product)) {
+                  <img [src]="getProductImage(product)" [alt]="product.name" />
+                } @else {
+                  <div class="thumb-alt" [style.background]="getCategoryColor(product.category) + '20'">
+                    <i class="pi pi-image" [style.color]="getCategoryColor(product.category)"></i>
+                  </div>
+                }
+                @if (hasDiscount(product)) {
+                  <span class="promo-tag">-{{ getDiscountPercent(product) }}%</span>
+                }
+              </div>
+
+              <div class="pf-content">
+                <div class="pf-meta">
+                  <span class="cat-label">{{ product.category }}</span>
+                  <span class="sku-label">{{ product.sku }}</span>
+                </div>
+                <h3 class="product-name">{{ product.name }}</h3>
+                
+                <div class="stock-info" [ngClass]="{
+                  'low': getStockLevel(product.id) > 0 && getStockLevel(product.id) < 10,
+                  'empty': getStockLevel(product.id) <= 0
+                }">
+                  <span class="dot"></span>
+                  {{ getStockLevel(product.id) > 0 ? getStockLevel(product.id) + ' in stock' : 'Out of stock' }}
+                </div>
+
+                <div class="price-action">
+                  <div class="price-stack">
+                    @if (hasDiscount(product)) {
+                      <span class="old-price">{{ getProductPrice(product) | currency }}</span>
+                    }
+                    <span class="current-price">{{ getEffectivePrice(product) | currency }}</span>
+                  </div>
+                  
+                  <div class="action-btn-group">
+                    @if (isInCart(product.id)) {
+                      <div class="qty-stepper">
+                        <button (click)="updateQuantity(product.id, getCartQuantity(product.id) - 1)">-</button>
+                        <span>{{ getCartQuantity(product.id) }}</span>
+                        <button (click)="updateQuantity(product.id, getCartQuantity(product.id) + 1)" [disabled]="getCartQuantity(product.id) >= getStockLevel(product.id)">+</button>
+                      </div>
+                    } @else {
+                      <button 
+                        class="add-btn" 
+                        [disabled]="getStockLevel(product.id) <= 0"
+                        (click)="addToCart(product)"
+                      >
+                        <i class="pi pi-plus"></i>
+                        ADD
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </section>
+
+    <!-- ── Right Side: Order Summary Panel (Sticky) ── -->
+    <aside class="order-panel">
+      <div class="panel-inner shadow-premium">
+        <div class="panel-header">
+          <h2>Sales Basket</h2>
+          <span class="item-count">{{ getCartItemCount() }} items</span>
+        </div>
+
+        <div class="cart-items-scroller">
+          @if (cart.length === 0) {
+            <div class="empty-basket">
+              <i class="pi pi-shopping-cart"></i>
+              <p>Basket is currently empty</p>
+              <small>Add products from the catalog to build a client order.</small>
+            </div>
+          } @else {
+            @for (item of cart; track item.product.id) {
+              <div class="basket-item">
+                <div class="bi-info">
+                  <span class="bi-name">{{ item.product.name }}</span>
+                  <span class="bi-meta">{{ item.product.sku }} • {{ getEffectivePrice(item.product) | currency }}</span>
+                </div>
+                <div class="bi-actions">
+                  <div class="bi-qty">{{ item.quantity }}x</div>
+                  <button class="bi-rm" (click)="removeFromCart(item.product.id)">
+                    <i class="pi pi-times"></i>
+                  </button>
+                </div>
+              </div>
+            }
+          }
+        </div>
+
+        <div class="panel-footer">
+          <!-- Discount Entry -->
+          <div class="voucher-box">
+            @if (!voucherApplied) {
+              <div class="input-group">
+                <input type="text" placeholder="Promo code" [(ngModel)]="voucherCode" />
+                <button (click)="applyVoucher()">Apply</button>
+              </div>
+            } @else {
+              <div class="voucher-tag">
+                <span><i class="pi pi-check-circle"></i> SAVE8 Applied</span>
+                <button (click)="clearVoucher()">×</button>
+              </div>
+            }
+          </div>
+
+          <!-- Totals -->
+          <ul class="summary-list">
+            <li>
+              <span>Subtotal</span>
+              <span>{{ getSubtotal() | currency }}</span>
+            </li>
+            @if (discountRate > 0) {
+              <li class="discount-row">
+                <span>Promotional Discount</span>
+                <span>-{{ getDiscount() | currency }}</span>
+              </li>
+            }
+            <li>
+              <span>Tax Estimate</span>
+              <span>{{ getTax() | currency }}</span>
+            </li>
+            <li class="grand-total">
+              <span>Grand Total</span>
+              <span>{{ getTotal() | currency }}</span>
+            </li>
+          </ul>
+
+          <button 
+            class="checkout-btn" 
+            [disabled]="cart.length === 0"
+            (click)="checkout()"
+          >
+            CONFIRM ORDER
+            <i class="pi pi-arrow-right"></i>
+          </button>
+          
+          <button 
+            class="abort-btn" 
+            *ngIf="cart.length > 0"
+            (click)="clearCart()"
+          >Clear Entire Basket</button>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</div>

@@ -1,0 +1,204 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="entitlement-profile-page">
+
+  <!-- ── Loading ──────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="profile-loading">
+    <p-progressSpinner styleClass="w-4rem h-4rem"></p-progressSpinner>
+    <p>Loading entitlement details...</p>
+  </div>
+
+  <!-- ── Not Found ─────────────────────────────────────────────── -->
+  <div *ngIf="!loading && !entitlement" class="profile-not-found">
+    <i class="pi pi-gift"></i>
+    <h2>Entitlement not found</h2>
+    <p>This entitlement may have been removed or the code is incorrect.</p>
+    <button pButton label="Back to Entitlements" icon="pi pi-arrow-left" class="p-button-outlined" (click)="goBack()"></button>
+  </div>
+
+  <!-- ── Profile Layout ─────────────────────────────────────────── -->
+  <ng-container *ngIf="!loading && entitlement">
+
+    <!-- Cover + Avatar header -->
+    <div class="profile-cover">
+      <div class="cover-gradient"></div>
+      <div class="profile-header-content">
+        <!-- Avatar / Icon -->
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar">
+            <i class="pi pi-gift"></i>
+          </div>
+          <span class="profile-status-dot"
+                [class.dot-active]="entitlement.is_enabled"
+                [class.dot-inactive]="!entitlement.is_enabled"
+                [pTooltip]="entitlement.is_enabled ? 'Enabled' : 'Disabled'"></span>
+        </div>
+
+        <!-- Name & Meta -->
+        <div class="profile-hero">
+          <div class="profile-name-row">
+            <h1 class="profile-name">{{ entitlement.name }}</h1>
+            <p-tag *ngIf="entitlement.tier" [value]="entitlement.tier | uppercase" 
+                   [severity]="getTierSeverity(entitlement.tier)" styleClass="profile-status-tag"></p-tag>
+            <p-tag [value]="entitlement.is_enabled ? 'Enabled' : 'Disabled'" 
+                   [severity]="entitlement.is_enabled ? 'success' : 'secondary'" styleClass="profile-status-tag"></p-tag>
+          </div>
+          <p class="profile-meta-text"><i class="pi pi-tag"></i> {{ entitlement.category || 'Standard' }} Benefit</p>
+          <div class="profile-meta-chips">
+            <span class="meta-chip"><i class="pi pi-star"></i> Tier: {{ entitlement.tier || 'None' }}</span>
+            <span class="meta-chip mono"><i class="pi pi-code"></i> {{ entitlement.code }}</span>
+          </div>
+        </div>
+
+        <!-- Header actions -->
+        <div class="profile-header-actions">
+          <button pButton icon="pi pi-arrow-left" label="Back" class="p-button-text p-button-secondary" (click)="goBack()"></button>
+          <button pButton icon="pi pi-pencil" label="Edit" class="p-button-outlined p-button-secondary" (click)="editEntitlement()"></button>
+          <button pButton icon="pi pi-trash" class="p-button-outlined p-button-danger" (click)="deleteEntitlement()" pTooltip="Delete entitlement"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Main grid ─────────────────────────────────────────────── -->
+    <div class="profile-body">
+
+      <!-- LEFT COLUMN -->
+      <aside class="profile-sidebar">
+
+        <!-- Stat cards row -->
+        <div class="stat-cards">
+          <div class="stat-card">
+            <i class="pi pi-link stat-icon"></i>
+            <div class="stat-value">{{ assignments.length }}</div>
+            <div class="stat-label">Assigns</div>
+          </div>
+          <div class="stat-card">
+            <i class="pi pi-bookmark stat-icon"></i>
+            <div class="stat-value text-xs">{{ entitlement.category || '—' }}</div>
+            <div class="stat-label">Category</div>
+          </div>
+          <div class="stat-card">
+            <i class="pi pi-verified stat-icon"></i>
+            <div class="stat-value text-xs">{{ entitlement.tier || '—' }}</div>
+            <div class="stat-label">Tier</div>
+          </div>
+        </div>
+
+        <!-- Entitlement Info card -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <i class="pi pi-info-circle"></i>
+            <span>Benefit Overview</span>
+          </div>
+          <div class="info-list">
+            <div class="info-row">
+              <span class="info-key">Name</span>
+              <span class="info-val font-semibold">{{ entitlement.name }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Category</span>
+              <span class="info-val">
+                 <p-tag [value]="entitlement.category" [severity]="getCategorySeverity(entitlement.category)" [style]="{'font-size':'0.7rem'}"></p-tag>
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Created</span>
+              <span class="info-val text-[10px] text-gray-500">{{ formatDate(entitlement.created_at) }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Updated</span>
+              <span class="info-val text-[10px] text-gray-500">{{ formatDate(entitlement.updated_at) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ID card -->
+        <div class="info-card id-card">
+          <div class="info-card-header">
+            <i class="pi pi-hashtag"></i>
+            <span>Technical Code</span>
+          </div>
+          <code class="id-code">{{ entitlement.code }}</code>
+        </div>
+
+      </aside>
+
+      <!-- RIGHT COLUMN -->
+      <main class="profile-main">
+
+        <!-- Tabs card -->
+        <div class="profile-card no-pad">
+          <p-tabView styleClass="profile-tabview">
+            
+            <!-- ASSIGNMENTS PANEL -->
+            <p-tabPanel header="Entitlement Assignments">
+              <div class="p-0">
+                <div class="p-6 border-b border-gray-100 bg-gray-50/30 flex justify-between items-center">
+                  <div>
+                    <h3 class="card-title">Active Assignments</h3>
+                    <p class="card-subtitle">Entities benefiting from this entitlement</p>
+                  </div>
+                  <p-badge [value]="assignments.length.toString()" severity="success"></p-badge>
+                </div>
+
+                <div *ngIf="assignmentsLoading" class="p-20 text-center">
+                  <p-progressSpinner styleClass="w-3rem h-3rem"></p-progressSpinner>
+                </div>
+
+                <div *ngIf="!assignmentsLoading && !assignments.length" class="empty-state">
+                  <i class="pi pi-inbox empty-icon"></i>
+                  <p>No active assignments found.</p>
+                </div>
+
+                <p-table *ngIf="!assignmentsLoading && assignments.length" [value]="assignments" styleClass="p-datatable-sm profile-table">
+                  <ng-template pTemplate="header">
+                    <tr>
+                      <th>Beneficiary</th>
+                      <th>Type</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                    </tr>
+                  </ng-template>
+                  <ng-template pTemplate="body" let-a>
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-3">
+                          <div class="w-8 h-8 rounded bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs border border-emerald-100">
+                            {{ a.entity_id.substring(0, 2).toUpperCase() }}
+                          </div>
+                          <code class="text-xs font-semibold text-gray-700">{{ a.entity_id }}</code>
+                        </div>
+                      </td>
+                      <td><p-tag [value]="a.entity_type" severity="info" styleClass="text-[9px] font-bold uppercase"></p-tag></td>
+                      <td><p-tag [value]="a.status || 'Active'" severity="success" styleClass="text-[9px]"></p-tag></td>
+                      <td class="text-xs text-gray-400">{{ formatDate(a.created_at) }}</td>
+                    </tr>
+                  </ng-template>
+                </p-table>
+              </div>
+            </p-tabPanel>
+
+            <!-- METADATA PANEL -->
+            <p-tabPanel header="Configuration & Metadata">
+              <div class="p-0">
+                <div class="p-6 border-b border-gray-100 bg-gray-50/30">
+                  <h3 class="card-title">Technical Configuration</h3>
+                  <p class="card-subtitle">System metadata associated with this benefit</p>
+                </div>
+
+                <div class="p-8">
+                  <div class="bg-slate-900 rounded-2xl p-6 font-mono text-xs text-emerald-400 shadow-xl overflow-auto max-h-[500px]">
+                    <pre class="m-0">{{ getMetadataJson() }}</pre>
+                  </div>
+                </div>
+              </div>
+            </p-tabPanel>
+
+          </p-tabView>
+        </div>
+
+      </main>
+    </div>
+  </ng-container>
+</div>

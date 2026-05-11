@@ -1,0 +1,448 @@
+<p-toast></p-toast>
+
+<div class="delivery-points-page">
+  <div class="delivery-points-header">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded flex items-center justify-center shadow-inner">
+          <i class="pi pi-map-marker text-white text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-gray-900 leading-tight">Warehouses</h1>
+          <p class="text-xs text-gray-500">Inventory warehouse locations & logistics points</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <!-- View Switcher -->
+        <div class="flex bg-gray-100 p-1 rounded-lg mr-4 border border-gray-200">
+          <button 
+            (click)="viewMode = 'map'" 
+            [class]="viewMode === 'map' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'" 
+            class="px-4 py-1.5 text-[10px] uppercase tracking-widest font-bold rounded-md transition-all flex items-center gap-2">
+            <i class="pi pi-map"></i>
+            Map View
+          </button>
+          <button 
+            (click)="viewMode = 'table'" 
+            [class]="viewMode === 'table' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'" 
+            class="px-4 py-1.5 text-[10px] uppercase tracking-widest font-bold rounded-md transition-all flex items-center gap-2">
+            <i class="pi pi-table"></i>
+            Table View
+          </button>
+        </div>
+
+        <p-button
+          icon="pi pi-refresh"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="loadDeliveryPoints()"
+          pTooltip="Refresh"
+          size="small"></p-button>
+        <p-button [label]="viewMode === 'map' ? 'Add Point' : 'Add Location'" icon="pi pi-plus" severity="primary" (onClick)="createDeliveryPoint()" size="small"></p-button>
+      </div>
+    </div>
+  </div>
+
+  <div class="delivery-points-layout" *ngIf="viewMode === 'map'">
+    <section class="delivery-map-panel">
+      <!-- Map content remains same -->
+      <div *ngIf="!mapLoaded" class="delivery-map-loading">
+        <div class="text-center">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-3"></div>
+          <span class="text-gray-400 font-medium text-xs">Initializing map system...</span>
+        </div>
+      </div>
+
+      <div #deliveryPointsMap class="delivery-map-canvas"></div>
+
+      <!-- ... rest of map overlays ... -->
+
+      <!-- Drawing toolbar -->
+      <div class="delivery-draw-toolbar" *ngIf="mapLoaded">
+        <button
+          class="draw-tool-btn"
+          [class.active]="drawMode === 'point'"
+          (click)="setDrawMode('point')"
+          title="Add Point">
+          <i class="pi pi-map-marker"></i>
+        </button>
+        <button
+          class="draw-tool-btn"
+          [class.active]="drawMode === 'route'"
+          (click)="setDrawMode('route')"
+          title="Draw Route">
+          <i class="pi pi-minus"></i>
+        </button>
+        <button
+          class="draw-tool-btn"
+          [class.active]="drawMode === 'tag'"
+          (click)="setDrawMode('tag')"
+          title="Add Tag">
+          <i class="pi pi-tag"></i>
+        </button>
+        <div class="draw-tool-divider"></div>
+        <button
+          class="draw-tool-btn draw-tool-btn--secondary"
+          (click)="undoLastDrawing()"
+          title="Undo">
+          <i class="pi pi-undo"></i>
+        </button>
+        <button
+          class="draw-tool-btn draw-tool-btn--danger"
+          (click)="clearAllDrawings()"
+          title="Clear All">
+          <i class="pi pi-trash"></i>
+        </button>
+      </div>
+
+      <!-- Draw mode indicator -->
+      <div class="delivery-draw-mode" *ngIf="drawMode !== 'none'">
+        <span *ngIf="drawMode === 'point'"><i class="pi pi-map-marker mr-1"></i>Click map to add point</span>
+        <span *ngIf="drawMode === 'route'"><i class="pi pi-minus mr-1"></i>Click to add waypoints · double-click toolbar to finish</span>
+        <span *ngIf="drawMode === 'tag'"><i class="pi pi-tag mr-1"></i>Click map to place tag</span>
+      </div>
+
+      <!-- Tag input overlay -->
+      <div class="delivery-tag-input" *ngIf="tagInputVisible">
+        <div class="delivery-tag-input-card">
+          <p class="text-xs font-semibold text-gray-700 mb-2">Tag label</p>
+          <input
+            pInputText
+            [(ngModel)]="tagInputText"
+            placeholder="Enter tag text..."
+            class="w-full mb-3 text-sm"
+            (keydown.enter)="confirmTag()"
+            (keydown.escape)="cancelTag()"
+            autofocus />
+          <div class="flex gap-2">
+            <button class="flex-1 bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors" (click)="confirmTag()">Confirm</button>
+            <button class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors" (click)="cancelTag()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="delivery-map-focus">
+        <div class="delivery-map-focus-card">
+          <div class="delivery-map-focus-label">Map Focus</div>
+          <div *ngIf="selectedDeliveryPoint; else mapPrompt" class="delivery-map-focus-content">
+            <div>
+              <div class="delivery-map-focus-title">{{ selectedDeliveryPoint.name }}</div>
+              <div class="delivery-map-focus-subtitle">
+                {{ selectedDeliveryPoint.city || '-' }} / {{ selectedDeliveryPoint.district || '-' }}
+              </div>
+            </div>
+            <div
+              class="delivery-map-focus-badge"
+              [class.ready]="hasValidCoordinates(selectedDeliveryPoint)"
+              [class.empty]="!hasValidCoordinates(selectedDeliveryPoint)">
+              {{ hasValidCoordinates(selectedDeliveryPoint) ? 'GPS Ready' : 'No GPS' }}
+            </div>
+          </div>
+          <ng-template #mapPrompt>
+            <div class="delivery-map-focus-empty">Select a delivery point from the list to render it on the map.</div>
+          </ng-template>
+        </div>
+      </div>
+    </section>
+
+    <section class="delivery-list-panel">
+      <div class="px-6 py-4 border-b border-gray-100 bg-white flex items-center justify-between gap-4">
+        <div>
+          <h2 class="text-sm font-bold text-gray-800 uppercase tracking-wider">Inventory List</h2>
+          <p class="text-[10px] text-gray-400 font-medium uppercase tracking-widest">{{ filteredDeliveryPoints.length }} points registered</p>
+        </div>
+        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Active Focus</div>
+      </div>
+
+      <div class="delivery-list-toolbar">
+        <div class="delivery-list-search">
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-search"></i>
+            <input pInputText [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Search by warehouse, region, province..." class="w-full" />
+          </span>
+        </div>
+
+        <div class="delivery-list-filter">
+          <p-dropdown
+            [(ngModel)]="selectedStatus"
+            [options]="statusOptions"
+            optionLabel="label"
+            optionValue="value"
+            (onChange)="onStatusChange()"
+            placeholder="Filter status"
+            class="w-full"></p-dropdown>
+        </div>
+
+        <div class="delivery-list-actions">
+          <p-button label="Clear" icon="pi pi-times" severity="secondary" [outlined]="true" (onClick)="clearFilters()"></p-button>
+        </div>
+      </div>
+
+      <div class="bg-white p-10 text-center" *ngIf="loading">
+        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+          <i class="pi pi-spin pi-spinner text-blue-500 text-xl"></i>
+        </div>
+        <p class="text-gray-600">Loading delivery points...</p>
+      </div>
+
+      <div class="delivery-list-table" *ngIf="!loading">
+        <p-table
+          [value]="filteredDeliveryPoints"
+          styleClass="p-datatable-sm delivery-list-datatable"
+          [paginator]="true"
+          [rows]="10"
+          [rowsPerPageOptions]="[10, 20, 50]"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="{first}-{last} / {totalRecords}"
+          [scrollable]="true"
+          scrollHeight="flex">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Warehouse</th>
+              <th>Region</th>
+              <th>Province</th>
+              <th>Status</th>
+              <th>Map</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-item>
+            <tr
+              (click)="focusDeliveryPoint(item)"
+              class="cursor-pointer transition-colors"
+              [class.delivery-row-selected]="selectedDeliveryPoint?.id === item.id">
+              <td>
+                <div class="font-semibold text-gray-900">{{ item.name }}</div>
+                <div class="text-xs text-gray-500">{{ item.district || '-' }}</div>
+              </td>
+              <td>{{ item.location || '-' }}</td>
+              <td>{{ item.city || '-' }}</td>
+              <td>
+                <p-badge [value]="getStatusLabel(item.isActive)" [severity]="getStatusSeverity(item.isActive)"></p-badge>
+              </td>
+              <td>
+                <span
+                  class="text-xs font-medium"
+                  [class.text-green-600]="hasValidCoordinates(item)"
+                  [class.text-amber-600]="!hasValidCoordinates(item)">
+                  {{ hasValidCoordinates(item) ? 'Ready' : 'No GPS' }}
+                </span>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="5" class="text-center py-12 text-gray-500">No delivery points found</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </section>
+  </div>
+
+  <!-- TABLE VIEW MODE -->
+  <div class="delivery-table-layout px-6 pb-6" *ngIf="viewMode === 'table'">
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 mt-4">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between">
+        <div>
+          <p class="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-1">Total Locations</p>
+          <p class="text-3xl font-extrabold text-gray-900">{{ deliveryPoints.length }}</p>
+        </div>
+        <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center border border-blue-100">
+          <i class="pi pi-building text-blue-500 text-xl"></i>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between">
+        <div>
+          <p class="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-1">Active Nodes</p>
+          <p class="text-3xl font-extrabold text-green-600">{{ getActiveDeliveryPointsCount() }}</p>
+        </div>
+        <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center border border-green-100">
+          <i class="pi pi-check-circle text-green-500 text-xl"></i>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between">
+        <div>
+          <p class="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-1">Total Capacity</p>
+          <p class="text-3xl font-extrabold text-purple-600">{{ formatNumber(getTotalCapacity()) }}</p>
+        </div>
+        <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center border border-purple-100">
+          <i class="pi pi-box text-purple-500 text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+      <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-extrabold text-gray-800 uppercase tracking-widest">Global Location Registry</h2>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Unified Warehouse & Delivery Point Data</p>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <span class="p-input-icon-left">
+            <i class="pi pi-search text-gray-400"></i>
+            <input 
+              pInputText 
+              [(ngModel)]="searchTerm" 
+              (input)="onSearch()" 
+              placeholder="Search registry..." 
+              class="w-64 p-inputtext-sm border-gray-200" />
+          </span>
+          <p-dropdown
+            [(ngModel)]="selectedStatus"
+            [options]="statusOptions"
+            optionLabel="label"
+            optionValue="value"
+            (onChange)="onStatusChange()"
+            class="p-inputtext-sm"
+            [style]="{'min-width': '140px'}"></p-dropdown>
+        </div>
+      </div>
+
+      <p-table
+        [value]="filteredDeliveryPoints"
+        styleClass="p-datatable-sm"
+        [paginator]="true"
+        [rows]="15"
+        [rowsPerPageOptions]="[15, 30, 50]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records">
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="name">Warehouse <p-sortIcon field="name"></p-sortIcon></th>
+            <th pSortableColumn="location">Region <p-sortIcon field="location"></p-sortIcon></th>
+            <th pSortableColumn="city">Province <p-sortIcon field="city"></p-sortIcon></th>
+            <th pSortableColumn="district">District <p-sortIcon field="district"></p-sortIcon></th>
+            <th>Address</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td>
+              <div class="text-sm font-bold text-gray-900 leading-none">{{ item.name }}</div>
+              <div class="text-[10px] text-gray-400 font-mono mt-1">ID: {{ item.warehouseId || '-' }}</div>
+            </td>
+            <td class="text-xs font-semibold text-gray-600">{{ item.location || '-' }}</td>
+            <td class="text-xs font-semibold text-gray-600">{{ item.city || '-' }}</td>
+            <td class="text-xs text-gray-500">{{ item.district || '-' }}</td>
+            <td class="text-xs text-gray-500 max-w-[200px] truncate">{{ item.address || '-' }}</td>
+            <td>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200 uppercase tracking-wider">
+                {{ item.type || 'N/A' }}
+              </span>
+            </td>
+            <td>
+              <p-badge [value]="getStatusLabel(item.isActive)" [severity]="getStatusSeverity(item.isActive)"></p-badge>
+            </td>
+            <td>
+              <div class="flex gap-1">
+                <button (click)="viewDeliveryPoint(item)" class="p-1 hover:bg-blue-50 text-blue-500 rounded transition-colors" title="View Details">
+                  <i class="pi pi-eye"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="8" class="text-center py-16 text-gray-400">
+              <i class="pi pi-search text-4xl mb-3 opacity-20"></i>
+              <p class="font-bold">No records matching your filters</p>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+
+  <p-dialog [(visible)]="showDeliveryPointDialog" [header]="dialogMode === 'create' ? 'Add New Delivery Point' : 'Delivery Point Detail'" [modal]="true" [style]="{width: '760px'}" [closable]="!saving">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" *ngIf="editingDeliveryPoint">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Warehouse Name *</label>
+        <input pInputText [(ngModel)]="editingDeliveryPoint.name" [disabled]="dialogMode === 'view'" class="w-full" placeholder="Warehouse name">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Warehouse ID</label>
+        <input pInputText [ngModel]="editingDeliveryPoint.warehouseId" disabled class="w-full" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Region Shortname</label>
+        <input pInputText [(ngModel)]="editingDeliveryPoint.location" [disabled]="dialogMode === 'view'" class="w-full" placeholder="HCM, HNO, DBB...">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Region Fullname</label>
+        <input pInputText [(ngModel)]="editingDeliveryPoint.region" [disabled]="dialogMode === 'view'" class="w-full" placeholder="Region fullname">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Province *</label>
+        <input pInputText [(ngModel)]="editingDeliveryPoint.city" [disabled]="dialogMode === 'view'" class="w-full" placeholder="Province">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">District *</label>
+        <input pInputText [(ngModel)]="editingDeliveryPoint.district" [disabled]="dialogMode === 'view'" class="w-full" placeholder="District">
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Address *</label>
+        <input pInputText [(ngModel)]="editingDeliveryPoint.address" [disabled]="dialogMode === 'view'" class="w-full" placeholder="Warehouse address">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
+        <input pInputText [(ngModel)]="editingDeliveryPoint.type" [disabled]="dialogMode === 'view'" class="w-full" placeholder="BC">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Ward Code</label>
+        <input pInputText [(ngModel)]="editingDeliveryPoint.wardCode" [disabled]="dialogMode === 'view'" class="w-full" placeholder="Ward code">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Latitude</label>
+        <p-inputNumber [(ngModel)]="editingDeliveryPoint.latitude" [useGrouping]="false" [disabled]="dialogMode === 'view'" class="w-full"></p-inputNumber>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Longitude</label>
+        <p-inputNumber [(ngModel)]="editingDeliveryPoint.longitude" [useGrouping]="false" [disabled]="dialogMode === 'view'" class="w-full"></p-inputNumber>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+        <p-dropdown [(ngModel)]="editingDeliveryPoint.isActive" [options]="dialogStatusOptions" optionLabel="label" optionValue="value" [disabled]="dialogMode === 'view'" class="w-full"></p-dropdown>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Total Capacity</label>
+        <p-inputNumber [(ngModel)]="editingDeliveryPoint.totalCapacity" [useGrouping]="false" [disabled]="dialogMode === 'view'" class="w-full"></p-inputNumber>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Created At</label>
+        <input pInputText [ngModel]="editingDeliveryPoint.createdAt | date:'medium'" disabled class="w-full" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Updated At</label>
+        <input pInputText [ngModel]="editingDeliveryPoint.updatedAt | date:'medium'" disabled class="w-full" />
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <p-button label="Close" icon="pi pi-times" [outlined]="true" (onClick)="cancelEdit()"></p-button>
+      <p-button *ngIf="dialogMode === 'create'" label="Create" icon="pi pi-check" [loading]="saving" (onClick)="saveDeliveryPoint()"></p-button>
+    </ng-template>
+  </p-dialog>
+</div>

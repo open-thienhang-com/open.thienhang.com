@@ -1,0 +1,269 @@
+<div class="applications-page files-page">
+  <div class="fullscreen-container">
+    <header class="page-header">
+      <div class="header-content flex items-center gap-4">
+        <div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center border border-gray-100">
+          <i class="pi pi-folder-open text-indigo-600 text-2xl font-bold"></i>
+        </div>
+        <div>
+          <h1 class="page-title">File Management</h1>
+          <p class="page-subtitle">Browse and manage cloud and local data assets</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="search-btn" type="button">
+          <i class="pi pi-search"></i>
+        </button>
+        <button class="profile-btn" type="button">
+          <i class="pi pi-user"></i>
+        </button>
+      </div>
+    </header>
+
+    <main class="applications-tree-layout">
+      <!-- Left Sidebar: Tree Navigation -->
+      <section class="tree-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Storage Explorer</h2>
+            <p>Navigate storage providers and directories.</p>
+          </div>
+        </div>
+
+        <div class="search-box">
+          <i class="pi pi-search"></i>
+          <input 
+            type="text" 
+            placeholder="Search folders..." 
+            [(ngModel)]="searchTerm"
+            class="search-input"
+          />
+          <button *ngIf="searchTerm" class="clear-btn" (click)="searchTerm = ''">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+
+        <div class="tree-wrapper">
+          <p-tree
+            [value]="filteredTreeData"
+            selectionMode="single"
+            [(selection)]="selectedNode"
+            (onNodeSelect)="onNodeSelect($event)"
+            class="applications-tree"
+          ></p-tree>
+        </div>
+      </section>
+
+      <!-- Right Panel: File List & Details -->
+      <section class="details-panel flex flex-col h-full bg-[#f8fafc]">
+        
+        <!-- Google Drive Section -->
+        <ng-container *ngIf="selectedNode?.key === 'google-drive'">
+          <div class="p-6 bg-white border-b border-gray-100 flex justify-between items-center">
+            <div>
+              <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <i class="pi pi-google text-blue-500"></i> Google Drive
+              </h2>
+              <p class="text-gray-500 text-sm">Manage synchronized cloud files</p>
+            </div>
+            
+            <div class="flex items-center gap-3">
+              <div class="flex bg-gray-50 p-1 rounded-xl shadow-inner border border-gray-100">
+                <button pButton icon="pi pi-list" 
+                  class="view-toggle-btn" 
+                  [class.active]="viewMode() === 'list'"
+                  (click)="viewMode.set('list')"
+                  pTooltip="List View">
+                </button>
+                <button pButton icon="pi pi-th-large" 
+                  class="view-toggle-btn" 
+                  [class.active]="viewMode() === 'card'"
+                  (click)="viewMode.set('card')"
+                  pTooltip="Card View">
+                </button>
+              </div>
+              <button pButton icon="pi pi-refresh" class="p-button-outlined p-button-secondary bg-white" (click)="refreshAll()" [loading]="loading()"></button>
+            </div>
+          </div>
+
+          <!-- Google Drive Content -->
+          <div class="flex-1 overflow-auto p-6">
+            <div *ngIf="oauthState() === 'error'" class="mb-6">
+              <p-message severity="error" [text]="oauthMessage()" styleClass="w-full"></p-message>
+            </div>
+
+            <!-- Connect UI -->
+            <div *ngIf="!isConnected() && !loading()" class="py-12 flex flex-col items-center justify-center text-center">
+              <div class="w-24 h-24 bg-white rounded-[2rem] shadow-lg flex items-center justify-center mb-6">
+                <i class="pi pi-google text-4xl text-gray-800"></i>
+              </div>
+              <h3 class="text-2xl font-bold mb-2">Connect Google Drive</h3>
+              <p class="text-gray-500 mb-8 max-w-md">Authorize access to synchronize and manage your cloud files directly from this dashboard.</p>
+              <button pButton [label]="oauthState() === 'creating_auth_url' ? 'Connecting...' : 'Authorize Access'" 
+                icon="pi pi-google" 
+                class="p-button-lg shadow-lg border-none bg-gray-900 text-white"
+                (click)="startConnect()"
+                [loading]="oauthState() === 'creating_auth_url'">
+              </button>
+            </div>
+
+            <div *ngIf="loading() && !isConnected()" class="flex flex-col gap-4">
+              <p-skeleton width="100%" height="4rem" borderRadius="12px"></p-skeleton>
+              <p-skeleton width="100%" height="15rem" borderRadius="12px"></p-skeleton>
+            </div>
+
+            <!-- Connected UI -->
+            <ng-container *ngIf="isConnected()">
+              <div class="relative mb-6">
+                <i class="pi pi-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input type="text" pInputText 
+                  class="w-full pl-12 py-3 bg-white border-gray-200 rounded-xl" 
+                  placeholder="Search drive files..." 
+                  [(ngModel)]="searchQuery"
+                  (input)="onSearch()">
+              </div>
+
+              <!-- Card View -->
+              <div *ngIf="viewMode() === 'card'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div *ngFor="let file of filteredFiles()" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all cursor-pointer">
+                  <div class="flex items-start gap-4 mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center">
+                      <i [class]="getFileIcon(file.mimeType) + ' text-xl'"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <h4 class="font-bold text-gray-900 truncate" [title]="file.name">{{ file.name }}</h4>
+                      <p class="text-xs text-gray-500">{{ getFileType(file.mimeType) }}</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between mt-4 text-xs text-gray-400 font-medium">
+                    <span>{{ formatDate(file.modifiedTime) }}</span>
+                    <span>{{ file.id.substring(0,8) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- List View -->
+              <div *ngIf="viewMode() === 'list'" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <p-table [value]="filteredFiles()" [loading]="loading()" [rows]="10" [paginator]="true" styleClass="p-datatable-sm custom-table">
+                  <ng-template pTemplate="header">
+                    <tr>
+                      <th>File Name</th>
+                      <th>Type</th>
+                      <th>Last Modified</th>
+                      <th>Action</th>
+                    </tr>
+                  </ng-template>
+                  <ng-template pTemplate="body" let-file>
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-3">
+                          <i [class]="getFileIcon(file.mimeType)"></i>
+                          <span class="font-medium truncate max-w-[200px]" [title]="file.name">{{ file.name }}</span>
+                        </div>
+                      </td>
+                      <td><p-tag [value]="getFileType(file.mimeType)" styleClass="bg-gray-100 text-gray-600 text-xs border-none"></p-tag></td>
+                      <td class="text-gray-500 text-sm">{{ formatDate(file.modifiedTime) }}</td>
+                      <td><button pButton icon="pi pi-download" class="p-button-text p-button-rounded p-button-sm"></button></td>
+                    </tr>
+                  </ng-template>
+                </p-table>
+              </div>
+            </ng-container>
+          </div>
+        </ng-container>
+
+        <!-- Local Public Section -->
+        <ng-container *ngIf="selectedNode?.key === 'local-public'">
+          <div class="p-6 bg-white border-b border-gray-100 flex justify-between items-center">
+            <div>
+              <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <i class="pi pi-server text-emerald-500"></i> Local Public Storage
+              </h2>
+              <p class="text-gray-500 text-sm">Static assets in the public directory ({{ filteredPublicFiles().length }} items)</p>
+            </div>
+            
+            <div class="flex items-center gap-3">
+              <div class="flex bg-gray-50 p-1 rounded-xl shadow-inner border border-gray-100">
+                <button pButton icon="pi pi-list" 
+                  class="view-toggle-btn" 
+                  [class.active]="viewMode() === 'list'"
+                  (click)="viewMode.set('list')">
+                </button>
+                <button pButton icon="pi pi-th-large" 
+                  class="view-toggle-btn" 
+                  [class.active]="viewMode() === 'card'"
+                  (click)="viewMode.set('card')">
+                </button>
+              </div>
+              <button pButton icon="pi pi-refresh" class="p-button-outlined p-button-secondary bg-white" (click)="loadPublicFiles()" [loading]="publicFilesLoading()"></button>
+            </div>
+          </div>
+
+          <div class="flex-1 overflow-auto p-6">
+            <div class="relative mb-6">
+              <i class="pi pi-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+              <input type="text" pInputText 
+                class="w-full pl-12 py-3 bg-white border-gray-200 rounded-xl shadow-sm" 
+                placeholder="Search public assets..." 
+                [(ngModel)]="searchQuery"
+                (input)="onSearch()">
+            </div>
+
+            <!-- Card View -->
+            <div *ngIf="viewMode() === 'card'" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div *ngFor="let file of filteredPublicFiles()" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all group">
+                <div class="h-32 bg-gray-100 relative overflow-hidden flex items-center justify-center">
+                  <img *ngIf="file.mimeType.includes('image')" [src]="'/public/' + file.path" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" [alt]="file.name">
+                  <i *ngIf="!file.mimeType.includes('image')" [class]="getFileIcon(file.mimeType) + ' text-4xl text-gray-400'"></i>
+                </div>
+                <div class="p-4">
+                  <h4 class="font-bold text-gray-900 truncate mb-1" [title]="file.name">{{ file.name }}</h4>
+                  <div class="flex justify-between items-center text-xs text-gray-500">
+                    <span>{{ formatSize(file.size) }}</span>
+                    <span>{{ formatDate(file.modifiedTime) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- List View -->
+            <div *ngIf="viewMode() === 'list'" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <p-table [value]="filteredPublicFiles()" [loading]="publicFilesLoading()" [rows]="10" [paginator]="true" styleClass="p-datatable-sm custom-table">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th>Preview</th>
+                    <th>Asset Name</th>
+                    <th>Size</th>
+                    <th>Last Modified</th>
+                    <th>Link</th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-file>
+                  <tr>
+                    <td style="width: 60px">
+                      <div class="w-10 h-10 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
+                        <img *ngIf="file.mimeType.includes('image')" [src]="'/public/' + file.path" class="w-full h-full object-cover">
+                        <i *ngIf="!file.mimeType.includes('image')" [class]="getFileIcon(file.mimeType)"></i>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="font-medium text-gray-900 truncate max-w-[200px]" [title]="file.name">{{ file.name }}</div>
+                      <div class="text-[10px] text-gray-500">{{ file.path }}</div>
+                    </td>
+                    <td class="text-sm text-gray-600">{{ formatSize(file.size) }}</td>
+                    <td class="text-sm text-gray-500">{{ formatDate(file.modifiedTime) }}</td>
+                    <td>
+                      <a [href]="'/public/' + file.path" target="_blank" class="p-button p-button-text p-button-rounded p-button-sm text-indigo-600">
+                        <i class="pi pi-external-link"></i>
+                      </a>
+                    </td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </div>
+        </ng-container>
+      </section>
+    </main>
+  </div>
+</div>

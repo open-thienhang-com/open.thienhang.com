@@ -1,0 +1,244 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="bg-gray-50 min-h-screen p-6">
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+          <i class="pi pi-users text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Inventory Suppliers</h1>
+          <p class="text-gray-600">Manage supplier records and contact information</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+        <p-button
+          icon="pi pi-filter"
+          severity="secondary"
+          [outlined]="!showFilters"
+          [rounded]="true"
+          (onClick)="toggleFilters()"
+          pTooltip="Toggle Filters"
+          class="hidden sm:inline-flex">
+        </p-button>
+        <p-button
+          icon="pi pi-refresh"
+          severity="info"
+          [outlined]="true"
+          [rounded]="true"
+          (onClick)="refreshData()"
+          pTooltip="Refresh"
+          class="hidden sm:inline-flex">
+        </p-button>
+        <p-button
+          label="Add Supplier"
+          icon="pi pi-plus"
+          severity="primary"
+          (onClick)="openCreateDialog()">
+        </p-button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Total Suppliers</p>
+          <p class="text-3xl font-bold text-gray-900">{{ total }}</p>
+        </div>
+        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-users text-blue-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Active Suppliers</p>
+          <p class="text-3xl font-bold text-green-600">{{ activeCount }}</p>
+        </div>
+        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-check-circle text-green-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Inactive Suppliers</p>
+          <p class="text-3xl font-bold text-red-600">{{ inactiveCount }}</p>
+        </div>
+        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+          <i class="pi pi-times-circle text-red-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm mb-6" *ngIf="showFilters">
+    <div class="p-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-search"></i>
+            <input
+              pInputText
+              [(ngModel)]="searchTerm"
+              (input)="applyFilters()"
+              placeholder="Search by name, contact, email..."
+              class="w-full" />
+          </span>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+          <p-dropdown
+            [(ngModel)]="selectedStatus"
+            [options]="statusOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="All Status"
+            (onChange)="applyFilters()"
+            class="w-full">
+          </p-dropdown>
+        </div>
+
+        <div class="flex items-end">
+          <p-button
+            label="Clear Filters"
+            icon="pi pi-times"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="clearFilters()">
+          </p-button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 p-12 text-center" *ngIf="loading">
+    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="pi pi-spin pi-spinner text-blue-500 text-2xl"></i>
+    </div>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">Loading suppliers...</h3>
+    <p class="text-gray-500">Please wait while data is being fetched.</p>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" *ngIf="!loading">
+    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+      <h2 class="text-lg font-semibold text-gray-900">Supplier List ({{ filteredSuppliers.length }})</h2>
+    </div>
+
+    <p-table
+      [value]="filteredSuppliers"
+      styleClass="p-datatable-sm"
+      [paginator]="true"
+      [rows]="10"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} suppliers">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Name</th>
+          <th>Contact Person</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Address</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-supplier>
+        <tr>
+          <td>
+            <div>
+              <div class="font-semibold text-gray-900">{{ supplier.name }}</div>
+            </div>
+          </td>
+          <td>{{ supplier.contact_name || '-' }}</td>
+          <td>{{ supplier.email || '-' }}</td>
+          <td>{{ supplier.phone || '-' }}</td>
+          <td>{{ supplier.address || '-' }}</td>
+          <td>
+            <p-badge
+              [value]="getStatusLabel(supplier.is_active)"
+              [severity]="getStatusSeverity(supplier.is_active)">
+            </p-badge>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <p-button
+                icon="pi pi-pencil"
+                [outlined]="true"
+                size="small"
+                (onClick)="openEditDialog(supplier)"
+                pTooltip="Edit Supplier">
+              </p-button>
+              <p-button
+                icon="pi pi-trash"
+                [outlined]="true"
+                severity="danger"
+                size="small"
+                (onClick)="deleteSupplier($event, supplier)"
+                pTooltip="Delete Supplier">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="text-center py-12 text-gray-500">
+            No suppliers found
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <p-dialog
+    [(visible)]="showSupplierDialog"
+    [header]="editingSupplier ? 'Edit Supplier' : 'Add Supplier'"
+    [modal]="true"
+    [style]="{ width: '640px' }"
+    [closable]="!createSaving">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+        <input pInputText [(ngModel)]="createForm.name" placeholder="Supplier name" class="w-full"
+               [class.border-red-500]="formSubmitted && !createForm.name">
+        <small class="text-red-500 text-xs" *ngIf="formSubmitted && !createForm.name">Name is required</small>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Contact Person</label>
+        <input pInputText [(ngModel)]="createForm.contact_name" placeholder="Contact name" class="w-full">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+        <input pInputText [(ngModel)]="createForm.email" placeholder="email@example.com" class="w-full">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+        <input pInputText [(ngModel)]="createForm.phone" placeholder="+84..." class="w-full">
+      </div>
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+        <textarea pInputTextarea [(ngModel)]="createForm.address" rows="3" placeholder="Street address" class="w-full"></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+        <p-dropdown [(ngModel)]="createForm.is_active" [options]="[{label: 'Active', value: true}, {label: 'Inactive', value: false}]" optionLabel="label" optionValue="value" class="w-full"></p-dropdown>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <p-button label="Cancel" [outlined]="true" [disabled]="createSaving" (onClick)="cancelEdit()"></p-button>
+      <p-button label="Save" icon="pi pi-check" [loading]="createSaving" (onClick)="saveSupplier()"></p-button>
+    </ng-template>
+  </p-dialog>
+</div>

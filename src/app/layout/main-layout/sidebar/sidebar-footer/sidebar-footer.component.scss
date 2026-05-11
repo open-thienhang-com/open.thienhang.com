@@ -1,0 +1,248 @@
+:host {
+  display: block;
+  flex-shrink: 0;
+}
+
+// ── Footer wrapper ─────────────────────────────────────────────────────────────
+.sidebar-footer {
+  border-top: 1px solid var(--p-surface-border);
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+// ── UI Controls row (theme + palette) ─────────────────────────────────────────
+.ctrl-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+
+  &.collapsed {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.ctrl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--p-text-muted-color);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+
+  i { font-size: 0.82rem; }
+  &:hover { background: var(--p-surface-hover); color: var(--p-text-color); }
+  &:focus-visible { outline: 2px solid var(--p-primary-color); outline-offset: 1px; }
+}
+
+// ── User trigger row ──────────────────────────────────────────────────────────
+.user-trigger {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 5px 7px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+
+  &:hover { background: var(--p-surface-hover); }
+  &:focus-visible { outline: 2px solid var(--p-primary-color); outline-offset: 1px; }
+
+  .sidebar-footer.collapsed & {
+    justify-content: center;
+    padding: 5px;
+    gap: 0;
+  }
+}
+
+.trigger-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.trigger-name {
+  font-size: 0.81rem;
+  font-weight: 600;
+  color: var(--p-text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.trigger-email {
+  font-size: 0.70rem;
+  color: var(--p-text-muted-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.trigger-icon {
+  font-size: 0.78rem;
+  color: var(--p-text-muted-color);
+  flex-shrink: 0;
+}
+
+// ── Avatar circle ─────────────────────────────────────────────────────────────
+.avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--p-primary-400), var(--p-primary-600));
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-weight: 700;
+  flex-shrink: 0;
+}
+
+// ── User menu overlay content ─────────────────────────────────────────────────
+.umenu { width: 216px; padding: 4px 0; }
+
+.umenu-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px 8px;
+}
+
+.umenu-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--p-primary-400), var(--p-primary-600));
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 700;
+  flex-shrink: 0;
+}
+
+.umenu-info { display: flex; flex-direction: column; min-width: 0; }
+.umenu-name { font-size: 0.83rem; font-weight: 600; color: var(--p-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.umenu-email { font-size: 0.71rem; color: var(--p-text-muted-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.umenu-meta {
+  padding: 2px 12px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.umeta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+
+  i { font-size: 0.67rem; color: var(--p-text-muted-color); width: 12px; flex-shrink: 0; }
+}
+
+.umeta-key { color: var(--p-text-muted-color); flex-shrink: 0; }
+.umeta-val { color: var(--p-text-color); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.umenu-divider { height: 1px; background: var(--p-surface-border); margin: 4px 0; }
+
+.umenu-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--p-text-color);
+  font-size: 0.81rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s;
+
+  i { font-size: 0.8rem; color: var(--p-text-muted-color); width: 16px; flex-shrink: 0; }
+
+  &:hover { background: var(--p-surface-hover); i { color: var(--p-primary-color); } }
+  &.danger { color: var(--p-red-500, #ef4444); i { color: var(--p-red-500, #ef4444); } }
+  &.danger:hover { background: color-mix(in srgb, var(--p-red-500, #ef4444) 8%, transparent); }
+}
+
+// ── Color picker overlay content ──────────────────────────────────────────────
+.cpick { width: 224px; padding: 2px 0; }
+
+.cpick-section {
+  padding: 6px 12px;
+  &:not(:last-child) { border-bottom: 1px solid var(--p-surface-border); }
+}
+
+.cpick-label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--p-text-muted-color);
+  margin-bottom: 6px;
+}
+
+.cpick-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+
+.cpick-dot {
+  width: 18px; height: 18px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s, border-color 0.15s;
+
+  &:hover    { transform: scale(1.2); }
+  &.selected { border-color: var(--p-primary-color); box-shadow: 0 0 0 1px var(--p-primary-color); }
+}
+
+// ── Auth buttons ──────────────────────────────────────────────────────────────
+.auth-row { display: flex; gap: 6px; }
+
+.auth-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex: 1;
+  padding: 7px 8px;
+  border-radius: 7px;
+  font-size: 0.79rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+
+  &.login-btn { background: var(--p-primary-color); color: #fff; &:hover { opacity: 0.88; } }
+  &.register-btn { background: transparent; border-color: var(--p-surface-border); color: var(--p-text-color); &:hover { background: var(--p-surface-hover); } }
+  i { font-size: 0.79rem; }
+}
+
+// ── PrimeNG overrides ─────────────────────────────────────────────────────────
+:host ::ng-deep {
+  .user-menu-panel {
+    border-radius: 10px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.13);
+    .p-overlaypanel-content { padding: 4px 0; }
+  }
+  .color-picker-panel {
+    border-radius: 10px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.13);
+    .p-overlaypanel-content { padding: 4px 0; }
+  }
+  .p-selectbutton .p-button { font-size: 0.75rem; padding: 3px 8px; }
+}

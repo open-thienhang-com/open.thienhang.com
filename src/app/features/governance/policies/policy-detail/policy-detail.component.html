@@ -1,0 +1,252 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="policy-profile-page">
+
+  <!-- ── Loading ──────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="profile-loading">
+    <div class="skeleton-wrap">
+      <p-skeleton shape="circle" size="6rem" styleClass="mb-4"></p-skeleton>
+      <p-skeleton width="200px" height="2rem" styleClass="mb-2"></p-skeleton>
+      <p-skeleton width="300px" height="1.5rem" styleClass="mb-4"></p-skeleton>
+      <div class="grid grid-cols-3 gap-4 w-full max-w-[400px]">
+        <p-skeleton height="80px"></p-skeleton>
+        <p-skeleton height="80px"></p-skeleton>
+        <p-skeleton height="80px"></p-skeleton>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Not Found ─────────────────────────────────────────────── -->
+  <div *ngIf="!loading && !policy" class="profile-not-found">
+    <i class="pi pi-lock"></i>
+    <h2>Policy not found</h2>
+    <p>This policy may have been removed or the ID is incorrect.</p>
+    <button pButton label="Back to Policies" icon="pi pi-arrow-left" class="p-button-outlined" (click)="goBack()"></button>
+  </div>
+
+  <!-- ── Profile Layout ─────────────────────────────────────────── -->
+  <ng-container *ngIf="!loading && policy">
+
+    <!-- Cover + Avatar header -->
+    <div class="profile-cover">
+      <div class="cover-gradient"></div>
+      <div class="profile-header-content">
+        <!-- Avatar / Icon -->
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar">
+            <i class="pi pi-lock"></i>
+          </div>
+          <span class="profile-status-dot"
+                [class.dot-active]="policy.enabled"
+                [class.dot-inactive]="!policy.enabled"
+                [pTooltip]="policy.enabled ? 'Enabled' : 'Disabled'"></span>
+        </div>
+
+        <!-- Name & Meta -->
+        <div class="profile-hero">
+          <div class="profile-name-row">
+            <h1 class="profile-name">{{ policy.name }}</h1>
+            <p-tag [value]="policy.enabled ? 'Active' : 'Inactive'"
+                   [severity]="getPolicyStatusSeverity(policy.enabled)" styleClass="profile-status-tag"></p-tag>
+            <p-tag [value]="policy.effect | uppercase" [severity]="getEffectSeverity(policy.effect)" styleClass="profile-status-tag"></p-tag>
+          </div>
+          <p class="profile-meta-text"><i class="pi pi-info-circle"></i> {{ policy.description || 'No description provided' }}</p>
+          <div class="profile-meta-chips">
+            <span class="meta-chip"><i class="pi pi-tag"></i> Type: {{ policy.type || 'Standard' }}</span>
+            <span class="meta-chip mono"><i class="pi pi-hashtag"></i> {{ (policy.kid || '').slice(0,8) }}…</span>
+          </div>
+        </div>
+
+        <!-- Header actions -->
+        <div class="profile-header-actions">
+          <p-inputSwitch [(ngModel)]="policy.enabled" (onChange)="togglePolicyStatus()" pTooltip="Toggle Status"></p-inputSwitch>
+          <button pButton icon="pi pi-arrow-left" label="Back" class="p-button-text p-button-secondary" (click)="goBack()"></button>
+          <button pButton icon="pi pi-pencil" label="Edit" class="p-button-outlined p-button-secondary" (click)="editPolicy()"></button>
+          <button pButton icon="pi pi-trash" class="p-button-outlined p-button-danger" (click)="deletePolicy()" pTooltip="Delete policy"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Main grid ─────────────────────────────────────────────── -->
+    <div class="profile-body">
+
+      <!-- LEFT COLUMN -->
+      <aside class="profile-sidebar">
+
+        <!-- Stat cards row -->
+        <div class="stat-cards">
+          <div class="stat-card">
+            <i class="pi pi-users stat-icon"></i>
+            <div class="stat-value">{{ policy.total_roles || 0 }}</div>
+            <div class="stat-label">Roles</div>
+          </div>
+          <div class="stat-card">
+            <i class="pi pi-key stat-icon"></i>
+            <div class="stat-value">{{ policy.total_permissions || 0 }}</div>
+            <div class="stat-label">Perms</div>
+          </div>
+          <div class="stat-card">
+            <i class="pi pi-database stat-icon"></i>
+            <div class="stat-value">{{ policy.affected_assets_total || 0 }}</div>
+            <div class="stat-label">Assets</div>
+          </div>
+        </div>
+
+        <!-- Policy Info card -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <i class="pi pi-shield"></i>
+            <span>Governance Meta</span>
+          </div>
+          <div class="info-list">
+            <div class="info-row">
+              <span class="info-key">Priority</span>
+              <span class="info-val">
+                 <p-progressBar [value]="policy.priority" [style]="{ width: '60px', height: '6px' }" 
+                                [severity]="getPriorityColor(policy.priority)" [showValue]="false"></p-progressBar>
+                 <span class="ml-2 font-bold">{{ policy.priority }}</span>
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Effect</span>
+              <span class="info-val">
+                 <p-tag [value]="policy.effect | uppercase" [severity]="getEffectSeverity(policy.effect)" [style]="{'font-size':'10px'}"></p-tag>
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Domain</span>
+              <span class="info-val font-medium">{{ policy.domain_id || 'Global' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Created</span>
+              <span class="info-val text-xs">{{ formatDate(policy.created_at) }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Updated</span>
+              <span class="info-val text-xs">{{ formatDate(policy.updated_at) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tags card -->
+        <div class="info-card" *ngIf="policy.tags?.length">
+          <div class="info-card-header">
+            <i class="pi pi-tags"></i>
+            <span>Tags</span>
+          </div>
+          <div class="p-4 flex flex-wrap gap-2">
+            <p-chip *ngFor="let tag of policy.tags" [label]="tag" styleClass="text-[10px] bg-gray-50 border border-gray-200"></p-chip>
+          </div>
+        </div>
+
+        <!-- ID card -->
+        <div class="info-card id-card">
+          <div class="info-card-header">
+            <i class="pi pi-hashtag"></i>
+            <span>Policy ID</span>
+          </div>
+          <div class="flex items-center gap-2 p-3">
+            <code class="id-code flex-1">{{ policy.kid || '—' }}</code>
+            <button pButton icon="pi pi-copy" class="p-button-text p-button-sm p-button-secondary p-button-rounded" (click)="copyToClipboard(policy.kid)"></button>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- RIGHT COLUMN -->
+      <main class="profile-main">
+
+        <!-- Roles & Perms card -->
+        <div class="profile-card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i class="pi pi-shield"></i> Applied Roles</h2>
+              <p class="card-subtitle">Roles that are governed by this policy</p>
+            </div>
+          </div>
+          <div class="card-body no-pad">
+            <div *ngIf="!policy.role_details?.length" class="empty-state">
+              <i class="pi pi-users empty-icon"></i>
+              <p>No roles directly assigned to this policy.</p>
+            </div>
+
+            <p-table *ngIf="policy.role_details?.length" [value]="policy.role_details" styleClass="p-datatable-sm no-border">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th style="padding-left: 24px">Role</th>
+                  <th>Type</th>
+                  <th class="text-center">Perms</th>
+                  <th class="text-right" style="padding-right: 24px">Status</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-role>
+                <tr>
+                  <td style="padding-left: 24px">
+                    <div class="flex flex-col">
+                      <span class="font-bold text-gray-900">{{ role.name }}</span>
+                      <span class="text-[10px] font-mono text-gray-400">{{ role.kid }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <p-tag [value]="role.type" [severity]="role.type === 'system' ? 'danger' : 'info'" styleClass="text-[9px] font-bold uppercase"></p-tag>
+                  </td>
+                  <td class="text-center">
+                    <p-badge [value]="(role.permissions?.length || 0).toString()" severity="info"></p-badge>
+                  </td>
+                  <td class="text-right" style="padding-right: 24px">
+                    <p-tag [value]="role.is_active ? 'Active' : 'Inactive'" [severity]="role.is_active ? 'success' : 'secondary'" styleClass="text-[9px]"></p-tag>
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </div>
+
+        <!-- Subjects Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+           
+          <!-- USERS CARD -->
+          <div class="profile-card">
+            <div class="card-header">
+              <h2 class="card-title"><i class="pi pi-user text-indigo-500"></i> Users ({{ policy.user_details?.length || 0 }})</h2>
+            </div>
+            <div class="card-body">
+              <div *ngIf="!policy.user_details?.length" class="text-center py-6 text-gray-400 italic text-sm">No users assigned</div>
+              <div class="space-y-3">
+                 <div *ngFor="let u of policy.user_details" class="subject-item user">
+                   <div class="avatar">{{ getInitials(u) }}</div>
+                   <div class="info">
+                     <p class="name">{{ (u.first_name || u.last_name) ? ((u.first_name || '') + ' ' + (u.last_name || '')).trim() : (u.kid || 'Unknown') }}</p>
+                     <p class="email">{{ u.email || 'no-email' }}</p>
+                   </div>
+                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TEAMS CARD -->
+          <div class="profile-card">
+            <div class="card-header">
+              <h2 class="card-title"><i class="pi pi-users text-purple-500"></i> Teams ({{ policy.team_details?.length || 0 }})</h2>
+            </div>
+            <div class="card-body">
+              <div *ngIf="!policy.team_details?.length" class="text-center py-6 text-gray-400 italic text-sm">No teams assigned</div>
+              <div class="space-y-3">
+                 <div *ngFor="let t of policy.team_details" class="subject-item team">
+                   <div class="avatar"><i class="pi pi-users"></i></div>
+                   <div class="info">
+                     <p class="name">{{ t.name || t.kid }}</p>
+                     <p class="meta">{{ t.members?.length || 0 }} members • {{ t.type || 'Team' }}</p>
+                   </div>
+                 </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </main>
+    </div>
+  </ng-container>
+</div>

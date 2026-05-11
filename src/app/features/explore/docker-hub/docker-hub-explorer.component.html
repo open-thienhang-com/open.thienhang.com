@@ -1,0 +1,320 @@
+<div class="dockerhub-main">
+  <div class="dockerhub-content-wrapper">
+    <div class="dockerhub-content-inner">
+      <section class="dockerhub-hero">
+        <div class="dockerhub-hero-copy">
+          <div class="dockerhub-hero-badge">
+            <i class="pi pi-box"></i>
+          </div>
+          <div>
+            <p class="dockerhub-eyebrow">Explore application</p>
+            <h1 class="dockerhub-title">Docker Hub</h1>
+            <p class="dockerhub-subtitle">Manage Docker Hub image inventory, repository metadata, tags, and registry health.</p>
+          </div>
+        </div>
+
+        <div class="dockerhub-hero-actions">
+          <button pButton type="button" icon="pi pi-refresh" label="Refresh" class="p-button-sm p-button-outlined" (click)="loadDashboard()" [loading]="globalLoading"></button>
+          <button pButton type="button" icon="pi pi-server" label="Namespaces" class="p-button-sm" (click)="switchSection('namespaces')"></button>
+        </div>
+      </section>
+
+      <section class="dockerhub-overview-grid">
+        <article *ngFor="let card of summaryCards" class="summary-card" [attr.data-tone]="card.tone">
+          <div>
+            <p class="summary-label">{{ card.label }}</p>
+            <h3 class="summary-value">{{ card.value }}</h3>
+            <p class="summary-caption">{{ card.caption }}</p>
+          </div>
+          <div class="summary-icon">
+            <i [class]="card.icon"></i>
+          </div>
+        </article>
+      </section>
+
+      <section class="dockerhub-workspace">
+        <aside class="dockerhub-sidebar">
+          <div class="dockerhub-sidebar-panel">
+            <p class="sidebar-eyebrow">Registry sections</p>
+            <div class="sidebar-heading">Hub controls</div>
+            <nav class="nav-menu">
+              <button *ngFor="let section of sections" type="button" class="nav-item" (click)="switchSection(section.key)" [class.active]="activeSection === section.key">
+                <span class="nav-icon"><i [class]="section.icon"></i></span>
+                <span class="nav-content">
+                  <span class="nav-label">{{ section.label }}</span>
+                  <span class="nav-description">{{ section.description }}</span>
+                </span>
+                <i class="pi pi-angle-right nav-chevron"></i>
+              </button>
+            </nav>
+          </div>
+        </aside>
+
+        <div class="dockerhub-panel">
+          <div class="dockerhub-panel-header">
+            <div>
+              <p class="panel-eyebrow">Docker Hub domain</p>
+              <h2 class="panel-title">{{ activeSectionMeta.label }}</h2>
+              <p class="panel-subtitle">{{ activeSectionMeta.description }}</p>
+            </div>
+            <div class="panel-chip">
+              <i [class]="activeSectionMeta.icon"></i>
+              <span>{{ activeSectionMeta.label }}</span>
+            </div>
+          </div>
+
+          <div class="dockerhub-panel-content">
+            <div *ngIf="summaryState.error" class="alert-stack">
+              <p-message severity="warn" [text]="summaryState.error"></p-message>
+            </div>
+
+            <ng-container [ngSwitch]="activeSection">
+              <!-- Overview -->
+              <div *ngSwitchCase="'overview'" class="dockerhub-section">
+                <div class="flat-card" *ngIf="overviewState.data as overview">
+                  <div class="card-header">
+                    <div class="card-icon overview-icon"><i class="pi pi-home"></i></div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">{{ overview.display_name }}</h2>
+                      <p class="card-subtitle">{{ overview.purpose }}</p>
+                    </div>
+                    <p-tag [value]="summaryState.data?.source === 'live' ? 'Live sync enabled' : 'Sample mode'" [severity]="getSeverity(summaryState.data?.source)"></p-tag>
+                  </div>
+                  <div class="card-body">
+                    <div class="stats-grid">
+                      <div class="metric-card"><span class="metric-label">Quality Score</span><strong>{{ qualityState.data?.score ?? '-' }}</strong></div>
+                      <div class="metric-card"><span class="metric-label">Coverage</span><strong>{{ (qualityState.data?.coverage || 0) * 100 }}%</strong></div>
+                      <div class="metric-card"><span class="metric-label">Monthly Cost</span><strong>${{ costState.data?.monthly_estimated_usd ?? '-' }}</strong></div>
+                      <div class="metric-card"><span class="metric-label">Mode</span><p-tag [value]="summaryState.data?.source || 'unknown'" [severity]="getSeverity(summaryState.data?.source)"></p-tag></div>
+                    </div>
+
+                    <div class="list-block">
+                      <div class="list-title">Capabilities</div>
+                      <div class="pill-list">
+                        <span class="info-pill" *ngFor="let cap of overview.capabilities">{{ cap }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid-2">
+                  <div class="flat-card">
+                    <div class="card-header">
+                      <div class="card-icon feature-icon"><i class="pi pi-bolt"></i></div>
+                      <div class="card-title-group">
+                        <h2 class="card-title">Features</h2>
+                        <p class="card-subtitle">Exposed platform capabilities</p>
+                      </div>
+                    </div>
+                    <div class="card-body">
+                      <ul class="feature-list">
+                        <li *ngFor="let feature of featuresState.data?.features">{{ feature }}</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="flat-card">
+                    <div class="card-header">
+                      <div class="card-icon cost-icon"><i class="pi pi-dollar"></i></div>
+                      <div class="card-title-group">
+                        <h2 class="card-title">Cost Notes</h2>
+                        <p class="card-subtitle">Estimates and billing notes</p>
+                      </div>
+                    </div>
+                    <div class="card-body">
+                      <ul class="feature-list">
+                        <li *ngFor="let note of costState.data?.notes">{{ note }}</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Namespaces -->
+              <div *ngSwitchCase="'namespaces'" class="dockerhub-section">
+                <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon workspace-icon"><i class="pi pi-server"></i></div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">Namespace Inventory</h2>
+                      <p class="card-subtitle">Rollup metrics by Docker Hub namespace</p>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <p-table [value]="namespacesState.data?.data || []" responsiveLayout="scroll" [loading]="namespacesState.loading" styleClass="p-datatable-sm">
+                      <ng-template pTemplate="header">
+                        <tr>
+                          <th>Namespace</th>
+                          <th>Repositories</th>
+                          <th>Tags</th>
+                          <th>Images</th>
+                        </tr>
+                      </ng-template>
+                      <ng-template pTemplate="body" let-ns>
+                        <tr>
+                          <td class="font-bold">{{ ns.namespace }}</td>
+                          <td>{{ ns.repositories }}</td>
+                          <td>{{ ns.tags }}</td>
+                          <td>{{ ns.images }}</td>
+                        </tr>
+                      </ng-template>
+                    </p-table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Images -->
+              <div *ngSwitchCase="'images'" class="dockerhub-section">
+                <div class="grid-2">
+                  <div class="flat-card">
+                    <div class="card-header">
+                      <div class="card-icon sql-icon"><i class="pi pi-box"></i></div>
+                      <div class="card-title-group">
+                        <h2 class="card-title">Image inventory</h2>
+                        <p class="card-subtitle">Select an image to inspect detailed metadata</p>
+                      </div>
+                    </div>
+                    <div class="card-body">
+                      <div class="search-box mb-4">
+                        <span class="p-input-icon-left w-full">
+                          <i class="pi pi-search"></i>
+                          <input type="text" pInputText placeholder="Search images..." class="w-full" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"/>
+                        </span>
+                      </div>
+                      <div *ngIf="imagesState.data?.data?.length; else imageEmpty" class="select-list">
+                        <button *ngFor="let image of imagesState.data?.data" type="button" class="select-card" [class.active]="selectedImage?.id === image.id" (click)="selectImage(image)">
+                          <div>
+                            <div class="select-title">{{ image.namespace }}/{{ image.repository }}</div>
+                            <div class="select-subtitle">Tag: {{ image.tag }}</div>
+                          </div>
+                          <p-tag [value]="image.status" [severity]="getSeverity(image.status)"></p-tag>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flat-card">
+                    <div class="card-header">
+                      <div class="card-icon detail-icon"><i class="pi pi-id-card"></i></div>
+                      <div class="card-title-group">
+                        <h2 class="card-title">Image detail</h2>
+                        <p class="card-subtitle">Endpoint: `/images/:id`</p>
+                      </div>
+                    </div>
+                    <div class="card-body" *ngIf="selectedImage as img; else detailEmpty">
+                      <div class="detail-header-mini mb-4">
+                        <code class="tag-code">{{ img.namespace }}/{{ img.repository }}:{{ img.tag }}</code>
+                      </div>
+                      <div class="kv-list">
+                        <div class="kv-item"><span>ID</span><strong>{{ img.id }}</strong></div>
+                        <div class="kv-item"><span>Owner</span><strong>{{ img.owner }}</strong></div>
+                        <div class="kv-item"><span>Visibility</span><p-tag [value]="img.visibility" [severity]="getSeverity(img.visibility)"></p-tag></div>
+                        <div class="kv-item"><span>Arch</span><strong>{{ img.architecture }}</strong></div>
+                        <div class="kv-item"><span>Pulls</span><strong>{{ img.pull_count | number }}</strong></div>
+                        <div class="kv-item"><span>Last Pushed</span><strong>{{ formatDate(img.last_pushed_at) }}</strong></div>
+                        <div class="kv-item"><span>Size</span><strong>{{ img.metadata.size_mb }} MB</strong></div>
+                        <div class="kv-item"><span>Vulnerabilities</span><p-tag [value]="img.metadata.vulnerabilities.toString()" [severity]="img.metadata.vulnerabilities > 0 ? 'danger' : 'success'"></p-tag></div>
+                      </div>
+                      <div class="digest-box mt-4">
+                        <div class="list-title mb-1">Digest</div>
+                        <div class="digest-text">{{ img.metadata.digest }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Governance -->
+              <div *ngSwitchCase="'governance'" class="dockerhub-section">
+                <div class="grid-2">
+                  <div class="flat-card">
+                    <div class="card-header">
+                      <div class="card-icon quality-icon"><i class="pi pi-verified"></i></div>
+                      <div class="card-title-group">
+                        <h2 class="card-title">Quality posture</h2>
+                        <p class="card-subtitle">Coverage and review recency</p>
+                      </div>
+                    </div>
+                    <div class="card-body" *ngIf="qualityState.data as quality">
+                      <div class="kv-list">
+                        <div class="kv-item"><span>Score</span><strong>{{ quality.score }}</strong></div>
+                        <div class="kv-item"><span>Coverage</span><strong>{{ (quality.coverage * 100) | number:'1.0-0' }}%</strong></div>
+                        <div class="kv-item"><span>Issues</span><strong>{{ quality.issues }}</strong></div>
+                        <div class="kv-item"><span>Last reviewed</span><strong>{{ formatDate(quality.last_reviewed_at) }}</strong></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flat-card">
+                    <div class="card-header">
+                      <div class="card-icon version-icon"><i class="pi pi-code"></i></div>
+                      <div class="card-title-group">
+                        <h2 class="card-title">Version metadata</h2>
+                        <p class="card-subtitle">Current draft and build details</p>
+                      </div>
+                    </div>
+                    <div class="card-body" *ngIf="versionState.data as version">
+                      <div class="kv-list">
+                        <div class="kv-item"><span>Domain</span><strong>{{ version.domain }}</strong></div>
+                        <div class="kv-item"><span>Version</span><strong>{{ version.version }}</strong></div>
+                        <div class="kv-item"><span>API version</span><strong>{{ version.api_version }}</strong></div>
+                        <div class="kv-item"><span>Status</span><p-tag [value]="version.status" [severity]="getSeverity(version.status)"></p-tag></div>
+                        <div class="kv-item"><span>Build date</span><strong>{{ formatDate(version.build_date) }}</strong></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Developer Tools -->
+              <div *ngSwitchCase="'scripts'" class="dockerhub-section">
+                <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon detail-icon"><i class="pi pi-code"></i></div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">CLI Snippets</h2>
+                      <p class="card-subtitle">Use these curl commands to interact with the Docker Hub API directly.</p>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="script-grid">
+                      <div class="script-item" *ngFor="let script of cliSnippets">
+                        <div class="script-info">
+                          <span class="script-label">{{ script.label }}</span>
+                          <span class="script-desc">{{ script.desc }}</span>
+                        </div>
+                        <div class="script-code-wrapper">
+                          <code class="script-code">{{ script.command }}</code>
+                          <button pButton type="button" icon="pi pi-copy" class="p-button-text p-button-sm" (click)="copyToClipboard(script.command)"></button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flat-card">
+                  <div class="card-header">
+                    <div class="card-icon version-icon"><i class="pi pi-cloud-download"></i></div>
+                    <div class="card-title-group">
+                      <h2 class="card-title">Automation Script</h2>
+                      <p class="card-subtitle">Setup script to synchronize namespaces and repositories.</p>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="script-code-block">
+                      <pre><code>{{ automationScript }}</code></pre>
+                      <button pButton type="button" label="Copy Setup Script" icon="pi pi-copy" class="p-button-outlined mt-3" (click)="copyToClipboard(automationScript)"></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Loading Templates -->
+            <ng-template #imageEmpty><div class="empty-state"><i class="pi pi-box"></i><p>No images found.</p></div></ng-template>
+            <ng-template #detailEmpty><div class="empty-state"><i class="pi pi-id-card"></i><p>Select an image to view details.</p></div></ng-template>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>

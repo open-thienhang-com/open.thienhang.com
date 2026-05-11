@@ -1,0 +1,203 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="permission-profile-page">
+
+  <!-- ── Loading ──────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="profile-loading">
+    <p-progressSpinner styleClass="w-4rem h-4rem"></p-progressSpinner>
+    <p>Loading permission details...</p>
+  </div>
+
+  <!-- ── Not Found ─────────────────────────────────────────────── -->
+  <div *ngIf="!loading && !permission" class="profile-not-found">
+    <i class="pi pi-key"></i>
+    <h2>Permission not found</h2>
+    <p>This permission may have been removed or the ID is incorrect.</p>
+    <button pButton label="Back to Permissions" icon="pi pi-arrow-left" class="p-button-outlined" (click)="router.navigate(['/governance/permissions'])"></button>
+  </div>
+
+  <!-- ── Profile Layout ─────────────────────────────────────────── -->
+  <ng-container *ngIf="!loading && permission">
+
+    <!-- Cover + Avatar header -->
+    <div class="profile-cover">
+      <div class="cover-gradient"></div>
+      <div class="profile-header-content">
+        <!-- Avatar / Icon -->
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar">
+            <i class="pi pi-key"></i>
+          </div>
+          <span class="profile-status-dot dot-active"></span>
+        </div>
+
+        <!-- Name & Meta -->
+        <div class="profile-hero">
+          <div class="profile-name-row">
+            <h1 class="profile-name">{{ permission.name }}</h1>
+            <p-tag *ngIf="permission.action" [value]="permission.action | titlecase"
+                   [severity]="getActionSeverity(permission.action)" styleClass="profile-status-tag"></p-tag>
+          </div>
+          <p class="profile-meta-text"><i class="pi pi-code"></i> {{ permission.code || permission.identify }}</p>
+          <div class="profile-meta-chips">
+            <span class="meta-chip"><i class="pi pi-box"></i> Resource: {{ permission.resource || 'Generic' }}</span>
+            <span class="meta-chip mono"><i class="pi pi-hashtag"></i> {{ (permission.kid || permission.id || '').slice(0,8) }}…</span>
+          </div>
+        </div>
+
+        <!-- Header actions -->
+        <div class="profile-header-actions">
+          <button pButton icon="pi pi-arrow-left" label="Back" class="p-button-text p-button-secondary" (click)="router.navigate(['/governance/permissions'])"></button>
+          <button pButton icon="pi pi-pencil" label="Edit" class="p-button-outlined p-button-secondary" (click)="editPermission()"></button>
+          <button pButton icon="pi pi-trash" class="p-button-outlined p-button-danger" (click)="deletePermission()" pTooltip="Delete permission"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Main grid ─────────────────────────────────────────────── -->
+    <div class="profile-body">
+
+      <!-- LEFT COLUMN -->
+      <aside class="profile-sidebar">
+
+        <!-- Stat cards row -->
+        <div class="stat-cards">
+          <div class="stat-card">
+            <i class="pi pi-users stat-icon"></i>
+            <div class="stat-value">{{ rolesWithPermission.length }}</div>
+            <div class="stat-label">Roles</div>
+          </div>
+          <div class="stat-card">
+            <i class="pi pi-database stat-icon"></i>
+            <div class="stat-value">{{ getAssets().length }}</div>
+            <div class="stat-label">Assets</div>
+          </div>
+          <div class="stat-card">
+            <i class="pi pi-bolt stat-icon"></i>
+            <div class="stat-value">{{ permission.action ? 1 : 0 }}</div>
+            <div class="stat-label">Action</div>
+          </div>
+        </div>
+
+        <!-- Info card -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <i class="pi pi-info-circle"></i>
+            <span>Permission Info</span>
+          </div>
+          <div class="info-list">
+            <div class="info-row">
+              <span class="info-key">Name</span>
+              <span class="info-val font-semibold">{{ permission.name }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Action</span>
+              <span class="info-val">
+                 <p-tag [value]="permission.action | titlecase" [severity]="getActionSeverity(permission.action)" [style]="{'font-size':'0.75rem'}"></p-tag>
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Resource</span>
+              <span class="info-val font-medium text-indigo-600">{{ permission.resource || '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Created</span>
+              <span class="info-val text-xs">{{ formatDate(permission.created_at) }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Updated</span>
+              <span class="info-val text-xs">{{ formatDate(permission.updated_at) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description card -->
+        <div class="info-card" *ngIf="permission.description">
+          <div class="info-card-header">
+            <i class="pi pi-align-left"></i>
+            <span>Description</span>
+          </div>
+          <div class="p-4 text-sm text-gray-600 leading-relaxed italic">
+            "{{ permission.description }}"
+          </div>
+        </div>
+
+        <!-- ID card -->
+        <div class="info-card id-card">
+          <div class="info-card-header">
+            <i class="pi pi-hashtag"></i>
+            <span>Permission ID</span>
+          </div>
+          <code class="id-code">{{ permission.kid || permission.id || '—' }}</code>
+        </div>
+
+      </aside>
+
+      <!-- RIGHT COLUMN -->
+      <main class="profile-main">
+
+        <!-- Tabs card -->
+        <div class="profile-card no-pad">
+          <p-tabView styleClass="profile-tabview">
+            
+            <!-- ROLES PANEL -->
+            <p-tabPanel header="Included in Roles">
+              <div class="p-0">
+                <div class="p-6 border-b border-gray-100 bg-gray-50/30 flex justify-between items-center">
+                  <div>
+                    <h3 class="card-title">Roles ({{ rolesWithPermission.length }})</h3>
+                    <p class="card-subtitle">Roles that grant this capability</p>
+                  </div>
+                </div>
+
+                <div *ngIf="!rolesWithPermission.length" class="empty-state">
+                  <i class="pi pi-users empty-icon"></i>
+                  <p>No roles currently include this permission.</p>
+                </div>
+
+                <div *ngIf="rolesWithPermission.length" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                   <a *ngFor="let r of rolesWithPermission" [routerLink]="['/governance/roles', r.kid || r.identify]" 
+                      class="nav-item-link">
+                     <div class="nav-avatar bg-indigo-50 text-indigo-600"><i class="pi pi-shield"></i></div>
+                     <div class="nav-info">
+                       <p class="name">{{ r.name || r.display_name || 'Unnamed Role' }}</p>
+                       <p class="meta mono text-[10px]">{{ r.kid || r.identify }}</p>
+                     </div>
+                     <i class="pi pi-arrow-right"></i>
+                   </a>
+                </div>
+              </div>
+            </p-tabPanel>
+
+            <!-- ASSETS PANEL -->
+            <p-tabPanel header="Linked Assets">
+              <div class="p-0">
+                <div class="p-6 border-b border-gray-100 bg-gray-50/30 flex justify-between items-center">
+                  <div>
+                    <h3 class="card-title">Assets ({{ getAssets().length }})</h3>
+                    <p class="card-subtitle">Resources bound to this permission</p>
+                  </div>
+                </div>
+
+                <div *ngIf="!getAssets().length" class="empty-state">
+                  <i class="pi pi-database empty-icon"></i>
+                  <p>No assets directly bound to this permission.</p>
+                </div>
+
+                <div *ngIf="getAssets().length" class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                   <div *ngFor="let a of getAssets()" class="asset-tag">
+                     <i class="pi pi-file text-gray-400"></i>
+                     <span class="font-medium text-gray-700 truncate">{{ a.name || a.code || a }}</span>
+                   </div>
+                </div>
+              </div>
+            </p-tabPanel>
+
+          </p-tabView>
+        </div>
+
+      </main>
+    </div>
+  </ng-container>
+</div>

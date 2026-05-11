@@ -1,0 +1,205 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="asset-profile-page">
+
+  <!-- ── Loading ──────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="profile-loading">
+    <p-progressSpinner styleClass="w-4rem h-4rem"></p-progressSpinner>
+    <p>Loading asset details...</p>
+  </div>
+
+  <!-- ── Not Found ─────────────────────────────────────────────── -->
+  <div *ngIf="!loading && !asset" class="profile-not-found">
+    <i class="pi pi-database"></i>
+    <h2>Asset not found</h2>
+    <p>This asset may have been removed or the ID is incorrect.</p>
+    <button pButton label="Back to Assets" icon="pi pi-arrow-left" class="p-button-outlined" (click)="router.navigate(['/governance/assets'])"></button>
+  </div>
+
+  <!-- ── Profile Layout ─────────────────────────────────────────── -->
+  <ng-container *ngIf="!loading && asset">
+
+    <!-- Cover + Avatar header -->
+    <div class="profile-cover">
+      <div class="cover-gradient"></div>
+      <div class="profile-header-content">
+        <!-- Avatar / Icon -->
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar">
+            <i class="pi pi-database"></i>
+          </div>
+          <span class="profile-status-dot dot-active"></span>
+        </div>
+
+        <!-- Name & Meta -->
+        <div class="profile-hero">
+          <div class="profile-name-row">
+            <h1 class="profile-name">{{ asset.name }}</h1>
+            <p-tag [value]="asset.type || 'Generic'"
+                   [severity]="getTypeSeverity(asset.type)" styleClass="profile-status-tag"></p-tag>
+          </div>
+          <p class="profile-meta-text"><i class="pi pi-code"></i> {{ asset.identify || asset._id }}</p>
+          <div class="profile-meta-chips">
+            <span class="meta-chip"><i class="pi pi-box"></i> Domain: {{ asset.domain_id || 'System' }}</span>
+            <span class="meta-chip mono"><i class="pi pi-user"></i> Owner: {{ asset.owner_id || 'unowned' }}</span>
+          </div>
+        </div>
+
+        <!-- Header actions -->
+        <div class="profile-header-actions">
+          <button pButton icon="pi pi-arrow-left" label="Back" class="p-button-text p-button-secondary" (click)="router.navigate(['/governance/assets'])"></button>
+          <button pButton icon="pi pi-pencil" label="Edit" class="p-button-outlined p-button-secondary" (click)="editAsset()"></button>
+          <button pButton icon="pi pi-trash" class="p-button-outlined p-button-danger" (click)="deleteAsset()" pTooltip="Delete asset"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Main grid ─────────────────────────────────────────────── -->
+    <div class="profile-body">
+
+      <!-- LEFT COLUMN -->
+      <aside class="profile-sidebar">
+
+        <!-- Stat cards row -->
+        <div class="stat-cards">
+          <div class="stat-card">
+            <i class="pi pi-shield stat-icon"></i>
+            <div class="stat-value">{{ getPermissions().length }}</div>
+            <div class="stat-label">Perms</div>
+          </div>
+          <div class="stat-card">
+            <i class="pi pi-book stat-icon"></i>
+            <div class="stat-value">{{ getPolicies().length }}</div>
+            <div class="stat-label">Policies</div>
+          </div>
+          <div class="stat-card">
+            <i class="pi pi-share-alt stat-icon"></i>
+            <div class="stat-value">{{ asset.tenant_id ? 1 : 0 }}</div>
+            <div class="stat-label">Tenants</div>
+          </div>
+        </div>
+
+        <!-- Asset Info card -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <i class="pi pi-info-circle"></i>
+            <span>Asset Information</span>
+          </div>
+          <div class="info-list">
+            <div class="info-row">
+              <span class="info-key">Name</span>
+              <span class="info-val font-semibold">{{ asset.name }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Type</span>
+              <span class="info-val">
+                 <p-tag [value]="asset.type || 'Generic'" [severity]="getTypeSeverity(asset.type)" [style]="{'font-size':'0.75rem'}"></p-tag>
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Domain</span>
+              <span class="info-val font-medium">{{ asset.domain_id || '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Tenant</span>
+              <span class="info-val mono text-[10px] text-gray-400">{{ asset.tenant_id || 'Global' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Created</span>
+              <span class="info-val text-xs">{{ formatDate(asset.created_at) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description card -->
+        <div class="info-card" *ngIf="asset.description">
+          <div class="info-card-header">
+            <i class="pi pi-align-left"></i>
+            <span>Description</span>
+          </div>
+          <div class="p-4 text-sm text-gray-600 leading-relaxed italic">
+            "{{ asset.description }}"
+          </div>
+        </div>
+
+        <!-- ID card -->
+        <div class="info-card id-card">
+          <div class="info-card-header">
+            <i class="pi pi-hashtag"></i>
+            <span>Asset ID</span>
+          </div>
+          <div class="flex items-center gap-2 p-3">
+            <code class="id-code flex-1">{{ asset.identify || asset._id || '—' }}</code>
+            <button pButton icon="pi pi-copy" class="p-button-text p-button-sm p-button-secondary p-button-rounded" (click)="copyToClipboard(asset.identify || asset._id)"></button>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- RIGHT COLUMN -->
+      <main class="profile-main">
+
+        <!-- Tabs card -->
+        <div class="profile-card no-pad">
+          <p-tabView styleClass="profile-tabview">
+            
+            <!-- GOVERNANCE PANEL -->
+            <p-tabPanel header="Governance Policies">
+              <div class="p-0">
+                <div class="p-6 border-b border-gray-100 bg-gray-50/30">
+                  <h3 class="card-title">Active Policies ({{ getPolicies().length }})</h3>
+                  <p class="card-subtitle">Policies that regulate access to this asset</p>
+                </div>
+
+                <div *ngIf="!getPolicies().length" class="empty-state">
+                  <i class="pi pi-book empty-icon"></i>
+                  <p>No active policies found for this asset.</p>
+                </div>
+
+                <div *ngIf="getPolicies().length" class="p-4 space-y-3">
+                   <div *ngFor="let pol of getPolicies()" class="policy-item-card">
+                     <div class="icon-wrap bg-teal-50 text-teal-600"><i class="pi pi-book"></i></div>
+                     <div class="info">
+                       <p class="name">{{ pol.name || pol.kid || pol }}</p>
+                       <p class="type" *ngIf="pol.type">{{ pol.type }}</p>
+                     </div>
+                     <a [routerLink]="['/governance/policies', pol.kid || pol]" 
+                        class="p-button p-button-text p-button-sm p-button-secondary p-button-rounded no-underline flex items-center justify-center">
+                       <i class="pi pi-arrow-right"></i>
+                     </a>
+                   </div>
+                </div>
+              </div>
+            </p-tabPanel>
+
+            <!-- PERMISSIONS PANEL -->
+            <p-tabPanel header="Related Permissions">
+              <div class="p-0">
+                <div class="p-6 border-b border-gray-100 bg-gray-50/30">
+                  <h3 class="card-title">Permissions ({{ getPermissions().length }})</h3>
+                  <p class="card-subtitle">Permissions that use or bind this asset</p>
+                </div>
+
+                <div *ngIf="!getPermissions().length" class="empty-state">
+                  <i class="pi pi-shield empty-icon"></i>
+                  <p>No permissions found for this asset.</p>
+                </div>
+
+                <div *ngIf="getPermissions().length" class="p-6 flex flex-wrap gap-3">
+                   <a *ngFor="let p of getPermissions()" [routerLink]="['/governance/permissions', p.identify || p._id || p]" 
+                      class="perm-chip-link">
+                     <i class="pi pi-key"></i>
+                     <span>{{ p.name || p.code || p }}</span>
+                   </a>
+                </div>
+              </div>
+            </p-tabPanel>
+
+          </p-tabView>
+        </div>
+
+      </main>
+    </div>
+  </ng-container>
+</div>

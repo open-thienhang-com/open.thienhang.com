@@ -1,0 +1,219 @@
+<div class="applications-page">
+  <div class="fullscreen-container">
+    <header class="page-header">
+      <div class="header-content">
+        <h1 class="page-title">ThienHang Platform</h1>
+        <p class="page-subtitle">Browse applications as a folder tree</p>
+      </div>
+      <div class="header-actions">
+        <button class="search-btn" type="button">
+          <i class="pi pi-search"></i>
+        </button>
+        <button class="profile-btn" type="button">
+          <i class="pi pi-user"></i>
+        </button>
+      </div>
+    </header>
+
+    <main class="applications-tree-layout">
+      <section class="tree-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Application Tree</h2>
+            <p>Browse platform modules like folders and open the one you need.</p>
+          </div>
+        </div>
+
+        <div class="search-box">
+          <i class="pi pi-search"></i>
+          <input 
+            type="text" 
+            placeholder="Search applications..." 
+            [(ngModel)]="searchTerm"
+            class="search-input"
+          />
+          <button *ngIf="searchTerm" class="clear-btn" (click)="searchTerm = ''">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+
+        <div class="tree-wrapper">
+          <p-tree
+            [value]="filteredTreeData"
+            selectionMode="single"
+            [(selection)]="selectedNodes"
+            (onNodeSelect)="onNodeSelect($event)"
+            class="applications-tree"
+          ></p-tree>
+        </div>
+      </section>
+
+        <section class="details-panel">
+          <!-- Default Overview (no node selected) -->
+          <ng-container *ngIf="!selectedNode">
+            <div class="panel-header">
+              <div class="overview-header">
+                <div class="header-icon bg-gradient-to-r from-cyan-500 to-blue-600">
+                  <i class="pi pi-th-large text-3xl text-white"></i>
+                </div>
+                <div>
+                  <h2>ThienHang Platform</h2>
+                  <p class="text-gray-500">Browse and access all platform applications</p>
+                </div>
+              </div>
+            </div>
+          
+            <div class="details-content overview-content">
+              <!-- Stats Row -->
+              <div class="stats-grid">
+                <div class="stat-card bg-blue-50">
+                  <i class="pi pi-sitemap text-blue-600"></i>
+                  <div>
+                    <span class="stat-value">8</span>
+                    <span class="stat-label">App Categories</span>
+                  </div>
+                </div>
+                <div class="stat-card bg-emerald-50">
+                  <i class="pi pi-fw pi-list text-emerald-600"></i>
+                  <div>
+                    <span class="stat-value">45+</span>
+                    <span class="stat-label">Total Modules</span>
+                  </div>
+                </div>
+                <div class="stat-card bg-violet-50">
+                  <i class="pi pi-users text-violet-600"></i>
+                  <div>
+                    <span class="stat-value">3</span>
+                    <span class="stat-label">Active Users</span>
+                  </div>
+                </div>
+                <div class="stat-card bg-amber-50">
+                  <i class="pi pi-chart-line text-amber-600"></i>
+                  <div>
+                    <span class="stat-value">99.9%</span>
+                    <span class="stat-label">Uptime</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Access -->
+              <div class="section-block">
+                <h3 class="section-title">Quick Access</h3>
+                <div class="quick-grid">
+                  <button class="quick-card" (click)="navigateToRoute('/planning', 'planning')">
+                    <i class="pi pi-calendar text-cyan-600"></i>
+                    <span>Planning</span>
+                  </button>
+                  <button class="quick-card" (click)="navigateToRoute('/inventory/overview', 'inventory')">
+                    <i class="pi pi-box text-emerald-600"></i>
+                    <span>Inventory</span>
+                  </button>
+                  <button class="quick-card" (click)="navigateToRoute('/retail/ecommerce', 'retail')">
+                    <i class="pi pi-shopping-bag text-blue-600"></i>
+                    <span>Commerce</span>
+                  </button>
+                  <button class="quick-card" (click)="navigateToRoute('/governance/proposal', 'governance')">
+                    <i class="pi pi-shield text-red-600"></i>
+                    <span>Governance</span>
+                  </button>
+                  <button class="quick-card" (click)="navigateToRoute('/loyalty/overview', 'loyalty')">
+                    <i class="pi pi-heart text-pink-600"></i>
+                    <span>Loyalty</span>
+                  </button>
+                  <button class="quick-card" (click)="navigateToRoute('/notification/overview', 'notification')">
+                    <i class="pi pi-bell text-amber-600"></i>
+                    <span>Notifications</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Recent Activity -->
+              <div class="section-block">
+                <h3 class="section-title">Recent Activity</h3>
+                <div class="activity-list">
+                  <div class="activity-item" *ngFor="let a of recentActivity">
+                    <i [ngClass]="a.icon + ' ' + a.color"></i>
+                    <div>
+                      <span>{{ a.title }}</span>
+                      <small>{{ a.time }}</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Platform Features -->
+              <div class="section-block">
+                <h3 class="section-title">Platform Features</h3>
+                <div class="feature-list">
+                  <div class="feature-item" *ngFor="let f of features">
+                    <i [class]="f.icon + ' ' + f.color"></i>
+                    <div>
+                      <strong>{{ f.label }}</strong>
+                      <span>{{ f.desc }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- Selected Node Details -->
+          <ng-container *ngIf="selectedNode">
+            <div class="panel-header">
+              <div>
+                <h2>{{ selectedNode?.label }}</h2>
+                <p>{{ selectedNode?.data?.description || 'Selected module information' }}</p>
+              </div>
+            </div>
+          
+            <div class="details-content">
+              <div class="details-card">
+                <div class="details-title">
+                  <i [ngClass]="selectedNode?.icon"></i>
+                  <div>
+                    <h3>{{ selectedNode?.label }}</h3>
+                    <p>{{ selectedNode?.data?.description }}</p>
+                    <p *ngIf="selectedNode?.data?.route" class="details-route">
+                      <i class="pi pi-link"></i> <strong>Route:</strong> {{ selectedNode?.data?.route }}
+                    </p>
+                    <p *ngIf="selectedNode?.key" class="details-key">
+                      <i class="pi pi-key"></i> <strong>Key:</strong> {{ selectedNode?.key }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Quick Info -->
+                <div class="details-info" *ngIf="selectedNode?.children?.length">
+                  <h4><i class="pi pi-sitemap"></i> Contains {{ selectedNode?.children?.length }} sub-items</h4>
+                  <div class="child-chips">
+                    <span class="chip" *ngFor="let child of selectedNode?.children | slice:0:5">
+                      <i [ngClass]="child.icon" *ngIf="child.icon"></i>
+                      {{ child.label }}
+                    </span>
+                    <span class="chip more" *ngIf="(selectedNode?.children?.length || 0) > 5">
+                      +{{(selectedNode?.children?.length || 0) - 5}} more
+                    </span>
+                  </div>
+                </div>
+          
+                <div class="details-actions">
+                  <button class="explore-btn" type="button" [disabled]="!selectedNode?.data?.route" (click)="navigateToRoute(selectedNode?.data?.route || '', selectedNode?.data?.app)">
+                    <i class="pi pi-compass"></i>
+                    Explore
+                  </button>
+                  <button *ngIf="selectedNode?.data?.app" class="switch-btn" type="button" (click)="selectApp(selectedNode?.data?.app)">
+                    <i class="pi pi-user-switch"></i>
+                    Switch User
+                  </button>
+                  <button class="back-btn" type="button" (click)="clearSelection()">
+                    <i class="pi pi-arrow-left"></i>
+                    Back to Overview
+                  </button>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </section>
+    </main>
+  </div>
+</div>

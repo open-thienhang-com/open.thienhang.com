@@ -1,0 +1,48 @@
+import { Routes } from '@angular/router';
+
+export const chatRoutes: Routes = [
+  {
+    path: 'overview',
+    loadComponent: () => import('./pages/overview/messaging-overview.component').then(m => m.MessagingOverviewComponent),
+  },
+  {
+    path: '',
+    redirectTo: 'overview',
+    pathMatch: 'full'
+  },
+  {
+    path: 'dashboard',
+    loadComponent: () => import('./pages/dashboard/chat-dashboard.component').then(m => m.ChatDashboardComponent),
+  },
+
+
+  {
+    path: 'workspace',
+    loadComponent: () => import('./pages/facebook-workspace/facebook-workspace.component').then(m => m.FacebookWorkspaceComponent),
+  },
+  {
+    path: 'templates',
+    redirectTo: 'explore',
+  },
+  {
+    path: 'automation',
+    loadComponent: () => import('./pages/automation/chat-automation.component').then(m => m.ChatAutomationComponent),
+  },
+  {
+    path: 'bot-settings',
+    loadComponent: () => import('./pages/bot-settings/chat-bot-settings.component').then(m => m.ChatBotSettingsComponent),
+  },
+  {
+    path: 'delivery-health',
+    loadComponent: () => import('./pages/delivery-health/chat-delivery-health.component').then(m => m.ChatDeliveryHealthComponent),
+  },
+  {
+    path: 'explore',
+    loadComponent: () => import('./pages/conversations/chat-conversations.component').then(m => m.ChatConversationsComponent),
+  },
+
+  {
+    path: '**',
+    redirectTo: '',
+  },
+];

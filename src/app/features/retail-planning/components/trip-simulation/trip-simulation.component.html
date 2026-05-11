@@ -1,0 +1,238 @@
+<!-- Trip Simulation Component -->
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 overflow-hidden">
+  <!-- Top Control Bar -->
+  <div class="bg-gradient-to-r from-orange-50 to-orange-100 border-b border-orange-200 px-6 py-4">
+    <div class="flex items-center justify-between flex-wrap gap-4">
+      <div class="flex items-center gap-4">
+        <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+          <span>🚀</span>
+          <span>Mô Phỏng Chuyến Xe</span>
+          <span *ngIf="planName" class="text-sm font-normal text-orange-600 bg-orange-100 px-3 py-1 rounded-full border border-orange-200">
+            <span class="mr-1">📋</span>
+            <span>Cho lịch tải: </span>
+            <span class="font-semibold">{{ planName }}</span>
+          </span>
+        </h3>
+      </div>
+      <div class="flex items-center gap-3">
+        <!-- Settings Button -->
+        <button 
+          type="button"
+          (click)="showSettings = !showSettings"
+          class="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-orange-50 text-orange-600 text-sm font-medium rounded-lg transition-colors shadow-sm border border-orange-200">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span>Cài đặt</span>
+        </button>
+        
+        <!-- Run Simulation Button -->
+        <button 
+          type="button"
+          (click)="runSimulation()"
+          [disabled]="!canRunSimulation || loading"
+          [title]="!canRunSimulation ? 'Vui lòng nhập Plan ID và chọn ngày' : (loading ? 'Đang chạy mô phỏng...' : 'Chạy mô phỏng')"
+          class="inline-flex items-center gap-2 px-4 py-2 bg-orange-400 hover:bg-orange-500 text-white text-sm font-medium rounded-lg transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg *ngIf="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          <div *ngIf="loading" class="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+          <span>{{ loading ? 'Đang chạy...' : 'Mô Phỏng' }}</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Quick Inputs -->
+    <div class="px-0 py-3 border-t border-orange-100 bg-orange-50">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Plan ID</label>
+          <input 
+            type="text"
+            [(ngModel)]="simPlanId"
+            (ngModelChange)="updateButtonState()"
+            id="sim-plan-id-2"
+            placeholder="Nhập hoặc chọn plan ID"
+            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Từ ngày</label>
+          <input 
+            type="date"
+            [(ngModel)]="fromDate"
+            (ngModelChange)="updateButtonState()"
+            id="sim-date-from-2"
+            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Đến ngày</label>
+          <input 
+            type="date"
+            [(ngModel)]="toDate"
+            (ngModelChange)="updateButtonState()"
+            id="sim-date-to-2"
+            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="flex items-center gap-2 text-sm text-gray-700">
+            <input 
+              type="checkbox"
+              [(ngModel)]="persist"
+              class="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500">
+            <span>Lưu kết quả</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div *ngIf="showSettings" class="px-0 py-3 border-t border-orange-100 bg-white">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Model ID</label>
+          <input 
+            type="text"
+            [(ngModel)]="modelId"
+            placeholder="Để trống = mặc định"
+            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+        </div>
+        <div class="flex items-center gap-4">
+          <label class="flex items-center gap-2 text-sm text-gray-700">
+            <input 
+              type="checkbox"
+              [(ngModel)]="weather"
+              class="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500">
+            <span>Thời tiết</span>
+          </label>
+          <label class="flex items-center gap-2 text-sm text-gray-700">
+            <input 
+              type="checkbox"
+              [(ngModel)]="traffic"
+              class="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500">
+            <span>Giao thông</span>
+          </label>
+          <label class="flex items-center gap-2 text-sm text-gray-700">
+            <input 
+              type="checkbox"
+              [(ngModel)]="events"
+              class="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500">
+            <span>Sự kiện</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="p-12 text-center">
+    <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent mb-3"></div>
+    <p class="text-sm text-gray-500">Đang chạy mô phỏng...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="p-6 bg-red-50 border-l-4 border-red-500">
+    <div class="flex items-center">
+      <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+      </svg>
+      <p class="text-sm text-red-700">{{ error }}</p>
+    </div>
+  </div>
+
+  <!-- Results Table - Always show table structure, rendered by ForecastTableRendererService (TypeScript) -->
+  <div class="overflow-x-auto border-t border-gray-200">
+    <!-- Table structure - header will be rendered, body by ForecastTableRendererService -->
+    <table class="min-w-full border-collapse" style="table-layout: auto;">
+      <thead class="sticky top-0 z-10 bg-gradient-to-r from-orange-200 to-orange-100">
+        <tr>
+          <th class="px-3 py-2 text-left text-xs font-bold text-gray-900 uppercase border border-gray-300" style="min-width: 100px;">Ngày</th>
+          <th class="px-3 py-2 text-left text-xs font-bold text-gray-900 uppercase border border-gray-300" style="min-width: 120px;">Ca</th>
+          <th class="px-3 py-2 text-left text-xs font-bold text-gray-900 uppercase border border-gray-300" style="min-width: 150px;">Xe</th>
+          <th class="px-3 py-2 text-center text-xs font-bold text-gray-900 uppercase border border-gray-300" style="min-width: 50px;">STT</th>
+          <th class="px-3 py-2 text-left text-xs font-bold text-gray-900 uppercase border border-gray-300" style="min-width: 200px;">Tên điểm</th>
+          <th class="px-3 py-2 text-left text-xs font-bold text-gray-900 uppercase border border-gray-300" style="min-width: 150px;">Check-in</th>
+          <th class="px-3 py-2 text-left text-xs font-bold text-gray-900 uppercase border border-gray-300" style="min-width: 150px;">Check-out</th>
+          <th class="px-3 py-2 text-left text-xs font-bold text-gray-900 uppercase border border-gray-300" style="min-width: 180px;">Sản lượng</th>
+          <th class="px-3 py-2 text-center text-xs font-bold text-gray-900 uppercase border border-gray-300" style="min-width: 100px;">Rớt hàng</th>
+          <th class="px-3 py-2 text-center text-xs font-bold text-gray-900 uppercase border border-gray-300" style="min-width: 100px;">Lấp đầy</th>
+          <th class="px-3 py-2 text-left text-xs font-bold text-gray-900 uppercase border border-gray-300" style="min-width: 150px;">Xử lý</th>
+        </tr>
+      </thead>
+      <tbody #tableBody id="simulation-table-body-2" class="bg-white">
+        <!-- Content will be rendered by ForecastTableRendererService (TypeScript) -->
+        <tr *ngIf="!simulationResults || simulationResults.length === 0">
+          <td colspan="11" class="px-6 py-8 text-center text-sm text-gray-500">Chọn plan và chạy mô phỏng để xem kết quả</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!simulationResults || simulationResults.length === 0 && !loading && !error" class="p-12 text-center text-gray-500">
+    <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+    </svg>
+    <p class="text-base font-medium">Chưa có dữ liệu mô phỏng</p>
+    <p class="text-sm mt-2">Chọn plan và thời gian, sau đó nhấn "Mô Phỏng" để chạy</p>
+  </div>
+</div>
+
+<!-- Trip Detail Modal (simplified) -->
+<div *ngIf="selectedTrip" 
+     class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+     (click)="closeTripDetail()">
+  <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+       (click)="$event.stopPropagation()">
+    <div class="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 flex items-center justify-between">
+      <h3 class="text-xl font-bold text-white">Chi tiết chuyến xe</h3>
+      <button (click)="closeTripDetail()" class="text-white hover:text-orange-200">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="p-6">
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-gray-50 p-3 rounded-lg">
+          <div class="text-xs text-gray-600 mb-1">Mã chuyến</div>
+          <div class="font-bold text-gray-900">{{ selectedTrip.code || selectedTrip.trip_code || '-' }}</div>
+        </div>
+        <div class="bg-gray-50 p-3 rounded-lg">
+          <div class="text-xs text-gray-600 mb-1">Ngày</div>
+          <div class="font-bold text-gray-900">{{ selectedTrip.date || '-' }}</div>
+        </div>
+        <div class="bg-gray-50 p-3 rounded-lg">
+          <div class="text-xs text-gray-600 mb-1">Ca</div>
+          <div class="font-bold text-gray-900">{{ selectedTrip.shift || selectedTrip.shift_name || '-' }}</div>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-3 gap-4 mb-6">
+        <div class="bg-green-50 p-4 rounded-lg text-center">
+          <div class="text-2xl font-bold text-green-700">
+            {{ (selectedTrip.ontime_rate || selectedTrip.ontime_rate_percent || 0) | number:'1.1-1' }}%
+          </div>
+          <div class="text-sm text-green-600 mt-1">On-time Rate</div>
+        </div>
+        <div class="bg-red-50 p-4 rounded-lg text-center">
+          <div class="text-2xl font-bold text-red-700">
+            {{ (selectedTrip.drop_rate || selectedTrip.drop_rate_percent || 0) | number:'1.1-1' }}%
+          </div>
+          <div class="text-sm text-red-600 mt-1">Drop Rate</div>
+        </div>
+        <div class="bg-blue-50 p-4 rounded-lg text-center">
+          <div class="text-2xl font-bold text-blue-700">
+            {{ (selectedTrip.fill_rate || selectedTrip.load_factor || 0) | number:'1.1-1' }}%
+          </div>
+          <div class="text-sm text-blue-600 mt-1">Fill Rate</div>
+        </div>
+      </div>
+
+      <div class="border-t pt-4">
+        <h4 class="font-bold text-gray-900 mb-2">Thông tin chi tiết</h4>
+        <pre class="bg-gray-50 p-4 rounded-lg text-xs overflow-x-auto">{{ selectedTrip | json }}</pre>
+      </div>
+    </div>
+  </div>
+</div>

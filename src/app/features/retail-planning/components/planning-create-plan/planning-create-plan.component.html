@@ -1,0 +1,1148 @@
+<!-- Planning - Create Plan Page -->
+<div class="planning-page" id="planning-create-plan">
+
+  <!-- Host style override to make header flush -->
+  <style>
+    :host ::ng-deep .page-header { margin-bottom: 0 !important; border-bottom: none !important; }
+  </style>
+
+  <!-- Page Header -->
+  <app-page-header
+    title="Plan Selection"
+    subtitle="Strategic route optimization engine"
+    icon="🗺️">
+  </app-page-header>
+
+  <!-- Main Dashboard Grid -->
+  <div class="planning-governance-frame">
+
+    <!-- Left: Stepper Navigation -->
+    <div class="planning-stepper-nav">
+      <div class="planning-stepper-title">Planning steps</div>
+
+      <div class="planning-step-item" [class.active]="currentStep === 1" [class.completed]="currentStep > 1" data-step="1" (click)="goToCreatePlanStep(1)" style="cursor: pointer;">
+        <div class="planning-step-indicator">1</div>
+        <div class="planning-step-label">
+          <div class="planning-step-title">Warehouses and region</div>
+          <div class="planning-step-desc">Planning region and delivery points</div>
+        </div>
+      </div>
+
+      <div class="planning-step-item" [class.active]="currentStep === 2" [class.completed]="currentStep > 2" data-step="2" (click)="goToCreatePlanStep(2)" style="cursor: pointer;">
+        <div class="planning-step-indicator">2</div>
+        <div class="planning-step-label">
+          <div class="planning-step-title">Demand</div>
+        </div>
+      </div>
+
+      <!-- Merged: Delivery Points moved into Step 1, so this step removed -->
+
+      <div class="planning-step-item" [class.active]="currentStep === 3" [class.completed]="currentStep > 3" data-step="3" (click)="goToCreatePlanStep(3)" style="cursor: pointer;">
+        <div class="planning-step-indicator">3</div>
+        <div class="planning-step-label">
+          <div class="planning-step-title">Vehicles</div>
+          <div class="planning-step-desc">Select vehicles and capacity</div>
+        </div>
+      </div>
+
+      <div class="planning-step-item" [class.active]="currentStep === 4" [class.completed]="currentStep > 4" data-step="4" (click)="goToCreatePlanStep(4)" style="cursor: pointer;">
+        <div class="planning-step-indicator">4</div>
+        <div class="planning-step-label">
+          <div class="planning-step-title">Settings</div>
+          <div class="planning-step-desc">Configure options</div>
+        </div>
+      </div>
+
+      <div class="planning-step-item" [class.active]="currentStep === 5" [class.completed]="currentStep > 5" data-step="5" (click)="goToCreatePlanStep(5)" style="cursor: pointer;">
+        <div class="planning-step-indicator">5</div>
+        <div class="planning-step-label">
+          <div class="planning-step-title">Preview</div>
+          <div class="planning-step-desc">Review and create route plan</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Step Content -->
+    <div class="planning-step-content">
+
+      <!-- STEP 1: REGION & DELIVERY POINTS -->
+      <div class="planning-step-panel" [class.active]="currentStep === 1" id="create-plan-step-1">
+        <div class="planning-step-header">
+          <h3>📍 Location Region and Delivery Points</h3>
+        </div>
+
+        <div class="planning-step-body">
+          <!-- Delivery Points: 2-Column Layout - Bản đồ trái, Controls & Stops phải -->
+          <div class="planning-form-section">
+            <!-- Layout: Bản đồ bên trái, Controls bên phải -->
+            <div class="planning-step-one-layout">
+              <!-- Left: Bản đồ (chiếm 65% width) -->
+              <div class="planning-map-card">
+                <!-- Map Loading State -->
+                <div *ngIf="!mapLoaded" class="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg">
+                  <div class="text-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-3"></div>
+                    <span class="text-gray-600 font-medium text-sm">Loading map...</span>
+                  </div>
+                </div>
+
+                <div #createPlanMap id="cp_route_map" class="planning-map-container" [style.opacity]="mapLoaded ? '1' : '0'" [style.pointer-events]="mapLoaded ? 'auto' : 'none'" style="width: 100%; height: 100%; min-height: 650px; transition: opacity 0.3s;"></div>
+
+                <!-- Map Stats -->
+                <div class="planning-map-stats">
+                  <div class="planning-map-stat">
+                    <span class="stat-label">Selected points</span>
+                    <span class="stat-value">{{ timelineWarehouses.length }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: Vùng chọn, Tìm kiếm & Stops (chiếm 35% width) -->
+              <div class="planning-sidebar-stack">
+
+                <!-- Region Selection: Nằm trên Search warehouse -->
+                <div class="p-4 border-b border-gray-100 flex-shrink-0 bg-white">
+                  <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                    🌍 Targeting Region <span class="text-red-500">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    (click)="openRegionSelectionModal()"
+                    class="w-full inline-flex items-center justify-between gap-2 px-3 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow transition-all">
+                    <div class="flex items-center gap-2 flex-1 min-w-0">
+                      <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                      </svg>
+                      <span class="truncate">{{ warehouseRegionShortname ? (warehouseRegionShortname + ' - ' + getRegionName(warehouseRegionShortname)) : 'Select region' }}</span>
+                    </div>
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </button>
+                  <div *ngIf="warehouseRegionShortname && timelineWarehouses.length > 0" class="mt-2 text-xs text-orange-600 font-medium">
+                    ✓ {{ timelineWarehouses.length }} warehouses selected
+                  </div>
+                </div>
+
+                <!-- Warehouse Search Section -->
+                <div class="p-4 border-b border-gray-100 flex-shrink-0 bg-white">
+                  <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">🔍 Node Search</label>
+                  <div class="relative">
+                    <p-autoComplete
+                      [(ngModel)]="warehouseSearchQuery"
+                      (completeMethod)="onWarehouseAutoComplete($event)"
+                      (onSelect)="onWarehouseAutoSelect($event)"
+                      field="warehouse_name"
+                      [minLength]="1"
+                      [dropdown]="false"
+                      [forceSelection]="false"
+                      [autoHighlight]="true"
+                      [placeholder]="'Enter warehouse name...'"
+                      class="w-full"
+                      [delay]="300"
+                      styleClass="w-full text-sm">
+                    </p-autoComplete>
+                    <div class="absolute right-2 top-1/2 -translate-y-1/2" *ngIf="warehouseAutoLoading">
+                      <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+                    </div>
+
+                    <!-- Search Results Dropdown -->
+                    <div *ngIf="warehouseSuggestions && warehouseSuggestions.length > 0" class="absolute left-0 mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-50 max-h-52 overflow-auto">
+                      <div *ngFor="let s of warehouseSuggestions; let i = index"
+                           (click)="onWarehouseResultClick(s)"
+                           class="py-2 px-3 hover:bg-orange-50 cursor-pointer flex items-start gap-2 border-b border-gray-100 last:border-b-0 rounded transition-colors">
+                        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-white flex items-center justify-center font-semibold text-xs flex-shrink-0">{{ i + 1 }}</div>
+                        <div class="flex-1 min-w-0">
+                          <div class="text-xs font-semibold text-gray-900 truncate">{{ s.warehouse_name }}</div>
+                          <div class="text-xs text-gray-500 truncate">{{ s.district_name }}, {{ s.province_name }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Timeline Section: Stops -->
+                <div class="p-4 flex-1 min-height-0 flex flex-col bg-white">
+                  <div class="flex items-center justify-between mb-3 flex-shrink-0">
+                    <div class="flex items-center gap-2">
+                      <div class="w-6 h-6 rounded bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                      </div>
+                      <span class="text-sm font-bold text-gray-900">Stops</span>
+                      <span class="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold">{{ timelineWarehouses.length }}</span>
+                    </div>
+                    <button
+                      *ngIf="timelineWarehouses.length > 0"
+                      type="button"
+                      (click)="clearAllPoints()"
+                      class="px-2 py-1 text-red-500 hover:bg-red-50 rounded text-xs font-medium transition-colors"
+                      title="Clear all">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                      </svg>
+                    </button>
+                  </div>
+
+                  <!-- Timeline Component - Scrollable area -->
+                  <div *ngIf="timelineWarehouses.length > 0" class="flex-1 overflow-y-auto space-y-1.5 pr-1" style="min-height: 0;">
+                    <div *ngFor="let warehouse of timelineWarehouses; let i = index"
+                         class="flex items-center gap-2 p-2 bg-orange-50/50 border border-orange-200 rounded hover:bg-orange-50 transition-colors group">
+                      <div class="flex items-center justify-center w-7 h-7 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full text-white text-xs font-bold flex-shrink-0">
+                        {{ i + 1 }}
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="font-semibold text-gray-900 text-xs mb-0.5 truncate">{{ warehouse.warehouse_name }}</div>
+                        <div class="text-xs text-gray-500 truncate">{{ warehouse.district_name }}, {{ warehouse.province_name }}</div>
+                      </div>
+                      <button
+                        type="button"
+                        (click)="removeFromTimeline(warehouse)"
+                        class="flex-shrink-0 p-1 text-red-500 hover:bg-red-100 rounded transition-colors opacity-0 group-hover:opacity-100"
+                        title="Delete">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Empty Timeline State -->
+                  <div *ngIf="timelineWarehouses.length === 0" class="flex-1 flex items-center justify-center text-center py-8 text-gray-400" style="min-height: 150px;">
+                    <div>
+                      <svg class="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      <p class="text-xs font-medium text-gray-400">No warehouses selected</p>
+                      <p class="text-xs text-gray-400 mt-1">Select region hoặc tìm kiếm để thêm</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="planning-step-footer">
+          <div></div>
+          <button type="button" class="planning-btn planning-btn-primary" (click)="goToCreatePlanStep(2)" [disabled]="timelineWarehouses.length === 0">
+            Next: Demand →
+          </button>
+        </div>
+      </div>
+
+      <!-- Region Selection Modal -->
+      <p-dialog
+        [(visible)]="showRegionSelectionModal"
+        [modal]="true"
+        [style]="{width: '950px', maxWidth: '95vw'}"
+        [closable]="true"
+        [dismissableMask]="true"
+        header="Select region và bưu cục"
+        styleClass="p-fluid"
+        (onHide)="closeRegionSelectionModal()">
+
+        <div class="space-y-4">
+          <!-- Region Selector - Compact -->
+          <div class="bg-gradient-to-r from-orange-50 to-orange-50/50 border-2 border-orange-200 rounded-xl p-4">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-lg bg-orange-500 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <label class="block text-sm font-bold text-gray-900 mb-1">Select region <span class="text-red-500">*</span></label>
+                <select
+                  [(ngModel)]="modalSelectedRegion"
+                  (change)="onModalRegionChange()"
+                  class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-sm font-semibold text-gray-900 shadow-sm hover:border-orange-400 transition-colors">
+                  <option value="" disabled>-- Select region --</option>
+                  <option *ngFor="let region of availableRegions" [value]="region.code">
+                    {{ region.code }} - {{ region.name }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Warehouses List -->
+          <div *ngIf="modalSelectedRegion" class="space-y-3">
+            <!-- Loading State -->
+            <div *ngIf="loadingModalWarehouses" class="flex items-center justify-center py-16 bg-gray-50 rounded-xl border border-gray-200">
+              <div class="text-center">
+                <div class="animate-spin rounded-full h-10 w-10 border-3 border-orange-500 border-t-transparent mx-auto mb-3"></div>
+                <p class="text-sm font-medium text-gray-600">Loading warehouse list...</p>
+              </div>
+            </div>
+
+            <!-- Error State -->
+            <div *ngIf="modalWarehousesError && !loadingModalWarehouses" class="bg-red-50 border-2 border-red-200 rounded-xl p-4">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+                <span class="text-sm font-semibold text-red-700">{{ modalWarehousesError }}</span>
+              </div>
+            </div>
+
+            <!-- Warehouses Table -->
+            <div *ngIf="!loadingModalWarehouses && !modalWarehousesError && modalWarehouses.length > 0" class="space-y-3">
+              <!-- Action Bar - Compact -->
+              <div class="flex items-center justify-between bg-gradient-to-r from-gray-50 to-gray-50/50 rounded-lg px-4 py-2.5 border-2 border-gray-200">
+                <div class="flex items-center gap-3">
+                  <div class="text-xs font-semibold text-gray-700">
+                    Total: <span class="text-gray-900 font-bold">{{ modalWarehouses.length }}</span>
+                  </div>
+                  <div class="w-px h-4 bg-gray-300"></div>
+                  <div class="text-xs font-semibold text-orange-600">
+                    Selected: <span class="text-orange-700 font-bold">{{ modalSelectedWarehouses.size }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    (click)="selectAllWarehousesInModal()"
+                    [disabled]="modalSelectedWarehouses.size === modalWarehouses.length"
+                    class="px-3 py-1.5 text-xs font-bold bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-all shadow-sm">
+                    ✓ Select all
+                  </button>
+                  <button
+                    type="button"
+                    (click)="deselectAllWarehousesInModal()"
+                    [disabled]="modalSelectedWarehouses.size === 0"
+                    class="px-3 py-1.5 text-xs font-bold bg-red-500 hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-all shadow-sm">
+                    ✕ Clear selection
+                  </button>
+                </div>
+              </div>
+
+              <!-- Warehouses List (Scrollable) - Improved Table -->
+              <div class="border-2 border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm max-h-[420px] overflow-y-auto">
+                <table class="w-full">
+                  <thead class="bg-gradient-to-r from-gray-100 to-gray-50 sticky top-0 z-10 border-b-2 border-gray-200">
+                  <tr>
+                    <th class="px-3 py-2.5 text-left w-12">
+                      <input
+                        type="checkbox"
+                        [checked]="modalSelectedWarehouses.size === modalWarehouses.length && modalWarehouses.length > 0"
+                        (change)="modalSelectedWarehouses.size === modalWarehouses.length ? deselectAllWarehousesInModal() : selectAllWarehousesInModal()"
+                        class="w-4 h-4 text-orange-600 border-gray-400 rounded focus:ring-2 focus:ring-orange-500 cursor-pointer">
+                    </th>
+                    <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase w-12">STT</th>
+                    <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase">Warehouse name</th>
+                    <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase">Address</th>
+                    <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase w-20">ID</th>
+                  </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-150">
+                  <tr *ngFor="let warehouse of modalWarehouses; let i = index"
+                      class="hover:bg-orange-50/50 transition-colors cursor-pointer border-b border-gray-100"
+                      (click)="toggleWarehouseSelection(warehouse)">
+                    <td class="px-3 py-2.5" (click)="$event.stopPropagation()">
+                      <input
+                        type="checkbox"
+                        [checked]="isWarehouseSelectedInModal(warehouse)"
+                        (change)="toggleWarehouseSelection(warehouse)"
+                        class="w-4 h-4 text-orange-600 border-gray-400 rounded focus:ring-2 focus:ring-orange-500 cursor-pointer">
+                    </td>
+                    <td class="px-3 py-2.5 text-sm font-bold text-gray-700">{{ i + 1 }}</td>
+                    <td class="px-3 py-2.5">
+                      <div class="text-sm font-semibold text-gray-900">{{ warehouse.warehouse_name }}</div>
+                    </td>
+                    <td class="px-3 py-2.5">
+                      <div class="text-xs text-gray-600">{{ warehouse.district_name || '-' }}, {{ warehouse.province_name || '-' }}</div>
+                    </td>
+                    <td class="px-3 py-2.5 text-xs text-gray-500 font-mono">{{ warehouse.warehouse_id }}</td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="!loadingModalWarehouses && !modalWarehousesError && modalWarehouses.length === 0 && modalSelectedRegion" class="text-center py-16 bg-gray-50 rounded-xl border-2 border-gray-200">
+              <div class="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-200 flex items-center justify-center">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                </svg>
+              </div>
+              <p class="text-sm font-semibold text-gray-600">No warehouses found in this region</p>
+            </div>
+
+            <!-- No Region Selected -->
+            <div *ngIf="!modalSelectedRegion" class="text-center py-16 bg-gray-50 rounded-xl border-2 border-gray-200">
+              <div class="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-200 flex items-center justify-center">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                </svg>
+              </div>
+              <p class="text-sm font-semibold text-gray-600">Please select a region to view the warehouse list</p>
+            </div>
+          </div>
+        </div>
+
+        <ng-template pTemplate="footer">
+          <div class="flex items-center justify-between w-full pt-2 border-t border-gray-200">
+            <div class="text-sm font-medium text-gray-700">
+              <span *ngIf="modalSelectedRegion && modalWarehouses.length > 0">
+                Đã chọn <span class="text-orange-600 font-bold">{{ modalSelectedWarehouses.size }}</span> / <span class="font-bold">{{ modalWarehouses.length }}</span> bưu cục
+              </span>
+              <span *ngIf="!modalSelectedRegion" class="text-gray-400">Please select a region</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-button
+                label="Cancel"
+                icon="pi pi-times"
+                (onClick)="closeRegionSelectionModal()"
+                styleClass="p-button-text p-button-sm">
+              </p-button>
+              <p-button
+                label="Confirm"
+                icon="pi pi-check"
+                (onClick)="confirmModalSelection()"
+                [disabled]="!modalSelectedRegion || modalSelectedWarehouses.size === 0"
+                styleClass="p-button-primary p-button-sm">
+              </p-button>
+            </div>
+          </div>
+        </ng-template>
+      </p-dialog>
+
+      <!-- STEP 2: DEMANDS (Demand) -->
+      <div class="planning-step-panel" [class.active]="currentStep === 2" id="create-plan-step-2">
+        <div class="planning-step-body">
+          <!-- Error Message -->
+          <div *ngIf="demandsError && !loadingDemands" class="bg-red-50 border-2 border-red-200 rounded-xl p-5 mb-6 shadow-sm">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div>
+                <h4 class="text-red-800 font-bold mb-1">Data loading error</h4>
+                <span class="text-red-700">{{ demandsError }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- No warehouses message -->
+          <div *ngIf="!loadingDemands && !demandsError && timelineWarehouses.length === 0" class="bg-gradient-to-r from-orange-50 to-orange-100 border-2 border-orange-200 rounded-xl p-6 mb-6 shadow-sm">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-orange-200 flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div>
+                <h4 class="text-orange-800 font-bold mb-1">Chưa có bưu cục</h4>
+                <p class="text-orange-700">Add warehouses to the timeline to view demand data.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Table Section -->
+          <div class="flex-1 min-h-0 flex flex-col">
+              <!-- Header Section -->
+              <div class="bg-gray-50 border-b border-gray-100 p-4">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm border border-gray-100">
+                      <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 class="text-sm font-bold text-gray-900 leading-tight">Warehouse Demand Detail</h3>
+                      <p class="text-[10px] text-gray-400 font-medium uppercase tracking-widest mt-0.5">Pickup and delivery analysis per node</p>
+                    </div>
+                  </div>
+
+                  <!-- Summary Info -->
+                  <div class="text-right">
+                    <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Total Payload</div>
+                    <div class="text-sm font-bold text-gray-900">{{ demands.length }} <span class="text-gray-400 font-normal">Nodes</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Demands Table -->
+              <div class="flex-1 min-height-0 bg-white" *ngIf="!loadingDemands && demands.length > 0">
+                <p-table [value]="filteredDemands" [paginator]="true" [rows]="15" [showCurrentPageReport]="true"
+                         currentPageReportTemplate="{first}-{last} / {totalRecords}"
+                         [rowsPerPageOptions]="[15,30,50,100]"
+                         styleClass="p-datatable-sm p-datatable-striped"
+                         [scrollable]="true"
+                         scrollHeight="flex">
+                  <ng-template pTemplate="header">
+                    <tr>
+                      <th class="p-3 bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-gray-100">
+                        <button (click)="sortDemands('warehouse_name')" class="flex items-center gap-2 hover:text-orange-500 transition-colors uppercase">
+                          Node
+                          <i class="pi" [ngClass]="demandSortField === 'warehouse_name' ? (demandSortOrder === 'asc' ? 'pi-sort-amount-up' : 'pi-sort-amount-down') : 'pi-sort-alt'"></i>
+                        </button>
+                      </th>
+                      <th class="p-3 bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-gray-100 text-right">
+                        <button (click)="sortDemands('total_pick')" class="flex items-center justify-end gap-2 hover:text-orange-500 transition-colors w-full uppercase">
+                          Total Pickup
+                          <i class="pi" [ngClass]="demandSortField === 'total_pick' ? (demandSortOrder === 'asc' ? 'pi-sort-amount-up' : 'pi-sort-amount-down') : 'pi-sort-alt'"></i>
+                        </button>
+                      </th>
+                      <th class="p-3 bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-gray-100 text-right">
+                        <button (click)="sortDemands('total_deliver')" class="flex items-center justify-end gap-2 hover:text-orange-500 transition-colors w-full uppercase">
+                          Total Delivery
+                          <i class="pi" [ngClass]="demandSortField === 'total_deliver' ? (demandSortOrder === 'asc' ? 'pi-sort-amount-up' : 'pi-sort-amount-down') : 'pi-sort-alt'"></i>
+                        </button>
+                      </th>
+                      <th class="p-3 bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-gray-100 text-center">
+                        <div class="flex items-center justify-center gap-2 uppercase">
+                          Shift
+                          <button (click)="openShiftEditorModal()" class="p-1 hover:bg-gray-200 rounded transition-colors" title="Configure work shifts">
+                            <i class="pi pi-cog text-gray-400"></i>
+                          </button>
+                        </div>
+                      </th>
+                      <th class="p-3 bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-gray-100 text-right uppercase">
+                        Ratio
+                      </th>
+                    </tr>
+                  </ng-template>
+                    <ng-template pTemplate="body" let-demand let-rowIndex="rowIndex">
+                      <tr (click)="selectDemand(demand)"
+                          [ngClass]="{
+                            'bg-blue-50/50 border-l-4 border-l-blue-500': isDemandSelected(demand),
+                            'bg-white hover:bg-gray-50': !isDemandSelected(demand)
+                          }"
+                          class="cursor-pointer transition-all duration-150 border-b border-gray-100">
+                        <td class="p-3">
+                          <div class="flex flex-col">
+                            <span class="text-sm font-bold text-gray-900">{{ demand.warehouse_name || '—' }}</span>
+                            <span class="text-[10px] text-gray-400 font-medium tracking-wider">ID: {{ demand.warehouse_id }}</span>
+                          </div>
+                        </td>
+                        <td class="text-right p-3 font-semibold text-gray-700">
+                          {{ demand.total_pick | number }}
+                        </td>
+                        <td class="text-right p-3 font-semibold text-gray-700">
+                          {{ demand.total_deliver | number }}
+                        </td>
+                        <td class="text-center p-3" (click)="$event.stopPropagation()">
+                          <select
+                            [value]="demandShiftAssignment.get(demand.warehouse_id || demand.id)"
+                            (change)="setDemandShift(demand, +$any($event.target).value)"
+                            class="text-xs font-bold px-2 py-1 border border-gray-200 rounded-lg bg-white hover:border-blue-400 focus:border-blue-500 transition-all cursor-pointer">
+                            <option [value]="undefined">—</option>
+                            <option *ngFor="let shift of shifts; let i = index" [value]="i">
+                              {{ shift.name }}
+                            </option>
+                          </select>
+                        </td>
+                        <td class="text-right p-3">
+                          <span class="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-md">
+                            {{ formatRatio(getDemandRatio(demand)) }}
+                          </span>
+                        </td>
+                      </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                      <tr>
+                        <td colspan="5" class="text-center py-16 bg-white">
+                          <div class="flex flex-col items-center gap-4">
+                            <svg class="w-20 h-20 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div class="text-gray-600 font-semibold text-base">
+                              <span *ngIf="demandSearchQuery">No results found for "{{ demandSearchQuery }}"</span>
+                              <span *ngIf="!demandSearchQuery">No data available</span>
+                            </div>
+                            <button
+                              *ngIf="demandSearchQuery"
+                              (click)="clearSearch()"
+                              class="px-6 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-semibold shadow-sm"
+                            >
+                              Delete bộ lọc
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </ng-template>
+                  </p-table>
+                </div>
+
+                <!-- Empty State -->
+                <div *ngIf="!loadingDemands && demands.length === 0 && !demandsError && timelineWarehouses.length > 0" class="flex items-center justify-center py-20">
+                  <div class="text-center">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                    </svg>
+                    <p class="text-gray-600 font-medium">No demand data available</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="planning-step-footer">
+              <button type="button" class="planning-btn planning-btn-secondary" (click)="goToCreatePlanStep(1)">← Previous</button>
+              <button type="button" class="planning-btn planning-btn-primary" (click)="goToCreatePlanStep(3)" [disabled]="demands.length === 0">
+                Next: Vehicles →
+              </button>
+            </div>
+          </div>
+      </div>
+
+
+
+      <!-- STEP 3: FLEET (Vehicles) -->
+      <div class="planning-step-panel" [class.active]="currentStep === 3" id="create-plan-step-3">
+        <div class="planning-step-header">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm border border-gray-100">
+                <i class="pi pi-truck text-xl text-blue-500"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-gray-900 leading-tight">Fleet Configuration</h3>
+                <p class="text-[10px] text-gray-400 font-medium uppercase tracking-widest mt-0.5">Select and configure available vehicles</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" class="px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-100" (click)="loadTrucks()">
+                <i class="pi pi-refresh mr-1"></i> Refresh Trucks
+              </button>
+              <button type="button" class="px-3 py-1.5 text-xs font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-100" (click)="clearSelectedTrucks()">
+                Clear All
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="planning-step-body">
+          <div class="planning-fleet-actions">
+            <span class="planning-hint-text">Data source: GET /data-mesh/domains/retail/trucks</span>
+            <div class="planning-action-buttons">
+              <button type="button" class="planning-btn planning-btn-outline" (click)="loadTrucks()">Refresh vehicles</button>
+              <button type="button" class="planning-btn planning-btn-ghost" (click)="clearSelectedTrucks()">Clear selection</button>
+            </div>
+          </div>
+
+          <div class="planning-fleet-table">
+            <div *ngIf="loadingTrucks" class="planning-empty-state">
+              <svg class="w-12 h-12 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v4m0 8v4m8-8h-4M8 12H4m13.657-5.657l-2.828 2.828M9.172 14.828l-2.829 2.829m11.314 0l-2.828-2.829M9.172 9.172 6.343 6.343"/></svg>
+              <p>Loading vehicles...</p>
+            </div>
+            <div *ngIf="!loadingTrucks && trucksError" class="planning-empty-state">
+              <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <p>{{ trucksError }}</p>
+            </div>
+            <div *ngIf="!loadingTrucks && !trucksError && trucks.length === 0" id="cp_fleet_table" class="planning-empty-state">
+              <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+              <p>No vehicles returned</p>
+              <span>The truck API did not return any rows</span>
+            </div>
+            <div *ngIf="!loadingTrucks && !trucksError && trucks.length > 0" class="flex-1 overflow-auto border-t border-gray-100">
+              <table class="min-w-full text-xs">
+                <thead>
+                  <tr class="bg-gray-50/50 sticky top-0 z-10">
+                    <th class="py-2 px-3 border-b border-gray-100 w-8"></th>
+                    <th class="text-left py-2 px-3 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Code</th>
+                    <th class="text-left py-2 px-3 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Plate</th>
+                    <th class="text-left py-2 px-3 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Type</th>
+                    <th class="text-left py-2 px-3 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Driver</th>
+                    <th class="text-right py-2 px-3 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Payload</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let truck of trucks" 
+                      class="border-b border-gray-50 hover:bg-blue-50/30 transition-colors"
+                      [ngClass]="{'bg-blue-50/20': isTruckSelected(truck)}">
+                    <td class="py-2 px-3">
+                      <div class="flex items-center justify-center">
+                        <input type="checkbox" 
+                               [checked]="isTruckSelected(truck)" 
+                               (change)="toggleTruckSelection(truck)"
+                               class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                      </div>
+                    </td>
+                    <td class="py-2 px-3 font-bold text-gray-900">{{ truck.vehicle_code }}</td>
+                    <td class="py-2 px-3 text-gray-600">{{ truck.license_plate }}</td>
+                    <td class="py-2 px-3">
+                      <span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] font-bold uppercase">{{ truck.vehicle_type }}</span>
+                    </td>
+                    <td class="py-2 px-3">
+                      <div class="flex flex-col">
+                        <span class="font-medium text-gray-800">{{ truck.driver_name || '-' }}</span>
+                        <span class="text-[9px] text-gray-400">{{ truck.driver_phone || '-' }}</span>
+                      </div>
+                    </td>
+                    <td class="py-2 px-3 text-right">
+                      <span class="font-bold text-gray-700">{{ truck.max_weight | number }} <span class="text-[9px] text-gray-400 font-normal">kg</span></span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Fleet Stats -->
+          <div class="planning-fleet-stats">
+            <div class="planning-stat-card orange">
+              <div class="stat-title">Total vehicles</div>
+              <div class="stat-value">{{ trucks.length }}</div>
+            </div>
+            <div class="planning-stat-card orange-light">
+              <div class="stat-title">Đã chọn</div>
+              <div class="stat-value">{{ selectedTruckCount }}</div>
+            </div>
+            <div class="planning-stat-card orange-dark">
+              <div class="stat-title">Total capacity</div>
+              <div class="stat-value">{{ totalTruckCapacity | number }} kg</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="planning-step-footer">
+          <button type="button" class="planning-btn planning-btn-secondary" (click)="goToCreatePlanStep(2)">← Previous</button>
+          <button type="button" class="planning-btn planning-btn-primary" (click)="goToCreatePlanStep(4)">Next: Settings →</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: SETTINGS (Settings) -->
+      <div class="planning-step-panel" [class.active]="currentStep === 4" id="create-plan-step-4">
+        <div class="planning-step-header">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm border border-gray-100">
+              <i class="pi pi-sliders-h text-xl text-indigo-500"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-gray-900 leading-tight">Advanced Settings</h3>
+              <p class="text-[10px] text-gray-400 font-medium uppercase tracking-widest mt-0.5">Solver constraints and engine parameters</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="planning-step-body">
+          <div class="planning-settings-grid">
+            <div class="planning-setting-group">
+              <label>Vehicle speed (km/h)</label>
+              <input type="number" id="cp_vehicle_speed" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none" value="40">
+            </div>
+            <div class="planning-setting-group">
+              <label>Maximum vehicle time (s)</label>
+              <input type="number" id="cp_vehicle_max_time" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none" value="86400">
+            </div>
+            <div class="planning-setting-group">
+              <label>Avg light parcel (g)</label>
+              <input type="number" id="cp_avg_light_weight" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none" value="1000">
+            </div>
+            <div class="planning-setting-group">
+              <label>Avg heavy parcel (g)</label>
+              <input type="number" id="cp_avg_heavy_weight" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none" value="29000">
+            </div>
+            <div class="planning-setting-group">
+              <label>Solver time limit (s)</label>
+              <input type="number" id="cp_solve_time_limit" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none" value="60">
+            </div>
+            <div class="planning-setting-group">
+              <label>Route start (min)</label>
+              <input type="number" id="cp_start_route_time" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none" value="240">
+            </div>
+            <div class="planning-setting-group">
+              <label>Travel limit (min)</label>
+              <input type="number" id="cp_limit_duration_time" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none" value="180">
+            </div>
+            <div class="planning-setting-group">
+              <label>Warehouse capacity</label>
+              <input type="number" id="cp_depot_capacity" class="planning-input" value="10">
+            </div>
+            <div class="planning-setting-group">
+              <label>User ID</label>
+              <input type="text" id="cp_user_id" class="planning-input" placeholder="e.g. thienht">
+            </div>
+            <div class="planning-setting-group">
+              <label>Planning mode</label>
+              <select id="cp_planning_mode_select" class="planning-select">
+                <option value="delivery_only">Delivery only</option>
+                <option value="pickup_and_delivery">Pickup and delivery</option>
+                <option value="round_trip">Round trip</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="planning-step-footer">
+          <button type="button" class="planning-btn planning-btn-secondary" (click)="goToCreatePlanStep(3)">← Previous</button>
+          <button type="button" class="planning-btn planning-btn-primary" (click)="goToCreatePlanStep(5)">Next: Preview →</button>
+        </div>
+      </div>
+
+      <!-- STEP 5: SUMMARY (Preview) -->
+      <div class="planning-step-panel" [class.active]="currentStep === 5" id="create-plan-step-5">
+        <div class="planning-step-header">
+          <h3>📋 Plan Summary</h3>
+          <p>Review the configuration before creating the route plan</p>
+        </div>
+
+        <div class="planning-step-body">
+          <div class="planning-summary-grid">
+
+            <div class="planning-summary-section">
+              <div class="summary-section-header">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-map text-orange-500"></i>
+                  <span>Region information</span>
+                </div>
+                <button type="button" class="planning-btn-icon small border-none bg-transparent hover:bg-gray-100 transition-colors" (click)="goToCreatePlanStep(1)">
+                  <i class="pi pi-pencil text-xs text-gray-400"></i>
+                </button>
+              </div>
+              <div class="summary-row"><span>Region</span><span class="text-orange-600">{{ warehouseRegionShortname }} - {{ getRegionName(warehouseRegionShortname) }}</span></div>
+              <div class="summary-row"><span>Nodes</span><span>{{ timelineWarehouses.length }}</span></div>
+            </div>
+
+            <div class="planning-summary-section">
+              <div class="summary-section-header">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-map-marker text-red-500"></i>
+                  <span>Delivery Points</span>
+                </div>
+                <button type="button" class="planning-btn-icon small border-none bg-transparent hover:bg-gray-100 transition-colors" (click)="goToCreatePlanStep(1)">
+                  <i class="pi pi-pencil text-xs text-gray-400"></i>
+                </button>
+              </div>
+              <div class="summary-row"><span>Total Nodes</span><span>{{ timelineWarehouses.length }}</span></div>
+              <div class="summary-row"><span>Total Load</span><span>{{ getFormattedTotalDemandWeight() }} kg</span></div>
+            </div>
+
+            <div class="planning-summary-section">
+              <div class="summary-section-header">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-truck text-blue-500"></i>
+                  <span>Fleet selection</span>
+                </div>
+                <button type="button" class="planning-btn-icon small border-none bg-transparent hover:bg-gray-100 transition-colors" (click)="goToCreatePlanStep(3)">
+                  <i class="pi pi-pencil text-xs text-gray-400"></i>
+                </button>
+              </div>
+              <div class="summary-row"><span>Total Vehicles</span><span>{{ selectedTruckCount }}</span></div>
+              <div class="summary-row"><span>Total Payload</span><span>{{ totalTruckCapacity | number }} kg</span></div>
+            </div>
+
+            <div class="planning-summary-section">
+              <div class="summary-section-header">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-cog text-indigo-500"></i>
+                  <span>Constraints</span>
+                </div>
+                <button type="button" class="planning-btn-icon small border-none bg-transparent hover:bg-gray-100 transition-colors" (click)="goToCreatePlanStep(4)">
+                  <i class="pi pi-pencil text-xs text-gray-400"></i>
+                </button>
+              </div>
+              <div class="summary-row"><span>Speed Limit</span><span>40 km/h</span></div>
+              <div class="summary-row"><span>Solve Time</span><span>60s</span></div>
+            </div>
+
+            <div class="planning-summary-estimate">
+              <div class="estimate-title text-[10px] font-bold uppercase tracking-widest opacity-70">Engine Status</div>
+              <div class="estimate-value text-3xl font-black">{{ timelineWarehouses.length > 0 ? 'READY' : 'INCOMPLETE' }}</div>
+              <div class="estimate-label text-[10px] opacity-70 mt-1">Ready to start route optimization engine</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="planning-step-footer">
+          <button type="button" class="planning-btn planning-btn-secondary" (click)="goToCreatePlanStep(4)">← Previous</button>
+          <div class="planning-footer-actions">
+            <button type="button" class="planning-btn planning-btn-outline">🔎 Preview Payload</button>
+            <button type="button" class="planning-btn planning-btn-primary planning-btn-lg">
+              🚀 Create Route Plan
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Status Bar -->
+  <div id="cp_status_bar" class="planning-status-bar" style="display:none;">
+    <div class="status-info">
+      <span id="cp_status_text">Processing...</span>
+      <span id="cp_status_progress">0%</span>
+    </div>
+    <div class="status-bar">
+      <div class="status-bar-fill" id="cp_progress_bar" style="width:0%"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Create Plan Step Navigation
+  let currentCreatePlanStep = 1;
+
+  // Export function immediately to global scope
+  window.goToCreatePlanStep = function(step) {
+    console.log('[CreatePlanStep] Going to step:', step);
+
+    // Update step navigation
+    const stepItems = document.querySelectorAll('.planning-step-item');
+    console.log('[CreatePlanStep] Found step items:', stepItems.length);
+
+    stepItems.forEach((item, idx) => {
+      const isActive = idx + 1 === step;
+      const isCompleted = idx + 1 < step;
+
+      item.classList.toggle('active', isActive);
+      if (isCompleted) {
+        item.classList.add('completed');
+      } else {
+        item.classList.remove('completed');
+      }
+    });
+
+    // Update step panels
+    const stepPanels = document.querySelectorAll('.planning-step-panel');
+    console.log('[CreatePlanStep] Found step panels:', stepPanels.length);
+
+    stepPanels.forEach((panel, idx) => {
+      panel.classList.toggle('active', idx + 1 === step);
+    });
+
+    currentCreatePlanStep = step;
+
+    // Update summary when reaching final step (now step 5)
+    if (step === 5) {
+      updateCreatePlanSummary();
+    }
+  };
+
+  console.log('[CreatePlan] goToCreatePlanStep function registered globally');
+
+  function updateCreatePlanSummary() {
+    // Get values and update summary display
+    const startDepot = document.getElementById('cp_start_depot')?.selectedOptions[0]?.text || '-';
+    const endDepot = document.getElementById('cp_end_depot')?.selectedOptions[0]?.text || '-';
+    const mode = document.querySelector('input[name="cp_planning_mode"]:checked')?.value || 'standard';
+
+    const summaryStart = document.getElementById('cp_summary_start');
+    const summaryEnd = document.getElementById('cp_summary_end');
+    const summaryMode = document.getElementById('cp_summary_mode');
+
+    if (summaryStart) summaryStart.textContent = startDepot;
+    if (summaryEnd) summaryEnd.textContent = endDepot;
+    if (summaryMode) summaryMode.textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
+  }
+
+  // Mode selector - use event delegation instead of immediate binding
+  function setupModeSelectorListeners() {
+    document.querySelectorAll('.planning-mode-option').forEach(option => {
+      option.addEventListener('click', function() {
+        document.querySelectorAll('.planning-mode-option').forEach(o => o.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  }
+
+  // Initialize create plan
+  function initCreatePlan() {
+    console.log('[Planning] Initializing Create Plan...');
+
+    // Setup event listeners
+    setupModeSelectorListeners();
+
+    // Wait for DOM to be ready
+    setTimeout(() => {
+      goToCreatePlanStep(1);
+      loadWarehousesForCreatePlan();
+    }, 100);
+  }
+
+  // Load warehouses for depot selection
+  async function loadWarehousesForCreatePlan() {
+    try {
+      // This would call your API
+      // const response = await fetch('/api/warehouses');
+      // const warehouses = await response.json();
+
+      // Sample data
+      const warehouses = [
+        { id: 'WH001', name: 'Hub HCM - Q7', address: 'District 7, Ho Chi Minh City', lat: 10.7325, lng: 106.7175 },
+        { id: 'WH002', name: 'Hub HCM - Q12', address: 'District 12, Ho Chi Minh City', lat: 10.8565, lng: 106.6417 },
+        { id: 'WH003', name: 'Thu Duc Sorting Center', address: 'Thu Duc, Ho Chi Minh City', lat: 10.8505, lng: 106.7717 }
+      ];
+
+      const startSelect = document.getElementById('cp_start_depot');
+      const endSelect = document.getElementById('cp_end_depot');
+
+      if (startSelect && endSelect) {
+        const options = warehouses.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+        startSelect.innerHTML = '<option value="">-- Select warehouse --</option>' + options;
+        endSelect.innerHTML = '<option value="">-- Select warehouse --</option>' + options;
+      } else {
+        console.warn('[Planning] Depot select elements not found');
+      }
+    } catch (error) {
+      console.error('[Planning] Error loading warehouses:', error);
+    }
+  }
+
+  function onDepotChange(type) {
+    const select = document.getElementById(`cp_${type}_depot`);
+    const infoCard = document.getElementById(`cp_${type}_depot_info`);
+
+    if (select && select.value) {
+      if (infoCard) infoCard.style.display = 'block';
+      // Update info card with selected depot details
+    } else {
+      if (infoCard) infoCard.style.display = 'none';
+    }
+  }
+
+  // Stub functions for actions
+  function cpImportDemandsCsv() { alert('Import Demands CSV - Coming soon'); }
+  function cpImportDemandsJson() { alert('Import Demands JSON - Coming soon'); }
+  function cpRefreshDemands() { alert('Refresh Demands - Coming soon'); }
+  function cpFilterPoints(query) { console.log('Filter points:', query); }
+
+  // Add a new point (max 100 points)
+  function cpAddPoint() {
+    const maxPoints = 100;
+    const list = document.getElementById('cp_points_list');
+    const stat = document.getElementById('cp_stat_points');
+    if (!list) return alert('Point list not found');
+
+    const existing = list.querySelectorAll('.cp-point-item');
+    if (existing.length >= maxPoints) {
+      alert(`Cannot add more than ${maxPoints} stops`);
+      return;
+    }
+
+    // Remove empty state if present
+    const empty = list.querySelector('.planning-empty-state');
+    if (empty) empty.remove();
+
+    const idx = existing.length + 1;
+    const item = document.createElement('div');
+    item.className = 'cp-point-item border border-gray-200 rounded p-3 mb-2 flex items-center justify-between';
+    item.innerHTML = `
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 bg-orange-100 text-orange-700 rounded-full flex items-center justify-center font-semibold">${idx}</div>
+      <div>
+        <div class="font-semibold">Point ${idx}</div>
+        <div class="text-xs text-gray-500">No address yet</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button class="px-3 py-1 text-xs rounded bg-gray-100 hover:bg-gray-200" onclick="cpEditPoint(this)">Edit</button>
+      <button class="px-3 py-1 text-xs rounded bg-red-100 text-red-700 hover:bg-red-200" onclick="cpRemovePoint(this)">Delete</button>
+    </div>
+  `;
+
+    list.appendChild(item);
+    if (stat) stat.textContent = String(existing.length + 1);
+  }
+
+  function cpRemovePoint(btn) {
+    const item = btn.closest('.cp-point-item');
+    if (!item) return;
+    const list = document.getElementById('cp_points_list');
+    item.remove();
+
+    // Re-number remaining points
+    const items = list.querySelectorAll('.cp-point-item');
+    items.forEach((it, i) => {
+      const badge = it.querySelector('div > .w-8');
+      if (badge) badge.textContent = String(i + 1);
+    });
+
+    const stat = document.getElementById('cp_stat_points');
+    if (stat) stat.textContent = String(items.length);
+
+    if (items.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'planning-empty-state small';
+      empty.innerHTML = '<p>No points added</p>';
+      list.appendChild(empty);
+    }
+  }
+
+  function cpEditPoint(btn) {
+    // Simple prompt-based edit for now
+    const item = btn.closest('.cp-point-item');
+    if (!item) return;
+    const name = prompt('Point name', item.querySelector('.font-semibold').textContent || '');
+    if (name !== null) {
+      item.querySelector('.font-semibold').textContent = name;
+    }
+  }
+
+  function cpClearPoints() {
+    const list = document.getElementById('cp_points_list');
+    if (!list) return;
+    list.innerHTML = '<div class="planning-empty-state small"><p>No points added</p></div>';
+    const stat = document.getElementById('cp_stat_points');
+    if (stat) stat.textContent = '0';
+  }
+  function cpImportVehiclesCsv() { alert('Import Vehicles CSV - Coming soon'); }
+  function cpImportVehiclesJson() { alert('Import Vehicles JSON - Coming soon'); }
+  function cpClearVehicles() { alert('Clear Vehicles - Coming soon'); }
+  function cpPreviewPayload() { alert('Preview Payload - Coming soon'); }
+  function cpSubmitPlan() {
+    const stat = document.getElementById('cp_stat_points');
+    const totalPoints = stat ? parseInt(stat.textContent || '0', 10) : 0;
+    if (totalPoints > 100) {
+      alert('Cannot create plan: total stops exceed 100');
+      return;
+    }
+
+    const statusBar = document.getElementById('cp_status_bar');
+    const progressBar = document.getElementById('cp_progress_bar');
+    const statusProgress = document.getElementById('cp_status_progress');
+    const statusText = document.getElementById('cp_status_text');
+
+    if (statusBar) statusBar.style.display = 'block';
+
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 5;
+      if (progressBar) progressBar.style.width = progress + '%';
+      if (statusProgress) statusProgress.textContent = progress + '%';
+      if (progress >= 100) {
+        clearInterval(interval);
+        if (statusText) statusText.textContent = 'Plan created successfully!';
+      }
+    }, 200);
+  }
+
+  // Make functions globally available (backup - already exported above)
+  window.updateCreatePlanSummary = updateCreatePlanSummary;
+  window.loadWarehousesForCreatePlan = loadWarehousesForCreatePlan;
+  window.onDepotChange = onDepotChange;
+  window.cpImportDemandsCsv = cpImportDemandsCsv;
+  window.cpImportDemandsJson = cpImportDemandsJson;
+  window.cpRefreshDemands = cpRefreshDemands;
+  window.cpFilterPoints = cpFilterPoints;
+  window.cpAddPoint = cpAddPoint;
+  window.cpClearPoints = cpClearPoints;
+  window.cpImportVehiclesCsv = cpImportVehiclesCsv;
+  window.cpImportVehiclesJson = cpImportVehiclesJson;
+  window.cpClearVehicles = cpClearVehicles;
+  window.cpPreviewPayload = cpPreviewPayload;
+  window.cpSubmitPlan = cpSubmitPlan;
+
+  console.log('[CreatePlan] All functions registered:', {
+    goToCreatePlanStep: typeof window.goToCreatePlanStep,
+    initCreatePlan: typeof window.initCreatePlan,
+    updateCreatePlanSummary: typeof window.updateCreatePlanSummary
+  });
+
+  // Don't auto-init - wait for planning-module.js to call it
+  // if (typeof initCreatePlan === 'function') {
+  //   initCreatePlan();
+  // }
+</script>
+
+

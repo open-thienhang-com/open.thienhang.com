@@ -1,0 +1,242 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="branch-profile-page">
+
+  <!-- ── Loading ──────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="profile-loading">
+    <p-progressSpinner styleClass="w-4rem h-4rem"></p-progressSpinner>
+    <p>Synchronizing branch data...</p>
+  </div>
+
+  <!-- ── Not Found ─────────────────────────────────────────────── -->
+  <div *ngIf="!loading && !branch" class="profile-not-found">
+    <i class="pi pi-building"></i>
+    <h2>Branch not found</h2>
+    <p>This branch may have been decommissioned or the code is incorrect.</p>
+    <button pButton label="Back to Branches" icon="pi pi-arrow-left" class="p-button-outlined" (click)="goBack()"></button>
+  </div>
+
+  <!-- ── Profile Layout ─────────────────────────────────────────── -->
+  <ng-container *ngIf="!loading && branch">
+
+    <!-- Cover + Avatar header -->
+    <div class="profile-cover">
+      <div class="cover-gradient"></div>
+      <div class="profile-header-content">
+        <!-- Avatar / Icon -->
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar">
+            <i class="pi pi-building"></i>
+          </div>
+          <span class="profile-status-dot"
+                [class.dot-active]="branch.is_active !== false"
+                [class.dot-inactive]="branch.is_active === false"
+                [pTooltip]="branch.is_active !== false ? 'Operational' : 'Suspended'"></span>
+        </div>
+
+        <!-- Name & Meta -->
+        <div class="profile-hero">
+          <div class="profile-name-row">
+            <h1 class="profile-name">{{ branch.name }}</h1>
+            <p-tag *ngIf="branch.branch_type" [value]="branch.branch_type | uppercase" severity="info" styleClass="profile-status-tag"></p-tag>
+            <p-tag [value]="branch.is_active !== false ? 'Operational' : 'Suspended'" 
+                   [severity]="branch.is_active !== false ? 'success' : 'danger'" styleClass="profile-status-tag"></p-tag>
+          </div>
+          <p class="profile-meta-text"><i class="pi pi-map-marker"></i> {{ branch.address?.street || 'No address registered' }}, {{ branch.address?.city }}</p>
+          <div class="profile-meta-chips">
+            <span class="meta-chip"><i class="pi pi-sitemap"></i> Parent: {{ branch.parent_id || 'Root' }}</span>
+            <span class="meta-chip mono"><i class="pi pi-code"></i> Code: {{ branch.code }}</span>
+          </div>
+        </div>
+
+        <!-- Header actions -->
+        <div class="profile-header-actions">
+          <button pButton icon="pi pi-arrow-left" label="Back" class="p-button-text p-button-secondary" (click)="goBack()"></button>
+          <button *ngIf="!editMode" pButton icon="pi pi-pencil" label="Edit" class="p-button-outlined p-button-secondary" (click)="editMode = true"></button>
+          <button pButton icon="pi pi-trash" class="p-button-outlined p-button-danger" (click)="deleteBranch()" pTooltip="Delete branch"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Main grid ─────────────────────────────────────────────── -->
+    <div class="profile-body">
+
+      <!-- LEFT COLUMN -->
+      <aside class="profile-sidebar">
+
+        <!-- Stat cards row -->
+        <div class="stat-cards">
+          <div class="stat-card">
+            <i class="pi pi-link stat-icon"></i>
+            <div class="stat-value">{{ assignments.length }}</div>
+            <div class="stat-label">Assigns</div>
+          </div>
+          <div class="stat-card">
+            <i class="pi pi-map stat-icon"></i>
+            <div class="stat-value text-sm">{{ branch.address?.city || '—' }}</div>
+            <div class="stat-label">City</div>
+          </div>
+          <div class="stat-card">
+            <i class="pi pi-tag stat-icon"></i>
+            <div class="stat-value text-xs">{{ branch.branch_type || '—' }}</div>
+            <div class="stat-label">Type</div>
+          </div>
+        </div>
+
+        <!-- Branch Info card -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <i class="pi pi-info-circle"></i>
+            <span>Branch Details</span>
+          </div>
+          <div class="info-list">
+            <div class="info-row">
+              <span class="info-key">Email</span>
+              <span class="info-val text-xs">{{ branch.contact_info?.email || '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Phone</span>
+              <span class="info-val text-xs">{{ branch.contact_info?.phone || '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Country</span>
+              <span class="info-val">{{ branch.address?.country || '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Created</span>
+              <span class="info-val text-[10px] text-gray-500">{{ formatDate(branch.created_at) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metadata card -->
+        <div class="info-card metadata-preview">
+          <div class="info-card-header">
+            <i class="pi pi-code"></i>
+            <span>Configuration Data</span>
+          </div>
+          <div class="p-3">
+             <div class="bg-slate-900 rounded-lg p-3 font-mono text-[10px] text-emerald-400 overflow-auto max-h-48 shadow-inner">
+                <pre class="m-0">{{ getSettingsJson() }}</pre>
+             </div>
+          </div>
+        </div>
+
+        <!-- ID card -->
+        <div class="info-card id-card">
+          <div class="info-card-header">
+            <i class="pi pi-hashtag"></i>
+            <span>Branch Code</span>
+          </div>
+          <code class="id-code">{{ branch.code }}</code>
+        </div>
+
+      </aside>
+
+      <!-- RIGHT COLUMN -->
+      <main class="profile-main">
+
+        <!-- Edit Mode Card -->
+        <div class="profile-card" *ngIf="editMode">
+          <div class="card-header flex justify-between items-center">
+            <h2 class="card-title"><i class="pi pi-pencil"></i> Edit Branch Settings</h2>
+            <button pButton icon="pi pi-times" class="p-button-text p-button-secondary" (click)="editMode = false"></button>
+          </div>
+          <div class="card-body">
+            <app-branch-form 
+              [branch]="branch" 
+              [allBranches]="allBranches"
+              [loading]="saving"
+              (save)="onUpdate($event)"
+              (cancel)="editMode = false">
+            </app-branch-form>
+          </div>
+        </div>
+
+        <!-- Normal View Tabs -->
+        <div class="profile-card no-pad" *ngIf="!editMode">
+          <p-tabView styleClass="profile-tabview">
+            
+            <!-- OVERVIEW PANEL -->
+            <p-tabPanel header="Hierarchy & Map">
+              <div class="p-0">
+                <div class="p-6 border-b border-gray-100 bg-gray-50/30 flex justify-between items-center">
+                  <div>
+                    <h3 class="card-title">Organizational Hierarchy</h3>
+                    <p class="card-subtitle">Placement within the corporate structure</p>
+                  </div>
+                  <i class="pi pi-sitemap text-2xl text-gray-200"></i>
+                </div>
+
+                <div *ngIf="hierarchyLoading" class="p-20 text-center">
+                  <p-progressSpinner styleClass="w-3rem h-3rem"></p-progressSpinner>
+                  <p class="text-gray-400 mt-4">Building tree...</p>
+                </div>
+
+                <div *ngIf="!hierarchyLoading && hierarchy.length > 0" class="p-8">
+                  <p-tree [value]="hierarchy" layout="vertical" styleClass="border-none bg-transparent w-full profile-tree"></p-tree>
+                </div>
+
+                <div class="p-6 border-t border-gray-100">
+                  <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Description</h3>
+                  <p class="text-gray-600 leading-relaxed italic border-l-4 border-teal-500 pl-4 bg-teal-50/30 py-3 rounded-r-lg">
+                    "{{ branch.description || 'No formal description provided for this operational unit.' }}"
+                  </p>
+                </div>
+              </div>
+            </p-tabPanel>
+
+            <!-- ASSIGNMENTS PANEL -->
+            <p-tabPanel header="Entity Assignments">
+              <div class="p-0">
+                <div class="p-6 border-b border-gray-100 bg-gray-50/30 flex justify-between items-center">
+                  <div>
+                    <h3 class="card-title">Branch Personnel & Resources</h3>
+                    <p class="card-subtitle">Entities linked to this specific branch</p>
+                  </div>
+                  <p-badge [value]="assignments.length.toString()" severity="info"></p-badge>
+                </div>
+
+                <p-table [value]="assignments" [loading]="assignmentsLoading" styleClass="p-datatable-sm profile-table">
+                  <ng-template pTemplate="header">
+                    <tr>
+                      <th>Entity</th>
+                      <th>Type</th>
+                      <th>Status</th>
+                      <th class="w-16"></th>
+                    </tr>
+                  </ng-template>
+                  <ng-template pTemplate="body" let-a>
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-3">
+                          <div class="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center font-bold text-xs border border-teal-100">
+                            {{ a.entity_id.substring(0, 2).toUpperCase() }}
+                          </div>
+                          <span class="font-semibold text-gray-700">{{ a.entity_id }}</span>
+                        </div>
+                      </td>
+                      <td><p-tag [value]="a.entity_type" severity="secondary" styleClass="text-[9px] font-bold uppercase"></p-tag></td>
+                      <td><span class="text-xs text-gray-500"><i class="pi pi-circle-fill text-[8px] text-green-400 mr-2"></i>{{ a.status || 'Active' }}</span></td>
+                      <td>
+                        <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm" (click)="removeAssignment(a.id)" pTooltip="Unlink entity"></button>
+                      </td>
+                    </tr>
+                  </ng-template>
+                  <ng-template pTemplate="emptymessage">
+                    <tr>
+                      <td colspan="4" class="p-12 text-center text-gray-400 italic">No assignments found.</td>
+                    </tr>
+                  </ng-template>
+                </p-table>
+              </div>
+            </p-tabPanel>
+
+          </p-tabView>
+        </div>
+
+      </main>
+    </div>
+  </ng-container>
+</div>

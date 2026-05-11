@@ -1,0 +1,41 @@
+<div class="auth-page">
+  <!-- Animated Background -->
+  <div class="animated-background">
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+    <div class="gradient-orb orb-3"></div>
+  </div>
+
+  <!-- Content Container -->
+  <div class="auth-container">
+    <!-- Auth Form Card -->
+    <div class="auth-card" [@fadeInUp]>
+      @if (curMode === modes.login) {
+        <app-login class="block"
+                   (onForgotPassword)="setCurMode(modes.forgotPassword)"
+                   (onSignUp)="setCurMode(modes.signup)"
+                   (onUnverified)="handleUnverified($event)"></app-login>
+      }
+      @if (curMode === modes.signup) {
+        <app-signup class="block"
+                    (onLogIn)="setCurMode(modes.login)"
+                    (onVerifyAccount)="setCurMode(modes.verifyAccount)"></app-signup>
+      }
+      @if (curMode === modes.forgotPassword) {
+        <app-forgot-password class="block"
+                             (onLogIn)="setCurMode(modes.login)"
+                             (onResetPassword)="setCurMode(modes.resetPassword)"></app-forgot-password>
+      }
+      @if (curMode === modes.verifyAccount) {
+        <app-verify-account class="block"
+                            (onVerified)="setCurMode(modes.login)"
+                            (onBackToLogin)="setCurMode(modes.login)"></app-verify-account>
+      }
+      @if (curMode === modes.resetPassword) {
+        <app-reset-password class="block"
+                            (onReset)="setCurMode(modes.login)"
+                            (onBackToLogin)="setCurMode(modes.login)"></app-reset-password>
+      }
+    </div>
+  </div>
+</div>

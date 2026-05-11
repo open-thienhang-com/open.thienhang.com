@@ -1,0 +1,322 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="user-profile-page">
+
+  <!-- ── Loading ──────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="profile-loading">
+    <p-progressSpinner styleClass="w-4rem h-4rem"></p-progressSpinner>
+    <p>Loading profile...</p>
+  </div>
+
+  <!-- ── Not Found ─────────────────────────────────────────────── -->
+  <div *ngIf="!loading && !user" class="profile-not-found">
+    <i class="pi pi-user-minus"></i>
+    <h2>User not found</h2>
+    <p>This user may have been deleted or the ID is incorrect.</p>
+    <button pButton label="Back to Users" icon="pi pi-arrow-left" class="p-button-outlined" (click)="goBack()"></button>
+  </div>
+
+  <!-- ── Profile Layout ─────────────────────────────────────────── -->
+  <ng-container *ngIf="!loading && user">
+
+    <!-- Cover + Avatar header -->
+    <div class="profile-cover">
+      <div class="cover-gradient"></div>
+      <div class="profile-header-content">
+        <!-- Avatar -->
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar">
+            <i class="pi pi-user"></i>
+          </div>
+          <span class="profile-status-dot"
+                [class.dot-active]="user.status === 'active'"
+                [class.dot-inactive]="user.status !== 'active'"
+                [pTooltip]="user.status | titlecase"></span>
+        </div>
+
+        <!-- Name & Meta -->
+        <div class="profile-hero">
+          <div class="profile-name-row">
+            <h1 class="profile-name">{{ getUserName() }}</h1>
+            <p-tag *ngIf="user.status" [value]="user.status | titlecase"
+                   [severity]="getStatusSeverity(user.status)" styleClass="profile-status-tag"></p-tag>
+            <p-tag *ngIf="user.is_verified" value="Verified" severity="success" icon="pi pi-verified"></p-tag>
+          </div>
+          <p class="profile-email"><i class="pi pi-envelope"></i> {{ user.email }}</p>
+          <div class="profile-meta-chips">
+            <span class="meta-chip" *ngIf="user.role"><i class="pi pi-id-card"></i> {{ user.role }}</span>
+            <span class="meta-chip" *ngIf="user.account"><i class="pi pi-building"></i> {{ user.account }}</span>
+            <span class="meta-chip mono"><i class="pi pi-hashtag"></i> {{ (user.kid || user._id || '').slice(0,8) }}…</span>
+          </div>
+        </div>
+
+        <!-- Header actions -->
+        <div class="profile-header-actions">
+          <button pButton icon="pi pi-arrow-left" label="Back" class="p-button-text p-button-secondary" (click)="goBack()"></button>
+          <button pButton icon="pi pi-pencil" label="Edit" class="p-button-outlined p-button-secondary" (click)="editUser()"></button>
+          <button pButton icon="pi pi-trash" class="p-button-outlined p-button-danger" (click)="deleteUser()" pTooltip="Delete user"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Main grid ─────────────────────────────────────────────── -->
+    <div class="profile-body">
+
+      <!-- LEFT COLUMN -->
+      <aside class="profile-sidebar">
+
+        <!-- Stat cards row -->
+        <div class="stat-cards">
+          <div class="stat-card">
+            <i class="pi pi-shield stat-icon"></i>
+            <div class="stat-value">{{ user.governance?.roles?.length || 0 }}</div>
+            <div class="stat-label">Roles</div>
+          </div>
+          <div class="stat-card">
+            <i class="pi pi-users stat-icon"></i>
+            <div class="stat-value">{{ user.governance?.teams?.length || 0 }}</div>
+            <div class="stat-label">Teams</div>
+          </div>
+          <div class="stat-card">
+            <i class="pi pi-key stat-icon"></i>
+            <div class="stat-value">{{ user.governance?.permissions?.length || 0 }}</div>
+            <div class="stat-label">Permissions</div>
+          </div>
+        </div>
+
+        <!-- Identity card -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <i class="pi pi-id-card"></i>
+            <span>Identity</span>
+          </div>
+          <div class="info-list">
+            <div class="info-row">
+              <span class="info-key">Full Name</span>
+              <span class="info-val">{{ getUserName() }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Email</span>
+              <span class="info-val">{{ user.email }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Role</span>
+              <span class="info-val">{{ user.role || '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Account</span>
+              <span class="info-val">{{ user.account || '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Tenant</span>
+              <span class="info-val">{{ user.tenant_id || user.tenant || '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Status</span>
+              <span class="info-val">
+                <p-tag [value]="user.status | titlecase" [severity]="getStatusSeverity(user.status)" [style]="{'font-size':'0.75rem'}"></p-tag>
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Verified</span>
+              <span class="info-val">
+                <i class="pi" [class.pi-check-circle]="user.is_verified" [class.pi-times-circle]="!user.is_verified"
+                   [style.color]="user.is_verified ? '#22c55e' : '#94a3b8'"></i>
+                {{ user.is_verified ? 'Yes' : 'No' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timestamps card -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <i class="pi pi-clock"></i>
+            <span>Timeline</span>
+          </div>
+          <div class="info-list">
+            <div class="info-row">
+              <span class="info-key">Created</span>
+              <span class="info-val">{{ user.created_at ? (user.created_at | date:'dd MMM yyyy') : '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Updated</span>
+              <span class="info-val">{{ user.updated_at ? (user.updated_at | date:'dd MMM yyyy') : '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Last Login</span>
+              <span class="info-val">{{ user.last_login ? (user.last_login | date:'dd MMM yyyy') : '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ID card -->
+        <div class="info-card id-card">
+          <div class="info-card-header">
+            <i class="pi pi-hashtag"></i>
+            <span>User ID</span>
+          </div>
+          <code class="user-id-code">{{ user.kid || user._id || '—' }}</code>
+        </div>
+
+      </aside>
+
+      <!-- RIGHT COLUMN -->
+      <main class="profile-main">
+
+        <!-- Profile details editable card -->
+        <div class="profile-card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i class="pi pi-user-edit"></i> Profile Details</h2>
+              <p class="card-subtitle">Basic information and governance attributes</p>
+            </div>
+            <div class="card-actions">
+              <ng-container *ngIf="!editMode">
+                <button pButton label="Edit Profile" icon="pi pi-pencil" class="p-button-outlined p-button-sm" (click)="editMode = true"></button>
+              </ng-container>
+              <ng-container *ngIf="editMode">
+                <button pButton label="Cancel" class="p-button-text p-button-secondary p-button-sm" (click)="cancelEdit()" [disabled]="saving"></button>
+                <button pButton label="Save" icon="pi pi-check" class="p-button-sm" (click)="saveChanges()" [loading]="saving"></button>
+              </ng-container>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="fields-grid">
+              <div class="field-group">
+                <label class="field-label">First Name</label>
+                <input *ngIf="editMode" pInputText [(ngModel)]="editForm.first_name" class="field-input" placeholder="First name" />
+                <p *ngIf="!editMode" class="field-value">{{ user.first_name || '—' }}</p>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Last Name</label>
+                <input *ngIf="editMode" pInputText [(ngModel)]="editForm.last_name" class="field-input" placeholder="Last name" />
+                <p *ngIf="!editMode" class="field-value">{{ user.last_name || '—' }}</p>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Email</label>
+                <input *ngIf="editMode" pInputText [(ngModel)]="editForm.email" type="email" class="field-input" />
+                <p *ngIf="!editMode" class="field-value">{{ user.email }}</p>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Role</label>
+                <input *ngIf="editMode" pInputText [(ngModel)]="editForm.role" class="field-input" placeholder="Role" />
+                <p *ngIf="!editMode" class="field-value">{{ user.role || '—' }}</p>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Status</label>
+                <input *ngIf="editMode" pInputText [(ngModel)]="editForm.status" class="field-input" placeholder="active / inactive" />
+                <p *ngIf="!editMode" class="field-value">{{ user.status | titlecase }}</p>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Phone</label>
+                <input *ngIf="editMode" pInputText [(ngModel)]="editForm.phone" class="field-input" placeholder="+84..." />
+                <p *ngIf="!editMode" class="field-value">{{ user.phone || '—' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Access & Roles card -->
+        <div class="profile-card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i class="pi pi-shield"></i> Access & Roles</h2>
+              <p class="card-subtitle">Assigned roles, teams and policies</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="access-section">
+              <div class="access-block">
+                <div class="access-block-title"><i class="pi pi-shield"></i> Roles</div>
+                <div *ngIf="user.governance?.roles?.length; else noRoles" class="chips-wrap">
+                  <p-chip *ngFor="let r of user.governance.roles"
+                          [label]="r?.name || r?.id || r"
+                          icon="pi pi-shield"
+                          styleClass="chip-role"></p-chip>
+                </div>
+                <ng-template #noRoles>
+                  <p class="empty-hint"><i class="pi pi-info-circle"></i> No roles assigned</p>
+                </ng-template>
+              </div>
+
+              <div class="access-block">
+                <div class="access-block-title"><i class="pi pi-users"></i> Teams</div>
+                <div *ngIf="user.governance?.teams?.length; else noTeams" class="chips-wrap">
+                  <p-chip *ngFor="let t of user.governance.teams"
+                          [label]="t?.name || t?.id || t"
+                          icon="pi pi-users"
+                          styleClass="chip-team"></p-chip>
+                </div>
+                <ng-template #noTeams>
+                  <p class="empty-hint"><i class="pi pi-info-circle"></i> No teams assigned</p>
+                </ng-template>
+              </div>
+
+              <div class="access-block">
+                <div class="access-block-title"><i class="pi pi-lock"></i> Policies</div>
+                <div *ngIf="user.governance?.policies?.length; else noPolicies" class="chips-wrap">
+                  <p-chip *ngFor="let p of user.governance.policies"
+                          [label]="p?.name || p?.id || p"
+                          icon="pi pi-lock"
+                          styleClass="chip-policy"></p-chip>
+                </div>
+                <ng-template #noPolicies>
+                  <p class="empty-hint"><i class="pi pi-info-circle"></i> No policies applied</p>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Permission Matrix card -->
+        <div class="profile-card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i class="pi pi-key"></i> Permission Matrix</h2>
+              <p class="card-subtitle">Permissions grouped by resource and role</p>
+            </div>
+          </div>
+          <div class="card-body no-pad">
+            <div *ngIf="permissionMatrix.length === 0" class="empty-state">
+              <i class="pi pi-key empty-icon"></i>
+              <p>No permissions assigned to this user.</p>
+            </div>
+            <div *ngIf="permissionMatrix.length > 0" class="overflow-auto">
+              <p-table [value]="permissionMatrix" [tableStyle]="{'min-width': '50rem'}"
+                       styleClass="p-datatable-sm p-datatable-gridlines">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th style="width:140px">Resource</th>
+                    <th style="width:140px">Action</th>
+                    <th *ngFor="let role of getRoleNames()" class="text-center">{{ role }}</th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-group>
+                  <ng-container *ngFor="let a of group.actions; let i = index">
+                    <tr>
+                      <td *ngIf="i === 0" [attr.rowspan]="group.actions.length"
+                          class="font-semibold text-gray-700 capitalize surface-50">
+                        {{ group.resource }}
+                      </td>
+                      <td class="text-sm text-gray-600 capitalize">{{ a.action }}</td>
+                      <td *ngFor="let role of getRoleNames()" class="text-center">
+                        <i *ngIf="a.grantedByRoles.includes(role)" class="pi pi-check-circle" style="color:#22c55e"></i>
+                        <i *ngIf="!a.grantedByRoles.includes(role)" class="pi pi-minus" style="color:#cbd5e1"></i>
+                      </td>
+                    </tr>
+                  </ng-container>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                  <tr><td [attr.colspan]="2 + getRoleNames().length" class="text-center p-6 text-gray-400">No data</td></tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </ng-container>
+</div>

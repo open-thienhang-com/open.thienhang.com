@@ -1,0 +1,372 @@
+<div class="domain-catalog-container">
+  <div class="content-header">
+    <div class="header-section">
+      <h1 class="page-title">Domain Catalog</h1>
+      <p class="page-description">Manage and explore your data mesh domains</p>
+    </div>
+    <div class="header-actions">
+      <p-button 
+        label="Create Domain" 
+        icon="pi pi-plus" 
+        class="p-button-primary"
+        (click)="createDomain()">
+      </p-button>
+      <p-button 
+        icon="pi pi-refresh" 
+        class="p-button-outlined"
+        (click)="refreshData()"
+        [loading]="loading">
+      </p-button>
+      <p-button 
+        icon="pi pi-download" 
+        class="p-button-outlined"
+        (click)="exportDomains()">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="filter-row">
+      <div class="search-container">
+        <span class="p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input 
+            type="text" 
+            pInputText 
+            placeholder="Search domains..."
+            [(ngModel)]="searchTerm"
+            (input)="applyFilters()"
+            class="search-input">
+        </span>
+      </div>
+      
+      <div class="filter-controls">
+        <p-dropdown
+          [options]="statusOptions"
+          [(ngModel)]="selectedStatus"
+          placeholder="Filter by Status"
+          [showClear]="true"
+          (onChange)="applyFilters()"
+          class="filter-dropdown">
+        </p-dropdown>
+        
+        <p-dropdown
+          [options]="complianceOptions"
+          [(ngModel)]="selectedCompliance"
+          placeholder="Filter by Compliance"
+          [showClear]="true"
+          (onChange)="applyFilters()"
+          class="filter-dropdown">
+        </p-dropdown>
+        
+        <p-multiSelect
+          [options]="tagOptions"
+          [(ngModel)]="selectedTags"
+          placeholder="Filter by Tags"
+          [showClear]="true"
+          (onChange)="applyFilters()"
+          class="filter-dropdown">
+        </p-multiSelect>
+      </div>
+      
+      <div class="view-controls">
+        <p-button 
+          icon="pi pi-th-large" 
+          [class.p-button-primary]="viewMode === 'grid'"
+          class="p-button-outlined view-btn"
+          (click)="viewMode = 'grid'">
+        </p-button>
+        <p-button 
+          icon="pi pi-list" 
+          [class.p-button-primary]="viewMode === 'list'"
+          class="p-button-outlined view-btn"
+          (click)="viewMode = 'list'">
+        </p-button>
+      </div>
+    </div>
+    
+    <div class="active-filters" *ngIf="searchTerm || selectedStatus || selectedCompliance || selectedTags.length > 0">
+      <span class="filter-label">Active Filters:</span>
+      <p-chip 
+        *ngIf="searchTerm"
+        [label]="'Search: ' + searchTerm"
+        [removable]="true"
+        (onRemove)="searchTerm = ''; applyFilters()">
+      </p-chip>
+      <p-chip 
+        *ngIf="selectedStatus"
+        [label]="'Status: ' + selectedStatus"
+        [removable]="true"
+        (onRemove)="selectedStatus = null; applyFilters()">
+      </p-chip>
+      <p-chip 
+        *ngIf="selectedCompliance"
+        [label]="'Compliance: ' + selectedCompliance"
+        [removable]="true"
+        (onRemove)="selectedCompliance = null; applyFilters()">
+      </p-chip>
+      <p-chip 
+        *ngFor="let tag of selectedTags"
+        [label]="'Tag: ' + tag"
+        [removable]="true"
+        (onRemove)="removeTag(tag)">
+      </p-chip>
+      <p-button 
+        label="Clear All" 
+        class="p-button-text p-button-sm"
+        (click)="clearFilters()">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Grid View -->
+  <div class="domains-grid" *ngIf="viewMode === 'grid'">
+    <div class="grid-container">
+      <div class="domain-card" *ngFor="let domain of filteredDomains">
+        <p-card>
+          <div class="card-header">
+            <div class="domain-info">
+              <h3 class="domain-name">{{domain.name}}</h3>
+              <p class="domain-description">{{domain.description}}</p>
+            </div>
+            <div class="domain-actions">
+              <p-button 
+                icon="pi pi-pencil" 
+                class="p-button-rounded p-button-text p-button-sm"
+                (click)="editDomain(domain)">
+              </p-button>
+              <p-button 
+                icon="pi pi-trash" 
+                class="p-button-rounded p-button-text p-button-sm p-button-danger"
+                (click)="deleteDomain($event, domain)">
+              </p-button>
+            </div>
+          </div>
+          
+          <div class="card-content">
+            <div class="owner-section">
+              <p-avatar 
+                [image]="domain.ownerAvatar"
+                shape="circle"
+                size="small">
+              </p-avatar>
+              <div class="owner-info">
+                <span class="owner-name">{{domain.owner}}</span>
+                <span class="owner-title">Domain Owner</span>
+              </div>
+            </div>
+            
+            <div class="metrics-section">
+              <div class="metric-item">
+                <span class="metric-label">Data Products</span>
+                <p-badge [value]="domain.dataProducts" class="metric-badge"></p-badge>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Maturity Score</span>
+                <div class="maturity-score">
+                  <span class="score-value">{{domain.maturityScore}}%</span>
+                  <p-progressBar 
+                    [value]="domain.maturityScore"
+                    [style]="{'height': '6px'}"
+                    [styleClass]="'maturity-' + getMaturityColor(domain.maturityScore)">
+                  </p-progressBar>
+                </div>
+              </div>
+            </div>
+            
+            <div class="status-section">
+              <p-tag 
+                [value]="domain.status"
+                [severity]="getStatusSeverity(domain.status)"
+                class="status-tag">
+              </p-tag>
+              <p-tag 
+                [value]="domain.compliance"
+                [severity]="getComplianceSeverity(domain.compliance)"
+                class="compliance-tag">
+              </p-tag>
+            </div>
+            
+            <div class="tags-section">
+              <p-chip 
+                *ngFor="let tag of domain.tags.slice(0, 3)"
+                [label]="tag"
+                class="domain-tag">
+              </p-chip>
+              <p-chip 
+                *ngIf="domain.tags.length > 3"
+                [label]="'+' + (domain.tags.length - 3)"
+                class="domain-tag more-tags">
+              </p-chip>
+            </div>
+            
+            <div class="kpis-section">
+              <div class="kpi-item">
+                <span class="kpi-label">Quality</span>
+                <div class="kpi-value">{{domain.kpis.quality}}%</div>
+              </div>
+              <div class="kpi-item">
+                <span class="kpi-label">Usage</span>
+                <div class="kpi-value">{{domain.kpis.usage}}%</div>
+              </div>
+              <div class="kpi-item">
+                <span class="kpi-label">Performance</span>
+                <div class="kpi-value">{{domain.kpis.performance}}%</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-footer">
+            <small class="last-updated">
+              Last updated: {{domain.lastUpdated | date:'MMM d, y'}}
+            </small>
+            <p-button 
+              label="View Details" 
+              class="p-button-sm p-button-outlined"
+              [routerLink]="['/domains', domain.id]">
+            </p-button>
+          </div>
+        </p-card>
+      </div>
+    </div>
+  </div>
+
+  <!-- List View -->
+  <div class="domains-list" *ngIf="viewMode === 'list'">
+    <p-table 
+      [value]="filteredDomains"
+      [loading]="loading"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      [sortField]="'name'"
+      [sortOrder]="1"
+      dataKey="id"
+      class="domains-table">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="name">
+            Domain <p-sortIcon field="name"></p-sortIcon>
+          </th>
+          <th pSortableColumn="owner">
+            Owner <p-sortIcon field="owner"></p-sortIcon>
+          </th>
+          <th pSortableColumn="dataProducts">
+            Data Products <p-sortIcon field="dataProducts"></p-sortIcon>
+          </th>
+          <th pSortableColumn="maturityScore">
+            Maturity <p-sortIcon field="maturityScore"></p-sortIcon>
+          </th>
+          <th pSortableColumn="status">
+            Status <p-sortIcon field="status"></p-sortIcon>
+          </th>
+          <th pSortableColumn="compliance">
+            Compliance <p-sortIcon field="compliance"></p-sortIcon>
+          </th>
+          <th pSortableColumn="lastUpdated">
+            Last Updated <p-sortIcon field="lastUpdated"></p-sortIcon>
+          </th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+      
+      <ng-template pTemplate="body" let-domain>
+        <tr>
+          <td>
+            <div class="domain-cell">
+              <div class="domain-name">{{domain.name}}</div>
+              <div class="domain-description">{{domain.description}}</div>
+              <div class="domain-tags">
+                <p-chip 
+                  *ngFor="let tag of domain.tags.slice(0, 2)"
+                  [label]="tag"
+                  class="small-tag">
+                </p-chip>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="owner-cell">
+              <p-avatar 
+                [image]="domain.ownerAvatar"
+                shape="circle"
+                size="small">
+              </p-avatar>
+              <span class="owner-name">{{domain.owner}}</span>
+            </div>
+          </td>
+          <td>
+            <p-badge [value]="domain.dataProducts"></p-badge>
+          </td>
+          <td>
+            <div class="maturity-cell">
+              <span class="score-value">{{domain.maturityScore}}%</span>
+              <p-progressBar 
+                [value]="domain.maturityScore"
+                [style]="{'height': '4px', 'width': '60px'}"
+                [styleClass]="'maturity-' + getMaturityColor(domain.maturityScore)">
+              </p-progressBar>
+            </div>
+          </td>
+          <td>
+            <p-tag 
+              [value]="domain.status"
+              [severity]="getStatusSeverity(domain.status)">
+            </p-tag>
+          </td>
+          <td>
+            <p-tag 
+              [value]="domain.compliance"
+              [severity]="getComplianceSeverity(domain.compliance)">
+            </p-tag>
+          </td>
+          <td>{{domain.lastUpdated | date:'MMM d, y'}}</td>
+          <td>
+            <div class="action-buttons">
+              <p-button 
+                icon="pi pi-eye" 
+                class="p-button-rounded p-button-text p-button-sm"
+                [routerLink]="['/domains', domain.id]"
+                pTooltip="View Details">
+              </p-button>
+              <p-button 
+                icon="pi pi-pencil" 
+                class="p-button-rounded p-button-text p-button-sm"
+                (click)="editDomain(domain)"
+                pTooltip="Edit">
+              </p-button>
+              <p-button 
+                icon="pi pi-trash" 
+                class="p-button-rounded p-button-text p-button-sm p-button-danger"
+                (click)="deleteDomain($event, domain)"
+                pTooltip="Delete">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8" class="empty-state">
+            <div class="empty-content">
+              <i class="pi pi-database empty-icon"></i>
+              <h3>No domains found</h3>
+              <p>Create your first domain to get started</p>
+              <p-button 
+                label="Create Domain" 
+                icon="pi pi-plus"
+                (click)="createDomain()">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<p-confirmPopup></p-confirmPopup>
+<p-toast position="top-right"></p-toast>

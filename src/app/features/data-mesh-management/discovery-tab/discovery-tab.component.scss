@@ -1,0 +1,19 @@
+/* Discovery Tab Component Styles */
+.explorer-card {
+  background: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #e5e7eb;
+}
+.metadata-tag {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  background: #f3f4f6;
+  color: #374151;
+  font-size: 0.75rem;
+}
+.status-online { color: #16a34a; }
+.status-warning { color: #eab308; }
+.status-offline { color: #dc2626; }

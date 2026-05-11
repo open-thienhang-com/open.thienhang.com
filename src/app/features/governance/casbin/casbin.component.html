@@ -1,0 +1,318 @@
+<p-toast></p-toast>
+
+<div class="bg-slate-50 min-h-screen p-6">
+  
+  <!-- Header & Breadcrumbs -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <div class="flex items-center gap-2 text-sm text-slate-400 mb-2">
+        <span>Administration</span>
+        <i class="pi pi-chevron-right text-[10px]"></i>
+        <span>Security & Safety</span>
+        <i class="pi pi-chevron-right text-[10px]"></i>
+        <span class="text-slate-900 font-medium">Access Control Center</span>
+      </div>
+      <h1 class="text-3xl font-bold text-slate-900 flex items-center gap-3">
+        <i class="pi pi-shield text-blue-600"></i>
+        Access Control Center
+      </h1>
+      <p class="text-slate-500 mt-2">Manage who can see and do things within the system in a simple way.</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <p-button label="Sync Security Settings" icon="pi pi-sync" severity="secondary" [outlined]="true" [rounded]="true" (onClick)="reloadPolicies()"></p-button>
+      <p-button label="New Access Rule" icon="pi pi-plus" severity="primary" [rounded]="true" (onClick)="showAddRuleForm = !showAddRuleForm"></p-button>
+    </div>
+  </div>
+
+  <!-- Main Tabs -->
+  <div class="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+    <p-tabView styleClass="casbin-tabview">
+      
+      <!-- Tab 1: Policy Editor (Matrix) -->
+      <p-tabPanel header="Permissions Matrix">
+        <ng-template pTemplate="header">
+          <div class="flex items-center gap-2 py-2">
+            <i class="pi pi-th-large"></i>
+            <div class="flex flex-col text-left">
+              <span class="font-bold">Permissions Matrix</span>
+              <span class="text-[10px] font-normal opacity-70">Main security grid</span>
+            </div>
+          </div>
+        </ng-template>
+
+        <div class="p-6">
+          <!-- Search & View Options -->
+          <div class="flex items-center justify-between mb-8 bg-slate-50 p-4 rounded-xl border border-slate-100">
+            <div class="relative w-96">
+              <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+              <input pInputText type="text" [(ngModel)]="filterSub" placeholder="Search by role or person..." 
+                     class="w-full pl-10 pr-4 py-3 bg-white border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+            </div>
+            <div class="flex items-center gap-6">
+              <div class="flex flex-col items-end">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Display Mode</span>
+                <div class="flex bg-slate-200 p-1 rounded-lg mt-1">
+                  <button class="px-3 py-1 bg-white shadow-sm rounded-md text-blue-600"><i class="pi pi-table"></i></button>
+                  <button class="px-3 py-1 text-slate-500"><i class="pi pi-list"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add Rule Inline Form -->
+          <div *ngIf="showAddRuleForm" class="bg-blue-50 border border-blue-100 rounded-2xl p-6 mb-8 animate-fade-in shadow-inner">
+             <h3 class="text-blue-900 font-bold mb-4 flex items-center gap-2"><i class="pi pi-plus-circle"></i> Define a New Access Permission</h3>
+             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+               <div class="flex flex-col gap-2">
+                 <label class="text-xs font-bold text-blue-700 uppercase">Who? (Personnel Group)</label>
+                 <input pInputText [(ngModel)]="newRule.sub" placeholder="e.g. Finance Team" class="w-full py-3" />
+               </div>
+               <div class="flex flex-col gap-2">
+                 <label class="text-xs font-bold text-blue-700 uppercase">Where? (System Function)</label>
+                 <input pInputText [(ngModel)]="newRule.obj" placeholder="e.g. Salary Reports" class="w-full py-3" />
+               </div>
+               <div class="flex flex-col gap-2">
+                 <label class="text-xs font-bold text-blue-700 uppercase">What Action?</label>
+                 <p-dropdown [options]="methodOptions" [(ngModel)]="newRule.act" optionLabel="label" optionValue="value" styleClass="w-full py-1"></p-dropdown>
+               </div>
+               <div class="flex gap-2">
+                 <p-button label="Save Access Rule" severity="primary" class="flex-1" [loading]="addingRule" (onClick)="addRule()"></p-button>
+                 <p-button icon="pi pi-times" severity="secondary" [text]="true" (onClick)="showAddRuleForm=false"></p-button>
+               </div>
+             </div>
+          </div>
+
+          <!-- Matrix Views -->
+          <div *ngIf="rulesLoading" class="flex flex-col items-center justify-center py-24 gap-6">
+             <p-progressSpinner strokeWidth="4" fill="transparent" animationDuration=".5s"></p-progressSpinner>
+             <div class="flex flex-col items-center">
+               <span class="text-slate-900 font-bold text-lg">Building Security View</span>
+               <span class="text-slate-400">This will only take a moment...</span>
+             </div>
+          </div>
+
+          <div *ngIf="!rulesLoading" class="space-y-16">
+            
+            <div *ngFor="let sub of subjects" class="matrix-section animate-fade-in">
+              <!-- Role Header -->
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
+                  <i class="pi pi-users text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold text-slate-900 m-0">{{ getFriendlyName(sub) }}</h3>
+                  <div class="flex items-center gap-2 mt-1">
+                    <span class="text-xs font-medium text-slate-400 px-2 py-0.5 bg-slate-100 rounded border border-slate-200 uppercase tracking-tighter">Technical ID: {{ sub }}</span>
+                  </div>
+                </div>
+                <div class="ml-auto">
+                  <p-button icon="pi pi-ellipsis-h" severity="secondary" [text]="true" [rounded]="true"></p-button>
+                </div>
+              </div>
+
+              <!-- Matrix Table -->
+              <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm bg-white">
+                <table class="w-full border-collapse">
+                  <thead>
+                    <tr class="bg-slate-50/80">
+                      <th class="w-48 px-6 py-6 text-left text-xs font-black text-slate-400 uppercase tracking-widest border-r border-slate-100">
+                        Capabilities
+                      </th>
+                      <th *ngFor="let res of matrixResources" class="px-8 py-6 text-left border-r border-slate-100">
+                        <div class="flex flex-col">
+                          <span class="text-sm font-bold text-slate-800">{{ getFriendlyName(res) }}</span>
+                          <span class="text-[10px] text-slate-400 font-medium truncate max-w-[150px] uppercase tracking-tighter">{{ res }}</span>
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    <tr *ngFor="let act of matrixActions" class="hover:bg-slate-50/50 transition-all group">
+                      <td class="px-6 py-6 border-r border-slate-100 bg-slate-50/30">
+                        <div class="flex items-center gap-3">
+                          <i [class]="getActionIcon(act)" class="text-slate-400 group-hover:text-blue-500 transition-colors"></i>
+                          <span class="text-sm font-bold text-slate-600">{{ getActionLabel(act) }}</span>
+                        </div>
+                      </td>
+                      <td *ngFor="let res of matrixResources" class="px-8 py-4 border-r border-slate-100">
+                        <div class="flex items-center justify-center">
+                          <div class="flex flex-col items-center gap-2 group/cell p-3 rounded-xl transition-all w-full cursor-pointer"
+                               [ngClass]="groupedRules[sub][res][act] ? 'bg-green-50 shadow-inner' : 'hover:bg-slate-100'"
+                               (click)="toggleMatrixPermission(sub, res, act)">
+                            
+                            <div class="flex items-center gap-3">
+                              <div class="w-6 h-6 rounded-md flex items-center justify-center transition-all"
+                                   [ngClass]="groupedRules[sub][res][act] ? 'bg-green-500 text-white shadow-md shadow-green-100' : 'bg-slate-200 text-slate-400'">
+                                <i class="pi pi-check text-[10px] font-bold"></i>
+                              </div>
+                              <span class="text-xs font-bold transition-colors"
+                                    [ngClass]="groupedRules[sub][res][act] ? 'text-green-700' : 'text-slate-300'">
+                                {{ groupedRules[sub][res][act] ? 'ENABLED' : 'DISABLED' }}
+                              </span>
+                            </div>
+
+                            <div *ngIf="isInherited(sub, res, act)" 
+                                 class="mt-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-1 shadow-sm border border-blue-200">
+                              <i class="pi pi-star-fill text-[7px]"></i> Global Access
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="subjects.length === 0" class="text-center py-32 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl">
+               <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                 <i class="pi pi-lock-open text-slate-200 text-4xl"></i>
+               </div>
+               <h3 class="text-slate-900 font-bold text-xl">No Access Groups Found</h3>
+               <p class="text-slate-400 mt-2">Adjust your filters or add a new personnel group to get started.</p>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Tab 2: Personnel -->
+      <p-tabPanel header="User Assignments">
+        <ng-template pTemplate="header">
+          <div class="flex items-center gap-2 py-2">
+            <i class="pi pi-user-plus"></i>
+            <div class="flex flex-col text-left">
+              <span class="font-bold">User Assignments</span>
+              <span class="text-[10px] font-normal opacity-70">Link users to roles</span>
+            </div>
+          </div>
+        </ng-template>
+        
+        <div class="p-8 grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-7xl mx-auto">
+          <!-- Lookup user roles -->
+          <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-lg shadow-slate-100 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-2 h-full bg-blue-500"></div>
+            <h3 class="text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+              <i class="pi pi-search text-blue-500 bg-blue-50 p-2 rounded-lg"></i> 
+              Check User Access
+            </h3>
+            <p class="text-slate-400 mb-8 text-sm">Find out exactly what roles a specific person has been given.</p>
+            
+            <div class="space-y-6">
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-bold text-slate-700">Personnel ID (TID)</label>
+                <input pInputText [(ngModel)]="lookupTid" placeholder="Enter the user's ID number" class="w-full py-4 bg-slate-50 border-slate-200 rounded-xl" />
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-bold text-slate-700">Scope (Optional)</label>
+                <input pInputText [(ngModel)]="lookupTenantId" placeholder="Where are they working?" class="w-full py-4 bg-slate-50 border-slate-200 rounded-xl" />
+              </div>
+              <p-button label="Check Their Roles" icon="pi pi-search" styleClass="w-full py-4 rounded-xl shadow-lg shadow-blue-100" (onClick)="lookupUserRoles()" [loading]="userRolesLoading" [disabled]="!lookupTid.trim()"></p-button>
+            </div>
+
+            <p-divider *ngIf="userRoles.length > 0"></p-divider>
+            <div *ngIf="userRoles.length > 0" class="animate-fade-in bg-slate-50 p-6 rounded-2xl border border-slate-100 mt-6">
+              <div class="font-bold text-xs text-slate-400 mb-4 uppercase tracking-widest">Identified Roles:</div>
+              <div class="flex gap-3 flex-wrap">
+                <div *ngFor="let r of userRoles" class="bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm flex items-center gap-2">
+                  <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                  <span class="text-sm font-bold text-slate-700">{{ getFriendlyName(r.role || r) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Assign / Unassign -->
+          <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-lg shadow-slate-100 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-2 h-full bg-purple-500"></div>
+            <h3 class="text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+              <i class="pi pi-user-plus text-purple-500 bg-purple-50 p-2 rounded-lg"></i> 
+              Change Access Group
+            </h3>
+            <p class="text-slate-400 mb-8 text-sm">Add or remove a person from a specific personnel group.</p>
+            
+            <div class="space-y-6">
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-bold text-slate-700">Personnel ID <span class="text-red-500">*</span></label>
+                <input pInputText [(ngModel)]="assignForm.user" placeholder="The person's unique ID" class="w-full py-4 bg-slate-50 border-slate-200 rounded-xl" />
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-bold text-slate-700">Target Access Group <span class="text-red-500">*</span></label>
+                <input pInputText [(ngModel)]="assignForm.role" placeholder="e.g. Manager, Staff, etc." class="w-full py-4 bg-slate-50 border-slate-200 rounded-xl" />
+              </div>
+              <div class="flex gap-4 pt-4">
+                <p-button label="Grant Access" icon="pi pi-plus" class="flex-1" styleClass="w-full py-4 rounded-xl shadow-lg shadow-purple-100" (onClick)="assignRole()" [loading]="assigning"></p-button>
+                <p-button label="Revoke Access" icon="pi pi-minus" severity="danger" [outlined]="true" class="flex-1" styleClass="w-full py-4 rounded-xl" (onClick)="unassignRole()" [loading]="unassigning"></p-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Tab 4: Simulator -->
+      <p-tabPanel header="Security Simulator">
+        <ng-template pTemplate="header">
+          <div class="flex items-center gap-2 py-2">
+            <i class="pi pi-bolt"></i>
+            <div class="flex flex-col text-left">
+              <span class="font-bold">Security Simulator</span>
+              <span class="text-[10px] font-normal opacity-70">Test permissions safely</span>
+            </div>
+          </div>
+        </ng-template>
+
+        <div class="p-8">
+          <div class="bg-white rounded-3xl border border-slate-200 p-12 shadow-xl max-w-3xl mx-auto relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-purple-600"></div>
+            
+            <div class="text-center mb-12">
+              <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-100">
+                <i class="pi pi-shield text-blue-600 text-4xl"></i>
+              </div>
+              <h3 class="text-2xl font-bold text-slate-900">Security Test Laboratory</h3>
+              <p class="text-slate-500 max-w-md mx-auto mt-2">Check if a person actually has access to a specific feature before making changes.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-bold text-slate-700">Whom to test?</label>
+                <input pInputText [(ngModel)]="checkForm.user" placeholder="Enter Personnel ID" class="w-full py-4 bg-slate-50 border-slate-200 rounded-xl" />
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-bold text-slate-700">Where to test?</label>
+                <input pInputText [(ngModel)]="checkForm.path" placeholder="e.g. /governance/roles" class="w-full py-4 bg-slate-50 border-slate-200 rounded-xl" />
+              </div>
+              <div class="flex flex-col gap-2 md:col-span-2">
+                <label class="text-sm font-bold text-slate-700">What are they trying to do?</label>
+                <p-dropdown [options]="methodOptions" [(ngModel)]="checkForm.method"
+                  optionLabel="label" optionValue="value" styleClass="w-full py-2 bg-slate-50 border-slate-200 rounded-xl"></p-dropdown>
+              </div>
+            </div>
+            
+            <p-button label="Run Security Test" icon="pi pi-bolt" styleClass="w-full py-5 rounded-2xl text-lg font-bold shadow-xl shadow-blue-100" [loading]="checking" (onClick)="checkPermission()"></p-button>
+
+            <!-- Result Overlay -->
+            <div *ngIf="checkResult !== null" class="mt-12 p-10 rounded-3xl animate-fade-in text-center relative overflow-hidden" 
+                 [ngClass]="isAllowed() ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'">
+              <div *ngIf="isAllowed()" class="flex flex-col items-center gap-4">
+                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-md">
+                  <i class="pi pi-check-circle text-4xl text-green-500"></i>
+                </div>
+                <span class="text-2xl font-black text-green-700 uppercase tracking-widest">ACCESS GRANTED</span>
+                <p class="text-green-600/70 text-sm">This person is allowed to perform this action in the specified area.</p>
+              </div>
+              <div *ngIf="!isAllowed()" class="flex flex-col items-center gap-4">
+                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-md">
+                  <i class="pi pi-times-circle text-4xl text-red-500"></i>
+                </div>
+                <span class="text-2xl font-black text-red-700 uppercase tracking-widest">ACCESS DENIED</span>
+                <p class="text-red-600/70 text-sm">Security rules currently prevent this person from performing this action.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+
+    </p-tabView>
+  </div>
+</div>

@@ -1,0 +1,144 @@
+<p-toast></p-toast>
+
+<div class="bg-gray-50 min-h-screen p-6">
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      <div class="flex flex-col gap-2">
+        <h1 class="text-3xl font-bold text-gray-900">Governance Admin</h1>
+        <p class="text-gray-600 mt-2">Centralized RBAC maintenance for tenant permissions, default roles, and Casbin policy sync.</p>
+      </div>
+      <p-button icon="pi pi-refresh" label="Refresh summary" severity="info" [outlined]="true" (onClick)="ngOnInit()"></p-button>
+    </div>
+  </div>
+
+  <div class="grid gap-4 mb-6 sm:grid-cols-3">
+    <div class="bg-white rounded-lg shadow-sm p-5 flex items-center gap-3">
+      <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+        <i class="pi pi-building text-xl"></i>
+      </div>
+      <div>
+        <div class="text-sm text-gray-500">Tenants</div>
+        <div class="text-3xl font-semibold text-gray-900">
+          <ng-container *ngIf="!summaryLoading; else tenantLoading">{{ summaryStats.tenants }}</ng-container>
+          <ng-template #tenantLoading><i class="pi pi-spin pi-spinner text-blue-500"></i></ng-template>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm p-5 flex items-center gap-3">
+      <div class="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+        <i class="pi pi-users text-xl"></i>
+      </div>
+      <div>
+        <div class="text-sm text-gray-500">Roles</div>
+        <div class="text-3xl font-semibold text-gray-900">
+          <ng-container *ngIf="!summaryLoading; else rolesLoading">{{ summaryStats.roles }}</ng-container>
+          <ng-template #rolesLoading><i class="pi pi-spin pi-spinner text-orange-500"></i></ng-template>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm p-5 flex items-center gap-3">
+      <div class="w-12 h-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center">
+        <i class="pi pi-key text-xl"></i>
+      </div>
+      <div>
+        <div class="text-sm text-gray-500">Permissions</div>
+        <div class="text-3xl font-semibold text-gray-900">
+          <ng-container *ngIf="!summaryLoading; else permissionsLoading">{{ summaryStats.permissions }}</ng-container>
+          <ng-template #permissionsLoading><i class="pi pi-spin pi-spinner text-green-500"></i></ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-3">
+    <div class="lg:col-span-2 grid gap-4">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div>
+            <div class="text-lg font-semibold text-gray-900">Auto-generate Permissions</div>
+            <div class="text-sm text-gray-500">Scan API routes and create tenant-scoped permissions and Casbin policies.</div>
+          </div>
+        </ng-template>
+
+        <div class="grid gap-4">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="flex flex-col gap-2">
+              <label class="font-medium text-sm text-gray-700">Tenant ID (optional)</label>
+              <input pInputText [(ngModel)]="permTenantId" placeholder="Leave empty for global" />
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="font-medium text-sm text-gray-700">Dry Run</label>
+              <div class="flex items-center gap-3">
+                <p-inputSwitch [(ngModel)]="permDryRun"></p-inputSwitch>
+                <span class="text-sm text-gray-500">Preview changes without applying</span>
+              </div>
+            </div>
+          </div>
+
+          <p-button [label]="permDryRun ? 'Dry Run' : 'Run now'" icon="pi pi-play" [loading]="permRunning"
+            [severity]="permDryRun ? 'warning' : 'primary'" (onClick)="initPermissions()" styleClass="w-full"></p-button>
+
+          <div *ngIf="permResult" class="mt-4">
+            <p-divider></p-divider>
+            <pre class="surface-100 border-round p-3 text-xs overflow-auto" style="max-height:180px">{{ permResult | json }}</pre>
+          </div>
+        </div>
+      </p-card>
+
+      <p-card>
+        <ng-template pTemplate="header">
+          <div>
+            <div class="text-lg font-semibold text-gray-900">Initialize Default Roles</div>
+            <div class="text-sm text-gray-500">Create standard roles and update grouping policies for tenant or global scope.</div>
+          </div>
+        </ng-template>
+
+        <div class="grid gap-4">
+          <div>
+            <label class="font-medium text-sm text-gray-700">Tenant ID (optional)</label>
+            <input pInputText [(ngModel)]="rolesTenantId" placeholder="Leave empty for global" />
+          </div>
+          <div>
+            <label class="font-medium text-sm text-gray-700">Custom Role Names (optional)</label>
+            <p-chips [(ngModel)]="rolesNames" placeholder="Press Enter to add" styleClass="w-full"></p-chips>
+            <p class="text-sm text-gray-500 mt-1">Empty uses defaults: tenant_admin, editor, viewer.</p>
+          </div>
+
+          <p-button label="Initialize roles" icon="pi pi-play" [loading]="rolesRunning" (onClick)="initRoles()" styleClass="w-full"></p-button>
+
+          <div *ngIf="rolesResult" class="mt-4">
+            <p-divider></p-divider>
+            <pre class="surface-100 border-round p-3 text-xs overflow-auto" style="max-height:180px">{{ rolesResult | json }}</pre>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div>
+      <p-card>
+        <ng-template pTemplate="header">
+          <div>
+            <div class="text-lg font-semibold text-gray-900">Sync Casbin Policies</div>
+            <div class="text-sm text-gray-500">Rebuild the Casbin enforcer from current roles and permissions.</div>
+          </div>
+        </ng-template>
+
+        <div class="flex flex-col gap-4">
+          <div class="surface-50 border-round p-4 text-sm text-gray-600">
+            <div>
+            <strong class="text-gray-700">When to run</strong>
+            <p class="mt-1">After manual DB changes, migration scripts, or RBAC updates.</p>
+          </div>
+          </div>
+
+          <p-button label="Sync now" icon="pi pi-sync" severity="success" [loading]="syncRunning" (onClick)="syncCasbin()" styleClass="w-full"></p-button>
+
+          <div *ngIf="syncResult" class="mt-4">
+            <p-divider></p-divider>
+            <pre class="surface-100 border-round p-3 text-xs overflow-auto" style="max-height:180px">{{ syncResult | json }}</pre>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </div>
+</div>

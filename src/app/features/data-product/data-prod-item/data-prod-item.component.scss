@@ -1,0 +1,18 @@
+:host ::ng-deep .p-card {
+  border-radius: 4px;
+  width: 100%;
+
+  .p-card-body {
+    padding: 0;
+
+    .header {
+      border-bottom: 1px solid var(--p-content-border-color);
+      padding: 3px var(--p-card-body-padding);
+      color: var(--color)
+    }
+
+    .content {
+      padding: 5px var(--p-card-body-padding);
+    }
+  }
+}

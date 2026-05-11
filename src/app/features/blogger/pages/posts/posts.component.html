@@ -1,0 +1,269 @@
+<div class="blogger-page">
+  <p-toast position="top-right"></p-toast>
+
+  <!-- Hero Section -->
+  <section class="page-hero">
+    <div class="hero-content">
+      <div class="hero-text">
+        <p class="eyebrow">Editorial control</p>
+        <h1>Blog Posts</h1>
+        <p class="subtitle">Review published content, inspect full post detail, and open analytics or comments from a unified content operations screen.</p>
+      </div>
+      <div class="hero-actions">
+        <button pButton type="button" icon="pi pi-refresh" label="Refresh" class="p-button-outlined" (click)="loadPosts()" [loading]="loading"></button>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-value">{{ totalPosts }}</div>
+        <div class="stat-label">Total Posts</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">{{ filteredPosts.length }}</div>
+        <div class="stat-label">Filtered</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">{{ availableLabels.length }}</div>
+        <div class="stat-label">Labels</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">Live</div>
+        <div class="stat-label">Status</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Explorer Layout -->
+  <div class="explorer-container">
+    <!-- Sidebar Filters -->
+    <aside class="explorer-sidebar">
+      <div class="sidebar-panel">
+        <p class="sidebar-eyebrow">Editorial controls</p>
+        <div class="sidebar-heading">Refine Results</div>
+
+        <div class="filter-stack">
+          <!-- Search Field -->
+          <div class="filter-field">
+            <label>Search Posts</label>
+            <div class="p-inputgroup">
+              <span class="p-inputgroup-addon"><i class="pi pi-search"></i></span>
+              <input pInputText type="text" [(ngModel)]="searchQuery" (input)="onSearch()" placeholder="Search by title, excerpt...">
+            </div>
+          </div>
+
+          <!-- Status Filter -->
+          <div class="filter-field">
+            <label>Status</label>
+            <p-dropdown [options]="statusOptions" [(ngModel)]="selectedStatus" (onChange)="loadPosts()" placeholder="Select Status" styleClass="w-full"></p-dropdown>
+          </div>
+
+          <!-- Labels Filter -->
+          <div class="filter-field">
+            <div class="flex justify-between items-center mb-1">
+              <label>Labels</label>
+              <button pButton type="button" label="Clear" class="p-button-link p-button-xs p-0 h-auto" (click)="selectedLabels = []; applyFilters()" *ngIf="selectedLabels.length > 0"></button>
+            </div>
+            <div class="label-filter-list max-h-40 overflow-y-auto pr-1">
+              <button *ngFor="let label of availableLabels" 
+                      class="filter-chip-modern" 
+                      [class.active]="selectedLabels.includes(label)"
+                      (click)="toggleLabel(label)">
+                {{ label }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-actions mt-4">
+          <button pButton label="Clear All" icon="pi pi-refresh" class="p-button-sm p-button-outlined w-full" (click)="clearFilters()" [disabled]="!hasSearchOrFilters"></button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="explorer-main">
+      <div class="explorer-toolbar-modern">
+        <div class="toolbar-left">
+          <h3>Content Catalog</h3>
+          <p>{{ filteredPosts.length }} articles published in this feed.</p>
+        </div>
+        <div class="toolbar-right">
+          <div class="view-toggles-modern">
+            <button pButton icon="pi pi-th-large" [class]="viewMode === 'grid' ? 'p-button-primary' : 'p-button-text'" (click)="setViewMode('grid')" pTooltip="Grid View"></button>
+            <button pButton icon="pi pi-list" [class]="viewMode === 'table' ? 'p-button-primary' : 'p-button-text'" (click)="setViewMode('table')" pTooltip="Table View"></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="loading" class="grid-layout">
+        <div *ngFor="let i of [1,2,3,4,5,6]" class="skeleton-card">
+          <div class="skeleton-img"></div>
+          <div class="skeleton-content">
+            <div class="skeleton-title"></div>
+            <div class="skeleton-text"></div>
+            <div class="skeleton-footer"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="error" class="error-container">
+        <i class="pi pi-exclamation-circle text-4xl mb-3 text-red-500"></i>
+        <h3>Something went wrong</h3>
+        <p>{{ error }}</p>
+        <button pButton type="button" label="Retry" icon="pi pi-refresh" (click)="loadPosts()"></button>
+      </div>
+
+      <!-- Grid View -->
+      <div *ngIf="!loading && !error && viewMode === 'grid'" class="grid-layout">
+        <div *ngFor="let post of filteredPosts" class="post-card">
+          <div class="post-card-image" [style.background-image]="'url(' + (post.images?.length ? post.images[0] : 'assets/placeholder.jpg') + ')'">
+            <div class="post-card-overlay">
+              <div class="post-card-date">{{ post.published | date:'mediumDate' }}</div>
+            </div>
+          </div>
+          <div class="post-card-content">
+            <div class="post-card-author">
+              <p-avatar [image]="'https:' + post.author.image" shape="circle" size="small"></p-avatar>
+              <span>{{ post.author.display_name }}</span>
+            </div>
+            <h3 class="post-card-title">{{ post.title }}</h3>
+            <p class="post-card-excerpt">{{ post.excerpt | slice:0:120 }}...</p>
+            <div class="post-card-labels">
+              <span *ngFor="let label of post.labels | slice:0:3" class="label-badge">{{ label }}</span>
+            </div>
+          </div>
+          <div class="post-card-footer">
+            <button pButton icon="pi pi-eye" label="View" class="p-button-sm p-button-text" (click)="viewPost(post)"></button>
+            <div class="footer-metrics">
+              <i class="pi pi-comments" pTooltip="Comments"></i> {{ post.replies.total_items }}
+              <button pButton icon="pi pi-chart-bar" class="p-button-sm p-button-text p-button-rounded ml-1" (click)="viewAnalytics(post)" pTooltip="Analytics"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table View -->
+      <div *ngIf="!loading && !error && viewMode === 'table'" class="table-container">
+        <p-table [value]="filteredPosts" [rows]="10" [paginator]="true" styleClass="p-datatable-modern">
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="title" style="width: 45%">Title <p-sortIcon field="title"></p-sortIcon></th>
+              <th pSortableColumn="author.display_name" style="width: 15%">Author <p-sortIcon field="author.display_name"></p-sortIcon></th>
+              <th pSortableColumn="published" style="width: 15%">Date <p-sortIcon field="published"></p-sortIcon></th>
+              <th style="width: 25%">Actions</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-post>
+            <tr>
+              <td>
+                <div class="flex flex-col">
+                  <span class="font-semibold text-primary-900">{{ post.title }}</span>
+                  <span class="text-xs text-gray-500 truncate mt-1">{{ post.excerpt | slice:0:80 }}...</span>
+                </div>
+              </td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <p-avatar [image]="'https:' + post.author.image" shape="circle" size="small"></p-avatar>
+                  <span class="text-sm">{{ post.author.display_name }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="text-sm">{{ post.published | date:'mediumDate' }}</span>
+              </td>
+              <td>
+                <div class="flex gap-1">
+                  <button pButton icon="pi pi-eye" class="p-button-sm p-button-text" (click)="viewPost(post)" pTooltip="View Details"></button>
+                  <button pButton icon="pi pi-chart-bar" class="p-button-sm p-button-text" (click)="viewAnalytics(post)" pTooltip="View Analytics"></button>
+                  <button pButton icon="pi pi-comments" class="p-button-sm p-button-text" (click)="viewComments(post)" [badge]="post.replies.total_items" badgeClass="p-badge-danger"></button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!loading && !error && filteredPosts.length === 0" class="empty-state">
+        <i class="pi pi-inbox text-5xl mb-3 text-gray-300"></i>
+        <h3>No matching posts</h3>
+        <p>Try adjusting your search or filters.</p>
+        <button pButton type="button" label="Clear Filters" class="p-button-text" (click)="selectedLabels = []; searchQuery = ''; applyFilters()"></button>
+      </div>
+    </main>
+  </div>
+
+  <!-- Dialogs (kept existing IDs for compatibility) -->
+  <p-dialog [(visible)]="displayDialog" [header]="selectedPost?.title" [modal]="true" [style]="{ width: '72rem', maxWidth: '95vw' }" [maximizable]="true" styleClass="post-detail-modern">
+    <ng-container *ngIf="!loadingDetail && selectedPost">
+      <div class="post-presentation">
+        <div class="post-body">
+          <div class="post-meta-top">
+            <span class="date">{{ selectedPost.published | date:'fullDate' }}</span>
+            <div class="authorship">
+              <p-avatar [image]="'https:' + selectedPost.author.image" shape="circle" size="small"></p-avatar>
+              <strong>{{ selectedPost.author.display_name }}</strong>
+            </div>
+          </div>
+          <div class="post-html-content" [innerHTML]="sanitizedContent"></div>
+          <div class="post-labels-bottom" *ngIf="selectedPost.labels?.length">
+            <span *ngFor="let label of selectedPost.labels" class="label-badge">{{ label }}</span>
+          </div>
+        </div>
+        <aside class="post-info-sidebar">
+          <div class="info-group">
+            <label>Url</label>
+            <a [href]="selectedPost.url" target="_blank" class="text-primary-600 break-all">{{ selectedPost.url }}</a>
+          </div>
+          <div class="info-group">
+            <label>Updated</label>
+            <span>{{ selectedPost.updated | date:'medium' }}</span>
+          </div>
+          <div class="info-group">
+            <label>Metrics</label>
+            <div class="flex gap-4 mt-2">
+              <div class="mini-stat">
+                <i class="pi pi-comments"></i>
+                <span>{{ selectedPost.replies.total_items }}</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </ng-container>
+    <div *ngIf="loadingDetail" class="dialog-loader">
+      <i class="pi pi-spin pi-spinner text-4xl"></i>
+    </div>
+  </p-dialog>
+
+  <!-- Analytics & Comments dialogs simplified -->
+  <p-dialog [(visible)]="displayAnalyticsDialog" header="Insights" [modal]="true" [style]="{ width: '30rem' }">
+    <div *ngIf="loadingAnalytics" class="text-center py-5"><i class="pi pi-spin pi-spinner text-3xl"></i></div>
+    <div *ngIf="postAnalytics" class="flex flex-col gap-4">
+      <div class="flex justify-between border-b pb-2"><span>Engagement</span><strong>{{ postAnalytics.comment_count }} comments</strong></div>
+      <div class="flex justify-between border-b pb-2"><span>Published</span><strong>{{ postAnalytics.published | date:'medium' }}</strong></div>
+      <div class="flex justify-between border-b pb-2"><span>Last Modified</span><strong>{{ postAnalytics.updated | date:'medium' }}</strong></div>
+    </div>
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Done" (click)="displayAnalyticsDialog=false" class="p-button-text"></button>
+    </ng-template>
+  </p-dialog>
+
+  <p-dialog [(visible)]="displayCommentsDialog" [header]="'Conversation'" [modal]="true" [style]="{ width: '45rem' }">
+    <div *ngIf="loadingComments" class="text-center py-5"><i class="pi pi-spin pi-spinner text-3xl"></i></div>
+    <div *ngIf="!loadingComments && comments.length > 0" class="flex flex-col gap-3">
+      <div *ngFor="let comment of comments" class="modern-comment-card">
+        <div class="flex items-center gap-2 mb-1">
+          <p-avatar [image]="'https:' + comment.author.image" shape="circle" size="small"></p-avatar>
+          <span class="font-bold text-sm">{{ comment.author.display_name }}</span>
+          <span class="text-xs text-gray-400">{{ comment.published | date:'short' }}</span>
+        </div>
+        <div [innerHTML]="comment.content" class="text-sm ml-8 opacity-80"></div>
+      </div>
+    </div>
+    <div *ngIf="!loadingComments && comments.length === 0" class="text-center py-5 opacity-40">No comments found.</div>
+  </p-dialog>
+</div>
