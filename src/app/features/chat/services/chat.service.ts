@@ -44,7 +44,11 @@ import {
     CustomerOrder,
     BroadcastCampaign,
     BroadcastCreate,
-    BroadcastEstimate
+    BroadcastEstimate,
+    CustomerCreatePayload,
+    OrderCreatePayload,
+    SendEmailPayload,
+    TelegramRichTemplate
 } from '../models/chat.model';
 
 @Injectable({
@@ -510,5 +514,78 @@ export class ChatService {
 
     getBroadcastStats(id: string): Observable<ApiResponse<BroadcastCampaign['stats']>> {
         return this.http.get<ApiResponse<BroadcastCampaign['stats']>>(`${this.cmcBaseUrl}/broadcasts/${id}/stats`);
+    }
+
+    // ── Telegram Rich Templates v2 ────────────────────────────────────────────
+
+    getTelegramRichTemplates(skip: number = 0, limit: number = 50, category: string = '', messageType: string = ''): Observable<ApiResponse<TelegramRichTemplate[]>> {
+        let params = new HttpParams().set('skip', skip.toString()).set('limit', limit.toString());
+        if (category) params = params.set('category', category);
+        if (messageType) params = params.set('message_type', messageType);
+        return this.http.get<ApiResponse<TelegramRichTemplate[]>>(`${this.cmcBaseUrl}/telegram/templates/v2/`, { params });
+    }
+
+    getTelegramRichTemplate(id: string): Observable<ApiResponse<TelegramRichTemplate>> {
+        return this.http.get<ApiResponse<TelegramRichTemplate>>(`${this.cmcBaseUrl}/telegram/templates/v2/${id}`);
+    }
+
+    previewTelegramRichTemplate(id: string, variables: Record<string, string>): Observable<ApiResponse<any>> {
+        return this.http.post<ApiResponse<any>>(`${this.cmcBaseUrl}/telegram/templates/v2/${id}/preview`, { variables });
+    }
+
+    sendTelegramRichTemplate(id: string, chatId: number, variables: Record<string, string>): Observable<ApiResponse<unknown>> {
+        return this.http.post<ApiResponse<unknown>>(`${this.cmcBaseUrl}/telegram/templates/v2/${id}/send`, { chat_id: chatId, variables });
+    }
+
+    seedTelegramRichTemplates(): Observable<ApiResponse<unknown>> {
+        return this.http.post<ApiResponse<unknown>>(`${this.cmcBaseUrl}/telegram/templates/v2/seed`, {});
+    }
+
+    // ── Conversation meta update ───────────────────────────────────────────────
+
+    updateConversationMeta(conversationId: string, data: Record<string, unknown>): Observable<ApiResponse<unknown>> {
+        return this.http.patch<ApiResponse<unknown>>(`${this.cmcBaseUrl}/conversations/${conversationId}`, data);
+    }
+
+    // ── Retail: create customer & order ───────────────────────────────────────
+
+    createRetailCustomer(data: CustomerCreatePayload): Observable<ApiResponse<CustomerSummary>> {
+        return this.http.post<ApiResponse<CustomerSummary>>(`${getApiBase()}/retail/customers`, data);
+    }
+
+    createOrder(data: OrderCreatePayload): Observable<ApiResponse<CustomerOrder>> {
+        return this.http.post<ApiResponse<CustomerOrder>>(`${getApiBase()}/retail/orders`, data);
+    }
+
+    // ── Send email via batch ───────────────────────────────────────────────────
+
+    sendEmailToCustomer(payload: SendEmailPayload): Observable<ApiResponse<unknown>> {
+        const batchPayload = {
+            name: `Direct: ${payload.to_email}`,
+            subject: payload.subject,
+            content: payload.content,
+            content_html: payload.content_html || '',
+            recipients: [{
+                email: payload.to_email,
+                name: payload.to_name || payload.to_email,
+                variables: {}
+            }]
+        };
+        return new Observable(observer => {
+            this.http.post<ApiResponse<any>>(`${this.cmcBaseUrl}/email-batches`, batchPayload).subscribe({
+                next: (batchRes) => {
+                    const batchId = batchRes?.data?.id || batchRes?.data?._id;
+                    if (!batchId) {
+                        observer.error(new Error('Batch created but ID missing'));
+                        return;
+                    }
+                    this.http.post<ApiResponse<unknown>>(`${this.cmcBaseUrl}/email-batches/${batchId}/start`, {}).subscribe({
+                        next: (res) => { observer.next(res); observer.complete(); },
+                        error: (err) => observer.error(err)
+                    });
+                },
+                error: (err) => observer.error(err)
+            });
+        });
     }
 }

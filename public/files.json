@@ -1,5 +1,13 @@
 [
   {
+    "id": "LmdpdGtlZXA=",
+    "name": ".gitkeep",
+    "path": ".gitkeep",
+    "mimeType": "application/octet-stream",
+    "size": 0,
+    "modifiedTime": "2026-05-10T02:05:07.981Z"
+  },
+  {
     "id": "MDEuanBn",
     "name": "01.jpg",
     "path": "01.jpg",
@@ -1675,7 +1683,7 @@
     "id": "ZmF2aWNvbi5pY28=",
     "name": "favicon.ico",
     "path": "favicon.ico",
-    "mimeType": "application/octet-stream",
+    "mimeType": "image/x-icon",
     "size": 15086,
     "modifiedTime": "2026-04-26T01:48:58.452Z"
   },

@@ -2,8 +2,8 @@
   <div class="fullscreen-container">
     <header class="page-header">
       <div class="header-content">
-        <h1 class="page-title">ThienHang Platform</h1>
-        <p class="page-subtitle">Browse applications as a folder tree</p>
+        <h1 class="page-title">api.thienhang.com</h1>
+        <p class="page-subtitle">API Reference &mdash; {{ allModules.length }} modules &middot; {{ totalEndpoints }}+ endpoints</p>
       </div>
       <div class="header-actions">
         <button class="search-btn" type="button">
@@ -16,19 +16,20 @@
     </header>
 
     <main class="applications-tree-layout">
+      <!-- Left: Tree panel -->
       <section class="tree-panel">
         <div class="panel-header">
           <div>
-            <h2>Application Tree</h2>
-            <p>Browse platform modules like folders and open the one you need.</p>
+            <h2>Modules</h2>
+            <p>{{ platformModules.length }} platform &middot; {{ domainAdapters.length }} adapters</p>
           </div>
         </div>
 
         <div class="search-box">
           <i class="pi pi-search"></i>
-          <input 
-            type="text" 
-            placeholder="Search applications..." 
+          <input
+            type="text"
+            placeholder="Search modules, endpoints..."
             [(ngModel)]="searchTerm"
             class="search-input"
           />
@@ -48,172 +49,185 @@
         </div>
       </section>
 
-        <section class="details-panel">
-          <!-- Default Overview (no node selected) -->
-          <ng-container *ngIf="!selectedNode">
-            <div class="panel-header">
-              <div class="overview-header">
-                <div class="header-icon bg-gradient-to-r from-cyan-500 to-blue-600">
-                  <i class="pi pi-th-large text-3xl text-white"></i>
-                </div>
-                <div>
-                  <h2>ThienHang Platform</h2>
-                  <p class="text-gray-500">Browse and access all platform applications</p>
-                </div>
-              </div>
-            </div>
-          
-            <div class="details-content overview-content">
-              <!-- Stats Row -->
-              <div class="stats-grid">
-                <div class="stat-card bg-blue-50">
-                  <i class="pi pi-sitemap text-blue-600"></i>
-                  <div>
-                    <span class="stat-value">8</span>
-                    <span class="stat-label">App Categories</span>
-                  </div>
-                </div>
-                <div class="stat-card bg-emerald-50">
-                  <i class="pi pi-fw pi-list text-emerald-600"></i>
-                  <div>
-                    <span class="stat-value">45+</span>
-                    <span class="stat-label">Total Modules</span>
-                  </div>
-                </div>
-                <div class="stat-card bg-violet-50">
-                  <i class="pi pi-users text-violet-600"></i>
-                  <div>
-                    <span class="stat-value">3</span>
-                    <span class="stat-label">Active Users</span>
-                  </div>
-                </div>
-                <div class="stat-card bg-amber-50">
-                  <i class="pi pi-chart-line text-amber-600"></i>
-                  <div>
-                    <span class="stat-value">99.9%</span>
-                    <span class="stat-label">Uptime</span>
-                  </div>
-                </div>
-              </div>
+      <!-- Right: Details panel -->
+      <section class="details-panel">
 
-              <!-- Quick Access -->
-              <div class="section-block">
-                <h3 class="section-title">Quick Access</h3>
-                <div class="quick-grid">
-                  <button class="quick-card" (click)="navigateToRoute('/planning', 'planning')">
-                    <i class="pi pi-calendar text-cyan-600"></i>
-                    <span>Planning</span>
-                  </button>
-                  <button class="quick-card" (click)="navigateToRoute('/inventory/overview', 'inventory')">
-                    <i class="pi pi-box text-emerald-600"></i>
-                    <span>Inventory</span>
-                  </button>
-                  <button class="quick-card" (click)="navigateToRoute('/retail/ecommerce', 'retail')">
-                    <i class="pi pi-shopping-bag text-blue-600"></i>
-                    <span>Commerce</span>
-                  </button>
-                  <button class="quick-card" (click)="navigateToRoute('/governance/proposal', 'governance')">
-                    <i class="pi pi-shield text-red-600"></i>
-                    <span>Governance</span>
-                  </button>
-                  <button class="quick-card" (click)="navigateToRoute('/loyalty/overview', 'loyalty')">
-                    <i class="pi pi-heart text-pink-600"></i>
-                    <span>Loyalty</span>
-                  </button>
-                  <button class="quick-card" (click)="navigateToRoute('/notification/overview', 'notification')">
-                    <i class="pi pi-bell text-amber-600"></i>
-                    <span>Notifications</span>
-                  </button>
-                </div>
+        <!-- Overview when no module selected -->
+        <ng-container *ngIf="!selectedModule">
+          <div class="panel-header">
+            <div class="overview-header">
+              <div class="header-icon bg-gradient-to-r from-cyan-500 to-blue-600">
+                <i class="pi pi-code text-3xl text-white"></i>
               </div>
-
-              <!-- Recent Activity -->
-              <div class="section-block">
-                <h3 class="section-title">Recent Activity</h3>
-                <div class="activity-list">
-                  <div class="activity-item" *ngFor="let a of recentActivity">
-                    <i [ngClass]="a.icon + ' ' + a.color"></i>
-                    <div>
-                      <span>{{ a.title }}</span>
-                      <small>{{ a.time }}</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Platform Features -->
-              <div class="section-block">
-                <h3 class="section-title">Platform Features</h3>
-                <div class="feature-list">
-                  <div class="feature-item" *ngFor="let f of features">
-                    <i [class]="f.icon + ' ' + f.color"></i>
-                    <div>
-                      <strong>{{ f.label }}</strong>
-                      <span>{{ f.desc }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </ng-container>
-
-          <!-- Selected Node Details -->
-          <ng-container *ngIf="selectedNode">
-            <div class="panel-header">
               <div>
-                <h2>{{ selectedNode?.label }}</h2>
-                <p>{{ selectedNode?.data?.description || 'Selected module information' }}</p>
+                <h2>API Documentation</h2>
+                <p class="text-gray-500">Select a module from the tree to explore its endpoints</p>
               </div>
             </div>
-          
-            <div class="details-content">
-              <div class="details-card">
-                <div class="details-title">
-                  <i [ngClass]="selectedNode?.icon"></i>
-                  <div>
-                    <h3>{{ selectedNode?.label }}</h3>
-                    <p>{{ selectedNode?.data?.description }}</p>
-                    <p *ngIf="selectedNode?.data?.route" class="details-route">
-                      <i class="pi pi-link"></i> <strong>Route:</strong> {{ selectedNode?.data?.route }}
-                    </p>
-                    <p *ngIf="selectedNode?.key" class="details-key">
-                      <i class="pi pi-key"></i> <strong>Key:</strong> {{ selectedNode?.key }}
-                    </p>
-                  </div>
-                </div>
+          </div>
 
-                <!-- Quick Info -->
-                <div class="details-info" *ngIf="selectedNode?.children?.length">
-                  <h4><i class="pi pi-sitemap"></i> Contains {{ selectedNode?.children?.length }} sub-items</h4>
-                  <div class="child-chips">
-                    <span class="chip" *ngFor="let child of selectedNode?.children | slice:0:5">
-                      <i [ngClass]="child.icon" *ngIf="child.icon"></i>
-                      {{ child.label }}
-                    </span>
-                    <span class="chip more" *ngIf="(selectedNode?.children?.length || 0) > 5">
-                      +{{(selectedNode?.children?.length || 0) - 5}} more
-                    </span>
-                  </div>
+          <div class="details-content overview-content">
+            <!-- Stats -->
+            <div class="stats-grid">
+              <div class="stat-card bg-blue-50">
+                <i class="pi pi-th-large text-blue-600"></i>
+                <div>
+                  <span class="stat-value">{{ allModules.length }}</span>
+                  <span class="stat-label">Total Modules</span>
                 </div>
-          
-                <div class="details-actions">
-                  <button class="explore-btn" type="button" [disabled]="!selectedNode?.data?.route" (click)="navigateToRoute(selectedNode?.data?.route || '', selectedNode?.data?.app)">
-                    <i class="pi pi-compass"></i>
-                    Explore
-                  </button>
-                  <button *ngIf="selectedNode?.data?.app" class="switch-btn" type="button" (click)="selectApp(selectedNode?.data?.app)">
-                    <i class="pi pi-user-switch"></i>
-                    Switch User
-                  </button>
-                  <button class="back-btn" type="button" (click)="clearSelection()">
-                    <i class="pi pi-arrow-left"></i>
-                    Back to Overview
-                  </button>
+              </div>
+              <div class="stat-card bg-violet-50">
+                <i class="pi pi-server text-violet-600"></i>
+                <div>
+                  <span class="stat-value">{{ platformModules.length }}</span>
+                  <span class="stat-label">Platform</span>
+                </div>
+              </div>
+              <div class="stat-card bg-emerald-50">
+                <i class="pi pi-sitemap text-emerald-600"></i>
+                <div>
+                  <span class="stat-value">{{ domainAdapters.length }}</span>
+                  <span class="stat-label">Domain Adapters</span>
+                </div>
+              </div>
+              <div class="stat-card bg-amber-50">
+                <i class="pi pi-bolt text-amber-600"></i>
+                <div>
+                  <span class="stat-value">{{ totalEndpoints }}+</span>
+                  <span class="stat-label">Endpoints</span>
                 </div>
               </div>
             </div>
-          </ng-container>
-        </section>
+
+            <!-- Module Registry Table -->
+            <div class="section-block">
+              <h3 class="section-title">Module Registry</h3>
+              <div class="registry-table-wrap">
+                <table class="registry-table">
+                  <thead>
+                    <tr>
+                      <th>Module</th>
+                      <th>Type</th>
+                      <th>Mount Points</th>
+                      <th>Endpoints</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let m of allModules" (click)="selectedModule = m; selectedNodes = []" class="registry-row">
+                      <td>
+                        <div class="module-name-cell">
+                          <i [class]="m.icon"></i>
+                          <strong>{{ m.name }}</strong>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="type-badge" [ngClass]="getTypeBadgeClass(m.type)">{{ m.type }}</span>
+                      </td>
+                      <td>
+                        <div class="mount-chips">
+                          <code *ngFor="let mp of m.mountPoints" class="mount-chip">{{ mp }}</code>
+                        </div>
+                      </td>
+                      <td class="endpoint-count">{{ m.endpoints.length }}</td>
+                      <td>
+                        <span class="status-badge" [ngClass]="getStatusBadgeClass(m.status)">{{ m.status }}</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Module detail when selected -->
+        <ng-container *ngIf="selectedModule">
+          <div class="panel-header module-detail-header">
+            <div class="module-title-row">
+              <i [class]="selectedModule.icon + ' module-icon'"></i>
+              <div>
+                <div class="module-name-line">
+                  <h2>{{ selectedModule.name }}</h2>
+                  <span class="type-badge" [ngClass]="getTypeBadgeClass(selectedModule.type)">{{ selectedModule.type }}</span>
+                  <span class="status-badge" [ngClass]="getStatusBadgeClass(selectedModule.status)">{{ selectedModule.status }}</span>
+                </div>
+                <div class="mount-chips">
+                  <code *ngFor="let mp of selectedModule.mountPoints" class="mount-chip">{{ mp }}</code>
+                </div>
+                <p class="module-description">{{ selectedModule.description }}</p>
+              </div>
+            </div>
+            <button class="back-btn" type="button" (click)="clearSelection()">
+              <i class="pi pi-arrow-left"></i>
+              Back
+            </button>
+          </div>
+
+          <div class="details-content">
+
+            <!-- Minimal warning -->
+            <div *ngIf="selectedModule.status === 'minimal'" class="minimal-warning">
+              <i class="pi pi-exclamation-triangle"></i>
+              <span>Minimal implementation — no HTTP routes are exposed yet. Planned for future development.</span>
+            </div>
+
+            <!-- Features -->
+            <div class="section-block" *ngIf="selectedModule.features.length">
+              <h3 class="section-title">
+                <i class="pi pi-list"></i>
+                Features
+              </h3>
+              <table class="features-table">
+                <thead>
+                  <tr>
+                    <th>Feature</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let f of selectedModule.features">
+                    <td class="feature-name">{{ f.name }}</td>
+                    <td class="feature-desc">{{ f.description }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Endpoints -->
+            <div class="section-block" *ngIf="selectedModule.endpoints.length">
+              <h3 class="section-title">
+                <i class="pi pi-bolt"></i>
+                API Endpoints
+                <span class="count-chip">{{ selectedModule.endpoints.length }}</span>
+              </h3>
+              <div class="endpoints-list">
+                <div *ngFor="let ep of selectedModule.endpoints" class="endpoint-row">
+                  <span class="method-badge" [ngClass]="getMethodClass(ep.method)">{{ ep.method }}</span>
+                  <code class="endpoint-path">{{ ep.path }}</code>
+                  <span class="auth-indicator" [title]="ep.auth ? 'Requires Bearer token' : 'Public — no auth required'">
+                    <i [class]="ep.auth ? 'pi pi-lock' : 'pi pi-lock-open'" [ngClass]="ep.auth ? 'auth-locked' : 'auth-open'"></i>
+                  </span>
+                  <span class="endpoint-desc">{{ ep.description }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Data Models -->
+            <div class="section-block" *ngIf="selectedModule.dataModels.length">
+              <h3 class="section-title">
+                <i class="pi pi-box"></i>
+                Data Models
+              </h3>
+              <div class="model-chips">
+                <span *ngFor="let m of selectedModule.dataModels" class="model-chip">{{ m }}</span>
+              </div>
+            </div>
+
+          </div>
+        </ng-container>
+
+      </section>
     </main>
   </div>
 </div>

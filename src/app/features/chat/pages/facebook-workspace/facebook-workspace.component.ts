@@ -13,19 +13,21 @@ import { ToastModule } from 'primeng/toast';
 import { ChatService } from '../../services/chat.service';
 import {
   AgentInfo,
+  CustomerSummary,
   InternalNote,
+  Label,
   QuickReply,
   TelegramBotProfile,
   TelegramConversation,
   TelegramDashboard,
   TelegramMessage,
-  TelegramSettings,
-  TelegramTemplate
+  TelegramSettings
 } from '../../models/chat.model';
 import { ConversationListComponent } from './panels/conversation-list.component';
 import { MessageThreadComponent } from './panels/message-thread.component';
 import { CustomerPanelComponent } from './panels/customer-panel.component';
 import { ProductPanelComponent } from './panels/product-panel.component';
+import { TemplateSendPanelComponent } from './panels/template-send-panel.component';
 
 @Component({
   selector: 'app-facebook-workspace',
@@ -42,7 +44,8 @@ import { ProductPanelComponent } from './panels/product-panel.component';
     ConversationListComponent,
     MessageThreadComponent,
     CustomerPanelComponent,
-    ProductPanelComponent
+    ProductPanelComponent,
+    TemplateSendPanelComponent
   ],
   templateUrl: './facebook-workspace.component.html',
   styleUrl: './facebook-workspace.component.scss',
@@ -67,7 +70,8 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
   readonly searchTerm = signal('');
   readonly activeQueue = signal('all');
   readonly activeChannel = signal('all');
-  readonly infoPanel = signal<'none' | 'customer' | 'product' | 'context' | 'channel'>('none');
+  readonly infoPanel = signal<'none' | 'customer' | 'product' | 'context' | 'channel' | 'template'>('none');
+  readonly linkedCustomer = signal<CustomerSummary | null>(null);
   readonly agents = signal<AgentInfo[]>([]);
   readonly quickReplies = signal<QuickReply[]>([]);
   readonly resolvingConversation = signal(false);
@@ -78,6 +82,19 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
   readonly notes = signal<InternalNote[]>([]);
   readonly savingNote = signal(false);
   draftNote = '';
+
+  // ── Labels + Presence + Bot ────────────────────────────────────────────────
+  readonly labels = signal<Label[]>([]);
+  readonly myPresence = signal<'online' | 'busy' | 'away'>('online');
+  readonly updatingBotStatus = signal(false);
+  presenceDropdownOpen = false;
+  labelPickerOpen = false;
+  editPriority = 'medium';
+  editCategory = '';
+  lastRefreshed: Date | null = null;
+
+  private refreshMessagesInterval?: ReturnType<typeof setInterval>;
+  private refreshConversationsInterval?: ReturnType<typeof setInterval>;
 
   // ── Computed ───────────────────────────────────────────────────────────────
   readonly filteredConversations = computed(() => {
@@ -98,6 +115,20 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
     return this.quickReplies().filter(r =>
       !q || r.shortcut.toLowerCase().includes(q) || r.content.toLowerCase().includes(q)
     );
+  });
+
+  readonly myPresenceLabel = computed(() => {
+    switch (this.myPresence()) {
+      case 'online': return 'Online';
+      case 'busy': return 'Busy';
+      case 'away': return 'Away';
+    }
+  });
+
+  readonly conversationLabels = computed<Label[]>(() => {
+    const conv = this.selectedConversation();
+    if (!conv?.tags?.length || !this.labels().length) return [];
+    return this.labels().filter(l => (conv.tags || []).includes(l.id));
   });
 
   // ── Static data ────────────────────────────────────────────────────────────
@@ -139,18 +170,15 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
 
   // ── Plain properties (non-reactive form state) ─────────────────────────────
   sendingReply = false;
-  sendingTemplate = false;
   sendingMedia = false;
   sendingIcon = false;
-  templateDialogVisible = false;
   overviewDialogVisible = false;
   filterDialogVisible = false;
-  actionPopupMode: 'none' | 'photo' | 'gif' | 'document' | 'template' | 'icon' | 'product' = 'none';
+  actionPopupMode: 'none' | 'photo' | 'gif' | 'document' | 'icon' | 'product' = 'none';
 
   profile: TelegramBotProfile | null = null;
   dashboard: TelegramDashboard | null = null;
   settings: TelegramSettings | null = null;
-  templates = [] as { label: string; value: string; template: TelegramTemplate }[];
 
   draftReply = '';
   mediaType: 'photo' | 'gif' | 'document' = 'photo';
@@ -159,8 +187,6 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
   protectMediaContent = false;
   selectedIcon = '👍';
   disableNotification = false;
-  selectedTemplateId = '';
-  templateVariableValues: Record<string, string> = {};
 
   productName = '';
   productPrice = '';
@@ -181,15 +207,20 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
   // ── Lifecycle ──────────────────────────────────────────────────────────────
   ngOnInit(): void {
     this.loadWorkspace();
+    this.loadLabels();
+    this._restorePresence();
+    this.startPolling();
   }
 
-  ngOnDestroy(): void { /* MessageThreadComponent owns scroll cleanup */ }
+  ngOnDestroy(): void {
+    this.stopPolling();
+  }
 
   // ── Data loading ───────────────────────────────────────────────────────────
   loadWorkspace(): void {
     this.loading.set(true);
     this.loadingConversations.set(true);
-    let pending = 4;
+    let pending = 3;
     const done = () => { if (--pending <= 0) this.loading.set(false); };
     this.chatService.getOnlineAgents('online,busy').pipe(catchError(() => of(null))).subscribe(res => {
       this.agents.set(res?.data ?? []);
@@ -213,15 +244,11 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
       done();
     });
 
-    this.chatService.getTelegramSendTemplates().pipe(catchError(() => of(null))).subscribe(res => {
-      this.templates = (res?.data || [])
-        .filter((item: any) => item.enabled)
-        .map((item: any) => ({ label: item.name, value: item.template_id || item.id, template: item }));
-      done();
-    });
-
     this.chatService.getTelegramConversations(0, 20).pipe(catchError(() => of(null))).subscribe(res => {
-      this.conversations.set(res?.data || []);
+      const data = res?.data || [];
+      this.conversations.set(data);
+      this.conversationSkip.set(data.length);
+      this.hasMoreConversations.set(data.length >= 20);
       this.loadingConversations.set(false);
 
       if (!this.getQueueCount(this.activeQueue()) && this.conversations().length) {
@@ -241,10 +268,12 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
     if (this.loadingConversations() || !this.hasMoreConversations()) return;
     const skip = this.conversationSkip();
     this.loadingConversations.set(true);
-    this.chatService.getConversationsPage(skip, 20, this.activeChannel(), this.activeQueue()).subscribe({
+    this.chatService.getConversationsPage(skip, 20).subscribe({
       next: (page) => {
         const current = this.conversations();
-        let merged = [...current, ...page.items];
+        const existingIds = new Set(current.map(c => c.id));
+        const newItems = page.items.filter(c => !existingIds.has(c.id));
+        let merged = [...current, ...newItems];
         if (merged.length > 200) merged = merged.slice(merged.length - 200);
         this.conversations.set(merged);
         this.conversationSkip.set(skip + page.items.length);
@@ -276,10 +305,18 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
         this.draftReply = '';
         this.draftNote = '';
         this.notes.set([]);
+        this.editPriority = response.data?.priority || 'medium';
+        this.editCategory = response.data?.category || '';
+        this.labelPickerOpen = false;
         this.resetMediaForm();
         this.disableNotification = false;
-        this.closeTemplateDialog();
+        this.linkedCustomer.set(null);
         this.closeActionPopup();
+        if (response.data?.customer_id) {
+          this.chatService.getRetailCustomer(response.data.customer_id)
+            .pipe(catchError(() => of(null)))
+            .subscribe(res => this.linkedCustomer.set(res?.data ?? null));
+        }
         setTimeout(() => this.messageThreadRef?.scrollToBottom());
         this.chatService.markConversationRead(id).pipe(catchError(() => of(null))).subscribe(() => {
           this.conversations.update(convs => convs.map(c => c.id === id ? { ...c, unread_count: 0 } : c));
@@ -320,12 +357,10 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
   // ── Filter controls ────────────────────────────────────────────────────────
   setActiveQueue(queue: string): void {
     this.activeQueue.set(queue);
-    this._resetAndReloadConversations();
   }
 
   setActiveChannel(channel: string): void {
     this.activeChannel.set(channel);
-    this._resetAndReloadConversations();
   }
 
   // ── Derived helpers ────────────────────────────────────────────────────────
@@ -368,6 +403,11 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
       case 'resolved': return 'info';
       default: return 'secondary';
     }
+  }
+
+  getAgentDisplayName(agent: AgentInfo): string {
+    const full = [agent.first_name, agent.last_name].filter(Boolean).join(' ').trim();
+    return full || agent.email || agent.id;
   }
 
   getConversationChannel(conversation: TelegramConversation): 'telegram' | 'facebook' | 'web' | 'app' {
@@ -455,12 +495,12 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   // ── Info panel ─────────────────────────────────────────────────────────────
-  openInfoPanel(panel: 'customer' | 'product' | 'context' | 'channel'): void {
+  openInfoPanel(panel: 'customer' | 'product' | 'context' | 'channel' | 'template'): void {
     this.infoPanel.set(panel);
     if (panel === 'context') this._loadNotes();
   }
 
-  toggleInfoPanel(panel: 'customer' | 'product' | 'context' | 'channel'): void {
+  toggleInfoPanel(panel: 'customer' | 'product' | 'context' | 'channel' | 'template'): void {
     if (this.infoPanel() === panel) {
       this.infoPanel.set('none');
     } else {
@@ -510,56 +550,34 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
   openFilterDialog(): void { this.filterDialogVisible = true; }
   closeFilterDialog(): void { this.filterDialogVisible = false; }
 
-  openTemplateDialog(): void {
-    if (!this.selectedConversation()) return;
-    this.templateDialogVisible = true;
-    this.actionPopupMode = 'template';
-    if (this.selectedTemplateId) this.onTemplateChange(this.selectedTemplateId);
-  }
-
-  closeTemplateDialog(): void {
-    this.templateDialogVisible = false;
-    if (this.actionPopupMode === 'template') this.actionPopupMode = 'none';
-  }
-
-  onTemplateChange(templateId: string): void {
-    this.selectedTemplateId = templateId;
-    const template = this.getSelectedTemplate();
-    const nextValues: Record<string, string> = {};
-    const firstName = this.selectedConversation()?.user_name?.trim().split(/\s+/)[0] || '';
-    for (const variable of template?.variables || []) {
-      if (variable === 'first_name' && !this.templateVariableValues[variable] && firstName) {
-        nextValues[variable] = firstName;
-      } else {
-        nextValues[variable] = this.templateVariableValues[variable] || '';
-      }
-    }
-    this.templateVariableValues = nextValues;
-  }
-
   // ── Sending ────────────────────────────────────────────────────────────────
   sendReply(): void {
     const conversation = this.selectedConversation();
     const text = this.draftReply.trim();
-    if (!conversation || !conversation.chat_id || !text) return;
+    if (!conversation || !text) return;
+    if (!conversation.chat_id) {
+      this.messageService.add({ severity: 'warn', summary: 'Not ready', detail: 'Conversation is missing chat ID — please reload' });
+      return;
+    }
 
+    const msg: TelegramMessage = {
+      id: `local_${Date.now()}`, sender: 'agent',
+      sender_name: conversation.agent || this.profile?.first_name || 'Agent',
+      content: text, timestamp: new Date().toISOString(),
+      message_type: 'text', delivery_status: 'sent'
+    };
+    this._applyOutboundUpdate(conversation, msg, text);
+    this.draftReply = '';
     this.sendingReply = true;
+
     this.chatService.sendTelegramMessage({ chat_id: conversation.chat_id, text, disable_notification: this.disableNotification }).subscribe({
       next: () => {
-        const msg: TelegramMessage = {
-          id: `local_${Date.now()}`, sender: 'agent',
-          sender_name: conversation.agent || this.profile?.first_name || 'Agent',
-          content: text, timestamp: new Date().toISOString(),
-          message_type: 'text', delivery_status: 'sent'
-        };
-        this._applyOutboundUpdate(conversation, msg, text);
-        this.draftReply = '';
         this.sendingReply = false;
         this.messageService.add({ severity: 'success', summary: 'Message sent', detail: 'Reply sent successfully' });
       },
       error: () => {
         this.sendingReply = false;
-        this.messageService.add({ severity: 'error', summary: 'Send failed', detail: 'Unable to send reply' });
+        this.messageService.add({ severity: 'error', summary: 'Send failed', detail: 'Unable to deliver reply — please retry' });
       }
     });
   }
@@ -570,25 +588,26 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
     const caption = this.mediaCaption.trim();
     if (!conversation || !conversation.chat_id || !mediaUrl) return;
 
+    const label = this.mediaType === 'photo' ? 'Photo' : this.mediaType === 'gif' ? 'GIF' : 'Document';
+    const content = caption || mediaUrl;
+    const msg: TelegramMessage = {
+      id: `media_${Date.now()}`, sender: 'agent',
+      sender_name: conversation.agent || this.profile?.first_name || 'Agent',
+      content, timestamp: new Date().toISOString(),
+      message_type: this.mediaType === 'gif' ? 'photo' : this.mediaType,
+      delivery_status: 'sent', media_url: mediaUrl, caption: caption || undefined
+    };
+    this._applyOutboundUpdate(conversation, msg, content);
+    this.resetMediaForm();
     this.sendingMedia = true;
+
     const onSuccess = () => {
-      const label = this.mediaType === 'photo' ? 'Photo' : this.mediaType === 'gif' ? 'GIF' : 'Document';
-      const content = caption || mediaUrl;
-      const msg: TelegramMessage = {
-        id: `media_${Date.now()}`, sender: 'agent',
-        sender_name: conversation.agent || this.profile?.first_name || 'Agent',
-        content, timestamp: new Date().toISOString(),
-        message_type: this.mediaType === 'gif' ? 'photo' : this.mediaType,
-        delivery_status: 'sent', media_url: mediaUrl, caption: caption || undefined
-      };
-      this._applyOutboundUpdate(conversation, msg, content);
-      this.resetMediaForm();
       this.sendingMedia = false;
       this.messageService.add({ severity: 'success', summary: `${label} sent`, detail: `${label} message sent successfully` });
     };
     const onError = () => {
       this.sendingMedia = false;
-      this.messageService.add({ severity: 'error', summary: 'Send failed', detail: `Unable to send ${this.mediaType}` });
+      this.messageService.add({ severity: 'error', summary: 'Send failed', detail: `Unable to deliver ${this.mediaType} — please retry` });
     };
 
     if (this.mediaType === 'photo') {
@@ -598,71 +617,36 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
     }
   }
 
-  sendTemplate(): void {
-    const conversation = this.selectedConversation();
-    const template = this.getSelectedTemplate();
-    if (!conversation || !conversation.chat_id || !template || !this.selectedTemplateId) return;
-
-    const variables = Object.fromEntries(
-      (template.variables || []).map(v => [v, (this.templateVariableValues[v] || '').trim()])
-    );
-    const missing = Object.entries(variables).find(([, val]) => !val);
-    if (missing) {
-      this.messageService.add({ severity: 'warn', summary: 'Missing variable', detail: `Please provide a value for ${missing[0]}` });
-      return;
-    }
-
-    this.sendingTemplate = true;
-    this.chatService.sendTelegramTemplate({ chat_id: conversation.chat_id, template_id: this.selectedTemplateId, variables, disable_notification: this.disableNotification }).subscribe({
-      next: () => {
-        const content = this._renderTemplatePreview(template.content, variables);
-        const msg: TelegramMessage = {
-          id: `tpl_${Date.now()}`, sender: 'agent',
-          sender_name: conversation.agent || this.profile?.first_name || 'Agent',
-          content, timestamp: new Date().toISOString(),
-          message_type: 'template', delivery_status: 'sent'
-        };
-        this._applyOutboundUpdate(conversation, msg, content);
-        this.closeTemplateDialog();
-        this._resetTemplateForm();
-        this.sendingTemplate = false;
-        this.messageService.add({ severity: 'success', summary: 'Template sent', detail: `${template.name} was sent successfully` });
-      },
-      error: () => {
-        this.sendingTemplate = false;
-        this.messageService.add({ severity: 'error', summary: 'Template failed', detail: 'Unable to send Telegram template' });
-      }
-    });
-  }
-
   sendProductCard(): void {
     const conversation = this.selectedConversation();
     if (!conversation || !conversation.chat_id || !this.productName || !this.productImageUrl) return;
 
-    this.sendingProduct = true;
     let caption = `🛍️ *${this.productName}*\n`;
     if (this.productPrice) caption += `💰 Price: ${this.productPrice}\n`;
     if (this.productDesc) caption += `\n${this.productDesc}\n`;
     if (this.productLink) caption += `\n🔗 [View Product](${this.productLink})`;
 
-    this.chatService.sendTelegramPhoto({ chat_id: conversation.chat_id, photo: this.productImageUrl, caption, disable_notification: this.disableNotification, protect_content: this.protectMediaContent }).subscribe({
+    const imageUrl = this.productImageUrl;
+    const msg: TelegramMessage = {
+      id: `product_${Date.now()}`, sender: 'agent',
+      sender_name: conversation.agent || this.profile?.first_name || 'Agent',
+      content: caption, timestamp: new Date().toISOString(),
+      message_type: 'photo', delivery_status: 'sent',
+      media_url: imageUrl, caption
+    };
+    this._applyOutboundUpdate(conversation, msg, caption);
+    this._resetProductForm();
+    this.closeActionPopup();
+    this.sendingProduct = true;
+
+    this.chatService.sendTelegramPhoto({ chat_id: conversation.chat_id, photo: imageUrl, caption, disable_notification: this.disableNotification, protect_content: this.protectMediaContent }).subscribe({
       next: () => {
-        const msg: TelegramMessage = {
-          id: `product_${Date.now()}`, sender: 'agent',
-          sender_name: conversation.agent || this.profile?.first_name || 'Agent',
-          content: caption, timestamp: new Date().toISOString(),
-          message_type: 'photo', delivery_status: 'sent',
-          media_url: this.productImageUrl, caption
-        };
-        this._applyOutboundUpdate(conversation, msg, caption);
-        this._resetProductForm();
         this.sendingProduct = false;
-        this.closeActionPopup();
         this.messageService.add({ severity: 'success', summary: 'Product sent', detail: 'Product card sent successfully' });
       },
       error: () => {
         this.sendingProduct = false;
-        this.messageService.add({ severity: 'error', summary: 'Send failed', detail: 'Unable to send product card' });
+        this.messageService.add({ severity: 'error', summary: 'Send failed', detail: 'Unable to deliver product card — please retry' });
       }
     });
   }
@@ -672,23 +656,24 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
     const icon = this.selectedIcon.trim();
     if (!conversation || !conversation.chat_id || !icon) return;
 
+    const msg: TelegramMessage = {
+      id: `icon_${Date.now()}`, sender: 'agent',
+      sender_name: conversation.agent || this.profile?.first_name || 'Agent',
+      content: icon, timestamp: new Date().toISOString(),
+      message_type: 'text', delivery_status: 'sent'
+    };
+    this._applyOutboundUpdate(conversation, msg, icon);
+    this.closeActionPopup();
     this.sendingIcon = true;
+
     this.chatService.sendTelegramMessage({ chat_id: conversation.chat_id, text: icon, disable_notification: this.disableNotification }).subscribe({
       next: () => {
-        const msg: TelegramMessage = {
-          id: `icon_${Date.now()}`, sender: 'agent',
-          sender_name: conversation.agent || this.profile?.first_name || 'Agent',
-          content: icon, timestamp: new Date().toISOString(),
-          message_type: 'text', delivery_status: 'sent'
-        };
-        this._applyOutboundUpdate(conversation, msg, icon);
         this.sendingIcon = false;
-        this.closeActionPopup();
         this.messageService.add({ severity: 'success', summary: 'Icon sent', detail: 'Quick icon reply sent successfully' });
       },
       error: () => {
         this.sendingIcon = false;
-        this.messageService.add({ severity: 'error', summary: 'Send failed', detail: 'Unable to send icon reply' });
+        this.messageService.add({ severity: 'error', summary: 'Send failed', detail: 'Unable to deliver icon reply — please retry' });
       }
     });
   }
@@ -708,16 +693,138 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   // ── Customer linked (customerLinked output) ────────────────────────────────
-  handleCustomerLinked(customerId: string | null): void {
+  handleCustomerLinked(customer: CustomerSummary | null): void {
     const conv = this.selectedConversation();
     if (!conv) return;
-    this.selectedConversation.set({ ...conv, ...(customerId ? { customer_id: customerId } as any : {}) });
+    this.selectedConversation.set({ ...conv, customer_id: customer?.id ?? null });
+    this.linkedCustomer.set(customer);
+  }
+
+  // ── Labels ─────────────────────────────────────────────────────────────────
+  loadLabels(): void {
+    this.chatService.getLabels().pipe(catchError(() => of(null))).subscribe(res => {
+      this.labels.set(res?.data ?? []);
+    });
+  }
+
+  addLabelToConversation(labelId: string): void {
+    const conv = this.selectedConversation();
+    if (!conv?.id) return;
+    this.labelPickerOpen = false;
+    const current = conv.tags || [];
+    if (current.includes(labelId)) return;
+    const next = [...current, labelId];
+    this.chatService.patchConversationLabels(conv.id, next).pipe(catchError(() => of(null))).subscribe(() => {
+      this.selectedConversation.set({ ...conv, tags: next });
+    });
+  }
+
+  removeLabelFromConversation(labelId: string): void {
+    const conv = this.selectedConversation();
+    if (!conv?.id) return;
+    const next = (conv.tags || []).filter(t => t !== labelId);
+    this.chatService.patchConversationLabels(conv.id, next).pipe(catchError(() => of(null))).subscribe(() => {
+      this.selectedConversation.set({ ...conv, tags: next });
+    });
+  }
+
+  // ── Priority / Category ────────────────────────────────────────────────────
+  savePriority(value: string): void {
+    const conv = this.selectedConversation();
+    if (!conv?.id) return;
+    this.chatService.updateConversationMeta(conv.id, { priority: value }).pipe(catchError(() => of(null))).subscribe(() => {
+      this.selectedConversation.set({ ...conv, priority: value });
+      this.conversations.update(cs => cs.map(c => c.id === conv.id ? { ...c, priority: value } : c));
+    });
+  }
+
+  saveCategory(value: string): void {
+    const conv = this.selectedConversation();
+    if (!conv?.id) return;
+    this.chatService.updateConversationMeta(conv.id, { category: value }).pipe(catchError(() => of(null))).subscribe(() => {
+      this.selectedConversation.set({ ...conv, category: value });
+    });
+  }
+
+  // ── Bot toggle ─────────────────────────────────────────────────────────────
+  toggleBotEnabled(): void {
+    const conv = this.selectedConversation();
+    if (!conv?.id || this.updatingBotStatus()) return;
+    this.updatingBotStatus.set(true);
+    const next = !conv.is_bot_enabled;
+    this.chatService.updateConversationMeta(conv.id, { is_bot_enabled: next }).subscribe({
+      next: () => {
+        this.selectedConversation.set({ ...conv, is_bot_enabled: next });
+        this.conversations.update(cs => cs.map(c => c.id === conv.id ? { ...c, is_bot_enabled: next } : c));
+        this.updatingBotStatus.set(false);
+      },
+      error: () => {
+        this.updatingBotStatus.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Could not toggle bot status' });
+      }
+    });
+  }
+
+  // ── Agent presence ─────────────────────────────────────────────────────────
+  setMyPresence(status: 'online' | 'busy' | 'away'): void {
+    this.myPresence.set(status);
+    this.presenceDropdownOpen = false;
+    localStorage.setItem('cmc_presence', status);
+    this.chatService.setAgentPresence(status).pipe(catchError(() => of(null))).subscribe();
+  }
+
+  private _restorePresence(): void {
+    const saved = localStorage.getItem('cmc_presence') as 'online' | 'busy' | 'away' | null;
+    if (saved) {
+      this.myPresence.set(saved);
+      this.chatService.setAgentPresence(saved).pipe(catchError(() => of(null))).subscribe();
+    }
+  }
+
+  // ── Auto-refresh polling ───────────────────────────────────────────────────
+  startPolling(): void {
+    this.refreshMessagesInterval = setInterval(() => this._refreshMessages(), 30000);
+    this.refreshConversationsInterval = setInterval(() => this._refreshConversations(), 60000);
+  }
+
+  stopPolling(): void {
+    if (this.refreshMessagesInterval) clearInterval(this.refreshMessagesInterval);
+    if (this.refreshConversationsInterval) clearInterval(this.refreshConversationsInterval);
+  }
+
+  private _refreshMessages(): void {
+    const conv = this.selectedConversation();
+    if (!conv?.id) return;
+    this.chatService.getTelegramConversationDetail(conv.id, 0, this.MESSAGE_PAGE_SIZE).pipe(catchError(() => of(null))).subscribe(res => {
+      if (!res?.data) return;
+      const fresh = res.data;
+      const currentIds = new Set((conv.messages || []).map(m => m.id));
+      const newMsgs = (fresh.messages || []).filter(m => !currentIds.has(m.id));
+      if (newMsgs.length > 0) {
+        this.selectedConversation.set({ ...conv, messages: [...(conv.messages || []), ...newMsgs], last_message: fresh.last_message, last_message_time: fresh.last_message_time });
+        setTimeout(() => this.messageThreadRef?.scrollToBottom());
+      }
+      this.lastRefreshed = new Date();
+    });
+  }
+
+  private _refreshConversations(): void {
+    this.chatService.getTelegramConversations(0, 20).pipe(catchError(() => of(null))).subscribe(res => {
+      if (!res?.data) return;
+      const fresh = res.data;
+      this.conversations.update(existing => {
+        const existingMap = new Map(existing.map(c => [c.id, c]));
+        fresh.forEach(c => existingMap.set(c.id, c));
+        return Array.from(existingMap.values());
+      });
+      this.lastRefreshed = new Date();
+    });
   }
 
   // ── Quick actions ──────────────────────────────────────────────────────────
   activateQuickAction(mode: string): void {
     if (mode === 'text') { this.closeActionPopup(); return; }
-    if (mode === 'template') { this.openTemplateDialog(); return; }
+    if (mode === 'template') { this.infoPanel.set('template'); return; }
     if (mode === 'photo' || mode === 'gif' || mode === 'document') { this.mediaType = mode as any; this.actionPopupMode = mode as any; return; }
     if (mode === 'icon') { this.actionPopupMode = 'icon'; return; }
     if (mode === 'product') { this.openInfoPanel('product'); return; }
@@ -725,22 +832,7 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
 
   closeActionPopup(): void {
     this.actionPopupMode = 'none';
-    this.templateDialogVisible = false;
     this._resetProductForm();
-  }
-
-  // ── Template helpers ───────────────────────────────────────────────────────
-  get selectedTemplatePreview(): string {
-    const template = this.getSelectedTemplate();
-    if (!template) return '';
-    const variables = Object.fromEntries(
-      (template.variables || []).map(v => [v, this.templateVariableValues[v] || `{{${v}}}`])
-    );
-    return this._renderTemplatePreview(template.content, variables);
-  }
-
-  getSelectedTemplate(): TelegramTemplate | null {
-    return this.templates.find(t => t.value === this.selectedTemplateId)?.template || null;
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────
@@ -771,11 +863,6 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
     this.productDesc = '';
     this.productLink = '';
     this.productImageUrl = '';
-  }
-
-  private _resetTemplateForm(): void {
-    this.selectedTemplateId = '';
-    this.templateVariableValues = {};
   }
 
   private _renderTemplatePreview(content: string, variables: Record<string, string>): string {

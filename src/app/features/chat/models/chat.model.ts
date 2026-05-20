@@ -208,6 +208,7 @@ export interface TelegramConversation {
     priority: string;
     agent: string | null;
     agent_id: string | null;
+    customer_id?: string | null;
     category: string;
     sentiment: string;
     tags: string[];
@@ -500,10 +501,47 @@ export interface AgentPresence {
 
 export interface AgentInfo {
     id: string;
-    name?: string;
-    presence_status: 'online' | 'busy' | 'away';
-    last_seen_at?: string;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    roles?: string[];
+    presence_status?: 'online' | 'busy' | 'away';
     active_conversation_count?: number;
+}
+
+// ── Customer Create / Order Create / Email ────────────────────────────────────
+export interface CustomerCreatePayload {
+    name: string;
+    phone?: string;
+    email?: string;
+    address?: string;
+    customer_type?: string;
+}
+
+export interface OrderItem {
+    product_id: string;
+    sku: string;
+    product_name: string;
+    quantity: number;
+    unit_price: number;
+    total_price: number;
+}
+
+export interface OrderCreatePayload {
+    order_number?: string;
+    customer_id: string;
+    items: OrderItem[];
+    total_amount: number;
+    net_amount?: number;
+    source?: string;
+}
+
+export interface SendEmailPayload {
+    to_email: string;
+    to_name?: string;
+    subject: string;
+    content: string;
+    content_html?: string;
 }
 
 // ── Customer 360 ─────────────────────────────────────────────────────────────
@@ -555,4 +593,75 @@ export interface BroadcastCreate {
 
 export interface BroadcastEstimate {
     count: number;
+}
+
+// ── Telegram Rich Templates (v2) ──────────────────────────────────────────────
+
+export interface TelegramInlineButton {
+    text: string;
+    url?: string;
+    callback_data?: string;
+    web_app_url?: string;
+    switch_inline_query?: string;
+}
+
+export interface TelegramReplyButton {
+    text: string;
+    request_contact?: boolean;
+    request_location?: boolean;
+}
+
+export interface TelegramKeyboard {
+    type: 'inline_keyboard' | 'reply_keyboard' | 'reply_keyboard_remove' | 'force_reply';
+    inline_keyboard?: TelegramInlineButton[][];
+    keyboard?: TelegramReplyButton[][];
+    resize_keyboard?: boolean;
+    one_time_keyboard?: boolean;
+    input_field_placeholder?: string;
+}
+
+export interface TelegramTemplatePayload {
+    text?: string;
+    parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+    media_url?: string;
+    caption?: string;
+    question?: string;
+    poll_options?: { text: string }[];
+    poll_type?: 'regular' | 'quiz';
+    is_anonymous?: boolean;
+    correct_option_id?: number;
+    latitude?: number;
+    longitude?: number;
+    venue_title?: string;
+    address?: string;
+    phone_number?: string;
+    first_name?: string;
+    last_name?: string;
+    dice_emoji?: string;
+    media_group?: { type: string; media: string; caption?: string }[];
+    invoice_title?: string;
+    invoice_description?: string;
+    invoice_currency?: string;
+    invoice_prices?: { label: string; amount: number }[];
+    invoice_photo_url?: string;
+    keyboard?: TelegramKeyboard;
+    disable_notification?: boolean;
+    protect_content?: boolean;
+}
+
+export interface TelegramRichTemplate {
+    id: string;
+    template_id: string;
+    name: string;
+    description?: string;
+    category: string;
+    message_type: string;
+    payload: TelegramTemplatePayload;
+    variables: string[];
+    tags: string[];
+    enabled: boolean;
+    is_builtin: boolean;
+    priority: number;
+    created_at?: string;
+    updated_at?: string;
 }

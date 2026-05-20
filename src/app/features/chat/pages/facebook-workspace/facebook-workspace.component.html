@@ -26,6 +26,23 @@
       <button type="button" class="cw-icon-btn" (click)="openOverviewDialog()" title="Overview">
         <i class="pi pi-chart-bar"></i>
       </button>
+      <!-- Presence badge -->
+      <div class="cw-presence-host">
+        <button type="button" class="cw-presence-btn" [attr.data-status]="myPresence()"
+                (click)="presenceDropdownOpen = !presenceDropdownOpen">
+          <span class="cw-presence-dot"></span>
+          {{ myPresenceLabel() }}
+          <i class="pi pi-chevron-down" style="font-size:0.65rem"></i>
+        </button>
+        <ng-container *ngIf="presenceDropdownOpen">
+          <div class="cw-overlay" (click)="presenceDropdownOpen=false"></div>
+          <div class="cw-presence-dropdown">
+            <button type="button" (click)="setMyPresence('online')"><span class="cw-presence-dot" data-status="online"></span>Online</button>
+            <button type="button" (click)="setMyPresence('busy')"><span class="cw-presence-dot" data-status="busy"></span>Busy</button>
+            <button type="button" (click)="setMyPresence('away')"><span class="cw-presence-dot" data-status="away"></span>Away</button>
+          </div>
+        </ng-container>
+      </div>
     </div>
   </header>
 
@@ -124,11 +141,12 @@
               <ng-container *ngIf="assignDropdownVisible">
                 <div class="cw-overlay" (click)="assignDropdownVisible=false"></div>
                 <div class="cw-dropdown">
-                  <div *ngIf="agents().length === 0" class="cw-dd-empty">No agents online</div>
+                  <div *ngIf="agents().length === 0" class="cw-dd-empty">No users found</div>
                   <button *ngFor="let agent of agents()" type="button" class="cw-dd-item"
-                          (click)="assignConversation(agent.id, agent.name || agent.id)">
+                          (click)="assignConversation(agent.id, getAgentDisplayName(agent))">
                     <span class="cw-agent-dot" [class.online]="agent.presence_status === 'online'"></span>
-                    {{ agent.name || agent.id }}
+                    {{ getAgentDisplayName(agent) }}
+                    <span *ngIf="agent.email" class="cw-agent-email">{{ agent.email }}</span>
                   </button>
                 </div>
               </ng-container>
@@ -158,6 +176,11 @@
               </button>
             </div>
           </div>
+        </div>
+
+        <!-- Auto-refresh indicator -->
+        <div class="cw-refresh-hint" *ngIf="lastRefreshed">
+          <i class="pi pi-check-circle"></i> Updated {{ lastRefreshed | date:'HH:mm:ss' }}
         </div>
 
         <!-- Message thread -->
@@ -210,7 +233,8 @@
                 </ng-container>
               </div>
               <button type="button" class="cw-tool" title="Send template"
-                      [disabled]="!templates.length" (click)="openTemplateDialog()">
+                      [class.active]="infoPanel() === 'template'"
+                      (click)="toggleInfoPanel('template')">
                 <i class="pi pi-file-export"></i><span>Template</span>
               </button>
             </div>
@@ -233,7 +257,7 @@
     <aside class="cw-drawer" *ngIf="infoPanel() !== 'none' && selectedConversation() as conv">
       <div class="cw-drawer-head">
         <h3 class="cw-drawer-title">
-          {{ infoPanel() === 'customer' ? 'Customer' : infoPanel() === 'product' ? 'Products' : infoPanel() === 'context' ? 'Context' : 'Channel' }}
+          {{ infoPanel() === 'customer' ? 'Customer' : infoPanel() === 'product' ? 'Products' : infoPanel() === 'context' ? 'Context' : infoPanel() === 'template' ? 'Send Template' : 'Channel' }}
         </h3>
         <button type="button" class="cw-icon-btn" (click)="closeInfoPanel()">
           <i class="pi pi-times"></i>
@@ -257,23 +281,60 @@
 
         <!-- Context panel -->
         <div *ngIf="infoPanel() === 'context'" class="cw-context-panel">
+          <!-- Editable Priority -->
+          <div class="cw-info-row">
+            <span class="cw-info-label">Priority</span>
+            <select class="cw-inline-select" [(ngModel)]="editPriority" (change)="savePriority(editPriority)">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+
+          <!-- Editable Category -->
           <div class="cw-info-row">
             <span class="cw-info-label">Category</span>
-            <span class="cw-info-val">{{ conv.category || 'General support' }}</span>
+            <input class="cw-inline-input" [(ngModel)]="editCategory"
+                   placeholder="Add category..."
+                   (blur)="saveCategory(editCategory)"
+                   (keydown.enter)="saveCategory(editCategory)" />
           </div>
+
           <div class="cw-info-row">
             <span class="cw-info-label">Channel</span>
             <span class="cw-info-val">{{ getConversationSourceLabel(conv) }}</span>
           </div>
           <div class="cw-info-row">
-            <span class="cw-info-label">Conversation type</span>
+            <span class="cw-info-label">Type</span>
             <span class="cw-info-val">{{ getConversationAudienceLabel(conv) }}</span>
           </div>
-          <div class="cw-info-row">
-            <span class="cw-info-label">Tags</span>
-            <div class="cw-tags">
-              <span *ngFor="let tag of conv.tags" class="cw-tag">{{ tag }}</span>
-              <span *ngIf="!conv.tags?.length" class="cw-info-val">—</span>
+
+          <!-- Labels -->
+          <div class="cw-info-row cw-info-row--labels">
+            <span class="cw-info-label">Labels</span>
+            <div class="cw-label-chips">
+              <span *ngFor="let l of conversationLabels()" class="cw-label-chip" [style.background]="l.color">
+                {{ l.name }}
+                <button type="button" class="cw-label-chip-del" (click)="removeLabelFromConversation(l.id)">
+                  <i class="pi pi-times"></i>
+                </button>
+              </span>
+              <div class="cw-label-add-host">
+                <button type="button" class="cw-label-add-btn" (click)="labelPickerOpen = !labelPickerOpen">
+                  <i class="pi pi-plus"></i>
+                </button>
+                <ng-container *ngIf="labelPickerOpen">
+                  <div class="cw-overlay" (click)="labelPickerOpen=false"></div>
+                  <div class="cw-label-picker">
+                    <div *ngIf="labels().length === 0" class="cw-label-picker-empty">No labels</div>
+                    <button *ngFor="let l of labels()" type="button" class="cw-label-picker-item"
+                            (click)="addLabelToConversation(l.id)">
+                      <span class="cw-label-dot" [style.background]="l.color"></span>
+                      {{ l.name }}
+                    </button>
+                  </div>
+                </ng-container>
+              </div>
             </div>
           </div>
 
@@ -302,6 +363,14 @@
           </div>
         </div>
 
+        <!-- Template panel -->
+        <div *ngIf="infoPanel() === 'template'">
+          <app-template-send-panel
+              [conversation]="selectedConversation()"
+              [linkedCustomer]="linkedCustomer()">
+          </app-template-send-panel>
+        </div>
+
         <!-- Channel panel -->
         <div *ngIf="infoPanel() === 'channel'" class="cw-context-panel">
           <div class="cw-info-row">
@@ -320,6 +389,15 @@
             <span class="cw-info-label">History</span>
             <span class="cw-info-val">{{ conv.message_count ?? 0 }} messages</span>
           </div>
+          <!-- Bot toggle -->
+          <div class="cw-info-row">
+            <span class="cw-info-label">AI Bot</span>
+            <label class="cw-toggle" [class.disabled]="updatingBotStatus()">
+              <input type="checkbox" [checked]="conv.is_bot_enabled"
+                     (change)="toggleBotEnabled()" [disabled]="updatingBotStatus()" />
+              <span class="cw-toggle-slider"></span>
+            </label>
+          </div>
         </div>
       </div>
     </aside>
@@ -327,7 +405,7 @@
 </div>
 
 <!-- ── Quick action popup ────────────────────────────────────────────────────── -->
-<div class="cw-modal-backdrop" *ngIf="actionPopupMode !== 'none' && actionPopupMode !== 'template' && actionPopupMode !== 'product'" (click)="closeActionPopup()">
+<div class="cw-modal-backdrop" *ngIf="actionPopupMode !== 'none' && actionPopupMode !== 'product'" (click)="closeActionPopup()">
   <div class="cw-modal" (click)="$event.stopPropagation()">
     <div class="cw-modal-head">
       <h3 class="cw-modal-title">
@@ -419,45 +497,6 @@
           </button>
         </div>
       </ng-container>
-    </div>
-  </div>
-</div>
-
-<!-- ── Template drawer ───────────────────────────────────────────────────────── -->
-<div class="cw-modal-backdrop" *ngIf="templateDialogVisible" (click)="closeTemplateDialog()">
-  <div class="cw-modal cw-modal-wide" (click)="$event.stopPropagation()">
-    <div class="cw-modal-head">
-      <h3 class="cw-modal-title">Send template</h3>
-      <button type="button" class="cw-icon-btn" (click)="closeTemplateDialog()"><i class="pi pi-times"></i></button>
-    </div>
-    <div class="cw-modal-body">
-      <p-dropdown [options]="templates" [(ngModel)]="selectedTemplateId"
-                  optionLabel="label" optionValue="value" class="w-full"
-                  placeholder="Select template"
-                  (onChange)="onTemplateChange($event.value)"></p-dropdown>
-      <div *ngIf="getSelectedTemplate() as tpl" class="cw-tpl-preview">
-        <div class="cw-tpl-meta">
-          <strong>{{ tpl.name }}</strong>
-          <span class="cw-tag">{{ tpl.category }}</span>
-        </div>
-        <p class="cw-tpl-content">{{ tpl.content }}</p>
-        <div *ngFor="let v of tpl.variables" class="cw-form-group">
-          <label class="cw-label">{{ v }}</label>
-          <input type="text" class="cw-input" [(ngModel)]="templateVariableValues[v]"
-                 [placeholder]="'Enter value for ' + v" />
-        </div>
-        <div class="cw-tpl-render">
-          <span class="cw-label">Preview</span>
-          <p>{{ selectedTemplatePreview }}</p>
-        </div>
-      </div>
-      <div class="cw-modal-footer">
-        <button type="button" class="cw-btn" (click)="closeTemplateDialog()">Cancel</button>
-        <button type="button" class="cw-btn cw-btn-primary" (click)="sendTemplate()"
-                [disabled]="!selectedTemplateId || sendingTemplate">
-          {{ sendingTemplate ? 'Sending...' : 'Send template' }}
-        </button>
-      </div>
     </div>
   </div>
 </div>
