@@ -1,0 +1,141 @@
+/**
+ * Workspace v2 theme tokens.
+ * Scoped to `.cw-root[data-theme]` so toggling does not leak into the rest of the app.
+ * Token names are intentionally generic (--cw-*) so panels can reference them without
+ * knowing whether the current theme is light or dark.
+ */
+
+.cw-root {
+    // Default (light) tokens
+    --cw-bg: #f7f8fa;
+    --cw-surface: #ffffff;
+    --cw-surface-hover: #f1f3f6;
+    --cw-surface-elevated: #ffffff;
+    --cw-border: #e5e7eb;
+    --cw-border-strong: #d1d5db;
+    --cw-divider: #eef0f3;
+
+    --cw-fg: #111827;
+    --cw-fg-muted: #4b5563;
+    --cw-fg-subtle: #6b7280;
+    --cw-fg-inverse: #ffffff;
+
+    --cw-accent: #2563eb;
+    --cw-accent-fg: #ffffff;
+    --cw-accent-soft: #dbeafe;
+
+    --cw-success: #16a34a;
+    --cw-success-soft: #dcfce7;
+    --cw-warning: #d97706;
+    --cw-warning-soft: #fef3c7;
+    --cw-danger: #dc2626;
+    --cw-danger-soft: #fee2e2;
+    --cw-info: #0284c7;
+    --cw-info-soft: #e0f2fe;
+
+    --cw-priority-low: #94a3b8;
+    --cw-priority-medium: #0ea5e9;
+    --cw-priority-high: #f59e0b;
+    --cw-priority-urgent: #ef4444;
+
+    --cw-channel-telegram: #229ed9;
+    --cw-channel-facebook: #0866ff;
+    --cw-channel-web: #6b7280;
+    --cw-channel-app: #6366f1;
+    --cw-channel-email: #6b7280;
+    --cw-channel-sms: #14b8a6;
+
+    --cw-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 1px rgba(15, 23, 42, 0.03);
+    --cw-shadow-md: 0 4px 6px rgba(15, 23, 42, 0.05), 0 2px 4px rgba(15, 23, 42, 0.04);
+    --cw-shadow-lg: 0 10px 25px rgba(15, 23, 42, 0.08), 0 4px 10px rgba(15, 23, 42, 0.04);
+
+    --cw-radius-sm: 6px;
+    --cw-radius-md: 10px;
+    --cw-radius-lg: 14px;
+
+    --cw-z-base: 1;
+    --cw-z-sticky: 10;
+    --cw-z-overlay: 100;
+    --cw-z-drawer: 200;
+    --cw-z-modal: 300;
+    --cw-z-toast: 400;
+
+    --cw-easing: cubic-bezier(0.4, 0, 0.2, 1);
+    --cw-duration-fast: 120ms;
+    --cw-duration-normal: 200ms;
+    --cw-duration-slow: 320ms;
+}
+
+.cw-root[data-theme='dark'] {
+    --cw-bg: #0b1220;
+    --cw-surface: #111827;
+    --cw-surface-hover: #1f2937;
+    --cw-surface-elevated: #1a2233;
+    --cw-border: #1f2937;
+    --cw-border-strong: #374151;
+    --cw-divider: #1a2233;
+
+    --cw-fg: #e5e7eb;
+    --cw-fg-muted: #9ca3af;
+    --cw-fg-subtle: #6b7280;
+    --cw-fg-inverse: #0b1220;
+
+    --cw-accent: #3b82f6;
+    --cw-accent-fg: #ffffff;
+    --cw-accent-soft: rgba(59, 130, 246, 0.15);
+
+    --cw-success: #22c55e;
+    --cw-success-soft: rgba(34, 197, 94, 0.15);
+    --cw-warning: #f59e0b;
+    --cw-warning-soft: rgba(245, 158, 11, 0.15);
+    --cw-danger: #ef4444;
+    --cw-danger-soft: rgba(239, 68, 68, 0.18);
+    --cw-info: #38bdf8;
+    --cw-info-soft: rgba(56, 189, 248, 0.15);
+
+    --cw-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --cw-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
+    --cw-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+    .cw-root[data-theme='auto'] {
+        --cw-bg: #0b1220;
+        --cw-surface: #111827;
+        --cw-surface-hover: #1f2937;
+        --cw-surface-elevated: #1a2233;
+        --cw-border: #1f2937;
+        --cw-border-strong: #374151;
+        --cw-divider: #1a2233;
+
+        --cw-fg: #e5e7eb;
+        --cw-fg-muted: #9ca3af;
+        --cw-fg-subtle: #6b7280;
+        --cw-fg-inverse: #0b1220;
+
+        --cw-accent: #3b82f6;
+        --cw-accent-soft: rgba(59, 130, 246, 0.15);
+
+        --cw-success-soft: rgba(34, 197, 94, 0.15);
+        --cw-warning-soft: rgba(245, 158, 11, 0.15);
+        --cw-danger-soft: rgba(239, 68, 68, 0.18);
+        --cw-info-soft: rgba(56, 189, 248, 0.15);
+
+        --cw-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+        --cw-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
+        --cw-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+}
+
+// Utility: visually hidden helper used by live regions
+.cw-sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}

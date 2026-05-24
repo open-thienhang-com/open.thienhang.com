@@ -1,41 +1,79 @@
-<div class="auth-page">
-  <!-- Animated Background -->
-  <div class="animated-background">
-    <div class="gradient-orb orb-1"></div>
-    <div class="gradient-orb orb-2"></div>
-    <div class="gradient-orb orb-3"></div>
-  </div>
+<div class="auth-root">
 
-  <!-- Content Container -->
-  <div class="auth-container">
-    <!-- Auth Form Card -->
-    <div class="auth-card" [@fadeInUp]>
+  <!-- ── LEFT: brand panel ────────────────────────────────── -->
+  <aside class="auth-brand">
+    <div class="auth-brand-inner">
+      <div class="auth-brand-logo">
+        <div class="auth-brand-icon">
+          <i class="pi pi-share-alt"></i>
+        </div>
+        <span class="auth-brand-name">Thienhang</span>
+      </div>
+
+      <div class="auth-brand-body">
+        <h1 class="auth-brand-tagline">
+          The operating system<br />for your business
+        </h1>
+        <p class="auth-brand-sub">
+          One platform to manage customers, inventory, analytics, and operations — powered by AI.
+        </p>
+        <ul class="auth-features">
+          <li><i class="pi pi-inbox"></i> Unified customer inbox</li>
+          <li><i class="pi pi-database"></i> Data mesh &amp; governance</li>
+          <li><i class="pi pi-sparkles"></i> AI-powered operations</li>
+          <li><i class="pi pi-chart-line"></i> Real-time retail analytics</li>
+        </ul>
+      </div>
+
+      <div class="auth-brand-testimonial">
+        <p>"Reduced our customer response time by 70% in the first month."</p>
+        <div class="auth-brand-author">
+          <div class="auth-brand-avatar">TH</div>
+          <div>
+            <strong>Thien Hang Team</strong>
+            <span>Operations Lead</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="auth-brand-footer">© 2026 Thienhang · v{{ version }}</p>
+  </aside>
+
+  <!-- ── RIGHT: form panel ─────────────────────────────────── -->
+  <main class="auth-form-panel">
+    <div class="auth-form-scroll">
+
       @if (curMode === modes.login) {
-        <app-login class="block"
-                   (onForgotPassword)="setCurMode(modes.forgotPassword)"
-                   (onSignUp)="setCurMode(modes.signup)"
-                   (onUnverified)="handleUnverified($event)"></app-login>
+        <app-login
+          [tenants]="publicTenants"
+          (onSignUp)="setCurMode(modes.signup)"
+          (onForgotPassword)="setCurMode(modes.forgotPassword)"
+          (onUnverified)="handleUnverified($event)" />
       }
       @if (curMode === modes.signup) {
-        <app-signup class="block"
-                    (onLogIn)="setCurMode(modes.login)"
-                    (onVerifyAccount)="setCurMode(modes.verifyAccount)"></app-signup>
+        <app-signup
+          [tenants]="publicTenants"
+          (onLogIn)="setCurMode(modes.login)"
+          (onVerifyAccount)="setCurMode(modes.verifyAccount)" />
       }
       @if (curMode === modes.forgotPassword) {
-        <app-forgot-password class="block"
-                             (onLogIn)="setCurMode(modes.login)"
-                             (onResetPassword)="setCurMode(modes.resetPassword)"></app-forgot-password>
+        <app-forgot-password
+          (onLogIn)="setCurMode(modes.login)"
+          (onResetPassword)="setCurMode(modes.resetPassword)" />
       }
       @if (curMode === modes.verifyAccount) {
-        <app-verify-account class="block"
-                            (onVerified)="setCurMode(modes.login)"
-                            (onBackToLogin)="setCurMode(modes.login)"></app-verify-account>
+        <app-verify-account
+          (onVerified)="setCurMode(modes.login)"
+          (onBackToLogin)="setCurMode(modes.login)" />
       }
       @if (curMode === modes.resetPassword) {
-        <app-reset-password class="block"
-                            (onReset)="setCurMode(modes.login)"
-                            (onBackToLogin)="setCurMode(modes.login)"></app-reset-password>
+        <app-reset-password
+          (onReset)="setCurMode(modes.login)"
+          (onBackToLogin)="setCurMode(modes.login)" />
       }
+
     </div>
-  </div>
+  </main>
+
 </div>

@@ -47,7 +47,7 @@
   </header>
 
   <!-- ── Body ─────────────────────────────────────────────────────────────── -->
-  <div class="cw-body" [class.has-drawer]="infoPanel() !== 'none'">
+  <div class="cw-body" [class.has-drawer]="!!selectedConversation()">
 
     <!-- Left: conversation list -->
     <aside class="cw-left">
@@ -72,14 +72,53 @@
         </div>
       </div>
 
+      <!-- Bulk toolbar -->
+      <div *ngIf="selectedIds().size > 0" class="cw-bulk-toolbar">
+        <label class="cw-bulk-check">
+          <input type="checkbox" [checked]="allSelected" (change)="toggleSelectAll()" />
+          <span>{{ selectedIds().size }} selected</span>
+        </label>
+        <button type="button" class="cw-bulk-btn" (click)="bulkResolve()">
+          <i class="pi pi-check"></i> Resolve
+        </button>
+        <div class="cw-dropdown-host">
+          <button type="button" class="cw-bulk-btn" (click)="bulkAssignDropdownVisible = !bulkAssignDropdownVisible">
+            <i class="pi pi-user-edit"></i> Assign
+          </button>
+          <ng-container *ngIf="bulkAssignDropdownVisible">
+            <div class="cw-overlay" (click)="bulkAssignDropdownVisible=false"></div>
+            <div class="cw-dropdown">
+              <div *ngIf="agents().length === 0" class="cw-dd-empty">No agents</div>
+              <button *ngFor="let agent of agents()" type="button" class="cw-dd-item"
+                      (click)="bulkAssign(agent.id, getAgentDisplayName(agent))">
+                <span class="cw-agent-dot" [class.online]="agent.presence_status === 'online'"></span>
+                {{ getAgentDisplayName(agent) }}
+              </button>
+            </div>
+          </ng-container>
+        </div>
+        <button type="button" class="cw-bulk-btn cw-bulk-btn--cancel" (click)="clearSelection()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <!-- Master select row (visible when no selection yet) -->
+      <div *ngIf="selectedIds().size === 0 && filteredConversations().length > 0" class="cw-list-head-row">
+        <label class="cw-master-check">
+          <input type="checkbox" [checked]="allSelected" (change)="toggleSelectAll()" />
+        </label>
+      </div>
+
       <!-- Conversation list -->
       <app-conversation-list
         [conversations]="filteredConversations()"
         [selectedId]="selectedConversation()?.id ?? null"
         [loading]="loadingConversations()"
         [hasMore]="hasMoreConversations()"
+        [selectedIds]="selectedIds()"
         (conversationSelected)="selectConversation($event)"
-        (loadMore)="loadMoreConversations()">
+        (loadMore)="loadMoreConversations()"
+        (toggleSelect)="toggleSelect($event)">
       </app-conversation-list>
     </aside>
 
@@ -152,29 +191,21 @@
               </ng-container>
             </div>
 
-            <!-- Info panel toggles -->
-            <div class="cw-panel-toggles">
-              <button type="button" class="cw-icon-btn" title="Customer"
-                      [class.active]="infoPanel() === 'customer'"
-                      (click)="toggleInfoPanel('customer')">
-                <i class="pi pi-user"></i>
+            <!-- Thread tabs -->
+            <div class="cw-thread-tabs">
+              <button type="button" class="cw-thread-tab"
+                      [class.active]="threadTab() === 'messages'"
+                      (click)="threadTab.set('messages')">
+                <i class="pi pi-comments"></i> Messages
               </button>
-              <button type="button" class="cw-icon-btn" title="Products"
-                      [class.active]="infoPanel() === 'product'"
-                      (click)="toggleInfoPanel('product')">
-                <i class="pi pi-shopping-bag"></i>
-              </button>
-              <button type="button" class="cw-icon-btn" title="Context"
-                      [class.active]="infoPanel() === 'context'"
-                      (click)="toggleInfoPanel('context')">
-                <i class="pi pi-info-circle"></i>
-              </button>
-              <button type="button" class="cw-icon-btn" title="Channel"
-                      [class.active]="infoPanel() === 'channel'"
-                      (click)="toggleInfoPanel('channel')">
-                <i class="pi pi-link"></i>
+              <button type="button" class="cw-thread-tab"
+                      [class.active]="threadTab() === 'notes'"
+                      (click)="threadTab.set('notes')">
+                <i class="pi pi-pen-to-square"></i> Notes
+                <span *ngIf="notes().length" class="cw-tab-badge">{{ notes().length }}</span>
               </button>
             </div>
+
           </div>
         </div>
 
@@ -183,16 +214,48 @@
           <i class="pi pi-check-circle"></i> Updated {{ lastRefreshed | date:'HH:mm:ss' }}
         </div>
 
-        <!-- Message thread -->
-        <app-message-thread
-          [conversation]="selectedConversation()"
-          [loadingMore]="loadingMoreMessages()"
-          [hasMore]="hasMoreMessages()"
-          (loadOlderMessages)="handleLoadOlderMessages()">
-        </app-message-thread>
+        <!-- Message thread (tab: messages) -->
+        <ng-container *ngIf="threadTab() === 'messages'">
+          <app-message-thread
+            [conversation]="selectedConversation()"
+            [loadingMore]="loadingMoreMessages()"
+            [hasMore]="hasMoreMessages()"
+            (loadOlderMessages)="handleLoadOlderMessages()">
+          </app-message-thread>
+        </ng-container>
 
-        <!-- Composer -->
-        <div class="cw-composer">
+        <!-- Notes tab -->
+        <ng-container *ngIf="threadTab() === 'notes'">
+          <div class="cw-notes-tab">
+            <div *ngIf="notes().length === 0" class="cw-notes-empty-inline">
+              <i class="pi pi-pen-to-square"></i>
+              <p>No internal notes yet</p>
+            </div>
+            <div *ngFor="let note of notes()" class="cw-note-card">
+              <div class="cw-note-card-head">
+                <span class="cw-note-author-name">{{ note.author_name }}</span>
+                <span class="cw-note-time">{{ note.created_at | date:'dd/MM HH:mm' }}</span>
+                <button type="button" class="cw-note-del-btn" (click)="deleteNote(note.id)">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+              <p class="cw-note-content">{{ note.content }}</p>
+            </div>
+          </div>
+          <div class="cw-note-compose">
+            <textarea class="cw-textarea" rows="3" [(ngModel)]="draftNote"
+                      placeholder="Write an internal note... (not visible to customer)"
+                      (keydown.control.enter)="addNote()"></textarea>
+            <button type="button" class="cw-send-btn"
+                    [disabled]="!draftNote.trim() || savingNote()"
+                    (click)="addNote()">
+              <i [class]="savingNote() ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"></i>
+            </button>
+          </div>
+        </ng-container>
+
+        <!-- Composer (only on messages tab) -->
+        <div *ngIf="threadTab() === 'messages'" class="cw-composer">
           <!-- Toolbar -->
           <div class="cw-composer-tools">
             <div class="cw-tools-left">
@@ -253,35 +316,51 @@
       </ng-container>
     </main>
 
-    <!-- Right: info drawer (inline 3rd column) -->
-    <aside class="cw-drawer" *ngIf="infoPanel() !== 'none' && selectedConversation() as conv">
-      <div class="cw-drawer-head">
-        <h3 class="cw-drawer-title">
-          {{ infoPanel() === 'customer' ? 'Customer' : infoPanel() === 'product' ? 'Products' : infoPanel() === 'context' ? 'Context' : infoPanel() === 'template' ? 'Send Template' : 'Channel' }}
-        </h3>
-        <button type="button" class="cw-icon-btn" (click)="closeInfoPanel()">
-          <i class="pi pi-times"></i>
+
+    <!-- Right: info panel — always pinned, vertical tabs -->
+    <aside class="cw-drawer cw-drawer--pinned" *ngIf="selectedConversation() as conv">
+
+      <!-- Vertical tab strip -->
+      <nav class="cw-vtabs">
+        <button type="button" class="cw-vtab" [class.active]="infoPanel() === 'customer'"
+                title="Customer" (click)="openInfoPanel('customer')">
+          <i class="pi pi-user"></i>
+          <span>Customer</span>
         </button>
-      </div>
+        <button type="button" class="cw-vtab" [class.active]="infoPanel() === 'context'"
+                title="Context" (click)="openInfoPanel('context')">
+          <i class="pi pi-info-circle"></i>
+          <span>Context</span>
+        </button>
+        <button type="button" class="cw-vtab" [class.active]="infoPanel() === 'product'"
+                title="Products" (click)="openInfoPanel('product')">
+          <i class="pi pi-shopping-bag"></i>
+          <span>Products</span>
+        </button>
+        <button type="button" class="cw-vtab" [class.active]="infoPanel() === 'template'"
+                title="Template" (click)="openInfoPanel('template')">
+          <i class="pi pi-file-export"></i>
+          <span>Template</span>
+        </button>
+        <button type="button" class="cw-vtab" [class.active]="infoPanel() === 'channel'"
+                title="Channel" (click)="openInfoPanel('channel')">
+          <i class="pi pi-link"></i>
+          <span>Channel</span>
+        </button>
+      </nav>
+
+      <!-- Panel content -->
       <div class="cw-drawer-body">
 
-        <!-- Customer panel -->
+        <!-- Customer -->
         <div *ngIf="infoPanel() === 'customer'">
           <app-customer-panel [conversation]="selectedConversation()"
                               (customerLinked)="handleCustomerLinked($event)">
           </app-customer-panel>
         </div>
 
-        <!-- Product panel -->
-        <div *ngIf="infoPanel() === 'product'">
-          <app-product-panel [conversation]="selectedConversation()"
-                             (messageSent)="handleMessageSent($event)">
-          </app-product-panel>
-        </div>
-
-        <!-- Context panel -->
+        <!-- Context -->
         <div *ngIf="infoPanel() === 'context'" class="cw-context-panel">
-          <!-- Editable Priority -->
           <div class="cw-info-row">
             <span class="cw-info-label">Priority</span>
             <select class="cw-inline-select" [(ngModel)]="editPriority" (change)="savePriority(editPriority)">
@@ -290,8 +369,6 @@
               <option value="high">High</option>
             </select>
           </div>
-
-          <!-- Editable Category -->
           <div class="cw-info-row">
             <span class="cw-info-label">Category</span>
             <input class="cw-inline-input" [(ngModel)]="editCategory"
@@ -299,7 +376,6 @@
                    (blur)="saveCategory(editCategory)"
                    (keydown.enter)="saveCategory(editCategory)" />
           </div>
-
           <div class="cw-info-row">
             <span class="cw-info-label">Channel</span>
             <span class="cw-info-val">{{ getConversationSourceLabel(conv) }}</span>
@@ -308,8 +384,6 @@
             <span class="cw-info-label">Type</span>
             <span class="cw-info-val">{{ getConversationAudienceLabel(conv) }}</span>
           </div>
-
-          <!-- Labels -->
           <div class="cw-info-row cw-info-row--labels">
             <span class="cw-info-label">Labels</span>
             <div class="cw-label-chips">
@@ -337,33 +411,16 @@
               </div>
             </div>
           </div>
-
-          <!-- Internal notes -->
-          <div class="cw-notes-section">
-            <p class="cw-notes-title">Internal notes</p>
-            <div *ngIf="notes().length === 0" class="cw-notes-empty">No notes yet</div>
-            <div *ngFor="let note of notes()" class="cw-note">
-              <div class="cw-note-head">
-                <span class="cw-note-author">{{ note.author_name }}</span>
-                <button type="button" class="cw-note-del" (click)="deleteNote(note.id)">
-                  <i class="pi pi-times"></i>
-                </button>
-              </div>
-              <p class="cw-note-text">{{ note.content }}</p>
-              <span class="cw-note-time">{{ note.created_at | date:'dd/MM HH:mm' }}</span>
-            </div>
-            <div class="cw-note-add">
-              <input type="text" class="cw-note-input" [(ngModel)]="draftNote"
-                     placeholder="Add a note..." (keydown.enter)="addNote()" />
-              <button type="button" class="cw-note-add-btn"
-                      [disabled]="!draftNote.trim() || savingNote()" (click)="addNote()">
-                <i [class]="savingNote() ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"></i>
-              </button>
-            </div>
-          </div>
         </div>
 
-        <!-- Template panel -->
+        <!-- Products -->
+        <div *ngIf="infoPanel() === 'product'">
+          <app-product-panel [conversation]="selectedConversation()"
+                             (messageSent)="handleMessageSent($event)">
+          </app-product-panel>
+        </div>
+
+        <!-- Template -->
         <div *ngIf="infoPanel() === 'template'">
           <app-template-send-panel
               [conversation]="selectedConversation()"
@@ -371,7 +428,7 @@
           </app-template-send-panel>
         </div>
 
-        <!-- Channel panel -->
+        <!-- Channel -->
         <div *ngIf="infoPanel() === 'channel'" class="cw-context-panel">
           <div class="cw-info-row">
             <span class="cw-info-label">Source</span>
@@ -389,7 +446,6 @@
             <span class="cw-info-label">History</span>
             <span class="cw-info-val">{{ conv.message_count ?? 0 }} messages</span>
           </div>
-          <!-- Bot toggle -->
           <div class="cw-info-row">
             <span class="cw-info-label">AI Bot</span>
             <label class="cw-toggle" [class.disabled]="updatingBotStatus()">
@@ -399,6 +455,7 @@
             </label>
           </div>
         </div>
+
       </div>
     </aside>
   </div>

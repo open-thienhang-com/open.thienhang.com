@@ -70,7 +70,7 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
   readonly searchTerm = signal('');
   readonly activeQueue = signal('all');
   readonly activeChannel = signal('all');
-  readonly infoPanel = signal<'none' | 'customer' | 'product' | 'context' | 'channel' | 'template'>('none');
+  readonly infoPanel = signal<'customer' | 'product' | 'context' | 'channel' | 'template'>('customer');
   readonly linkedCustomer = signal<CustomerSummary | null>(null);
   readonly agents = signal<AgentInfo[]>([]);
   readonly quickReplies = signal<QuickReply[]>([]);
@@ -79,6 +79,11 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
   assignDropdownVisible = false;
   quickReplyPickerVisible = false;
   quickReplyFilter = '';
+
+  // ── Bulk selection ─────────────────────────────────────────────────────────
+  readonly selectedIds = signal<Set<string>>(new Set());
+  readonly threadTab = signal<'messages' | 'notes'>('messages');
+  bulkAssignDropdownVisible = false;
   readonly notes = signal<InternalNote[]>([]);
   readonly savingNote = signal(false);
   draftNote = '';
@@ -291,7 +296,8 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
       this.loading.set(false);
       return;
     }
-
+    this.threadTab.set('messages');
+    this.infoPanel.set('customer');
     this.messageSkip = 0;
     this.hasMoreMessages.set(false);
 
@@ -352,6 +358,60 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
       },
       error: () => this.loadingMoreMessages.set(false)
     });
+  }
+
+  // ── Bulk selection ─────────────────────────────────────────────────────────
+  get allSelected(): boolean {
+    const filtered = this.filteredConversations();
+    return filtered.length > 0 && filtered.every(c => this.selectedIds().has(c.id));
+  }
+
+  toggleSelect(id: string): void {
+    this.selectedIds.update(set => {
+      const next = new Set(set);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  toggleSelectAll(): void {
+    const filtered = this.filteredConversations();
+    if (this.allSelected) {
+      this.selectedIds.set(new Set());
+    } else {
+      this.selectedIds.set(new Set(filtered.map(c => c.id)));
+    }
+  }
+
+  clearSelection(): void {
+    this.selectedIds.set(new Set());
+    this.bulkAssignDropdownVisible = false;
+  }
+
+  bulkResolve(): void {
+    const ids = [...this.selectedIds()];
+    if (!ids.length) return;
+    ids.forEach(id => {
+      this.chatService.updateTelegramConversationStatus(id, { status: 'resolved', note: '' })
+        .pipe(catchError(() => of(null))).subscribe(() => {
+          this.conversations.update(cs => cs.map(c => c.id === id ? { ...c, status: 'resolved' } : c));
+        });
+    });
+    this.clearSelection();
+    this.messageService.add({ severity: 'success', summary: 'Bulk resolved', detail: `${ids.length} conversation(s) resolved` });
+  }
+
+  bulkAssign(agentId: string, agentName: string): void {
+    const ids = [...this.selectedIds()];
+    if (!ids.length) return;
+    ids.forEach(id => {
+      this.chatService.assignTelegramConversation(id, { agent_id: agentId, agent_name: agentName })
+        .pipe(catchError(() => of(null))).subscribe(() => {
+          this.conversations.update(cs => cs.map(c => c.id === id ? { ...c, agent: agentName } : c));
+        });
+    });
+    this.clearSelection();
+    this.messageService.add({ severity: 'success', summary: 'Bulk assigned', detail: `${ids.length} conversation(s) assigned to ${agentName}` });
   }
 
   // ── Filter controls ────────────────────────────────────────────────────────
@@ -497,15 +557,10 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
   // ── Info panel ─────────────────────────────────────────────────────────────
   openInfoPanel(panel: 'customer' | 'product' | 'context' | 'channel' | 'template'): void {
     this.infoPanel.set(panel);
-    if (panel === 'context') this._loadNotes();
   }
 
   toggleInfoPanel(panel: 'customer' | 'product' | 'context' | 'channel' | 'template'): void {
-    if (this.infoPanel() === panel) {
-      this.infoPanel.set('none');
-    } else {
-      this.openInfoPanel(panel);
-    }
+    this.infoPanel.set(panel);
   }
 
   private _loadNotes(): void {
@@ -540,9 +595,7 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
     });
   }
 
-  closeInfoPanel(): void {
-    this.infoPanel.set('none');
-  }
+  closeInfoPanel(): void { /* panel is always visible */ }
 
   // ── Dialog helpers ─────────────────────────────────────────────────────────
   openOverviewDialog(): void { this.overviewDialogVisible = true; }

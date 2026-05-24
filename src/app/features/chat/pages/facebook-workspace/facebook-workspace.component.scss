@@ -651,11 +651,9 @@
 .cw-drawer-body {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  padding: 1rem;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
 }
 
 // ── Context / info rows ───────────────────────────────────────────────────────
@@ -1226,4 +1224,135 @@
 .cw-toggle input:checked + .cw-toggle-slider {
   background: #22c55e;
   &::after { transform: translateX(16px); }
+}
+
+// ── Bulk toolbar ─────────────────────────────────────────────────────────────
+.cw-list-head-row {
+  display: flex; align-items: center; padding: 0.35rem 1rem;
+  border-bottom: 1px solid #f1f5f9; flex-shrink: 0;
+}
+.cw-master-check {
+  display: flex; align-items: center; gap: 0.4rem;
+  cursor: pointer; font-size: 0.75rem; color: #94a3b8;
+  input { cursor: pointer; accent-color: #2563eb; }
+}
+.cw-bulk-toolbar {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.4rem 0.75rem; background: #1e40af; flex-shrink: 0;
+  border-bottom: 1px solid #1d4ed8;
+}
+.cw-bulk-check {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.78rem; font-weight: 600; color: #fff; cursor: pointer;
+  input { accent-color: #fff; cursor: pointer; }
+}
+.cw-bulk-btn {
+  font: inherit; font-size: 0.75rem; font-weight: 600; color: #fff;
+  background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
+  border-radius: 6px; cursor: pointer; padding: 0.25rem 0.6rem;
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  &:hover { background: rgba(255,255,255,.25); }
+  &--cancel { background: none; border-color: transparent; }
+}
+
+// ── Thread tabs ───────────────────────────────────────────────────────────────
+.cw-thread-tabs {
+  display: flex; align-items: center; gap: 0.25rem; margin: 0 0.25rem;
+}
+.cw-thread-tab {
+  font: inherit; font-size: 0.78rem; font-weight: 600;
+  background: none; border: none; border-radius: 6px; cursor: pointer;
+  padding: 0.3rem 0.65rem; color: #64748b;
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  transition: background 0.12s, color 0.12s;
+  &:hover { background: #f1f5f9; color: #0f172a; }
+  &.active { background: #eff6ff; color: #1d4ed8; }
+}
+.cw-tab-badge {
+  min-width: 1.1rem; height: 1.1rem; padding: 0 0.25rem;
+  background: #2563eb; color: #fff; border-radius: 999px;
+  font-size: 0.62rem; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+// ── Notes tab (inline in thread middle) ──────────────────────────────────────
+.cw-notes-tab {
+  flex: 1; min-height: 0; overflow-y: auto; padding: 0.75rem 1rem;
+  display: flex; flex-direction: column; gap: 0.6rem;
+  background: #fefce8;
+}
+.cw-notes-empty-inline {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 0.5rem; color: #94a3b8;
+  i { font-size: 1.5rem; }
+  p { margin: 0; font-size: 0.85rem; }
+}
+.cw-note-card {
+  background: #fff; border: 1px solid #fde047; border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+}
+.cw-note-card-head {
+  display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.3rem;
+}
+.cw-note-author-name { font-size: 0.75rem; font-weight: 700; color: #0f172a; flex: 1; }
+.cw-note-time { font-size: 0.68rem; color: #94a3b8; }
+.cw-note-del-btn {
+  font: inherit; background: none; border: none; cursor: pointer;
+  color: #94a3b8; padding: 0.1rem; line-height: 1;
+  &:hover { color: #ef4444; }
+}
+.cw-note-content { margin: 0; font-size: 0.82rem; color: #374151; white-space: pre-wrap; }
+.cw-note-compose {
+  display: flex; gap: 0.5rem; padding: 0.6rem 0.75rem;
+  border-top: 1px solid #fde047; background: #fffbeb; flex-shrink: 0;
+}
+
+// ── Pinned right panel with vertical tabs ─────────────────────────────────────
+.cw-drawer--pinned {
+  flex-direction: row; // override column: tabs strip left, body right
+}
+
+.cw-vtabs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.5rem 0;
+  width: 3rem;
+  flex-shrink: 0;
+  border-right: 1px solid #e2e8f0;
+  background: #f8fafc;
+  overflow-y: auto;
+}
+
+.cw-vtab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  width: 2.6rem;
+  padding: 0.5rem 0.2rem;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+  color: #64748b;
+  font: inherit;
+  font-size: 0.58rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  transition: background 0.12s, color 0.12s;
+
+  i { font-size: 0.95rem; }
+
+  &:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+  }
+
+  &.active {
+    background: #eff6ff;
+    color: #1d4ed8;
+  }
 }

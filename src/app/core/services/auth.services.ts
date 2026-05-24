@@ -8,6 +8,13 @@ import { UserProfile } from './profile.services';
 import { LoadingService } from './loading.service';
 import * as XLSX from 'xlsx';
 
+export interface PublicTenant {
+  kid: string;
+  name: string;
+  slug?: string;
+  plan?: string;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;
@@ -74,6 +81,12 @@ export class AuthServices {
     } catch (e) {
       // ignore parse/storage errors
     }
+  }
+
+  getPublicTenants(): Observable<ApiResponse<PublicTenant[]>> {
+    return this.http.get<ApiResponse<PublicTenant[]>>(`${this.baseUrl}/authentication/tenants/public`).pipe(
+      catchError(() => of({ success: false, data: [], message: '' } as ApiResponse<PublicTenant[]>))
+    );
   }
 
   login(data: LoginRequest): Observable<ApiResponse<any>> {

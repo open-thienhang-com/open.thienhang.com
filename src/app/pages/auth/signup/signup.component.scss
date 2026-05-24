@@ -1,0 +1,87 @@
+// Inherits the same design tokens as login — all shared classes are defined there.
+// Only signup-specific additions below.
+
+$primary:    #4f46e5;
+$border:     #e2e8f0;
+$text:       #0f172a;
+$muted:      #64748b;
+$bg-input:   #f8fafc;
+$radius:     10px;
+
+:host { display: block; }
+
+.auth-form-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  animation: authFadeIn 0.35s ease-out;
+}
+
+@keyframes authFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.auth-head { display: flex; flex-direction: column; align-items: flex-start; gap: .4rem; margin-bottom: .4rem; }
+
+.auth-head-icon {
+  width: 2.75rem; height: 2.75rem; border-radius: 12px;
+  background: linear-gradient(135deg, $primary, #7c3aed);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; margin-bottom: .5rem;
+
+  &--green { background: linear-gradient(135deg, #059669, #10b981); }
+}
+
+.auth-title { font-size: 1.35rem; font-weight: 800; color: $text; letter-spacing: -.02em; margin: 0; }
+.auth-subtitle { font-size: .85rem; color: $muted; margin: 0; }
+
+.auth-field { display: flex; flex-direction: column; gap: .4rem; }
+
+.auth-label {
+  font-size: .78rem; font-weight: 600; color: $text;
+  display: flex; align-items: center; gap: .35rem;
+  i { font-size: .7rem; color: $muted; }
+}
+
+.auth-input {
+  width: 100%; box-sizing: border-box;
+  padding: .65rem .85rem;
+  border: 1px solid $border; border-radius: $radius;
+  font: inherit; font-size: .9rem; color: $text; background: $bg-input; outline: none;
+  transition: border-color .15s, box-shadow .15s;
+
+  &:focus { border-color: $primary; box-shadow: 0 0 0 3px rgba(79,70,229,.12); background: #fff; }
+  &::placeholder { color: #b2bcc8; }
+}
+
+::ng-deep .auth-password {
+  width: 100%;
+  .p-password-input {
+    width: 100%; padding: .65rem 2.5rem .65rem .85rem;
+    border: 1px solid $border; border-radius: $radius;
+    font-size: .9rem; background: $bg-input;
+    &:focus { border-color: $primary; box-shadow: 0 0 0 3px rgba(79,70,229,.12); background: #fff; }
+  }
+}
+
+.auth-check-row { display: flex; align-items: flex-start; gap: .55rem; }
+.auth-check-label { font-size: .82rem; color: $muted; cursor: pointer; line-height: 1.5; }
+
+.auth-btn {
+  display: flex; align-items: center; justify-content: center; gap: .5rem;
+  width: 100%; padding: .72rem 1rem; border-radius: $radius;
+  font: inherit; font-size: .9rem; font-weight: 700; cursor: pointer; border: none;
+  transition: background .15s, transform .1s;
+
+  &--success {
+    background: #059669; color: #fff;
+    box-shadow: 0 2px 8px rgba(5,150,105,.3);
+    &:hover:not(:disabled) { background: #047857; transform: translateY(-1px); }
+    &:disabled { opacity: .55; cursor: not-allowed; }
+  }
+  &--loading { opacity: .8; }
+}
+
+.auth-link { color: $primary; font-weight: 600; cursor: pointer; text-decoration: none; transition: color .15s; &:hover { color: #4338ca; } }
+.auth-alt { text-align: center; font-size: .83rem; color: $muted; margin: 0; }

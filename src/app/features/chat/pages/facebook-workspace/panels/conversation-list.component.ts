@@ -43,11 +43,19 @@ import { ChatService } from '../../../services/chat.service';
       padding: 0.75rem 1rem; width: 100%; text-align: left;
       background: none; border: none; cursor: pointer;
       border-bottom: 1px solid #f8fafc;
-      transition: background 0.12s;
+      transition: background 0.12s; position: relative;
     }
     .cl-item:hover { background: #f8fafc; }
+    .cl-item:hover .cl-check { opacity: 1; }
     .cl-item.active { background: #eff6ff; border-left: 3px solid #2563eb; }
     .cl-item.unread .cl-name { font-weight: 700; }
+    .cl-item.checked { background: #eff6ff; }
+    .cl-check {
+      position: absolute; left: 0.35rem; top: 50%; transform: translateY(-50%);
+      opacity: 0; transition: opacity 0.1s; z-index: 1;
+      width: 1.1rem; height: 1.1rem; accent-color: #2563eb; cursor: pointer;
+    }
+    .cl-check.visible { opacity: 1; }
     .cl-av {
       width: 2.4rem; height: 2.4rem; border-radius: 50%; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
@@ -124,10 +132,16 @@ import { ChatService } from '../../../services/chat.service';
       </div>
 
       <!-- Items -->
-      <button *ngFor="let conv of conversations" type="button" class="cl-item"
+      <div *ngFor="let conv of conversations" class="cl-item"
               [class.active]="selectedId === conv.id"
               [class.unread]="(conv.unread_count ?? 0) > 0"
-              (click)="selectItem(conv)">
+              [class.checked]="selectedIds.has(conv.id)">
+        <input type="checkbox" class="cl-check" [class.visible]="selectedIds.has(conv.id)"
+               [checked]="selectedIds.has(conv.id)"
+               (change)="toggleSelect.emit(conv.id); $event.stopPropagation()"
+               (click)="$event.stopPropagation()" />
+        <button type="button" style="display:flex;align-items:flex-start;gap:0.65rem;flex:1;background:none;border:none;cursor:pointer;text-align:left;padding:0;"
+                (click)="selectItem(conv)">
         <div class="cl-av" [attr.data-ch]="getChannelKey(conv)">
           {{ (conv.user_name || '?').charAt(0).toUpperCase() }}
         </div>
@@ -148,7 +162,8 @@ import { ChatService } from '../../../services/chat.service';
             </span>
           </div>
         </div>
-      </button>
+        </button>
+      </div>
 
       <!-- IntersectionObserver sentinel -->
       <div #listSentinel style="height:1px;" *ngIf="hasMore && !loading"></div>
@@ -170,9 +185,11 @@ export class ConversationListComponent implements AfterViewInit, OnDestroy, OnCh
   @Input() selectedId: string | null = null;
   @Input() loading = false;
   @Input() hasMore = false;
+  @Input() selectedIds: Set<string> = new Set();
 
   @Output() conversationSelected = new EventEmitter<string>();
   @Output() loadMore = new EventEmitter<void>();
+  @Output() toggleSelect = new EventEmitter<string>();
 
   @ViewChild('listSentinel') private sentinel?: ElementRef<HTMLDivElement>;
 

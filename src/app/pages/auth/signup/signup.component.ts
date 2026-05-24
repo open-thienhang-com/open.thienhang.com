@@ -1,60 +1,63 @@
-import {Component, EventEmitter, Injector, Output} from '@angular/core';
-import {Button} from "primeng/button";
-import {FloatLabel} from "primeng/floatlabel";
-import {InputText} from "primeng/inputtext";
-import {PasswordModule} from "primeng/password";
-import {CheckboxModule} from "primeng/checkbox";
-import {FormsModule, ReactiveFormsModule} from "@angular/forms";
-import {AppBaseComponent} from '../../../core/base/app-base.component';
-import {AuthServices} from '../../../core/services/auth.services';
-import {Router} from '@angular/router';
-import {Toast} from 'primeng/toast';
+import { Component, EventEmitter, Input, Injector, Output } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { DropdownModule } from 'primeng/dropdown';
+import { PasswordModule } from 'primeng/password';
+import { CheckboxModule } from 'primeng/checkbox';
+import { Toast } from 'primeng/toast';
+import { AppBaseComponent } from '../../../core/base/app-base.component';
+import { AuthServices, PublicTenant } from '../../../core/services/auth.services';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-signup',
+  standalone: true,
   imports: [
-    Button,
-    InputText,
+    CommonModule,
+    FormsModule,
+    DropdownModule,
     PasswordModule,
     CheckboxModule,
-    ReactiveFormsModule,
-    FormsModule,
-    Toast
+    Toast,
   ],
   templateUrl: './signup.component.html',
+  styleUrl: './signup.component.scss',
 })
 export class SignupComponent extends AppBaseComponent {
-  confirmPassword: string = '';
-  fullName: string = '';
-  email: string = '';
-  password: string = '';
-  acceptTnC: boolean = false;
-  isLoading: boolean = false;
-  @Output() onLogIn: EventEmitter<any> = new EventEmitter();
-  @Output() onVerifyAccount: EventEmitter<any> = new EventEmitter();
+  @Input() tenants: PublicTenant[] = [];
+  @Output() onLogIn = new EventEmitter<void>();
+  @Output() onVerifyAccount = new EventEmitter<void>();
 
-  constructor(private injector: Injector, private authServices: AuthServices, private router: Router ) {
+  selectedTenant = '';
+  confirmPassword = '';
+  fullName = '';
+  email = '';
+  password = '';
+  acceptTnC = false;
+  isLoading = false;
+
+  constructor(
+    private injector: Injector,
+    private authServices: AuthServices,
+    private router: Router,
+  ) {
     super(injector);
   }
 
-  signUp() {
-    if (!this.validateBeforeSignUp()) {
-      return;
-    }
-    
+  signUp(): void {
+    if (!this.validateBeforeSignUp()) return;
+
     this.isLoading = true;
     this.authServices.signUp({
       email: this.email,
       full_name: this.fullName,
       password: this.password,
-      terms_accepted: this.acceptTnC
+      terms_accepted: this.acceptTnC,
     }).subscribe({
       next: (res) => {
         if (res.success) {
-          this.showSuccess('Account created! Please check your email for the OTP.');
-          this.authServices.pendingVerificationEmail = this.email;
-          this.onVerifyAccount.emit();
-          this.router.navigate(['/verify'], { queryParams: { email: this.email } });
+          this.showSuccess('Account created! Please sign in.');
+          this.onLogIn.emit();
         } else {
           this.showError(res.message || 'Sign up failed');
         }
@@ -67,17 +70,21 @@ export class SignupComponent extends AppBaseComponent {
     });
   }
 
-  validateBeforeSignUp() {
+  validateBeforeSignUp(): boolean {
     if (!this.email || !this.fullName || !this.password) {
-      this.showError('Please fill in all fields.');
+      this.showError('Please fill in all required fields.');
       return false;
     }
     if (!this.acceptTnC) {
-      this.showError('Please accept Terms and Conditions');
+      this.showError('Please accept the Terms and Conditions.');
       return false;
     }
     if (this.password !== this.confirmPassword) {
-      this.showError('Password do not match');
+      this.showError('Passwords do not match.');
+      return false;
+    }
+    if (this.password.length < 8) {
+      this.showError('Password must be at least 8 characters.');
       return false;
     }
     return true;

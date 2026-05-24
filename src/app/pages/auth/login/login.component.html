@@ -1,143 +1,175 @@
-<div class="p-8">
-  <!-- Header -->
-  <div class="text-center mb-8">
-    <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
-      <i class="pi pi-user text-white text-2xl"></i>
-    </div>
-    <h1 class="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-    <p class="text-gray-600">Sign in to your Open Mesh account</p>
-  </div>
+<!-- ── Step 1: Login form ─────────────────────────────────────────────────── -->
+@if (step === 'login') {
+  <div class="auth-form-wrap">
 
-  <!-- Login Form -->
-  <form class="space-y-6">
-    <div>
-      <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-      <span class="p-input-icon-left w-full">
-        <i class="pi pi-envelope"></i>
-        <input 
-          id="email" 
-          type="email" 
-          pInputText 
-          [(ngModel)]="email" 
-          name="email"
-          placeholder="Enter your email"
-          class="w-full"
-          autocomplete="email" />
-      </span>
-    </div>
-
-    <div>
-      <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-      <span class="p-input-icon-left w-full">
+    <!-- Header -->
+    <div class="auth-head">
+      <div class="auth-head-icon">
         <i class="pi pi-lock"></i>
-        <p-password 
-          id="password"
-          [(ngModel)]="password"
-          name="password"
-          placeholder="Enter your password"
-          [feedback]="false"
-          [toggleMask]="true"
-          styleClass="w-full"
-          inputStyleClass="w-full"
-          autocomplete="current-password">
-        </p-password>
-      </span>
-    </div>
-
-    <div class="flex items-center justify-between">
-      <div class="flex items-center">
-        <p-checkbox 
-          [(ngModel)]="remember" 
-          name="remember"
-          inputId="remember"
-          binary="true">
-        </p-checkbox>
-        <label for="remember" class="ml-2 text-sm text-gray-700">Remember me</label>
       </div>
-      <a 
-        class="text-sm text-blue-600 hover:text-blue-500 cursor-pointer" 
-        (click)="onForgotPassword.emit()">
-        Forgot password?
-      </a>
+      <h1 class="auth-title">Sign in to your workspace</h1>
+      <p class="auth-subtitle">Welcome back — enter your credentials to continue</p>
     </div>
 
-    <!-- API Environment Selector -->
-    <div class="mt-4">
-      <label class="block text-sm font-medium text-gray-700 mb-2">API Environment</label>
+    <!-- Tenant selector -->
+    <div class="auth-field">
+      <label class="auth-label">
+        <i class="pi pi-building"></i> Workspace
+      </label>
       <p-dropdown
-        [options]="apiOptions"
-        [(ngModel)]="selectedApi"
-        name="apiEnv"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Select environment"
-        (onChange)="onApiChange($event.value)">
+        [options]="tenants"
+        [(ngModel)]="selectedTenant"
+        optionLabel="name"
+        optionValue="kid"
+        placeholder="Select a workspace (optional)"
+        [showClear]="true"
+        styleClass="auth-dropdown"
+        [style]="{'width': '100%'}">
+        <ng-template pTemplate="item" let-t>
+          <div class="tenant-option">
+            <div class="tenant-option-dot"
+                 [class.tenant-option-dot--active]="t.plan === 'enterprise' || t.plan === 'business'"></div>
+            <span class="tenant-option-name">{{ t.name }}</span>
+            <span class="tenant-option-plan">{{ t.plan }}</span>
+          </div>
+        </ng-template>
+        <ng-template pTemplate="selectedItem" let-t>
+          <div class="tenant-option" *ngIf="t">
+            <div class="tenant-option-dot tenant-option-dot--active"></div>
+            <span class="tenant-option-name">{{ t.name }}</span>
+          </div>
+        </ng-template>
       </p-dropdown>
     </div>
 
-    <div class="mt-2 flex items-center">
-      <p-checkbox [(ngModel)]="applyApi" name="applyApi" inputId="applyApi" binary="true"></p-checkbox>
-      <label for="applyApi" class="ml-2 text-sm text-gray-700">Apply selection to API host (persist & use)</label>
+    <!-- Email -->
+    <div class="auth-field">
+      <label class="auth-label" for="login-email">
+        <i class="pi pi-envelope"></i> Email address
+      </label>
+      <input
+        id="login-email"
+        type="email"
+        class="auth-input"
+        [(ngModel)]="email"
+        name="email"
+        placeholder="you@company.com"
+        autocomplete="email" />
     </div>
 
-    <div>
-      <p-button 
-        label="Sign In" 
-        icon="pi pi-sign-in"
-        severity="primary" 
-        styleClass="w-full" 
-        size="large"
-        (onClick)="login()"
-        [loading]="isLoading">
-      </p-button>
-    </div>
-
-    <div class="text-center">
-      <p class="text-sm text-gray-600">
-        Don't have an account? 
-        <a class="text-blue-600 hover:text-blue-500 cursor-pointer font-medium" (click)="onSignUp.emit()">
-          Sign up now
-        </a>
-      </p>
-    </div>
-  </form>
-
-  <!-- Help link -->
-  <div class="text-center mt-4">
-    <a routerLink="/help" class="text-sm text-gray-500 hover:text-indigo-600 inline-flex items-center gap-1">
-      <i class="pi pi-question-circle"></i> Need help?
-    </a>
-  </div>
-
-  <!-- Divider -->
-  <div class="mt-8 mb-8">
-    <div class="relative">
-      <div class="absolute inset-0 flex items-center">
-        <div class="w-full border-t border-gray-300"></div>
+    <!-- Password -->
+    <div class="auth-field">
+      <div class="auth-label-row">
+        <label class="auth-label" for="login-password">
+          <i class="pi pi-key"></i> Password
+        </label>
+        <a class="auth-link auth-link--sm" (click)="onForgotPassword.emit()">Forgot password?</a>
       </div>
-      <div class="relative flex justify-center text-sm">
-        <span class="px-2 bg-white text-gray-500">Or continue with</span>
-      </div>
+      <p-password
+        inputId="login-password"
+        [(ngModel)]="password"
+        name="password"
+        placeholder="••••••••"
+        [feedback]="false"
+        [toggleMask]="true"
+        styleClass="auth-password"
+        inputStyleClass="auth-input"
+        autocomplete="current-password">
+      </p-password>
     </div>
-  </div>
 
-  <!-- Social Login Options -->
-  <div class="grid grid-cols-2 gap-3">
-    <p-button 
-      label="Google" 
-      icon="pi pi-google"
-      severity="secondary" 
-      [outlined]="true"
-      styleClass="w-full">
-    </p-button>
-    <p-button 
-      label="Microsoft" 
-      icon="pi pi-microsoft"
-      severity="secondary" 
-      [outlined]="true"
-      styleClass="w-full">
-    </p-button>
+    <!-- Remember me -->
+    <div class="auth-check-row">
+      <p-checkbox [(ngModel)]="remember" name="remember" inputId="remember" binary="true"></p-checkbox>
+      <label for="remember" class="auth-check-label">Keep me signed in for 7 days</label>
+    </div>
+
+    <!-- Sign in button -->
+    <button type="button" class="auth-btn auth-btn--primary"
+            [class.auth-btn--loading]="isLoading"
+            [disabled]="isLoading"
+            (click)="login()">
+      <i *ngIf="!isLoading" class="pi pi-sign-in"></i>
+      <i *ngIf="isLoading" class="pi pi-spin pi-spinner"></i>
+      {{ isLoading ? 'Signing in…' : 'Sign in' }}
+    </button>
+
+    <!-- Sign up link -->
+    <p class="auth-alt">
+      Don't have an account?
+      <a class="auth-link" (click)="onSignUp.emit()">Create account</a>
+    </p>
+
+    <!-- Developer options -->
+    <details class="auth-advanced" [(open)]="showAdvanced">
+      <summary class="auth-advanced-toggle">
+        <i class="pi pi-cog"></i> Developer options
+      </summary>
+      <div class="auth-advanced-body">
+        <label class="auth-label">API Environment</label>
+        <p-dropdown
+          [options]="apiOptions"
+          [(ngModel)]="selectedApi"
+          name="apiEnv"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Default (auto)"
+          [showClear]="true"
+          [style]="{'width': '100%'}"
+          (onChange)="onApiChange($event.value)">
+        </p-dropdown>
+        <div class="auth-check-row" style="margin-top: .5rem;">
+          <p-checkbox [(ngModel)]="applyApi" name="applyApi" inputId="applyApi" binary="true"></p-checkbox>
+          <label for="applyApi" class="auth-check-label">Persist &amp; apply to API host</label>
+        </div>
+      </div>
+    </details>
+
   </div>
-</div>
+}
+
+<!-- ── Step 2: Workspace selector ─────────────────────────────────────────── -->
+@if (step === 'workspace') {
+  <div class="auth-form-wrap">
+
+    <div class="auth-head">
+      <div class="auth-head-icon auth-head-icon--purple">
+        <i class="pi pi-building"></i>
+      </div>
+      <h1 class="auth-title">Choose your workspace</h1>
+      <p class="auth-subtitle">Select the workspace you want to continue with</p>
+    </div>
+
+    @if (isLoadingWorkspaces) {
+      <div class="auth-spinner-wrap">
+        <i class="pi pi-spin pi-spinner auth-spinner"></i>
+        <p>Loading workspaces…</p>
+      </div>
+    }
+
+    @if (!isLoadingWorkspaces && workplaces.length > 0) {
+      <div class="ws-list">
+        @for (tenant of workplaces; track tenant.kid) {
+          <button type="button" class="ws-item" (click)="selectWorkplace(tenant)">
+            <div class="ws-item-avatar">{{ tenant.name?.charAt(0)?.toUpperCase() || '?' }}</div>
+            <div class="ws-item-info">
+              <span class="ws-item-name">{{ tenant.name }}</span>
+              <span class="ws-item-meta">
+                <span class="ws-status" [class]="getStatusClass(tenant.status)">{{ tenant.status }}</span>
+                <span *ngIf="tenant.member_count">· {{ tenant.member_count }} members</span>
+              </span>
+            </div>
+            <i class="pi pi-chevron-right ws-item-arrow"></i>
+          </button>
+        }
+      </div>
+    }
+
+    <button type="button" class="auth-back-btn" (click)="backToLogin()">
+      <i class="pi pi-arrow-left"></i> Back to login
+    </button>
+
+  </div>
+}
 
 <p-toast></p-toast>

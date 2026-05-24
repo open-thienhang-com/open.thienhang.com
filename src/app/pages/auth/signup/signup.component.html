@@ -1,153 +1,107 @@
-<div class="p-8">
+<div class="auth-form-wrap">
+
   <!-- Header -->
-  <div class="text-center mb-8">
-    <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-      <i class="pi pi-user-plus text-white text-2xl"></i>
+  <div class="auth-head">
+    <div class="auth-head-icon auth-head-icon--green">
+      <i class="pi pi-user-plus"></i>
     </div>
-    <h1 class="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
-    <p class="text-gray-600">Join Open Mesh to get started today</p>
+    <h1 class="auth-title">Create your account</h1>
+    <p class="auth-subtitle">Join Thienhang — get started in seconds</p>
   </div>
 
-  <!-- Signup Form -->
-  <form class="space-y-6">
-    <div>
-      <label for="fullName" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-      <span class="p-input-icon-left w-full">
-        <i class="pi pi-user"></i>
-        <input 
-          id="fullName" 
-          type="text" 
-          pInputText 
-          [(ngModel)]="fullName" 
-          name="fullName"
-          placeholder="Enter your full name"
-          class="w-full"
-          autocomplete="name" />
-      </span>
-    </div>
-
-    <div>
-      <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-      <span class="p-input-icon-left w-full">
-        <i class="pi pi-envelope"></i>
-        <input 
-          id="email" 
-          type="email" 
-          pInputText 
-          [(ngModel)]="email" 
-          name="email"
-          placeholder="Enter your email"
-          class="w-full"
-          autocomplete="email" />
-      </span>
-    </div>
-
-    <div>
-      <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-      <span class="p-input-icon-left w-full">
-        <i class="pi pi-lock"></i>
-        <p-password 
-          id="password"
-          [(ngModel)]="password"
-          name="password"
-          placeholder="Create a password"
-          [feedback]="true"
-          [toggleMask]="true"
-          styleClass="w-full"
-          inputStyleClass="w-full"
-          autocomplete="new-password">
-        </p-password>
-      </span>
-    </div>
-
-    <div>
-      <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
-      <span class="p-input-icon-left w-full">
-        <i class="pi pi-lock"></i>
-        <p-password 
-          id="confirmPassword"
-          [(ngModel)]="confirmPassword"
-          name="confirmPassword"
-          placeholder="Confirm your password"
-          [feedback]="false"
-          [toggleMask]="true"
-          styleClass="w-full"
-          inputStyleClass="w-full"
-          autocomplete="new-password">
-        </p-password>
-      </span>
-    </div>
-
-    <div class="flex items-start">
-      <div class="flex items-center h-5">
-        <p-checkbox 
-          [(ngModel)]="acceptTnC" 
-          name="acceptTnC"
-          inputId="acceptTnC"
-          binary="true">
-        </p-checkbox>
-      </div>
-      <div class="ml-3 text-sm">
-        <label for="acceptTnC" class="text-gray-700">
-          I agree to the 
-          <a href="#" class="text-blue-600 hover:text-blue-500">Terms and Conditions</a>
-          and 
-          <a href="#" class="text-blue-600 hover:text-blue-500">Privacy Policy</a>
-        </label>
-      </div>
-    </div>
-
-    <div>
-      <p-button 
-        label="Create Account" 
-        icon="pi pi-user-plus"
-        severity="success" 
-        styleClass="w-full" 
-        size="large"
-        (onClick)="signUp()"
-        [loading]="isLoading">
-      </p-button>
-    </div>
-
-    <div class="text-center">
-      <p class="text-sm text-gray-600">
-        Already have an account? 
-        <a class="text-blue-600 hover:text-blue-500 cursor-pointer font-medium" (click)="onLogIn.emit()">
-          Sign in now
-        </a>
-      </p>
-    </div>
-  </form>
-
-  <!-- Divider -->
-  <div class="mt-8 mb-8">
-    <div class="relative">
-      <div class="absolute inset-0 flex items-center">
-        <div class="w-full border-t border-gray-300"></div>
-      </div>
-      <div class="relative flex justify-center text-sm">
-        <span class="px-2 bg-white text-gray-500">Or continue with</span>
-      </div>
-    </div>
+  <!-- Workspace selector -->
+  <div class="auth-field">
+    <label class="auth-label">
+      <i class="pi pi-building"></i> Workspace
+    </label>
+    <p-dropdown
+      [options]="tenants"
+      [(ngModel)]="selectedTenant"
+      optionLabel="name"
+      optionValue="kid"
+      placeholder="Select a workspace (optional)"
+      [showClear]="true"
+      [style]="{'width': '100%'}">
+    </p-dropdown>
   </div>
 
-  <!-- Social Login Options -->
-  <div class="grid grid-cols-2 gap-3">
-    <p-button 
-      label="Google" 
-      icon="pi pi-google"
-      severity="secondary" 
-      [outlined]="true"
-      styleClass="w-full">
-    </p-button>
-    <p-button 
-      label="Microsoft" 
-      icon="pi pi-microsoft"
-      severity="secondary" 
-      [outlined]="true"
-      styleClass="w-full">
-    </p-button>
+  <!-- Full name -->
+  <div class="auth-field">
+    <label class="auth-label" for="su-name">
+      <i class="pi pi-user"></i> Full name
+    </label>
+    <input id="su-name" type="text" class="auth-input"
+           [(ngModel)]="fullName" name="fullName"
+           placeholder="Your full name" autocomplete="name" />
   </div>
+
+  <!-- Email -->
+  <div class="auth-field">
+    <label class="auth-label" for="su-email">
+      <i class="pi pi-envelope"></i> Email address
+    </label>
+    <input id="su-email" type="email" class="auth-input"
+           [(ngModel)]="email" name="email"
+           placeholder="you@company.com" autocomplete="email" />
+  </div>
+
+  <!-- Password -->
+  <div class="auth-field">
+    <label class="auth-label" for="su-password">
+      <i class="pi pi-key"></i> Password
+    </label>
+    <p-password inputId="su-password"
+                [(ngModel)]="password" name="password"
+                placeholder="Min. 8 characters"
+                [feedback]="true" [toggleMask]="true"
+                styleClass="auth-password"
+                inputStyleClass="auth-input"
+                autocomplete="new-password">
+    </p-password>
+  </div>
+
+  <!-- Confirm password -->
+  <div class="auth-field">
+    <label class="auth-label" for="su-confirm">
+      <i class="pi pi-key"></i> Confirm password
+    </label>
+    <p-password inputId="su-confirm"
+                [(ngModel)]="confirmPassword" name="confirmPassword"
+                placeholder="Re-enter password"
+                [feedback]="false" [toggleMask]="true"
+                styleClass="auth-password"
+                inputStyleClass="auth-input"
+                autocomplete="new-password">
+    </p-password>
+  </div>
+
+  <!-- Terms -->
+  <div class="auth-check-row">
+    <p-checkbox [(ngModel)]="acceptTnC" name="acceptTnC" inputId="acceptTnC" binary="true"></p-checkbox>
+    <label for="acceptTnC" class="auth-check-label">
+      I agree to the
+      <a href="#" class="auth-link">Terms &amp; Conditions</a>
+      and
+      <a href="#" class="auth-link">Privacy Policy</a>
+    </label>
+  </div>
+
+  <!-- Submit -->
+  <button type="button" class="auth-btn auth-btn--success"
+          [class.auth-btn--loading]="isLoading"
+          [disabled]="isLoading"
+          (click)="signUp()">
+    <i *ngIf="!isLoading" class="pi pi-user-plus"></i>
+    <i *ngIf="isLoading" class="pi pi-spin pi-spinner"></i>
+    {{ isLoading ? 'Creating account…' : 'Create account' }}
+  </button>
+
+  <!-- Sign in link -->
+  <p class="auth-alt">
+    Already have an account?
+    <a class="auth-link" (click)="onLogIn.emit()">Sign in</a>
+  </p>
+
 </div>
 
 <p-toast></p-toast>

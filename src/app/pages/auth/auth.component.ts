@@ -1,20 +1,18 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import {FormsModule} from '@angular/forms';
-import {FloatLabel} from 'primeng/floatlabel';
-import {InputText} from 'primeng/inputtext';
-import {Button} from 'primeng/button';
-import {LoginComponent} from './login/login.component';
-import {SignupComponent} from './signup/signup.component';
-import {ForgotPasswordComponent} from './forgot-password/forgot-password.component';
-import {VerifyAccountComponent} from './verify-account/verify-account.component';
-import {ResetPasswordComponent} from './reset-password/reset-password.component';
-import { trigger, transition, style, animate } from '@angular/animations';
+import { LoginComponent } from './login/login.component';
+import { SignupComponent } from './signup/signup.component';
+import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
+import { VerifyAccountComponent } from './verify-account/verify-account.component';
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { AuthServices, PublicTenant } from '../../core/services/auth.services';
 
 @Component({
   selector: 'app-auth',
+  standalone: true,
   imports: [
-    FormsModule,
+    CommonModule,
     LoginComponent,
     SignupComponent,
     ForgotPasswordComponent,
@@ -23,16 +21,10 @@ import { trigger, transition, style, animate } from '@angular/animations';
   ],
   templateUrl: './auth.component.html',
   styleUrl: './auth.component.scss',
-  animations: [
-    trigger('fadeInUp', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'translateY(30px)' }),
-        animate('600ms cubic-bezier(0.4, 0, 0.2, 1)', style({ opacity: 1, transform: 'translateY(0)' }))
-      ])
-    ])
-  ]
 })
 export class AuthComponent implements OnInit {
+  readonly version = '2.0';
+
   modes = {
     login: 1,
     signup: 2,
@@ -42,25 +34,31 @@ export class AuthComponent implements OnInit {
   };
   curMode = this.modes.login;
 
-  constructor(private route: ActivatedRoute) {}
+  publicTenants: PublicTenant[] = [];
+
+  constructor(private route: ActivatedRoute, private authServices: AuthServices) {}
 
   ngOnInit(): void {
     const modeFromData = this.route.snapshot.data['mode'];
     if (modeFromData) {
       this.curMode = modeFromData;
     }
-    // /forgot-password?step=reset — jump directly to reset-password screen
     const step = this.route.snapshot.queryParams['step'];
     if (step === 'reset') {
       this.curMode = this.modes.resetPassword;
     }
+
+    this.authServices.getPublicTenants().subscribe({
+      next: r => { this.publicTenants = r.data ?? []; },
+      error: () => {}
+    });
   }
 
-  setCurMode(mode: number) {
+  setCurMode(mode: number): void {
     this.curMode = mode;
   }
 
-  handleUnverified(data: { email: string }) {
+  handleUnverified(data: { email: string }): void {
     this.setCurMode(this.modes.verifyAccount);
   }
 }
