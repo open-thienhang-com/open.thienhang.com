@@ -85,3 +85,41 @@ $radius:     10px;
 
 .auth-link { color: $primary; font-weight: 600; cursor: pointer; text-decoration: none; transition: color .15s; &:hover { color: #4338ca; } }
 .auth-alt { text-align: center; font-size: .83rem; color: $muted; margin: 0; }
+
+.auth-channel-row {
+  display: flex;
+  gap: .75rem;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: .55rem .75rem;
+  background: $bg-input;
+}
+.auth-channel-opt {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex: 1;
+}
+.auth-channel-label {
+  font-size: .85rem;
+  color: $text;
+  cursor: pointer;
+  i { font-size: .8rem; color: $muted; margin-right: .15rem; }
+}
+.auth-telegram-hint {
+  border-left: 3px solid #229ed9;
+  padding-left: .65rem;
+  margin-left: -.65rem;
+}
+.auth-hint {
+  font-size: .72rem;
+  color: $muted;
+  margin: .35rem 0 0;
+  code {
+    background: #fff;
+    padding: 0 .3rem;
+    border: 1px solid $border;
+    border-radius: 4px;
+    font-size: .7rem;
+  }
+}

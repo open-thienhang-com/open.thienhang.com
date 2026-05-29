@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { DropdownModule } from 'primeng/dropdown';
 import { PasswordModule } from 'primeng/password';
 import { CheckboxModule } from 'primeng/checkbox';
+import { RadioButtonModule } from 'primeng/radiobutton';
 import { Toast } from 'primeng/toast';
 import { AppBaseComponent } from '../../../core/base/app-base.component';
 import { AuthServices, PublicTenant } from '../../../core/services/auth.services';
@@ -18,6 +19,7 @@ import { Router } from '@angular/router';
     DropdownModule,
     PasswordModule,
     CheckboxModule,
+    RadioButtonModule,
     Toast,
   ],
   templateUrl: './signup.component.html',
@@ -36,6 +38,11 @@ export class SignupComponent extends AppBaseComponent {
   acceptTnC = false;
   isLoading = false;
 
+  /** OTP delivery: 'email' (default) or 'telegram'. */
+  verificationChannel: 'email' | 'telegram' = 'email';
+  telegramChatId: number | null = null;
+  telegramUsername = '';
+
   constructor(
     private injector: Injector,
     private authServices: AuthServices,
@@ -48,11 +55,20 @@ export class SignupComponent extends AppBaseComponent {
     if (!this.validateBeforeSignUp()) return;
 
     this.isLoading = true;
+    const telegramFields = this.verificationChannel === 'telegram'
+      ? {
+          telegram_chat_id: Number(this.telegramChatId),
+          telegram_username: this.telegramUsername?.replace(/^@/, '').trim() || undefined,
+        }
+      : {};
+
     this.authServices.signUp({
       email: this.email,
       full_name: this.fullName,
       password: this.password,
       terms_accepted: this.acceptTnC,
+      verification_channel: this.verificationChannel,
+      ...telegramFields,
     }).subscribe({
       next: (res) => {
         if (res.success) {
@@ -86,6 +102,13 @@ export class SignupComponent extends AppBaseComponent {
     if (this.password.length < 8) {
       this.showError('Password must be at least 8 characters.');
       return false;
+    }
+    if (this.verificationChannel === 'telegram') {
+      const chatId = Number(this.telegramChatId);
+      if (this.telegramChatId === null || Number.isNaN(chatId) || chatId <= 0) {
+        this.showError('Enter your Telegram chat ID. Open the bot, send /start, then copy the chat ID it replies with.');
+        return false;
+      }
     }
     return true;
   }

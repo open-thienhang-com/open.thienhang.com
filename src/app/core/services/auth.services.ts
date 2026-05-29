@@ -28,6 +28,11 @@ export interface SignUpRequest {
   last_name?: string;
   full_name?: string;
   terms_accepted?: boolean;
+  /** Verification delivery channel. Default 'email'. */
+  verification_channel?: 'email' | 'telegram';
+  /** Required when verification_channel='telegram'. Obtained via /start with the bot. */
+  telegram_chat_id?: number;
+  telegram_username?: string;
 }
 
 export interface AuthResponse {

@@ -75,6 +75,46 @@
     </p-password>
   </div>
 
+  <!-- Verification channel -->
+  <div class="auth-field">
+    <label class="auth-label">
+      <i class="pi pi-shield"></i> Verify via
+    </label>
+    <div class="auth-channel-row">
+      <div class="auth-channel-opt">
+        <p-radioButton name="vchan" value="email" inputId="vchan-email"
+                       [(ngModel)]="verificationChannel"></p-radioButton>
+        <label for="vchan-email" class="auth-channel-label">
+          <i class="pi pi-envelope"></i> Email
+        </label>
+      </div>
+      <div class="auth-channel-opt">
+        <p-radioButton name="vchan" value="telegram" inputId="vchan-telegram"
+                       [(ngModel)]="verificationChannel"></p-radioButton>
+        <label for="vchan-telegram" class="auth-channel-label">
+          <i class="pi pi-send"></i> Telegram
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Telegram identifier (only when channel = telegram) -->
+  <div *ngIf="verificationChannel === 'telegram'" class="auth-field auth-telegram-hint">
+    <label class="auth-label" for="su-tg-chat">
+      <i class="pi pi-id-card"></i> Telegram chat ID
+    </label>
+    <input id="su-tg-chat" type="number" class="auth-input"
+           [(ngModel)]="telegramChatId" name="telegramChatId"
+           placeholder="123456789" />
+    <input type="text" class="auth-input" style="margin-top:.4rem"
+           [(ngModel)]="telegramUsername" name="telegramUsername"
+           placeholder="&#64;your_telegram_username (optional)" />
+    <p class="auth-hint">
+      Open <a href="https://t.me/thienhang_bot" target="_blank" rel="noopener" class="auth-link">@thienhang_bot</a>,
+      send <code>/start</code>, and copy the chat ID it replies with.
+    </p>
+  </div>
+
   <!-- Terms -->
   <div class="auth-check-row">
     <p-checkbox [(ngModel)]="acceptTnC" name="acceptTnC" inputId="acceptTnC" binary="true"></p-checkbox>
