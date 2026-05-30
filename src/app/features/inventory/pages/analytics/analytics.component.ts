@@ -71,7 +71,7 @@ export class AnalyticsComponent implements OnInit {
             { label: 'Total Products',   value: s.total_products.toLocaleString(),   sub: 'SKUs tracked',
               icon: 'pi pi-box',                  color: 'bg-blue-100',   iconColor: 'text-blue-600'   },
             { label: 'Total Stock Value',
-              value: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 }).format(s.total_selling_value),
+              value: new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', notation: 'compact', maximumFractionDigits: 1 }).format(s.total_selling_value),
               sub: 'Selling value',
               icon: 'pi pi-dollar',               color: 'bg-green-100',  iconColor: 'text-green-600'  },
             { label: 'Low Stock Items',  value: s.low_stock_count.toLocaleString(),  sub: 'Need reorder',
@@ -134,7 +134,7 @@ export class AnalyticsComponent implements OnInit {
   }
 
   formatCurrency(v: number): string {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v);
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
   }
 
   formatDate(d: string): string {

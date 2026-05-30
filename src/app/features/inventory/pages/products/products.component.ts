@@ -205,10 +205,10 @@ export class ProductsComponent implements OnInit {
   }
 
   formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
-      currency: 'USD'
-    }).format(amount);
+      currency: 'VND'
+    }).format(Number(amount) || 0);
   }
 
   editProduct(product: Product) {

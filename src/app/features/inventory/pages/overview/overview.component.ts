@@ -100,7 +100,7 @@ export class InventoryOverviewComponent implements OnInit {
             { label: 'Out of Stock',    value: s.out_of_stock_count.toLocaleString(),
               icon: 'pi pi-times-circle',        color: 'bg-red-100',    iconColor: 'text-red-600', desc: 'Items with zero available inventory' },
             { label: 'Total Value',
-              value: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 }).format(s.total_selling_value),
+              value: new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', notation: 'compact', maximumFractionDigits: 1 }).format(s.total_selling_value),
               icon: 'pi pi-dollar',              color: 'bg-green-100',  iconColor: 'text-green-600', desc: 'Total estimated value of current stock' },
           ];
           const total = s.total_products || 1;

@@ -80,7 +80,7 @@ export class SettingsComponent implements OnInit {
   settings: InventorySettings = {
     general: {
       companyName: 'My Company',
-      defaultCurrency: 'USD',
+      defaultCurrency: 'VND',
       defaultLanguage: 'en',
       timezone: 'UTC',
       fiscalYearStart: '01-01'
@@ -117,6 +117,7 @@ export class SettingsComponent implements OnInit {
   };
 
   currencyOptions = [
+    { label: 'VND - Vietnamese Đồng', value: 'VND' },
     { label: 'USD - US Dollar', value: 'USD' },
     { label: 'EUR - Euro', value: 'EUR' },
     { label: 'GBP - British Pound', value: 'GBP' },
@@ -236,7 +237,7 @@ export class SettingsComponent implements OnInit {
         this.settings = {
           general: {
             companyName: 'My Company',
-            defaultCurrency: 'USD',
+            defaultCurrency: 'VND',
             defaultLanguage: 'en',
             timezone: 'UTC',
             fiscalYearStart: '01-01'
