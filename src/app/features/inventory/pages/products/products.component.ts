@@ -85,9 +85,11 @@ export class ProductsComponent implements OnInit {
     // does not return on-hand quantity, so we fetch stocks in parallel and
     // aggregate quantity-on-hand per product to drive the Stock / Total Value /
     // Status columns.
+    // Backend caps page size at 100 (MAX_PAGE_SIZE); requesting more returns a
+    // 400. Current catalog is well under 100 products/stocks.
     forkJoin({
-      products: this.productService.listProducts(this.selectedCategory || undefined, 0, 200),
-      stocks: this.inventoryService.listStocks(undefined, 0, 500).pipe(catchError(() => of({ data: [] } as any))),
+      products: this.productService.listProducts(this.selectedCategory || undefined, 0, 100),
+      stocks: this.inventoryService.listStocks(undefined, 0, 100).pipe(catchError(() => of({ data: [] } as any))),
     }).subscribe({
       next: ({ products, stocks }: any) => {
         const stockByProduct = this.buildStockMap(Array.isArray(stocks?.data) ? stocks.data : []);
