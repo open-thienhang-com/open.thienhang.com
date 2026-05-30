@@ -29,7 +29,17 @@
           [outlined]="true"
           [rounded]="true"
           (onClick)="exportProducts()"
-          pTooltip="Export Products"
+          pTooltip="Export CSV (products + stock)"
+          class="hidden sm:inline-flex">
+        </p-button>
+        <input #csvInput type="file" accept=".csv,text/csv" class="hidden" (change)="importProducts($event)" />
+        <p-button
+          icon="pi pi-upload"
+          severity="secondary"
+          [outlined]="true"
+          [rounded]="true"
+          (onClick)="csvInput.click()"
+          pTooltip="Import CSV (bulk restock)"
           class="hidden sm:inline-flex">
         </p-button>
         <p-button

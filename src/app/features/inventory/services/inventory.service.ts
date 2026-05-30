@@ -54,6 +54,18 @@ export class ProductService {
     return this.http.get<ApiResponse<Product>>(`${this.retailDomainUrl}/products/${id}`);
   }
 
+  /** Download all products + stock as a CSV file (openable in Excel). */
+  exportProductsCsv(): Observable<Blob> {
+    return this.http.get(`${this.retailDomainUrl}/products/export`, { responseType: 'blob' });
+  }
+
+  /** Bulk import products + stock from a CSV file. Returns an import summary. */
+  importProductsCsv(file: File): Observable<ApiResponse<any>> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.post<ApiResponse<any>>(`${this.retailDomainUrl}/products/import`, form);
+  }
+
   createProduct(data: ProductCreateRequest): Observable<ApiResponse<Product>> {
     const raw: any = (data as any)?.data ?? data;
     const payload: ProductCreateRequest = {

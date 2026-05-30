@@ -255,10 +255,43 @@ export class ProductsComponent implements OnInit {
   }
 
   exportProducts() {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Export',
-      detail: 'Exporting products data'
+    this.productService.exportProductsCsv().subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `inventory_export_${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        this.messageService.add({ severity: 'success', summary: 'Export', detail: 'CSV downloaded' });
+      },
+      error: () => this.messageService.add({ severity: 'error', summary: 'Export', detail: 'Failed to export CSV' }),
+    });
+  }
+
+  /** Triggered by the hidden file input; uploads the chosen CSV and reloads. */
+  importProducts(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.loading = true;
+    this.productService.importProductsCsv(file).subscribe({
+      next: (res: any) => {
+        const s = res?.data ?? {};
+        const errs = Array.isArray(s.errors) ? s.errors.length : 0;
+        this.messageService.add({
+          severity: errs ? 'warn' : 'success',
+          summary: 'Import',
+          detail: `Created ${s.products_created ?? 0}, updated ${s.products_updated ?? 0}, stock ${s.stock_updated ?? 0}` +
+            (errs ? `, ${errs} error(s)` : ''),
+        });
+        this.loadProducts();
+      },
+      error: () => {
+        this.loading = false;
+        this.messageService.add({ severity: 'error', summary: 'Import', detail: 'Failed to import CSV' });
+      },
+      complete: () => { input.value = ''; },
     });
   }
 
