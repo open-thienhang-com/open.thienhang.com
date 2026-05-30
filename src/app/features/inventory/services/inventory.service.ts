@@ -219,6 +219,10 @@ export class InventoryService {
     return this.http.post<ApiResponse<any>>(`${getApiBase()}/data-mesh/domains/retail/orders`, data);
   }
 
+  updateOrder(id: string, data: any): Observable<ApiResponse<any>> {
+    return this.http.put<ApiResponse<any>>(`${getApiBase()}/data-mesh/domains/retail/orders/${id}`, data);
+  }
+
   confirmOrder(id: string): Observable<ApiResponse<any>> {
     return this.http.post<ApiResponse<any>>(`${getApiBase()}/data-mesh/domains/retail/orders/${id}/confirm`, {});
   }

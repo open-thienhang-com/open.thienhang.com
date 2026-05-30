@@ -347,7 +347,81 @@
           (onClick)="updateOrderStatus(action.key, selectedOrderId())">
         </p-button>
       </div>
-      <p-button label="Close" icon="pi pi-times" severity="secondary" [outlined]="true" (onClick)="closeDetail()"></p-button>
+      <div class="flex gap-2">
+        <p-button label="Edit" icon="pi pi-pencil" severity="warn" [outlined]="true" *ngIf="selectedOrder()" (onClick)="openEdit()"></p-button>
+        <p-button label="Close" icon="pi pi-times" severity="secondary" [outlined]="true" (onClick)="closeDetail()"></p-button>
+      </div>
     </div>
+  </ng-template>
+</p-dialog>
+
+<!-- ── Edit Order dialog ── -->
+<p-dialog header="Edit Order" [visible]="editVisible()" (visibleChange)="editVisible.set($event)"
+          [modal]="true" [style]="{ width: '640px' }" [draggable]="false" appendTo="body">
+  <div class="edit-form flex flex-col gap-4" *ngIf="editForm">
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-1">Customer</label>
+      <div class="text-xs text-gray-500 mb-1">Current: {{ editForm.customerName || '—' }}</div>
+      <app-customer-picker [required]="false" (customerChange)="onEditCustomer($event)"></app-customer-picker>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Order status</label>
+        <p-dropdown [options]="orderStatusEditOptions" [(ngModel)]="editForm.order_status" optionLabel="label" optionValue="value" appendTo="body" styleClass="w-full"></p-dropdown>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Payment status</label>
+        <p-dropdown [options]="paymentStatusEditOptions" [(ngModel)]="editForm.payment_status" optionLabel="label" optionValue="value" appendTo="body" styleClass="w-full"></p-dropdown>
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-1">Shipping address</label>
+      <input pInputText [(ngModel)]="editForm.shipping_address" class="w-full" placeholder="Shipping address" />
+    </div>
+
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-1">Items</label>
+      <div class="border rounded-lg overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-3 py-2 text-left text-gray-600">Product</th>
+              <th class="px-3 py-2 text-right text-gray-600">Qty</th>
+              <th class="px-3 py-2 text-right text-gray-600">Unit</th>
+              <th class="px-3 py-2 text-right text-gray-600">Total</th>
+              <th class="px-2 py-2"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let it of editForm.items; let i = index" class="border-t">
+              <td class="px-3 py-2">{{ it.product_name }} <span class="text-gray-400">{{ it.sku }}</span></td>
+              <td class="px-3 py-2 text-right" style="width:110px">
+                <p-inputNumber [(ngModel)]="it.quantity" [min]="1" [showButtons]="true" (onInput)="editQtyChange(it)" (onBlur)="editQtyChange(it)" inputStyleClass="w-16 text-right"></p-inputNumber>
+              </td>
+              <td class="px-3 py-2 text-right">{{ it.unit_price | number: '1.0-0' }}</td>
+              <td class="px-3 py-2 text-right font-semibold">{{ it.total_price | number: '1.0-0' }}</td>
+              <td class="px-2 py-2 text-center">
+                <button type="button" class="text-red-500 hover:text-red-700" (click)="removeEditItem(i)"><i class="pi pi-times"></i></button>
+              </td>
+            </tr>
+            <tr *ngIf="!editForm.items.length"><td colspan="5" class="px-3 py-3 text-center text-gray-400">No items</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flex items-center gap-2 mt-2">
+        <p-dropdown [options]="productOptions" [(ngModel)]="addProductId" [filter]="true" optionLabel="label" optionValue="value"
+                    placeholder="Add product…" appendTo="body" styleClass="flex-1"></p-dropdown>
+        <p-button label="Add" icon="pi pi-plus" severity="secondary" [outlined]="true" [disabled]="!addProductId" (onClick)="addEditItem()"></p-button>
+      </div>
+    </div>
+
+    <div class="flex justify-end text-base font-bold text-orange-600">Total: {{ editTotal() | number: '1.0-0' }}</div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Cancel" icon="pi pi-times" severity="secondary" [outlined]="true" (onClick)="editVisible.set(false)"></p-button>
+    <p-button label="Save" icon="pi pi-check" severity="success" [loading]="savingEdit()" [disabled]="savingEdit()" (onClick)="saveEdit()"></p-button>
   </ng-template>
 </p-dialog>
