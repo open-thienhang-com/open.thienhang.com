@@ -30,10 +30,9 @@ export class ConnectionService {
             fromEvent(window, 'offline')
         ).subscribe(() => {
             this.online$.next(navigator.onLine);
-            if (!navigator.onLine) {
-                this.router.navigate(['/maintenance']);
-            } else {
-                // When back online, check API health
+            // Just track state; surfacing errors is left to per-request toasts
+            // (ErrorInterceptor) rather than a full-screen maintenance redirect.
+            if (navigator.onLine) {
                 this.checkApiHealth();
             }
         });
@@ -56,10 +55,8 @@ export class ConnectionService {
                 return true;
             }),
             catchError(() => {
+                // Track availability only — no maintenance-screen redirect.
                 this.apiAvailable$.next(false);
-                if (this.router.url !== '/maintenance') {
-                    this.router.navigate(['/maintenance']);
-                }
                 return of(false);
             })
         );
@@ -80,20 +77,15 @@ export class ConnectionService {
         this.checkApiHealth().subscribe();
     }
 
-    // Method to check if request timed out
+    // Method to check if request timed out (no redirect — popups handle UX).
     checkTimeout(error: any): boolean {
-        if (error.name === 'TimeoutError' || error.status === 408) {
-            this.router.navigate(['/maintenance']);
-            return true;
-        }
-        return false;
+        return error.name === 'TimeoutError' || error.status === 408;
     }
 
-    // Method to handle network errors
+    // Method to handle network errors (track availability; no redirect).
     handleNetworkError(error: any): boolean {
         if (error.status === 0 || error.status === 504 || error.status === 502) {
             this.apiAvailable$.next(false);
-            this.router.navigate(['/maintenance']);
             return true;
         }
         return false;

@@ -29,7 +29,7 @@ export class ErrorInterceptor implements HttpInterceptor {
   private handleError(error: HttpErrorResponse): void {
     switch (error.status) {
       case 0:
-        this.router.navigate(['/maintenance']);
+        // Show a popup instead of redirecting to the full Under Maintenance page.
         this.toastService.error(
           'Connection Error',
           'Unable to connect to the server. Please check your internet connection.',
@@ -70,7 +70,7 @@ export class ErrorInterceptor implements HttpInterceptor {
       case 502:
       case 503:
       case 504:
-        this.router.navigate(['/maintenance']);
+        // Show a popup instead of redirecting to the full Under Maintenance page.
         this.toastService.error(
           'Server Error',
           'The server is experiencing issues. Please try again later.',
