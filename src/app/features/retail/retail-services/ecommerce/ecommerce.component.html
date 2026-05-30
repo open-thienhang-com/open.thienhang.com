@@ -12,7 +12,7 @@
         <label for="warehouseSelect">Location:</label>
         <select id="warehouseSelect" [(ngModel)]="selectedWarehouseId" (change)="onWarehouseChange()">
           @for (wh of warehouses; track wh.id) {
-            <option [value]="wh.id">{{ wh.name }} ({{ wh.location }})</option>
+            <option [value]="wh.id">{{ $any(wh).warehouse_name || wh.name }} ({{ $any(wh).province_name || $any(wh).warehouse_address || wh.location || '—' }})</option>
           }
         </select>
       </div>

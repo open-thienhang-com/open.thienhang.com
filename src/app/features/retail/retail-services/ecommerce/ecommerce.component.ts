@@ -125,8 +125,9 @@ export class EcommerceComponent implements OnInit, OnDestroy {
       .subscribe(res => {
         const stocks = res.data || [];
         this.stockMap = {};
-        stocks.forEach(s => {
-          this.stockMap[s.product_id] = s.quantity;
+        stocks.forEach((s: any) => {
+          // Stock docs expose quantity_on_hand/quantity_available, not `quantity`.
+          this.stockMap[s.product_id] = s.quantity_on_hand ?? s.quantity_available ?? s.quantity ?? 0;
         });
       });
   }
