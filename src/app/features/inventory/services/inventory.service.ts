@@ -239,6 +239,15 @@ export class InventoryService {
     return this.http.post<ApiResponse<any>>(`${getApiBase()}/data-mesh/domains/retail/orders/${id}/cancel`, {});
   }
 
+  /** Real customers (the `customers` collection, not partners). */
+  listRetailCustomers(skip: number = 0, limit: number = 100): Observable<ListResponse<any>> {
+    return this.http.get<ListResponse<any>>(`${getApiBase()}/data-mesh/domains/retail/customers?skip=${skip}&limit=${limit}`);
+  }
+
+  createTransaction(data: any): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${getApiBase()}/data-mesh/domains/retail/transactions`, data);
+  }
+
   listTransactions(skip: number = 0, limit: number = 20): Observable<ListResponse<any>> {
     return this.http.get<ListResponse<any>>(`${getApiBase()}/data-mesh/domains/retail/transactions?skip=${skip}&limit=${limit}`);
   }

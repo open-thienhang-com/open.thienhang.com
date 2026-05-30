@@ -39,6 +39,8 @@ export class EcommerceComponent implements OnInit, OnDestroy {
   warehouses: Warehouse[] = [];
   selectedWarehouseId: string = '';
   stockMap: Record<string, number> = {};
+  customers: any[] = [];
+  selectedCustomerId: string = '';
 
   // Filters
   searchQuery = '';
@@ -75,6 +77,18 @@ export class EcommerceComponent implements OnInit, OnDestroy {
     this.loadWarehouses();
     this.loadProducts();
     this.loadCategories();
+    this.loadCustomers();
+  }
+
+  loadCustomers(): void {
+    this.inventoryService.listRetailCustomers(0, 100)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(res => {
+        this.customers = (res.data || []).map((c: any) => ({ ...c, id: c.id || c._id }));
+        if (this.customers.length && !this.selectedCustomerId) {
+          this.selectedCustomerId = this.customers[0].id;
+        }
+      });
   }
 
   ngOnDestroy(): void {
@@ -320,7 +334,7 @@ export class EcommerceComponent implements OnInit, OnDestroy {
 
     const payload = {
       order_number: this.orderNumber,
-      customer_id: 'guest',
+      customer_id: this.selectedCustomerId || 'guest',
       source: 'ecommerce',
       warehouse_id: this.selectedWarehouseId || undefined,
       total_amount: total,
@@ -338,11 +352,22 @@ export class EcommerceComponent implements OnInit, OnDestroy {
       }))
     };
 
+    const placedOrderNumber = this.orderNumber;
     this.placingOrder = true;
     this.inventoryService.createOrder(payload)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => {
+        next: (res: any) => {
+          // Record the payment so the order has a matching transaction.
+          const orderId = res?.data?.id || res?.data?._id;
+          this.inventoryService.createTransaction({
+            transaction_id: `ECOM-${placedOrderNumber}`,
+            order_id: orderId,
+            amount: total,
+            payment_method: 'cash',
+            source: 'ecommerce',
+          }).pipe(takeUntil(this.destroy$)).subscribe({ error: () => {} });
+
           this.placingOrder = false;
           this.orderNumber = Math.floor(1000 + Math.random() * 9000).toString();
           this.messageService.add({ severity: 'success', summary: 'Order Placed', detail: 'Your order has been created successfully.' });

@@ -16,6 +16,14 @@
           }
         </select>
       </div>
+      <div class="store-selector">
+        <label for="customerSelect">Customer:</label>
+        <select id="customerSelect" [(ngModel)]="selectedCustomerId">
+          @for (c of customers; track c.id) {
+            <option [value]="c.id">{{ c.name }}@if (c.phone) { · {{ c.phone }} }</option>
+          }
+        </select>
+      </div>
     </div>
 
     <div class="header-center">
