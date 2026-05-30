@@ -13,10 +13,21 @@
         <p-dropdown
           [options]="warehouses"
           [(ngModel)]="selectedWarehouseId"
-          optionLabel="name"
+          optionLabel="warehouse_name"
           optionValue="id"
           (onChange)="onWarehouseChange()"
           placeholder="Select location"
+          appendTo="body"
+          styleClass="pos-wh-select"
+          [style]="{'min-width':'180px'}">
+        </p-dropdown>
+        <p-dropdown
+          [options]="customers"
+          [(ngModel)]="selectedCustomerId"
+          optionLabel="name"
+          optionValue="id"
+          [showClear]="true"
+          placeholder="Walk-in customer"
           appendTo="body"
           styleClass="pos-wh-select"
           [style]="{'min-width':'180px'}">

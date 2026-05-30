@@ -56,6 +56,8 @@ export class PosComponent implements OnInit, OnDestroy {
   warehouses: Warehouse[] = [];
   selectedWarehouseId: string = '';
   stockMap: Record<string, number> = {};
+  customers: any[] = [];
+  selectedCustomerId: string = '';
   currentDate: Date = new Date();
   orderNumber: string = Math.floor(1000 + Math.random() * 9000).toString();
 
@@ -76,6 +78,7 @@ export class PosComponent implements OnInit, OnDestroy {
     this.loadWarehouses();
     this.loadProducts();
     this.loadCategories();
+    this.loadCustomers();
   }
 
   get filteredProducts(): Product[] {
@@ -155,9 +158,18 @@ export class PosComponent implements OnInit, OnDestroy {
       .subscribe(res => {
         const stocks = res.data || [];
         this.stockMap = {};
-        stocks.forEach(s => {
-          this.stockMap[s.product_id] = s.quantity;
+        stocks.forEach((s: any) => {
+          // Stock docs expose quantity_on_hand/quantity_available, not `quantity`.
+          this.stockMap[s.product_id] = s.quantity_on_hand ?? s.quantity_available ?? s.quantity ?? 0;
         });
+      });
+  }
+
+  loadCustomers(): void {
+    this.inventoryService.listRetailCustomers(0, 100)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(res => {
+        this.customers = (res.data || []).map((c: any) => ({ ...c, id: c.id || c._id }));
       });
   }
 
@@ -282,7 +294,7 @@ export class PosComponent implements OnInit, OnDestroy {
 
     const payload = {
       order_number: this.orderNumber,
-      customer_id: 'walk-in',
+      customer_id: this.selectedCustomerId || 'walk-in',
       source: 'pos',
       warehouse_id: this.selectedWarehouseId || undefined,
       total_amount: total,
@@ -300,9 +312,20 @@ export class PosComponent implements OnInit, OnDestroy {
       }))
     };
 
+    const placedOrderNumber = this.orderNumber;
     this.placingOrder = true;
     this.inventoryService.createOrder(payload).subscribe({
-      next: () => {
+      next: (res: any) => {
+        // Record the cash payment so the sale has a matching transaction.
+        const orderId = res?.data?.id || res?.data?._id;
+        this.inventoryService.createTransaction({
+          transaction_id: `POS-${placedOrderNumber}`,
+          order_id: orderId,
+          amount: total,
+          payment_method: 'cash',
+          source: 'pos',
+        }).pipe(takeUntil(this.destroy$)).subscribe({ error: () => {} });
+
         this.placingOrder = false;
         this.orderNumber = Math.floor(1000 + Math.random() * 9000).toString();
         this.messageService.add({
@@ -324,10 +347,10 @@ export class PosComponent implements OnInit, OnDestroy {
   }
 
   formatCurrency(value: number): string {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 2
+      currency: 'VND',
+      maximumFractionDigits: 0
     }).format(value || 0);
   }
 }
