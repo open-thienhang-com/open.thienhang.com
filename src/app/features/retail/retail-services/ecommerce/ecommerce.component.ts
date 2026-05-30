@@ -8,6 +8,7 @@ import { ToastModule } from 'primeng/toast';
 import { ProductService, CategoryService, WarehouseService, InventoryService } from '../../../inventory/services/inventory.service';
 import { UploadService } from '../../../inventory/services/upload.service';
 import { Product, Warehouse, Stock } from '../../../inventory/models/inventory.models';
+import { CustomerPickerComponent, PickerCustomer } from '../shared/customer-picker.component';
 
 export interface CartItem {
   product: Product;
@@ -17,7 +18,7 @@ export interface CartItem {
 @Component({
   selector: 'app-ecommerce',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule],
+  imports: [CommonModule, FormsModule, ToastModule, CustomerPickerComponent],
   templateUrl: './ecommerce.component.html',
   styleUrl: './ecommerce.component.scss',
   providers: [MessageService]
@@ -39,7 +40,7 @@ export class EcommerceComponent implements OnInit, OnDestroy {
   warehouses: Warehouse[] = [];
   selectedWarehouseId: string = '';
   stockMap: Record<string, number> = {};
-  customers: any[] = [];
+  selectedCustomer: PickerCustomer | null = null;
   selectedCustomerId: string = '';
 
   // Filters
@@ -77,18 +78,11 @@ export class EcommerceComponent implements OnInit, OnDestroy {
     this.loadWarehouses();
     this.loadProducts();
     this.loadCategories();
-    this.loadCustomers();
   }
 
-  loadCustomers(): void {
-    this.inventoryService.listRetailCustomers(0, 100)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(res => {
-        this.customers = (res.data || []).map((c: any) => ({ ...c, id: c.id || c._id }));
-        if (this.customers.length && !this.selectedCustomerId) {
-          this.selectedCustomerId = this.customers[0].id;
-        }
-      });
+  onCustomerChange(c: PickerCustomer | null): void {
+    this.selectedCustomer = c;
+    this.selectedCustomerId = c?.id || '';
   }
 
   ngOnDestroy(): void {
@@ -326,6 +320,10 @@ export class EcommerceComponent implements OnInit, OnDestroy {
 
   checkout(): void {
     if (!this.cart.length || this.getTotal() <= 0 || this.placingOrder) return;
+    if (!this.selectedCustomerId) {
+      this.messageService.add({ severity: 'warn', summary: 'Customer required', detail: 'Please select or create a customer before checkout.' });
+      return;
+    }
 
     const subtotal = this.getSubtotal();
     const tax = this.getTax();

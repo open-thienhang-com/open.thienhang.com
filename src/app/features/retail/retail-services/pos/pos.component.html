@@ -21,17 +21,6 @@
           styleClass="pos-wh-select"
           [style]="{'min-width':'180px'}">
         </p-dropdown>
-        <p-dropdown
-          [options]="customers"
-          [(ngModel)]="selectedCustomerId"
-          optionLabel="name"
-          optionValue="id"
-          [showClear]="true"
-          placeholder="Walk-in customer"
-          appendTo="body"
-          styleClass="pos-wh-select"
-          [style]="{'min-width':'180px'}">
-        </p-dropdown>
       </div>
     </div>
 
@@ -126,6 +115,10 @@
       <div class="tc-header">
         <h3>Order #{{ orderNumber }}</h3>
         <button class="void-btn" (click)="clearCart()" [disabled]="cart.length === 0" type="button">VOID ALL</button>
+      </div>
+
+      <div class="tc-customer">
+        <app-customer-picker [required]="false" (customerChange)="onCustomerChange($event)"></app-customer-picker>
       </div>
 
       <div class="tc-lines">

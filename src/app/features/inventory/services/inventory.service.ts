@@ -244,6 +244,10 @@ export class InventoryService {
     return this.http.get<ListResponse<any>>(`${getApiBase()}/data-mesh/domains/retail/customers?skip=${skip}&limit=${limit}`);
   }
 
+  createRetailCustomer(data: { name: string; phone?: string; email?: string; address?: string; customer_type?: string }): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${getApiBase()}/data-mesh/domains/retail/customers`, data);
+  }
+
   createTransaction(data: any): Observable<ApiResponse<any>> {
     return this.http.post<ApiResponse<any>>(`${getApiBase()}/data-mesh/domains/retail/transactions`, data);
   }

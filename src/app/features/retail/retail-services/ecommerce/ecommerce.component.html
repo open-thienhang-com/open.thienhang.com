@@ -16,14 +16,6 @@
           }
         </select>
       </div>
-      <div class="store-selector">
-        <label for="customerSelect">Customer:</label>
-        <select id="customerSelect" [(ngModel)]="selectedCustomerId">
-          @for (c of customers; track c.id) {
-            <option [value]="c.id">{{ c.name }}@if (c.phone) { · {{ c.phone }} }</option>
-          }
-        </select>
-      </div>
     </div>
 
     <div class="header-center">
@@ -158,6 +150,10 @@
           <span class="item-count">{{ getCartItemCount() }} items</span>
         </div>
 
+        <div class="panel-customer">
+          <app-customer-picker [required]="true" (customerChange)="onCustomerChange($event)"></app-customer-picker>
+        </div>
+
         <div class="cart-items-scroller">
           @if (cart.length === 0) {
             <div class="empty-basket">
@@ -221,9 +217,9 @@
             </li>
           </ul>
 
-          <button 
-            class="checkout-btn" 
-            [disabled]="cart.length === 0"
+          <button
+            class="checkout-btn"
+            [disabled]="cart.length === 0 || !selectedCustomerId"
             (click)="checkout()"
           >
             CONFIRM ORDER

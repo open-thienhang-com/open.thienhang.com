@@ -12,6 +12,7 @@ import { MessageService } from 'primeng/api';
 import { ProductService, CategoryService, WarehouseService, InventoryService } from '../../../inventory/services/inventory.service';
 import { UploadService } from '../../../inventory/services/upload.service';
 import { Product, Warehouse, Stock } from '../../../inventory/models/inventory.models';
+import { CustomerPickerComponent, PickerCustomer } from '../shared/customer-picker.component';
 
 interface PosCartItem {
   product: Product;
@@ -28,7 +29,8 @@ interface PosCartItem {
     InputTextModule,
     InputNumberModule,
     DropdownModule,
-    ToastModule
+    ToastModule,
+    CustomerPickerComponent
   ],
   templateUrl: './pos.component.html',
   styleUrl: './pos.component.scss',
@@ -56,7 +58,7 @@ export class PosComponent implements OnInit, OnDestroy {
   warehouses: Warehouse[] = [];
   selectedWarehouseId: string = '';
   stockMap: Record<string, number> = {};
-  customers: any[] = [];
+  selectedCustomer: PickerCustomer | null = null;
   selectedCustomerId: string = '';
   currentDate: Date = new Date();
   orderNumber: string = Math.floor(1000 + Math.random() * 9000).toString();
@@ -78,7 +80,6 @@ export class PosComponent implements OnInit, OnDestroy {
     this.loadWarehouses();
     this.loadProducts();
     this.loadCategories();
-    this.loadCustomers();
   }
 
   get filteredProducts(): Product[] {
@@ -165,12 +166,9 @@ export class PosComponent implements OnInit, OnDestroy {
       });
   }
 
-  loadCustomers(): void {
-    this.inventoryService.listRetailCustomers(0, 100)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(res => {
-        this.customers = (res.data || []).map((c: any) => ({ ...c, id: c.id || c._id }));
-      });
+  onCustomerChange(c: PickerCustomer | null): void {
+    this.selectedCustomer = c;
+    this.selectedCustomerId = c?.id || '';
   }
 
   onWarehouseChange(): void {
