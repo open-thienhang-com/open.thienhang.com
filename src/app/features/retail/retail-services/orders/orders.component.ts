@@ -354,7 +354,9 @@ export class OrdersComponent implements OnInit {
   }
 
   getAvailableActions(status: string): StatusAction[] {
-    const s = (status || '').toLowerCase();
+    // Legacy orders created before order_status was persisted come back empty;
+    // treat them as pending so the workflow actions still appear.
+    const s = (status || 'pending').toLowerCase();
     const cancelAction: StatusAction = { key: 'cancel', label: 'Cancel Order', severity: 'danger', icon: 'pi pi-times' };
     switch (s) {
       case 'pending':    return [{ key: 'confirm',  label: 'Confirm Order',      severity: 'success', icon: 'pi pi-check' }, cancelAction];
