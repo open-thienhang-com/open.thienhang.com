@@ -489,6 +489,10 @@ export const routes: Routes = [
             loadComponent: () => import('./features/retail/retail-services/orders/orders.component').then(m => m.OrdersComponent),
           },
           {
+            path: 'orders/:id/edit',
+            loadComponent: () => import('./features/retail/retail-services/orders/order-edit.component').then(m => m.OrderEditComponent),
+          },
+          {
             path: 'customers',
             loadComponent: () => import('./features/retail/retail-services/customers/customers.component').then(m => m.CustomersComponent),
           },

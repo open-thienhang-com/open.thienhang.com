@@ -10,10 +10,9 @@ import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { InputNumberModule } from 'primeng/inputnumber';
+import { Router } from '@angular/router';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { InventoryService as RetailOrderService, ProductService } from '../../../inventory/services/inventory.service';
-import { CustomerPickerComponent, PickerCustomer } from '../shared/customer-picker.component';
+import { InventoryService as RetailOrderService } from '../../../inventory/services/inventory.service';
 
 interface OrderItem {
   id: string;
@@ -58,9 +57,7 @@ interface StatusAction {
     TagModule,
     TooltipModule,
     DialogModule,
-    ConfirmDialogModule,
-    InputNumberModule,
-    CustomerPickerComponent
+    ConfirmDialogModule
   ],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.scss',
@@ -157,129 +154,44 @@ export class OrdersComponent implements OnInit {
 
   private readonly statusOrder = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
 
-  // ── Edit order state ──
-  editVisible = signal(false);
-  savingEdit = signal(false);
-  editForm: any = null;
-  products: any[] = [];
-  addProductId: string | null = null;
-
-  paymentStatusEditOptions = [
-    { label: 'Unpaid', value: 'unpaid' },
-    { label: 'Paid', value: 'paid' },
-    { label: 'Partial', value: 'partial' },
-    { label: 'Refunded', value: 'refunded' },
-  ];
-  orderStatusEditOptions = [
-    { label: 'Pending', value: 'pending' },
-    { label: 'Confirmed', value: 'confirmed' },
-    { label: 'Processing', value: 'processing' },
-    { label: 'Shipped', value: 'shipped' },
-    { label: 'Delivered', value: 'delivered' },
-    { label: 'Cancelled', value: 'cancelled' },
-    { label: 'Returned', value: 'returned' },
-  ];
+  // id -> display name maps so the UI shows names, not raw UUIDs
+  private customerMap: Record<string, string> = {};
+  private warehouseMap: Record<string, string> = {};
 
   constructor(
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
     private retailOrderService: RetailOrderService,
-    private productService: ProductService
+    private router: Router
   ) { }
 
   ngOnInit(): void {
     this.loadOrders(0, this.rows());
-  }
-
-  // ── Edit order ──
-  get productOptions() {
-    return this.products.map(p => ({ label: `${p.name} (${p.sku})`, value: p.id }));
-  }
-
-  openEdit(): void {
-    const o = this.selectedOrder();
-    if (!o) return;
-    this.editForm = {
-      customer_id: o.customer_id || '',
-      customerName: o.customer_id || '',
-      shipping_address: o.shipping_address || '',
-      order_status: o.order_status || 'pending',
-      payment_status: o.payment_status || 'unpaid',
-      warehouse_id: o.warehouse_id || '',
-      items: (o.items || []).map((it: any) => ({
-        product_id: it.product_id, sku: it.sku, product_name: it.product_name,
-        quantity: it.quantity, unit_price: it.unit_price, total_price: it.total_price,
-      })),
-    };
-    if (!this.products.length) {
-      this.productService.listProducts(undefined, 0, 100).subscribe((r: any) => {
-        this.products = (r.data || []).map((p: any) => ({ ...p, id: p.id || p._id }));
-      });
-    }
-    this.editVisible.set(true);
-  }
-
-  onEditCustomer(c: PickerCustomer | null): void {
-    this.editForm.customer_id = c?.id || '';
-    this.editForm.customerName = c?.name || '';
-  }
-
-  editQtyChange(it: any): void {
-    it.total_price = (Number(it.quantity) || 0) * (Number(it.unit_price) || 0);
-  }
-
-  removeEditItem(i: number): void {
-    this.editForm.items.splice(i, 1);
-  }
-
-  addEditItem(): void {
-    const p = this.products.find(x => x.id === this.addProductId);
-    if (!p) return;
-    if (this.editForm.items.some((it: any) => it.product_id === p.id)) {
-      this.messageService.add({ severity: 'info', summary: 'Item', detail: 'Product already in this order' });
-      return;
-    }
-    const price = Number(p.selling_price ?? p.price ?? 0);
-    this.editForm.items.push({ product_id: p.id, sku: p.sku, product_name: p.name, quantity: 1, unit_price: price, total_price: price });
-    this.addProductId = null;
-  }
-
-  editTotal(): number {
-    return (this.editForm?.items || []).reduce((s: number, it: any) => s + (Number(it.total_price) || 0), 0);
-  }
-
-  saveEdit(): void {
-    const id = this.selectedOrderId();
-    if (!id || !this.editForm) return;
-    const total = this.editTotal();
-    const payload = {
-      customer_id: this.editForm.customer_id || undefined,
-      shipping_address: this.editForm.shipping_address || undefined,
-      order_status: this.editForm.order_status,
-      payment_status: this.editForm.payment_status,
-      warehouse_id: this.editForm.warehouse_id || undefined,
-      items: this.editForm.items.map((it: any) => ({
-        product_id: it.product_id, sku: it.sku, product_name: it.product_name,
-        quantity: Number(it.quantity) || 0, unit_price: Number(it.unit_price) || 0,
-        total_price: Number(it.total_price) || 0, discount: 0,
-      })),
-      total_amount: total,
-      net_amount: total,
-    };
-    this.savingEdit.set(true);
-    this.retailOrderService.updateOrder(id, payload).subscribe({
-      next: (resp: any) => {
-        this.selectedOrder.set(resp?.data || resp);
-        this.savingEdit.set(false);
-        this.editVisible.set(false);
-        this.messageService.add({ severity: 'success', summary: 'Order updated', detail: 'Order information saved' });
-        this.loadOrders(this.first(), this.rows());
-      },
-      error: (err: any) => {
-        this.savingEdit.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.detail || 'Could not update order' });
-      },
+    this.retailOrderService.listRetailCustomers(0, 100).subscribe((r: any) => {
+      (r.data || []).forEach((c: any) => { this.customerMap[c.id || c._id] = c.name; });
     });
+    this.retailOrderService.getAllWarehouses().subscribe((r: any) => {
+      (r.data || []).forEach((w: any) => { this.warehouseMap[w.id || w._id] = w.warehouse_name || w.name; });
+    });
+  }
+
+  customerName(id: string): string {
+    if (!id) return '-';
+    if (id === 'walk-in') return 'Walk-in';
+    if (id === 'guest') return 'Guest';
+    return this.customerMap[id] || id;
+  }
+
+  warehouseName(id: string): string {
+    if (!id) return '-';
+    return this.warehouseMap[id] || id;
+  }
+
+  // Edit happens on a dedicated page (no stacked dialogs).
+  goEdit(): void {
+    const id = this.selectedOrderId();
+    if (!id) return;
+    this.router.navigate(['/retail/orders', id, 'edit']);
   }
 
   loadOrders(skip: number = 0, limit: number = this.rows()): void {
