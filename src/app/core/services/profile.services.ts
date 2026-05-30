@@ -18,6 +18,7 @@ export interface UserProfile {
   organization?: string;
   location?: string;
   is_active?: boolean;
+  is_verified?: boolean;
   last_login?: Date;
   preferences?: UserPreferences;
   createdAt?: Date;

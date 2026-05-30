@@ -11,6 +11,32 @@
     </p>
   </div>
 
+  <!-- Magic-link feedback banners -->
+  @if (fromSignup()) {
+    <div class="mb-6 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+      <i class="pi pi-check-circle mr-1"></i>
+      Đã gửi email xác thực đến <strong>{{ email }}</strong>. Mở email và nhấn nút <em>Xác nhận email</em>, hoặc nhập mã 6 số bên dưới.
+    </div>
+  }
+  @if (fromLogin()) {
+    <div class="mb-6 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+      <i class="pi pi-info-circle mr-1"></i>
+      Vui lòng xác thực email <strong>{{ email }}</strong> trước khi đăng nhập.
+    </div>
+  }
+  @if (tokenConsuming()) {
+    <div class="mb-6 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
+      <i class="pi pi-spin pi-spinner mr-1"></i>
+      Đang xác thực liên kết từ email…
+    </div>
+  }
+  @if (tokenExpired()) {
+    <div class="mb-6 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-900">
+      <i class="pi pi-exclamation-triangle mr-1"></i>
+      Liên kết đã hết hạn hoặc đã được sử dụng. Hãy nhập mã OTP bên dưới hoặc bấm "Resend OTP" để nhận email mới.
+    </div>
+  }
+
   <!-- OTP Form -->
   <form class="space-y-6">
     <div>
@@ -32,7 +58,7 @@
 
     <div>
       <p-button
-        label="Verify Email"
+        label="Xác thực email"
         icon="pi pi-check-circle"
         severity="success"
         styleClass="w-full"
@@ -42,19 +68,26 @@
       </p-button>
     </div>
 
-    <div class="text-center space-y-3">
-      <p class="text-sm text-gray-600">
-        Didn't receive the OTP?
-        <a class="text-emerald-600 hover:text-emerald-500 cursor-pointer font-medium ml-1"
-           [class.opacity-50]="resendCooldown > 0"
-           [class.cursor-not-allowed]="resendCooldown > 0"
-           (click)="resend()">
-          Resend OTP{{ resendCooldown > 0 ? ' (' + resendCooldown + 's)' : '' }}
-        </a>
+    <div>
+      <p-button
+        [label]="resendCooldown > 0 ? ('Gửi lại email kích hoạt (' + resendCooldown + 's)') : 'Gửi lại email kích hoạt'"
+        icon="pi pi-send"
+        severity="secondary"
+        [outlined]="true"
+        styleClass="w-full"
+        size="small"
+        [disabled]="resendCooldown > 0 || !email"
+        (onClick)="resend()">
+      </p-button>
+      <p class="text-xs text-gray-500 mt-2 text-center">
+        Email chứa link 1-click và mã OTP 6 số. Cả hai đều có hiệu lực 15 phút.
       </p>
+    </div>
+
+    <div class="text-center">
       <p class="text-sm text-gray-600">
         <a class="text-blue-600 hover:text-blue-500 cursor-pointer font-medium" (click)="onBackToLogin.emit()">
-          Back to Sign In
+          Quay lại đăng nhập
         </a>
       </p>
     </div>

@@ -297,7 +297,16 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
       return;
     }
     this.threadTab.set('messages');
-    this.infoPanel.set('customer');
+    // Honour agent's last manual tab choice for the session; otherwise default
+    // to the Customer panel so they always see linked customer info first.
+    let preferred: 'customer' | 'product' | 'context' | 'channel' | 'template' = 'customer';
+    try {
+      const saved = sessionStorage.getItem('cmc.lastInfoPanelTab');
+      if (saved === 'customer' || saved === 'product' || saved === 'context' || saved === 'channel' || saved === 'template') {
+        preferred = saved;
+      }
+    } catch { /* sessionStorage unavailable */ }
+    this.infoPanel.set(preferred);
     this.messageSkip = 0;
     this.hasMoreMessages.set(false);
 
@@ -557,10 +566,12 @@ export class FacebookWorkspaceComponent implements OnInit, OnDestroy {
   // ── Info panel ─────────────────────────────────────────────────────────────
   openInfoPanel(panel: 'customer' | 'product' | 'context' | 'channel' | 'template'): void {
     this.infoPanel.set(panel);
+    try { sessionStorage.setItem('cmc.lastInfoPanelTab', panel); } catch { /* */ }
   }
 
   toggleInfoPanel(panel: 'customer' | 'product' | 'context' | 'channel' | 'template'): void {
     this.infoPanel.set(panel);
+    try { sessionStorage.setItem('cmc.lastInfoPanelTab', panel); } catch { /* */ }
   }
 
   private _loadNotes(): void {

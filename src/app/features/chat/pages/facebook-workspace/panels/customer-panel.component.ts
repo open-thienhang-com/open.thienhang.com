@@ -11,14 +11,16 @@ import { TagModule } from 'primeng/tag';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ChatService } from '../../../services/chat.service';
 import {
-  TelegramConversation, CustomerSummary, CustomerOrder,
-  CustomerCreatePayload, OrderItem, OrderCreatePayload, SendEmailPayload, ProductSearchResult
+  TelegramConversation, CustomerSummary, CustomerOrder, TelegramMessage,
+  CustomerCreatePayload, OrderItem, OrderCreatePayload, SendEmailPayload, ProductSearchResult,
+  OrderConfirmationResult,
 } from '../../../models/chat.model';
+import { OrderConfirmationDialogComponent } from './order-confirmation-dialog.component';
 
 @Component({
   selector: 'app-customer-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, SkeletonModule, TagModule, ProgressSpinnerModule],
+  imports: [CommonModule, FormsModule, SkeletonModule, TagModule, ProgressSpinnerModule, OrderConfirmationDialogComponent],
   styles: [`
     :host { display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden; }
 
@@ -48,10 +50,11 @@ import {
     .cp-search-wrap { position:relative; }
     .cp-search-icon { position:absolute; left:.55rem; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:.75rem; }
 
-    /* ── linked customer card ── */
+    /* ── linked customer card (sticky so the agent always sees who they're acting on) ── */
     .cp-card {
       background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px;
       padding:.6rem .75rem; margin-bottom:.6rem; flex-shrink:0;
+      position:sticky; top:0; z-index:2;
     }
     .cp-card-head { display:flex; align-items:center; gap:.55rem; }
     .cp-avatar {
@@ -66,8 +69,12 @@ import {
     .cp-unlink { font:inherit; font-size:.65rem; color:#94a3b8; background:none; border:none; cursor:pointer; padding:0; }
     .cp-unlink:hover { color:#ef4444; }
 
-    /* ── tabs ── */
-    .cp-tabs { display:flex; gap:.2rem; padding:.4rem .75rem 0; border-bottom:1px solid #e2e8f0; flex-shrink:0; }
+    /* ── tabs (sticky under the customer card so they always remain reachable) ── */
+    .cp-tabs {
+      display:flex; gap:.2rem; padding:.4rem .75rem 0;
+      border-bottom:1px solid #e2e8f0; flex-shrink:0;
+      background:#fff; position:sticky; top:0; z-index:1;
+    }
     .cp-tab {
       font:inherit; font-size:.72rem; font-weight:600; background:none; border:none;
       padding:.3rem .55rem; cursor:pointer; color:#64748b; border-bottom:2px solid transparent;
@@ -86,11 +93,20 @@ import {
     .cp-empty p { margin:0; font-size:.75rem; }
 
     /* ── order rows ── */
-    .cp-order-row { padding:.4rem 0; border-bottom:1px solid #f1f5f9; font-size:.75rem; }
+    .cp-order-row { padding:.5rem 0; border-bottom:1px solid #f1f5f9; font-size:.75rem; }
     .cp-order-row:last-child { border-bottom:none; }
+    .cp-order-row-head { display:flex; justify-content:space-between; align-items:center; gap:.4rem; }
     .cp-order-num { font-weight:700; color:#0f172a; }
     .cp-order-meta { display:flex; justify-content:space-between; color:#64748b; margin-top:.15rem; }
     .cp-order-amount { font-weight:700; color:#0f172a; }
+    .cp-order-foot { display:flex; justify-content:space-between; align-items:center; gap:.4rem; margin-top:.35rem; }
+    .cp-order-confirmed {
+      display:inline-flex; align-items:center; gap:.25rem;
+      font-size:.66rem; font-weight:600; color:#16a34a;
+      background:#dcfce7; padding:.1rem .35rem; border-radius:999px;
+    }
+    .cp-order-confirmed i { font-size:.66rem; }
+    .cp-btn--sm { padding:.2rem .5rem; font-size:.66rem; }
 
     /* ── history rows ── */
     .cp-hist-row { padding:.4rem 0; border-bottom:1px solid #f1f5f9; font-size:.75rem; }
@@ -202,12 +218,26 @@ import {
           <i class="pi pi-shopping-bag"></i><p>Chưa có đơn hàng</p>
         </div>
         <div *ngFor="let order of orders()" class="cp-order-row">
-          <div class="cp-order-num">{{ order.order_number }}</div>
+          <div class="cp-order-row-head">
+            <div class="cp-order-num">{{ order.order_number }}</div>
+            <span *ngIf="(order.confirmation_emails?.length || 0) > 0" class="cp-order-confirmed">
+              <i class="pi pi-check-circle"></i>
+              Confirmed<ng-container *ngIf="(order.confirmation_emails?.length || 0) > 1"> ({{ order.confirmation_emails!.length }}x)</ng-container>
+            </span>
+          </div>
           <div class="cp-order-meta">
             <span>{{ order.status }}</span>
             <span class="cp-order-amount">{{ order.total_amount | currency:'VND':'symbol':'1.0-0' }}</span>
           </div>
-          <div style="font-size:.68rem;color:#94a3b8">{{ order.created_at | date:'dd/MM/yy HH:mm' }}</div>
+          <div class="cp-order-foot">
+            <span style="font-size:.68rem;color:#94a3b8">{{ order.created_at | date:'dd/MM/yy HH:mm' }}</span>
+            <button type="button" class="cp-btn cp-btn--ghost cp-btn--sm"
+                    [disabled]="!linkedCustomer?.email"
+                    [title]="linkedCustomer?.email ? '' : 'Khách hàng chưa có email'"
+                    (click)="openConfirmationDialog(order)">
+              <i class="pi pi-envelope"></i> Gửi mail xác nhận
+            </button>
+          </div>
         </div>
       </ng-container>
 
@@ -330,6 +360,16 @@ import {
   </ng-container>
 
 </div>
+
+<!-- Order-confirmation dialog (mounted lazily when agent clicks "Gửi mail xác nhận") -->
+<app-order-confirmation-dialog
+    *ngIf="dialogOrder && linkedCustomer"
+    [customer]="linkedCustomer"
+    [order]="dialogOrder"
+    [conversationId]="_conversation?.id || undefined"
+    (sent)="onConfirmationSent($event)"
+    (cancelled)="dialogOrder = null">
+</app-order-confirmation-dialog>
   `
 })
 export class CustomerPanelComponent implements OnDestroy {
@@ -344,6 +384,12 @@ export class CustomerPanelComponent implements OnDestroy {
   private _conversation: TelegramConversation | null = null;
 
   @Output() customerLinked = new EventEmitter<CustomerSummary | null>();
+  /** Fired when an order-confirmation email is dispatched; parent appends a
+   *  system message into the conversation thread. */
+  @Output() messageSent = new EventEmitter<TelegramMessage>();
+
+  /** Order being confirmed in the dialog — null when dialog is closed. */
+  dialogOrder: CustomerOrder | null = null;
 
   // ── Search / link
   searchKeyword = '';
@@ -435,6 +481,50 @@ export class CustomerPanelComponent implements OnDestroy {
     this.chatService.linkConversationToCustomer(this._conversation.id, null).subscribe({
       next: () => { this.linkedCustomer = null; this.linking = false; this.customerLinked.emit(null); },
       error: () => { this.linking = false; this.linkError = 'Hủy liên kết thất bại.'; }
+    });
+  }
+
+  /** Open the order-confirmation dialog for a specific order row. */
+  openConfirmationDialog(order: CustomerOrder): void {
+    if (!this.linkedCustomer?.email) return;
+    this.dialogOrder = order;
+  }
+
+  /** Dialog reports a successful send. Append a system message into the
+   *  thread (via parent) and refresh the order's confirmation badge. */
+  onConfirmationSent(result: OrderConfirmationResult): void {
+    const order = this.dialogOrder;
+    this.dialogOrder = null;
+    if (!order) return;
+
+    // Update local badge count without round-tripping the list.
+    this.orders.update(list => list.map(o => o.id === order.id
+      ? {
+          ...o,
+          confirmation_emails: [
+            ...(o.confirmation_emails || []),
+            {
+              batch_id: result.batch_id || '',
+              sent_at: result.sent_at || new Date().toISOString(),
+              recipient_email: result.recipient_email,
+            },
+          ],
+        }
+      : o,
+    ));
+
+    // Build a thread system message (sender='system' so it doesn't count
+    // against agent response-time metrics).
+    const when = result.sent_at || new Date().toISOString();
+    const summary = `📧 Đã gửi email xác nhận đơn #${order.order_number} tới ${result.recipient_email}`;
+    this.messageSent.emit({
+      id: `order-confirm-${order.id}-${Date.now()}`,
+      sender: 'system',
+      sender_name: 'System',
+      content: summary,
+      timestamp: when,
+      message_type: 'text',
+      delivery_status: 'sent',
     });
   }
 

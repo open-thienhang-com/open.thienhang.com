@@ -5,17 +5,35 @@ import { catchError, filter, switchMap, take } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { AuthServices } from '../services/auth.services';
 
-const PUBLIC_PATHS = [
+/**
+ * Endpoints that anyone can hit (no JWT, no refresh on 401, never auto-redirect
+ * to /login). Sub-string match: a request URL is "public" iff one of these
+ * strings appears anywhere in `req.url`. Keep paths leading-slashed and
+ * unambiguous.
+ *
+ * Auth401Interceptor MUST consult the same list — otherwise a 401 from /login
+ * (wrong password) would race the AuthServices handler and override its
+ * structured redirect to /verify.
+ */
+export const PUBLIC_AUTH_PATHS = [
   '/authentication/login',
   '/authentication/register',
   '/authentication/refresh-token',
   '/authentication/forgot-password',
   '/authentication/reset-password',
   '/authentication/set-password',
+  '/authentication/update-password',
+  '/authentication/verify-account',
   '/authentication/verify-email',
+  '/authentication/verify-magic-token',
   '/authentication/resend-verification',
-  '/authentication/verify-token',
+  '/authentication/tenants/public',
+  '/authentication/bootstrap',
 ];
+
+export function isPublicAuthPath(url: string): boolean {
+  return PUBLIC_AUTH_PATHS.some(p => url.includes(p));
+}
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -25,7 +43,7 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(private authServices: AuthServices, private router: Router) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const isPublic = PUBLIC_PATHS.some(p => req.url.includes(p));
+    const isPublic = isPublicAuthPath(req.url);
     const token = localStorage.getItem('access_token');
 
     let authReq = req;

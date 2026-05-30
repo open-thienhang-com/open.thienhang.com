@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Injector, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Injector, OnInit, Output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Button } from 'primeng/button';
@@ -6,6 +6,7 @@ import { InputText } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { Toast } from 'primeng/toast';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { AppBaseComponent } from '../../../core/base/app-base.component';
 import { AuthServices } from '../../../core/services/auth.services';
 
@@ -21,6 +22,15 @@ export class ResetPasswordComponent extends AppBaseComponent implements OnInit {
   confirmPassword: string = '';
   email: string = '';
   isLoading: boolean = false;
+
+  /** True once the user clicked the magic link in the reset email and the
+   * server has consumed it. In this state the OTP field is hidden and
+   * /update-password is called without a code. */
+  readonly magicConsumed = signal(false);
+  /** True while the magic-link verification is in flight. */
+  readonly magicConsuming = signal(false);
+  /** True if the magic-link returned 410 GONE — surface "expired" notice. */
+  readonly magicExpired = signal(false);
 
   @Output() onReset: EventEmitter<any> = new EventEmitter();
   @Output() onBackToLogin: EventEmitter<any> = new EventEmitter();
@@ -38,10 +48,30 @@ export class ResetPasswordComponent extends AppBaseComponent implements OnInit {
     const params = this.route.snapshot.queryParams;
     this.email = params['email'] || this.authServices.pendingResetEmail || '';
     this.otp = params['otp'] || '';
+    const token = params['token'];
+
+    // Magic-link auto-consume. The server will mark the OTP record
+    // magic_consumed=true and set the otp_token cookie. On success we hide
+    // the OTP input — the user just needs a new password. On 410 we surface
+    // "expired" + offer manual flow.
+    if (token && this.email) {
+      this.magicConsuming.set(true);
+      this.authServices.verifyMagicToken(this.email, token, 'reset_password').subscribe({
+        next: () => {
+          this.magicConsuming.set(false);
+          this.magicConsumed.set(true);
+          this.authServices.pendingResetEmail = this.email;
+        },
+        error: (err: HttpErrorResponse) => {
+          this.magicConsuming.set(false);
+          if (err.status === 410) this.magicExpired.set(true);
+        },
+      });
+    }
   }
 
   resetPassword(): void {
-    if (!this.otp) {
+    if (!this.magicConsumed() && !this.otp) {
       this.showError('Please enter the OTP from your email');
       return;
     }
@@ -59,10 +89,13 @@ export class ResetPasswordComponent extends AppBaseComponent implements OnInit {
     }
 
     this.isLoading = true;
+    // When the magic link was consumed, the server-side OTP record carries the
+    // `magic_consumed` flag and /update-password accepts an empty `otp`. The
+    // cookie set during magic consume identifies which record to finalize.
     this.authServices.setNewPassword({
-      token: this.otp,
+      token: this.magicConsumed() ? '' : this.otp,
       password: this.password,
-      confirm_password: this.confirmPassword
+      confirm_password: this.confirmPassword,
     }).subscribe({
       next: (res) => {
         if (res.success) {

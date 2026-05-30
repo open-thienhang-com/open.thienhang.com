@@ -72,8 +72,16 @@ export class SignupComponent extends AppBaseComponent {
     }).subscribe({
       next: (res) => {
         if (res.success) {
-          this.showSuccess('Account created! Please sign in.');
-          this.onLogIn.emit();
+          this.showSuccess('Đã gửi mã xác thực đến email của bạn.');
+          this.authServices.pendingVerificationEmail = this.email;
+          // Send the user to the verify screen with the email in the URL so
+          // refresh/copy-paste both work. Emitting onVerifyAccount keeps the
+          // AuthComponent mode-switch path intact when signup is rendered
+          // inside the auth shell rather than via standalone /register route.
+          this.onVerifyAccount.emit();
+          this.router.navigate(['/verify'], {
+            queryParams: { email: this.email, from: 'signup' },
+          });
         } else {
           this.showError(res.message || 'Sign up failed');
         }

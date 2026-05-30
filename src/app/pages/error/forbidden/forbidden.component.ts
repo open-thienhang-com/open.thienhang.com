@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-forbidden',
@@ -71,11 +71,34 @@ import { Router, RouterModule } from '@angular/router';
     }
   `]
 })
-export class ForbiddenComponent {
-  constructor(private router: Router) { }
+export class ForbiddenComponent implements OnInit {
+  /** Previous URL captured by Auth401Interceptor at the moment of the 403. */
+  private fromUrl: string | null = null;
+
+  constructor(private router: Router, private route: ActivatedRoute) { }
+
+  ngOnInit(): void {
+    const from = this.route.snapshot.queryParamMap.get('from');
+    // Don't bounce back onto the same forbidden URL or another auth screen.
+    if (from && !from.startsWith('/forbidden') && !from.startsWith('/login')) {
+      this.fromUrl = from;
+    }
+  }
 
   goBack() {
-    window.history.back();
+    // Prefer the captured `?from=` URL — that's the page the user was actually
+    // on before the 403 fired. Fallback to browser history, then to home.
+    if (this.fromUrl) {
+      this.router.navigateByUrl(this.fromUrl).catch(() => this.router.navigate(['/']));
+      return;
+    }
+    try {
+      if (window.history.length > 1) {
+        window.history.back();
+        return;
+      }
+    } catch { /* ignore */ }
+    this.router.navigate(['/']);
   }
 
   goHome() {

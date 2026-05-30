@@ -48,7 +48,9 @@ import {
     CustomerCreatePayload,
     OrderCreatePayload,
     SendEmailPayload,
-    TelegramRichTemplate
+    TelegramRichTemplate,
+    OrderConfirmationRequest,
+    OrderConfirmationResult
 } from '../models/chat.model';
 
 @Injectable({
@@ -587,5 +589,18 @@ export class ChatService {
                 error: (err) => observer.error(err)
             });
         });
+    }
+
+    // ── Order confirmation email ──────────────────────────────────────────────
+
+    /**
+     * Send (or preview) an order-confirmation email. Pass `preview_only: true`
+     * to fetch the rendered HTML without dispatching.
+     */
+    sendOrderConfirmationEmail(payload: OrderConfirmationRequest): Observable<ApiResponse<OrderConfirmationResult>> {
+        return this.http.post<ApiResponse<OrderConfirmationResult>>(
+            `${this.cmcBaseUrl}/email-batches/order-confirmation`,
+            payload,
+        );
     }
 }

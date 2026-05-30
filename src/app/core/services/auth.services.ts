@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { getApiBase } from '../config/api-config';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, catchError, Observable, of, tap, map, finalize, switchMap, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, EMPTY, Observable, of, tap, map, finalize, switchMap, throwError } from 'rxjs';
 import { ApiResponse } from './governance.services';
 import { UserProfile } from './profile.services';
 import { LoadingService } from './loading.service';
@@ -99,18 +99,31 @@ export class AuthServices {
     return this.http.post<any>(url, data)
       .pipe(
         tap(response => {
-          // API returns Token shape directly (has access_token) — not wrapped in ApiResponse
+          // Backend soft-gate: it always mints a Token if the password is
+          // correct, even when is_verified=false. The UI is then responsible
+          // for routing — verified users hit dashboard, unverified users land
+          // on /verify with their auth token (so the Resend button can call
+          // /resend-verification with a Bearer header).
           const isTokenShape = response && ('access_token' in response);
           if (isTokenShape || this.isWrappedResponse(response)) {
-            // Store raw access_token for Authorization header injection by interceptor (task 7.4)
             const token = (response as any).access_token || (response as any).data?.access_token;
             if (token) {
               localStorage.setItem('access_token', token);
             }
-            // Only grant isLoggedIn for verified accounts — unverified must go through OTP
             const isVerified = response.is_verified !== false;
+            // Stash verification state up front so guards can branch sync.
+            localStorage.setItem('userVerified', String(isVerified));
             if (isVerified) {
               localStorage.setItem('isLoggedIn', 'true');
+            } else {
+              // Keep isLoggedIn off — the authGuard treats it as "no session
+              // yet" and routes through /verify. The access_token still
+              // works for /resend-verification + /me.
+              localStorage.removeItem('isLoggedIn');
+              this.pendingVerificationEmail = data.email;
+              try {
+                this.router.navigate(['/verify'], { queryParams: { email: data.email, from: 'login' } });
+              } catch { /* router may not be ready in tests */ }
             }
             if (response.data?.user) {
               this.userSubject.next(response.data.user);
@@ -118,12 +131,40 @@ export class AuthServices {
           }
         }),
         map(response => {
-          // Normalize Token shape into ApiResponse so callers get consistent .success + .data
           if (response && 'access_token' in response && !this.isWrappedResponse(response)) {
             return { success: true, data: response } as ApiResponse<any>;
           }
           return this.wrapResponse(response);
-        })
+        }),
+        catchError((err: HttpErrorResponse) => {
+          // 401 here means the password actually failed (or the account is
+          // missing). Always bounce the user back to /login. The defunct
+          // ACCOUNT_NOT_VERIFIED branch is kept for forward-compat with
+          // STRICT_LOGIN_GATE=true deployments.
+          if (err.status === 401) {
+            try {
+              localStorage.removeItem('access_token');
+              localStorage.removeItem('isLoggedIn');
+              localStorage.removeItem('userVerified');
+            } catch { /* ignore */ }
+
+            const body = (err.error || {}) as any;
+            const code = body?.code || body?.data?.code;
+            if (code === 'ACCOUNT_NOT_VERIFIED') {
+              const targetEmail = body?.data?.email || data.email;
+              if (targetEmail) this.pendingVerificationEmail = targetEmail;
+              try {
+                this.router.navigate(['/verify'], { queryParams: { email: targetEmail, from: 'login' } });
+              } catch { /* ignore */ }
+              return EMPTY;
+            }
+
+            if (this.router.url && !this.router.url.startsWith('/login')) {
+              try { this.router.navigate(['/login'], { replaceUrl: true }); } catch { /* ignore */ }
+            }
+          }
+          return throwError(() => err);
+        }),
       );
   }
 
@@ -289,6 +330,22 @@ export class AuthServices {
   resendVerificationEmail(email: string): Observable<ApiResponse<any>> {
     const url = `${this.baseUrl}/authentication/resend-verification`;
     return this.http.post<any>(url, { email })
+      .pipe(map(response => this.wrapResponse(response)));
+  }
+
+  /**
+   * Consume a magic-link token from a verification or reset email. Server
+   * decodes ?token=&email=, deletes the underlying OTP record on success
+   * (verify_email) or marks it magic_consumed (reset_password), then sets the
+   * otp_token cookie so a follow-up /set-password call can finalize without
+   * the user typing the OTP.
+   *
+   * Returns 410 GONE if the token is missing/expired — UI should surface
+   * "Link hết hạn" and offer a resend.
+   */
+  verifyMagicToken(email: string, token: string, purpose: 'verify_email' | 'reset_password'): Observable<ApiResponse<any>> {
+    const url = `${this.baseUrl}/authentication/verify-magic-token`;
+    return this.http.post<any>(url, { email, token, purpose })
       .pipe(map(response => this.wrapResponse(response)));
   }
 
@@ -475,14 +532,27 @@ export class AuthServices {
     // email normalization
     u.email = u.email || u.email_address || u.username || '';
 
-    console.log('Normalized user:', u);
+    // is_verified — preserve when present so templates can bind directly
+    // instead of leaning on localStorage.userVerified.
+    if (u.is_verified === undefined && u.isVerified !== undefined) {
+      u.is_verified = u.isVerified;
+    }
+
     return u;
   }
 
   // Helper method to wrap a single object response to match the API response format
   private wrapResponse<T>(data: T): ApiResponse<T> {
     if (this.isWrappedResponse(data)) {
-      return data as unknown as ApiResponse<T>;
+      // Backend `SuccessResponse` ships {data, message, total} without an
+      // explicit `success` field — Pydantic only adds one for ErrorResponse.
+      // Treat the wrapped-without-success case as success so callers like
+      // `if (res.success)` don't fall through to the error branch on 2xx.
+      const wrapped = data as unknown as ApiResponse<T>;
+      if (wrapped.success === undefined) {
+        wrapped.success = true;
+      }
+      return wrapped;
     }
     return { data, success: true };
   }

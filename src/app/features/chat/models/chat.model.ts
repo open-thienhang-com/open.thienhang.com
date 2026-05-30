@@ -545,6 +545,14 @@ export interface SendEmailPayload {
 }
 
 // ── Customer 360 ─────────────────────────────────────────────────────────────
+export interface ConfirmationEmailLog {
+    batch_id: string;
+    sent_at: string;
+    sent_by?: string;
+    conversation_id?: string;
+    recipient_email: string;
+}
+
 export interface CustomerOrder {
     id: string;
     order_number: string;
@@ -552,6 +560,27 @@ export interface CustomerOrder {
     total_amount: number;
     status: string;
     item_count: number;
+    confirmation_emails?: ConfirmationEmailLog[];
+}
+
+export interface OrderConfirmationRequest {
+    order_id: string;
+    customer_id: string;
+    subject_override?: string;
+    agent_note?: string;
+    agent_name?: string;
+    conversation_id?: string;
+    sent_by?: string;
+    preview_only?: boolean;
+}
+
+export interface OrderConfirmationResult {
+    batch_id?: string;
+    sent_at?: string;
+    recipient_email: string;
+    status: 'sent' | 'preview';
+    html_preview?: string;
+    subject?: string;
 }
 
 export interface CustomerOrdersResponse {

@@ -81,6 +81,16 @@ export class LoginComponent extends AppBaseComponent {
     this.authService.login({ email: this.email, password: this.password, remember_me: this.remember }).subscribe({
       next: (res) => {
         if (res.success) {
+          // Backend soft-gate: a token is issued even for unverified accounts.
+          // The AuthServices.login() side-effect already navigated the user
+          // to /verify in that case; we only continue into the workspace
+          // picker when the account is verified.
+          const tokenPayload = res.data || {};
+          if (tokenPayload?.is_verified === false) {
+            this.isLoading = false;
+            this.loadingService.hide();
+            return;
+          }
           localStorage.setItem('isLoggedIn', 'true');
           this.authService.getCurrentUser().subscribe({ error: () => {} });
           this.loadWorkplaces();
@@ -91,7 +101,17 @@ export class LoginComponent extends AppBaseComponent {
         }
       },
       error: (err) => {
-        this.showError(err.error?.message || 'Login failed');
+        // ACCOUNT_NOT_VERIFIED: AuthServices already redirected to /verify and
+        // swallowed the error (EMPTY). This branch handles every *other* failure
+        // (wrong password, network, etc.).
+        const body = err?.error || {};
+        const code = body?.code || body?.data?.code;
+        if (code === 'ACCOUNT_NOT_VERIFIED') {
+          this.isLoading = false;
+          this.loadingService.hide();
+          return;
+        }
+        this.showError(body?.message || 'Email hoặc mật khẩu không đúng');
         this.isLoading = false;
         this.loadingService.hide();
       }

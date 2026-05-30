@@ -355,7 +355,8 @@
         <!-- Customer -->
         <div *ngIf="infoPanel() === 'customer'">
           <app-customer-panel [conversation]="selectedConversation()"
-                              (customerLinked)="handleCustomerLinked($event)">
+                              (customerLinked)="handleCustomerLinked($event)"
+                              (messageSent)="handleMessageSent($event)">
           </app-customer-panel>
         </div>
 
