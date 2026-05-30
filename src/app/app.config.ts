@@ -5,7 +5,7 @@ import { routes } from './app.routes';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/lara';
-import { provideHttpClient, withInterceptors, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { provideHttpClient, withInterceptors, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { credentialsInterceptor } from './core/interceptor/with-credentials.interceptor';
 import { AuthServices } from './core/services/auth.services';
 import { TimeoutInterceptor } from './core/interceptor/timeout.interceptor';
@@ -24,7 +24,11 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(
-      withInterceptors([credentialsInterceptor])
+      withInterceptors([credentialsInterceptor]),
+      // Without this, the class-based HTTP_INTERCEPTORS below (AuthInterceptor,
+      // Auth401Interceptor, …) are silently ignored — which is why a 401 never
+      // redirected to /login.
+      withInterceptorsFromDi()
     ),
     provideAnimationsAsync(),
     providePrimeNG({

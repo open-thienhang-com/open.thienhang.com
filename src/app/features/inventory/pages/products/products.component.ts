@@ -11,10 +11,12 @@ import { FormsModule } from '@angular/forms';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { ProductService } from '../../services/inventory.service';
+import { ProductService, InventoryService } from '../../services/inventory.service';
 import { UploadService } from '../../services/upload.service';
 import { Product } from '../../models/inventory.models';
 import { Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 
 
@@ -68,6 +70,7 @@ export class ProductsComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
     private productService: ProductService,
+    private inventoryService: InventoryService,
     private uploadService: UploadService,
     private router: Router
   ) { }
@@ -78,10 +81,18 @@ export class ProductsComponent implements OnInit {
 
   loadProducts() {
     this.loading = true;
-    this.productService.listProducts(this.selectedCategory || undefined, 0, 20).subscribe({
-      next: (response: any) => {
-        const apiProducts = Array.isArray(response?.data) ? response.data : [];
-        this.products = apiProducts.map((item: any) => this.mapApiProduct(item));
+    // Products and stocks live in separate collections; the products endpoint
+    // does not return on-hand quantity, so we fetch stocks in parallel and
+    // aggregate quantity-on-hand per product to drive the Stock / Total Value /
+    // Status columns.
+    forkJoin({
+      products: this.productService.listProducts(this.selectedCategory || undefined, 0, 200),
+      stocks: this.inventoryService.listStocks(undefined, 0, 500).pipe(catchError(() => of({ data: [] } as any))),
+    }).subscribe({
+      next: ({ products, stocks }: any) => {
+        const stockByProduct = this.buildStockMap(Array.isArray(stocks?.data) ? stocks.data : []);
+        const apiProducts = Array.isArray(products?.data) ? products.data : [];
+        this.products = apiProducts.map((item: any) => this.mapApiProduct(item, stockByProduct));
         this.signThumbnails();
         this.refreshCategoryOptionsFromProducts();
         this.applyFilters();
@@ -99,6 +110,18 @@ export class ProductsComponent implements OnInit {
         });
       }
     });
+  }
+
+  /** Sum on-hand quantity per product id across all warehouses. */
+  private buildStockMap(stocks: any[]): Map<string, number> {
+    const map = new Map<string, number>();
+    for (const s of stocks) {
+      const pid = String(s?.product_id ?? '');
+      if (!pid) continue;
+      const qty = Number(s?.quantity_on_hand ?? s?.quantity_available ?? s?.quantity ?? 0) || 0;
+      map.set(pid, (map.get(pid) ?? 0) + qty);
+    }
+    return map;
   }
 
   toggleFilters() {
@@ -128,9 +151,13 @@ export class ProductsComponent implements OnInit {
 
   getStatusSeverity(status: string): string {
     switch (status) {
-      case 'active': return 'success';
-      case 'inactive': return 'warning';
-      case 'discontinued': return 'danger';
+      case 'active':
+      case 'In Stock': return 'success';
+      case 'inactive':
+      case 'Low Stock': return 'warning';
+      case 'discontinued':
+      case 'Out of Stock': return 'danger';
+      case 'Overstock': return 'info';
       default: return 'info';
     }
   }
@@ -161,7 +188,16 @@ export class ProductsComponent implements OnInit {
       'food': 'Food & Beverage',
       'home': 'Home & Garden',
       'sports': 'Sports',
-      'books': 'Books'
+      'books': 'Books',
+      // Fresh Retail (thienhang.com) seed categories
+      'rau-cu-qua': 'Rau Củ Quả',
+      'thit-ca': 'Thịt & Cá',
+      'sua-trung': 'Sữa & Trứng',
+      'banh-keo': 'Bánh Kẹo & Snack',
+      'do-uong': 'Đồ Uống',
+      'gia-vi': 'Gia Vị & Dầu Ăn',
+      'thuc-pham-kho': 'Thực Phẩm Khô',
+      'hoa-qua': 'Trái Cây'
     };
     return labels[category] || category;
   }
@@ -259,23 +295,38 @@ export class ProductsComponent implements OnInit {
     return this.statusOptions;
   }
 
-  private mapApiProduct(item: any): Product {
-    return {
-      id: String(item?._id ?? item?.id ?? ''),
+  private mapApiProduct(item: any, stockByProduct?: Map<string, number>): Product {
+    const id = String(item?._id ?? item?.id ?? '');
+    const reorderLevel = Number(item?.reorder_level ?? 0);
+    const maximumStock = Number(item?.maximum_stock ?? 0);
+    const sellingPrice = Number(item?.selling_price ?? item?.price ?? 0);
+    const quantity = Number(stockByProduct?.get(id) ?? item?.quantity ?? 0) || 0;
+
+    const product: any = {
+      id,
       name: String(item?.name ?? 'Unknown product'),
       sku: String(item?.sku ?? '-'),
       category: String(item?.category ?? 'other'),
       description: String(item?.description ?? ''),
-      reorder_level: Number(item?.reorder_level ?? 0),
-      maximum_stock: Number(item?.maximum_stock ?? 0),
-      selling_price: Number(item?.selling_price ?? item?.price ?? 0),
+      reorder_level: reorderLevel,
+      maximum_stock: maximumStock,
+      selling_price: sellingPrice,
       price: Number(item?.price ?? item?.selling_price ?? 0),
       cost_price: Number(item?.cost_price ?? 0),
       is_active: item?.is_active !== false,
       updated_at: item?.updated_at || new Date().toISOString(),
       barcode: item?.barcode ?? '',
-      ...item // Capture extra fields like quantity
+      ...item, // Capture extra API fields
+      // Derived view-model fields consumed by the template (camelCase).
+      quantity,
+      currentStock: quantity,
+      minStock: reorderLevel,
+      maxStock: maximumStock,
+      unitPrice: sellingPrice,
+      totalValue: quantity * sellingPrice,
     };
+    product.status = this.getStockStatus(product).status;
+    return product as Product;
   }
 
   private refreshCategoryOptionsFromProducts(): void {
