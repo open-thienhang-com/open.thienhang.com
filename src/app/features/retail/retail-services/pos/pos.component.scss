@@ -76,6 +76,12 @@
     line-height: 1.5;
   }
 
+  // Placeholder ("Select location" / "Walk-in customer") was the default dark
+  // grey, invisible on the dark header bar — lighten it.
+  .p-dropdown-label.p-placeholder {
+    color: rgba(255,255,255,0.7);
+  }
+
   .p-dropdown-trigger {
     color: rgba(255,255,255,0.65);
     width: 2rem;

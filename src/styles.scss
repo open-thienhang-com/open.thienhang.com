@@ -38,7 +38,10 @@
   --card-border: 1px solid var(--border-color);
   --card-bg: var(--p-surface-0);
   --border-color: var(--p-surface-200);
-  --text-color: var(--p-surface-700);
+  /* surface-700 read too faint on the light surface-50 background; use the
+     darkest surface for body text so it's clearly legible (dark mode keeps its
+     own --text-color override below). */
+  --text-color: var(--p-surface-900);
   --overlay-background: #ffffff;
   --p-datatable-header-cell-padding: 0.75rem !important;
   --p-datatable-body-cell-padding: 0.75rem !important;
