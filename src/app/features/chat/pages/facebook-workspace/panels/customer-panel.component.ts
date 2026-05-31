@@ -117,7 +117,8 @@ import { TemplateSendPanelComponent } from './template-send-panel.component';
     .cp-order-submit { width:100%; margin-top:.6rem; padding:.6rem; border:none; border-radius:10px; background:#16a34a; color:#fff; font-weight:800; font-size:.85rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.4rem; }
     .cp-order-submit:hover:not(:disabled) { background:#15803d; }
     .cp-order-submit:disabled { opacity:.55; cursor:not-allowed; }
-    .cp-order-hint { font-size:.68rem; color:#d97706; margin-top:.4rem; display:flex; align-items:center; gap:.3rem; }
+    .cp-order-hint { font-size:.68rem; color:#d97706; margin-top:.4rem; display:flex; align-items:flex-start; gap:.3rem; }
+    .cp-order-hint--info { color:#6366f1; margin-top:0; margin-bottom:.5rem; }
     ::ng-deep .cp-qty { width:3rem; text-align:center; }
 
     .cp-input {
@@ -343,10 +344,12 @@ import { TemplateSendPanelComponent } from './template-send-panel.component';
       <ng-container *ngIf="helperView()==='order'">
         <section class="cp-sec">
           <div class="cp-sec-title">New order for {{ linkedCustomer.name }}</div>
+          <p class="cp-order-hint cp-order-hint--info"><i class="pi pi-info-circle"></i> Send a product for the customer to preview; add it to the order once they agree.</p>
           <div class="cp-order-add">
             <p-dropdown [options]="productOptions" [(ngModel)]="addProductId" [filter]="true" optionLabel="label" optionValue="value"
-                        placeholder="Search & add product…" appendTo="body" styleClass="cp-prod-dd"></p-dropdown>
-            <button type="button" class="cp-btn cp-btn--ghost cp-btn--sm" [disabled]="!addProductId" (click)="addOrderItem()"><i class="pi pi-plus"></i></button>
+                        placeholder="Search a product…" appendTo="body" styleClass="cp-prod-dd"></p-dropdown>
+            <button type="button" class="cp-btn cp-btn--ghost cp-btn--sm" [disabled]="!addProductId || sendingProduct()" (click)="sendSelectedProduct()" title="Send to customer for preview"><i [class]="sendingProduct() ? 'pi pi-spin pi-spinner' : 'pi pi-send'"></i></button>
+            <button type="button" class="cp-btn cp-btn--primary cp-btn--sm" [disabled]="!addProductId" (click)="addOrderItem()" title="Add to order"><i class="pi pi-plus"></i> Add</button>
           </div>
           <div *ngIf="!orderCart.length" class="cp-empty"><i class="pi pi-shopping-cart"></i><p>No items</p></div>
           <div *ngFor="let line of orderCart; let i = index" class="cp-cart-row">
@@ -501,6 +504,7 @@ export class CustomerPanelComponent implements OnDestroy {
   addProductId: string | null = null;
   orderCart: { product: ProductSearchResult; quantity: number }[] = [];
   placingOrder = signal(false);
+  sendingProduct = signal(false);
 
   get productOptions() {
     return this.products.map(p => ({ label: p.name + ' (' + p.sku + ') — ' + (p.selling_price || 0).toLocaleString('vi-VN') + '₫', value: p.id }));
@@ -632,6 +636,44 @@ export class CustomerPanelComponent implements OnDestroy {
     this.orderCart.push({ product: p, quantity: 1 });
     this.addProductId = null;
   }
+  /** Send the selected product to the customer (Telegram) so they can preview it
+   *  before it's added to the order. */
+  sendSelectedProduct(): void {
+    const p = this.products.find(x => x.id === this.addProductId);
+    const chatId = (this.conversation as any)?.chat_id;
+    if (!p || !chatId) {
+      this.messageService.add({ severity: 'warn', summary: 'Send', detail: 'No Telegram chat for this conversation' });
+      return;
+    }
+    this.sendingProduct.set(true);
+    const priceStr = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(p.selling_price || 0);
+    let caption = `🛍️ *${p.name}*`;
+    if (p.category) caption += `\n🏷️ ${p.category}`;
+    caption += `\n💰 ${priceStr}`;
+    if (p.description) caption += `\n\n${p.description}`;
+    const keyboard = { inline_keyboard: [[{ text: '🛒 Order now', callback_data: `order:${p.id}` }]] };
+
+    const done = (ok: boolean) => {
+      this.sendingProduct.set(false);
+      if (ok) {
+        this.messageSent.emit({
+          id: `product_${Date.now()}`, sender: 'agent', sender_name: 'Agent',
+          content: caption, timestamp: new Date().toISOString(),
+          message_type: p.image_url ? 'photo' : 'text', delivery_status: 'sent',
+          media_url: p.image_url, caption,
+        } as TelegramMessage);
+        this.messageService.add({ severity: 'success', summary: 'Sent to customer', detail: p.name });
+      } else {
+        this.messageService.add({ severity: 'error', summary: 'Send failed', detail: 'Could not send product' });
+      }
+    };
+
+    const req = p.image_url
+      ? this.chatService.sendTelegramPhoto({ chat_id: chatId, photo: p.image_url, caption, parse_mode: 'Markdown', reply_markup: keyboard } as any)
+      : this.chatService.sendTelegramMessage({ chat_id: chatId, text: caption, disable_notification: false, parse_mode: 'Markdown', reply_markup: keyboard } as any);
+    req.subscribe({ next: () => done(true), error: () => done(false) });
+  }
+
   removeOrderItem(i: number): void { this.orderCart.splice(i, 1); }
   cartTotal(): number {
     return this.orderCart.reduce((s, l) => s + (Number(l.product.selling_price) || 0) * (Number(l.quantity) || 0), 0);
