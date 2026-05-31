@@ -232,8 +232,8 @@ import { TemplateSendPanelComponent } from './template-send-panel.component';
 
   <!-- ══ Supporting staff bar (shown while no customer is linked) ══ -->
   <div class="cp-staffbar" *ngIf="conversation && !linkedCustomer">
-    <span class="cp-staffbar-label"><i class="pi pi-headphones"></i> Nhân viên hỗ trợ</span>
-    <span class="cp-staffbar-name" [class.unassigned]="!conversation.agent">{{ conversation.agent || 'Chưa gán' }}</span>
+    <span class="cp-staffbar-label"><i class="pi pi-headphones"></i> Support Agent</span>
+    <span class="cp-staffbar-name" [class.unassigned]="!conversation.agent">{{ conversation.agent || 'Unassigned' }}</span>
   </div>
 
   <!-- ══ LINKED: omni order-support panel (pinned card + helper menu) ═══════ -->
@@ -247,28 +247,28 @@ import { TemplateSendPanelComponent } from './template-send-panel.component';
           <div class="cp-pin-name">{{ linkedCustomer.name }}</div>
           <div class="cp-pin-badges">
             <span class="cp-chip cp-chip--type">{{ customerTypeLabel(linkedCustomer.customer_type) }}</span>
-            <span class="cp-chip" [class.cp-chip--ok]="linkedCustomer.is_active" [class.cp-chip--off]="!linkedCustomer.is_active">{{ linkedCustomer.is_active ? 'Đang hoạt động' : 'Ngừng' }}</span>
+            <span class="cp-chip" [class.cp-chip--ok]="linkedCustomer.is_active" [class.cp-chip--off]="!linkedCustomer.is_active">{{ linkedCustomer.is_active ? 'Active' : 'Inactive' }}</span>
           </div>
         </div>
-        <button type="button" class="cp-pin-x" (click)="unlink()" [disabled]="linking" title="Đổi/Hủy khách"><i class="pi pi-times"></i></button>
+        <button type="button" class="cp-pin-x" (click)="unlink()" [disabled]="linking" title="Change/Unlink customer"><i class="pi pi-times"></i></button>
       </div>
       <div class="cp-pin-info">
         <div class="cp-pin-kv"><i class="pi pi-phone"></i>{{ linkedCustomer.phone || '—' }}</div>
-        <div class="cp-pin-kv"><i class="pi pi-envelope"></i>{{ linkedCustomer.email || 'Chưa có email' }}</div>
+        <div class="cp-pin-kv"><i class="pi pi-envelope"></i>{{ linkedCustomer.email || 'No email' }}</div>
         <div class="cp-pin-kv"><i class="pi pi-hashtag"></i>{{ linkedCustomer.id }}</div>
       </div>
     </div>
 
     <!-- Supporting staff (below the customer card) -->
     <div class="cp-staffbar">
-      <span class="cp-staffbar-label"><i class="pi pi-headphones"></i> Nhân viên hỗ trợ</span>
-      <span class="cp-staffbar-name" [class.unassigned]="!conversation?.agent">{{ conversation?.agent || 'Chưa gán' }}</span>
+      <span class="cp-staffbar-label"><i class="pi pi-headphones"></i> Support Agent</span>
+      <span class="cp-staffbar-name" [class.unassigned]="!conversation?.agent">{{ conversation?.agent || 'Unassigned' }}</span>
     </div>
 
     <!-- Helper menu -->
     <div class="cp-helper">
-      <button type="button" class="cp-helper-btn" [class.active]="helperView()==='info'" (click)="setHelper('info')"><i class="pi pi-id-card"></i> Thông tin</button>
-      <button type="button" class="cp-helper-btn" [class.active]="helperView()==='order'" (click)="setHelper('order')"><i class="pi pi-shopping-cart"></i> Lên đơn</button>
+      <button type="button" class="cp-helper-btn" [class.active]="helperView()==='info'" (click)="setHelper('info')"><i class="pi pi-id-card"></i> Info</button>
+      <button type="button" class="cp-helper-btn" [class.active]="helperView()==='order'" (click)="setHelper('order')"><i class="pi pi-shopping-cart"></i> New Order</button>
       <button type="button" class="cp-helper-btn" [class.active]="helperView()==='template'" (click)="setHelper('template')"><i class="pi pi-file"></i> Template</button>
     </div>
 
@@ -278,28 +278,28 @@ import { TemplateSendPanelComponent } from './template-send-panel.component';
       <!-- ░ INFO: lookup customer + orders + history ░ -->
       <ng-container *ngIf="helperView()==='info'">
         <section class="cp-sec">
-          <div class="cp-sec-title">Hồ sơ khách hàng</div>
+          <div class="cp-sec-title">Customer Profile</div>
           <div class="cp-kv cp-kv--muted"><i class="pi pi-hashtag"></i><span>{{ linkedCustomer.id }}</span></div>
           <div class="cp-kv"><i class="pi pi-tag"></i><span>{{ customerTypeLabel(linkedCustomer.customer_type) }}</span></div>
           <div class="cp-sec-actions">
-            <button type="button" class="cp-btn cp-btn--ghost cp-btn--sm" *ngIf="linkedCustomer.email && !showEmailForm()" (click)="showEmailForm.set(true)"><i class="pi pi-envelope"></i> Gửi email</button>
-            <button type="button" class="cp-btn cp-btn--ghost cp-btn--sm" (click)="showRelink.set(!showRelink())"><i class="pi pi-sync"></i> Đổi khách</button>
+            <button type="button" class="cp-btn cp-btn--ghost cp-btn--sm" *ngIf="linkedCustomer.email && !showEmailForm()" (click)="showEmailForm.set(true)"><i class="pi pi-envelope"></i> Send Email</button>
+            <button type="button" class="cp-btn cp-btn--ghost cp-btn--sm" (click)="showRelink.set(!showRelink())"><i class="pi pi-sync"></i> Change Customer</button>
           </div>
           <div *ngIf="showEmailForm()" class="cp-compose">
-            <span style="font-size:.72rem;font-weight:700;color:#0f172a">Gửi email tới {{ linkedCustomer.email }}</span>
-            <input type="text" class="cp-input" [(ngModel)]="emailSubject" placeholder="Tiêu đề *" />
-            <textarea class="cp-input" rows="3" [(ngModel)]="emailContent" placeholder="Nội dung *" style="resize:none"></textarea>
+            <span style="font-size:.72rem;font-weight:700;color:#0f172a">Send email to {{ linkedCustomer.email }}</span>
+            <input type="text" class="cp-input" [(ngModel)]="emailSubject" placeholder="Subject *" />
+            <textarea class="cp-input" rows="3" [(ngModel)]="emailContent" placeholder="Content *" style="resize:none"></textarea>
             <div class="cp-compose-row">
-              <button type="button" class="cp-btn cp-btn--ghost" (click)="cancelEmail()">Hủy</button>
+              <button type="button" class="cp-btn cp-btn--ghost" (click)="cancelEmail()">Cancel</button>
               <button type="button" class="cp-btn cp-btn--primary" (click)="sendEmail()" [disabled]="sendingEmail() || !emailSubject.trim() || !emailContent.trim()">
-                <i [class]="sendingEmail() ? 'pi pi-spin pi-spinner' : 'pi pi-send'"></i> {{ sendingEmail() ? 'Đang gửi...' : 'Gửi' }}
+                <i [class]="sendingEmail() ? 'pi pi-spin pi-spinner' : 'pi pi-send'"></i> {{ sendingEmail() ? 'Sending...' : 'Send' }}
               </button>
             </div>
             <span *ngIf="emailError" style="font-size:.7rem;color:#ef4444">{{ emailError }}</span>
           </div>
           <div *ngIf="showRelink()" class="cp-relink">
             <div class="cp-search-wrap"><i class="pi pi-search cp-search-icon"></i>
-              <input type="text" class="cp-input cp-input--search" [(ngModel)]="searchKeyword" (ngModelChange)="onSearch($event)" placeholder="Tìm khách khác..." /></div>
+              <input type="text" class="cp-input cp-input--search" [(ngModel)]="searchKeyword" (ngModelChange)="onSearch($event)" placeholder="Search another customer..." /></div>
             <div *ngIf="searching" class="cp-empty"><i class="pi pi-spin pi-spinner"></i></div>
             <button *ngFor="let c of searchResults" type="button" class="cp-result-row" [disabled]="linking" (click)="selectCustomer(c)">
               <div class="cp-result-av">{{ (c.name||'?').charAt(0).toUpperCase() }}</div>
@@ -311,26 +311,26 @@ import { TemplateSendPanelComponent } from './template-send-panel.component';
         </section>
 
         <section class="cp-sec">
-          <div class="cp-sec-title">Đơn hàng <span class="cp-count">{{ orders().length }}</span></div>
+          <div class="cp-sec-title">Orders <span class="cp-count">{{ orders().length }}</span></div>
           <div *ngIf="ordersLoading()" class="cp-empty"><i class="pi pi-spin pi-spinner"></i></div>
-          <div *ngIf="!ordersLoading() && orders().length === 0" class="cp-empty"><i class="pi pi-shopping-bag"></i><p>Chưa có đơn hàng</p></div>
+          <div *ngIf="!ordersLoading() && orders().length === 0" class="cp-empty"><i class="pi pi-shopping-bag"></i><p>No orders yet</p></div>
           <div *ngFor="let order of orders()" class="cp-order-row">
             <div class="cp-order-row-head">
               <div class="cp-order-num">{{ order.order_number }}</div>
-              <span *ngIf="(order.confirmation_emails?.length || 0) > 0" class="cp-order-confirmed"><i class="pi pi-check-circle"></i> Đã gửi mail<ng-container *ngIf="(order.confirmation_emails?.length || 0) > 1"> ({{ order.confirmation_emails!.length }}x)</ng-container></span>
+              <span *ngIf="(order.confirmation_emails?.length || 0) > 0" class="cp-order-confirmed"><i class="pi pi-check-circle"></i> Emailed<ng-container *ngIf="(order.confirmation_emails?.length || 0) > 1"> ({{ order.confirmation_emails!.length }}x)</ng-container></span>
             </div>
             <div class="cp-order-meta"><span>{{ order.status }}</span><span class="cp-order-amount">{{ order.total_amount | currency:'VND':'symbol':'1.0-0' }}</span></div>
             <div class="cp-order-foot">
               <span style="font-size:.68rem;color:#94a3b8">{{ order.created_at | date:'dd/MM/yy HH:mm' }}</span>
-              <button type="button" class="cp-btn cp-btn--ghost cp-btn--sm" [disabled]="!linkedCustomer?.email" [title]="linkedCustomer?.email ? '' : 'Khách chưa có email'" (click)="openConfirmationDialog(order)"><i class="pi pi-envelope"></i> Gửi mail</button>
+              <button type="button" class="cp-btn cp-btn--ghost cp-btn--sm" [disabled]="!linkedCustomer?.email" [title]="linkedCustomer?.email ? '' : 'Customer has no email'" (click)="openConfirmationDialog(order)"><i class="pi pi-envelope"></i> Email</button>
             </div>
           </div>
         </section>
 
         <section class="cp-sec">
-          <div class="cp-sec-title">Lịch sử hội thoại</div>
+          <div class="cp-sec-title">Conversation History</div>
           <div *ngIf="historyLoading()" class="cp-empty"><i class="pi pi-spin pi-spinner"></i></div>
-          <div *ngIf="!historyLoading() && chatHistory().length === 0" class="cp-empty"><i class="pi pi-comments"></i><p>Chưa có lịch sử</p></div>
+          <div *ngIf="!historyLoading() && chatHistory().length === 0" class="cp-empty"><i class="pi pi-comments"></i><p>No history</p></div>
           <div *ngFor="let conv of chatHistory()" class="cp-hist-row">
             <div style="display:flex;align-items:center;gap:.3rem"><i [class]="'pi pi-' + (conv.platform === 'telegram' ? 'send' : 'envelope')" style="font-size:.65rem;color:#94a3b8"></i><span style="font-weight:600;font-size:.72rem">{{ conv.platform }}</span></div>
             <div class="cp-hist-preview">{{ conv.last_message }}</div>
@@ -342,25 +342,25 @@ import { TemplateSendPanelComponent } from './template-send-panel.component';
       <!-- ░ ORDER: inline quick checkout ░ -->
       <ng-container *ngIf="helperView()==='order'">
         <section class="cp-sec">
-          <div class="cp-sec-title">Lên đơn cho {{ linkedCustomer.name }}</div>
+          <div class="cp-sec-title">New order for {{ linkedCustomer.name }}</div>
           <div class="cp-order-add">
             <p-dropdown [options]="productOptions" [(ngModel)]="addProductId" [filter]="true" optionLabel="label" optionValue="value"
-                        placeholder="Tìm & thêm sản phẩm…" appendTo="body" styleClass="cp-prod-dd"></p-dropdown>
+                        placeholder="Search & add product…" appendTo="body" styleClass="cp-prod-dd"></p-dropdown>
             <button type="button" class="cp-btn cp-btn--ghost cp-btn--sm" [disabled]="!addProductId" (click)="addOrderItem()"><i class="pi pi-plus"></i></button>
           </div>
-          <div *ngIf="!orderCart.length" class="cp-empty"><i class="pi pi-shopping-cart"></i><p>Chưa có sản phẩm</p></div>
+          <div *ngIf="!orderCart.length" class="cp-empty"><i class="pi pi-shopping-cart"></i><p>No items</p></div>
           <div *ngFor="let line of orderCart; let i = index" class="cp-cart-row">
             <div class="cp-cart-name">{{ line.product.name }}<span class="cp-cart-sku">{{ line.product.sku }}</span></div>
             <p-inputNumber [(ngModel)]="line.quantity" [min]="1" [showButtons]="true" inputStyleClass="cp-qty"></p-inputNumber>
             <div class="cp-cart-amt">{{ (line.product.selling_price * line.quantity) | number:'1.0-0' }}₫</div>
             <button type="button" class="cp-cart-rm" (click)="removeOrderItem(i)"><i class="pi pi-times"></i></button>
           </div>
-          <div class="cp-cart-total"><span>Tổng cộng</span><span>{{ cartTotal() | number:'1.0-0' }}₫</span></div>
+          <div class="cp-cart-total"><span>Total</span><span>{{ cartTotal() | number:'1.0-0' }}₫</span></div>
           <button type="button" class="cp-order-submit" [disabled]="!orderCart.length || placingOrder()" (click)="createOrderInline()">
             <i [class]="placingOrder() ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"></i>
-            {{ placingOrder() ? 'Đang xử lý…' : 'Tạo đơn & gửi email' }}
+            {{ placingOrder() ? 'Processing…' : 'Create order & email' }}
           </button>
-          <p class="cp-order-hint" *ngIf="!linkedCustomer.email"><i class="pi pi-exclamation-triangle"></i> Khách chưa có email — đơn vẫn tạo nhưng không gửi được mail.</p>
+          <p class="cp-order-hint" *ngIf="!linkedCustomer.email"><i class="pi pi-exclamation-triangle"></i> Customer has no email — the order is still created but no email is sent.</p>
         </section>
       </ng-container>
 
@@ -375,7 +375,7 @@ import { TemplateSendPanelComponent } from './template-send-panel.component';
   <!-- ══ UNLINKED: search → results → create ════════════════════════════════ -->
   <ng-container *ngIf="!linkedCustomer">
 
-    <div class="cp-section-title">Liên kết khách hàng</div>
+    <div class="cp-section-title">Link a customer</div>
 
     <!-- Search -->
     <div style="padding:0 .75rem .4rem">
@@ -383,7 +383,7 @@ import { TemplateSendPanelComponent } from './template-send-panel.component';
         <i class="pi pi-search cp-search-icon"></i>
         <input type="text" class="cp-input cp-input--search"
                [(ngModel)]="searchKeyword" (ngModelChange)="onSearch($event)"
-               placeholder="Tên, số điện thoại, email..." />
+               placeholder="Name, phone, email..." />
       </div>
     </div>
 
@@ -403,7 +403,7 @@ import { TemplateSendPanelComponent } from './template-send-panel.component';
           <div class="cp-result-name">{{ c.name }}</div>
           <div class="cp-result-phone">{{ c.phone }}</div>
         </div>
-        <p-tag [value]="c.customer_type || 'KH'" severity="info"></p-tag>
+        <p-tag [value]="customerTypeLabel(c.customer_type)" severity="info"></p-tag>
         <span class="cp-result-link"><i class="pi pi-link"></i></span>
       </button>
     </div>
@@ -411,22 +411,22 @@ import { TemplateSendPanelComponent } from './template-send-panel.component';
     <!-- No results -->
     <div *ngIf="!searching && searchKeyword.trim() && searchResults.length === 0 && !showCreateForm()" class="cp-empty">
       <i class="pi pi-user-minus"></i>
-      <p>Không tìm thấy khách hàng</p>
+      <p>No customer found</p>
     </div>
 
     <!-- Create form -->
     <div *ngIf="showCreateForm()" class="cp-create-form">
-      <div class="cp-create-title">Tạo khách hàng mới</div>
-      <input type="text" class="cp-input" [(ngModel)]="newCustomer.name" placeholder="Tên *" />
-      <input type="text" class="cp-input" [(ngModel)]="newCustomer.phone" placeholder="Số điện thoại" />
+      <div class="cp-create-title">New customer</div>
+      <input type="text" class="cp-input" [(ngModel)]="newCustomer.name" placeholder="Name *" />
+      <input type="text" class="cp-input" [(ngModel)]="newCustomer.phone" placeholder="Phone" />
       <input type="email" class="cp-input" [(ngModel)]="newCustomer.email" placeholder="Email" />
-      <input type="text" class="cp-input" [(ngModel)]="newCustomer.address" placeholder="Địa chỉ" />
+      <input type="text" class="cp-input" [(ngModel)]="newCustomer.address" placeholder="Address" />
       <div class="cp-create-actions">
-        <button type="button" class="cp-btn cp-btn--ghost" (click)="cancelCreate()">Hủy</button>
+        <button type="button" class="cp-btn cp-btn--ghost" (click)="cancelCreate()">Cancel</button>
         <button type="button" class="cp-btn cp-btn--primary" (click)="createCustomer()"
                 [disabled]="creatingCustomer() || !newCustomer.name.trim()">
           <i [class]="creatingCustomer() ? 'pi pi-spin pi-spinner' : 'pi pi-check'"></i>
-          {{ creatingCustomer() ? 'Đang tạo...' : 'Tạo & liên kết' }}
+          {{ creatingCustomer() ? 'Creating...' : 'Create & link' }}
         </button>
       </div>
       <span *ngIf="createError" style="font-size:.7rem;color:#ef4444">{{ createError }}</span>
@@ -436,7 +436,7 @@ import { TemplateSendPanelComponent } from './template-send-panel.component';
     <div class="cp-footer">
       <button *ngIf="!showCreateForm()" type="button" class="cp-btn cp-btn--primary" style="width:100%;justify-content:center"
               (click)="showCreateForm.set(true)">
-        <i class="pi pi-user-plus"></i> Tạo khách hàng mới
+        <i class="pi pi-user-plus"></i> New customer
       </button>
     </div>
 
@@ -508,10 +508,10 @@ export class CustomerPanelComponent implements OnDestroy {
 
   customerTypeLabel(t?: string): string {
     const map: Record<string, string> = {
-      regular: 'Khách thường', vip: 'Khách VIP', wholesale: 'Khách sỉ',
-      corporate: 'Doanh nghiệp', new: 'Khách mới',
+      regular: 'Regular', vip: 'VIP', wholesale: 'Wholesale',
+      corporate: 'Corporate', new: 'New',
     };
-    return map[(t || 'regular').toLowerCase()] || (t || 'Khách thường');
+    return map[(t || 'regular').toLowerCase()] || (t || 'Regular');
   }
 
   // ── Email
@@ -595,7 +595,7 @@ export class CustomerPanelComponent implements OnDestroy {
         this._resetTabState();
         this.loadCustomerData();
       },
-      error: () => { this.linking = false; this.linkError = 'Liên kết thất bại. Thử lại.'; }
+      error: () => { this.linking = false; this.linkError = 'Link failed. Please try again.'; }
     });
   }
 
@@ -604,7 +604,7 @@ export class CustomerPanelComponent implements OnDestroy {
     this.linking = true; this.linkError = '';
     this.chatService.linkConversationToCustomer(this._conversation.id, null).subscribe({
       next: () => { this.linkedCustomer = null; this.linking = false; this.customerLinked.emit(null); },
-      error: () => { this.linking = false; this.linkError = 'Hủy liên kết thất bại.'; }
+      error: () => { this.linking = false; this.linkError = 'Unlink failed.'; }
     });
   }
 
@@ -662,10 +662,10 @@ export class CustomerPanelComponent implements OnDestroy {
         this.helperView.set('info');
         this.messageSent.emit({
           id: `order-created-${order.id}-${Date.now()}`, sender: 'system', sender_name: 'System',
-          content: `🛒 Đã tạo đơn #${order.order_number} (${total.toLocaleString('vi-VN')}₫) cho ${c.name}`,
+          content: `🛒 Created order #${order.order_number} (${total.toLocaleString('vi-VN')}₫) for ${c.name}`,
           timestamp: new Date().toISOString(), message_type: 'text', delivery_status: 'sent',
         } as TelegramMessage);
-        this.messageService.add({ severity: 'success', summary: 'Đơn hàng', detail: `Đã tạo đơn #${order.order_number}` });
+        this.messageService.add({ severity: 'success', summary: 'Order', detail: `Created order #${order.order_number}` });
         // Auto-send the success email when the customer has an address.
         if (c.email && order.id) {
           this.chatService.sendOrderConfirmationEmail({
@@ -678,20 +678,20 @@ export class CustomerPanelComponent implements OnDestroy {
               this.orders.update(list => list.map(o => o.id === order.id
                 ? { ...o, confirmation_emails: [...(o.confirmation_emails || []), { batch_id: r.batch_id || '', sent_at: r.sent_at || new Date().toISOString(), recipient_email: c.email! }] }
                 : o));
-              this.messageService.add({ severity: 'success', summary: 'Email', detail: `Đã gửi xác nhận đơn tới ${c.email}` });
+              this.messageService.add({ severity: 'success', summary: 'Email', detail: `Confirmation email sent to ${c.email}` });
               this.messageSent.emit({
                 id: `order-mail-${order.id}-${Date.now()}`, sender: 'system', sender_name: 'System',
-                content: `📧 Đã gửi email xác nhận đơn #${order.order_number} tới ${c.email}`,
+                content: `📧 Sent order confirmation #${order.order_number} to ${c.email}`,
                 timestamp: new Date().toISOString(), message_type: 'text', delivery_status: 'sent',
               } as TelegramMessage);
             },
-            error: () => this.messageService.add({ severity: 'warn', summary: 'Email', detail: 'Đơn đã tạo nhưng gửi email thất bại' }),
+            error: () => this.messageService.add({ severity: 'warn', summary: 'Email', detail: 'Order created but email failed' }),
           });
         }
       },
       error: (err: any) => {
         this.placingOrder.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: err?.error?.detail || 'Không thể tạo đơn hàng' });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.detail || 'Could not create order' });
       },
     });
   }
@@ -722,7 +722,7 @@ export class CustomerPanelComponent implements OnDestroy {
     // Build a thread system message (sender='system' so it doesn't count
     // against agent response-time metrics).
     const when = result.sent_at || new Date().toISOString();
-    const summary = `📧 Đã gửi email xác nhận đơn #${order.order_number} tới ${result.recipient_email}`;
+    const summary = `📧 Sent order confirmation #${order.order_number} to ${result.recipient_email}`;
     this.messageSent.emit({
       id: `order-confirm-${order.id}-${Date.now()}`,
       sender: 'system',
@@ -745,7 +745,7 @@ export class CustomerPanelComponent implements OnDestroy {
     };
     this.chatService.sendEmailToCustomer(payload).subscribe({
       next: () => { this.sendingEmail.set(false); this.cancelEmail(); },
-      error: () => { this.sendingEmail.set(false); this.emailError = 'Gửi email thất bại.'; }
+      error: () => { this.sendingEmail.set(false); this.emailError = 'Failed to send email.'; }
     });
   }
 
@@ -766,10 +766,10 @@ export class CustomerPanelComponent implements OnDestroy {
             this.customerLinked.emit(created);
             this._resetTabState();
           },
-          error: () => { this.creatingCustomer.set(false); this.createError = 'Tạo thành công nhưng link thất bại. Hãy tìm và link.'; }
+          error: () => { this.creatingCustomer.set(false); this.createError = 'Created but linking failed. Please search and link.'; }
         });
       },
-      error: () => { this.creatingCustomer.set(false); this.createError = 'Tạo khách hàng thất bại.'; }
+      error: () => { this.creatingCustomer.set(false); this.createError = 'Failed to create customer.'; }
     });
   }
 
