@@ -39,6 +39,7 @@ import { CreateOrderDialogComponent } from './create-order-dialog.component';
     .cp-btn--ghost:hover:not(:disabled) { background:#f1f5f9; }
     .cp-btn--danger { background:none; border:none; color:#ef4444; padding:.2rem .4rem; font-size:.68rem; }
     .cp-btn:disabled { opacity:.55; cursor:not-allowed; }
+    .cp-card-cta { width:100%; justify-content:center; margin-top:.6rem; padding:.5rem; font-size:.78rem; }
 
     .cp-input {
       width:100%; padding:.35rem .6rem; border:1px solid #e2e8f0; border-radius:6px;
@@ -171,8 +172,7 @@ import { CreateOrderDialogComponent } from './create-order-dialog.component';
           <p-tag [value]="linkedCustomer.is_active ? 'Active' : 'Inactive'"
                  [severity]="linkedCustomer.is_active ? 'success' : 'secondary'"></p-tag>
         </div>
-        <button type="button" (click)="showCreateOrder.set(true)"
-                style="width:100%;margin-top:.6rem;padding:.55rem;border:none;border-radius:8px;background:#2563eb;color:#fff;font-weight:600;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;">
+        <button type="button" class="cp-btn cp-btn--primary cp-card-cta" (click)="showCreateOrder.set(true)">
           <i class="pi pi-shopping-cart"></i> Tạo đơn hàng
         </button>
       </div>

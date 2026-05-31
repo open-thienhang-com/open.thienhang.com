@@ -70,7 +70,7 @@ interface CartLine { product: ProductSearchResult; quantity: number; }
     .co-price { width: 110px; text-align: right; font-weight: 600; color: #0f172a; font-size: .85rem; }
     .co-rm { border: none; background: transparent; color: #94a3b8; cursor: pointer; }
     .co-rm:hover { color: #ef4444; }
-    .co-total { text-align: right; font-weight: 800; color: #ea580c; font-size: 1.05rem; margin-top: .75rem; }
+    .co-total { text-align: right; font-weight: 800; color: #2563eb; font-size: 1.05rem; margin-top: .75rem; padding-top: .6rem; border-top: 1px solid #eef2f7; }
   `],
 })
 export class CreateOrderDialogComponent implements OnInit {
