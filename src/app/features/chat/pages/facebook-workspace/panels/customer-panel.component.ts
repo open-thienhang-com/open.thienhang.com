@@ -40,6 +40,12 @@ import { CreateOrderDialogComponent } from './create-order-dialog.component';
     .cp-btn--danger { background:none; border:none; color:#ef4444; padding:.2rem .4rem; font-size:.68rem; }
     .cp-btn:disabled { opacity:.55; cursor:not-allowed; }
     .cp-card-cta { width:100%; justify-content:center; margin-top:.6rem; padding:.5rem; font-size:.78rem; }
+    .cp-staffbar { display:flex; align-items:center; justify-content:space-between; gap:.5rem;
+      padding:.45rem .75rem; background:#eef2ff; border-bottom:1px solid #e0e7ff; flex-shrink:0; }
+    .cp-staffbar-label { font-size:.68rem; font-weight:700; color:#6366f1; text-transform:uppercase; letter-spacing:.03em; display:flex; align-items:center; gap:.35rem; }
+    .cp-staffbar-label i { font-size:.8rem; }
+    .cp-staffbar-name { font-size:.78rem; font-weight:700; color:#312e81; }
+    .cp-staffbar-name.unassigned { color:#94a3b8; font-weight:600; font-style:italic; }
 
     .cp-input {
       width:100%; padding:.35rem .6rem; border:1px solid #e2e8f0; border-radius:6px;
@@ -150,6 +156,12 @@ import { CreateOrderDialogComponent } from './create-order-dialog.component';
   `],
   template: `
 <div class="cp">
+
+  <!-- ══ Supporting staff bar (always visible for the active conversation) ══ -->
+  <div class="cp-staffbar" *ngIf="conversation">
+    <span class="cp-staffbar-label"><i class="pi pi-headphones"></i> Nhân viên hỗ trợ</span>
+    <span class="cp-staffbar-name" [class.unassigned]="!conversation.agent">{{ conversation.agent || 'Chưa gán' }}</span>
+  </div>
 
   <!-- ══ LINKED: customer card + tabs ══════════════════════════════════════ -->
   <ng-container *ngIf="linkedCustomer">
@@ -371,8 +383,8 @@ import { CreateOrderDialogComponent } from './create-order-dialog.component';
     *ngIf="dialogOrder && linkedCustomer"
     [customer]="linkedCustomer"
     [order]="dialogOrder"
-    [conversationId]="_conversation?.id || undefined"
-    [agentName]="_conversation?.agent || undefined"
+    [conversationId]="conversation?.id || undefined"
+    [agentName]="conversation?.agent || undefined"
     (sent)="onConfirmationSent($event)"
     (cancelled)="dialogOrder = null">
 </app-order-confirmation-dialog>
@@ -381,8 +393,8 @@ import { CreateOrderDialogComponent } from './create-order-dialog.component';
 <app-create-order-dialog
     *ngIf="showCreateOrder() && linkedCustomer"
     [customer]="linkedCustomer"
-    [conversationId]="_conversation?.id || undefined"
-    [agentName]="_conversation?.agent || undefined"
+    [conversationId]="conversation?.id || undefined"
+    [agentName]="conversation?.agent || undefined"
     (orderCreated)="onOrderCreated($event)"
     (cancelled)="showCreateOrder.set(false)">
 </app-create-order-dialog>
