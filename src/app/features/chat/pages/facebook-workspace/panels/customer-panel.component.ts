@@ -16,11 +16,12 @@ import {
   OrderConfirmationResult,
 } from '../../../models/chat.model';
 import { OrderConfirmationDialogComponent } from './order-confirmation-dialog.component';
+import { CreateOrderDialogComponent } from './create-order-dialog.component';
 
 @Component({
   selector: 'app-customer-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, SkeletonModule, TagModule, ProgressSpinnerModule, OrderConfirmationDialogComponent],
+  imports: [CommonModule, FormsModule, SkeletonModule, TagModule, ProgressSpinnerModule, OrderConfirmationDialogComponent, CreateOrderDialogComponent],
   styles: [`
     :host { display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden; }
 
@@ -213,6 +214,10 @@ import { OrderConfirmationDialogComponent } from './order-confirmation-dialog.co
 
       <!-- Orders -->
       <ng-container *ngIf="activeTab() === 'orders'">
+        <button type="button" (click)="showCreateOrder.set(true)"
+                style="width:100%;margin-bottom:.6rem;padding:.5rem;border:none;border-radius:6px;background:#2563eb;color:#fff;font-weight:600;font-size:.85rem;cursor:pointer;">
+          <i class="pi pi-plus"></i> Tạo đơn hàng
+        </button>
         <div *ngIf="ordersLoading()" class="cp-empty"><i class="pi pi-spin pi-spinner"></i></div>
         <div *ngIf="!ordersLoading() && orders().length === 0" class="cp-empty">
           <i class="pi pi-shopping-bag"></i><p>Chưa có đơn hàng</p>
@@ -367,9 +372,20 @@ import { OrderConfirmationDialogComponent } from './order-confirmation-dialog.co
     [customer]="linkedCustomer"
     [order]="dialogOrder"
     [conversationId]="_conversation?.id || undefined"
+    [agentName]="_conversation?.agent || undefined"
     (sent)="onConfirmationSent($event)"
     (cancelled)="dialogOrder = null">
 </app-order-confirmation-dialog>
+
+<!-- Create-order dialog: build a Telegram-channel order for the linked customer -->
+<app-create-order-dialog
+    *ngIf="showCreateOrder() && linkedCustomer"
+    [customer]="linkedCustomer"
+    [conversationId]="_conversation?.id || undefined"
+    [agentName]="_conversation?.agent || undefined"
+    (orderCreated)="onOrderCreated($event)"
+    (cancelled)="showCreateOrder.set(false)">
+</app-create-order-dialog>
   `
 })
 export class CustomerPanelComponent implements OnDestroy {
@@ -407,6 +423,9 @@ export class CustomerPanelComponent implements OnDestroy {
   historyLoaded = signal(false);
   ordersLoading = signal(false);
   historyLoading = signal(false);
+
+  // ── Create order (Telegram-channel checkout for the linked customer)
+  showCreateOrder = signal(false);
 
   // ── Email
   showEmailForm = signal(false);
@@ -488,6 +507,31 @@ export class CustomerPanelComponent implements OnDestroy {
   openConfirmationDialog(order: CustomerOrder): void {
     if (!this.linkedCustomer?.email) return;
     this.dialogOrder = order;
+  }
+
+  /** A new order was just created from the conversation. Close the create
+   *  dialog, surface it in the orders list, pin a system message, then open the
+   *  confirmation-email dialog so the agent can email the customer. */
+  onOrderCreated(order: CustomerOrder): void {
+    this.showCreateOrder.set(false);
+    this.orders.update(list => [order, ...list]);
+    this.ordersLoaded.set(true);
+    this.activeTab.set('orders');
+
+    this.messageSent.emit({
+      id: `order-created-${order.id}-${Date.now()}`,
+      sender: 'system',
+      sender_name: 'System',
+      content: `🛒 Đã tạo đơn #${order.order_number} (${(order.total_amount || 0).toLocaleString('vi-VN')}₫) cho ${this.linkedCustomer?.name || 'khách'}`,
+      timestamp: new Date().toISOString(),
+      message_type: 'text',
+      delivery_status: 'sent',
+    } as TelegramMessage);
+
+    // Chain into the email-confirmation dialog (only if the customer has email).
+    if (this.linkedCustomer?.email) {
+      this.dialogOrder = order;
+    }
   }
 
   /** Dialog reports a successful send. Append a system message into the
