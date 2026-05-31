@@ -246,8 +246,8 @@ import { TemplateSendPanelComponent } from './template-send-panel.component';
         <div class="cp-pin-id">
           <div class="cp-pin-name">{{ linkedCustomer.name }}</div>
           <div class="cp-pin-badges">
-            <span class="cp-chip cp-chip--type">{{ linkedCustomer.customer_type || 'regular' }}</span>
-            <span class="cp-chip" [class.cp-chip--ok]="linkedCustomer.is_active" [class.cp-chip--off]="!linkedCustomer.is_active">{{ linkedCustomer.is_active ? 'Active' : 'Inactive' }}</span>
+            <span class="cp-chip cp-chip--type">{{ customerTypeLabel(linkedCustomer.customer_type) }}</span>
+            <span class="cp-chip" [class.cp-chip--ok]="linkedCustomer.is_active" [class.cp-chip--off]="!linkedCustomer.is_active">{{ linkedCustomer.is_active ? 'Đang hoạt động' : 'Ngừng' }}</span>
           </div>
         </div>
         <button type="button" class="cp-pin-x" (click)="unlink()" [disabled]="linking" title="Đổi/Hủy khách"><i class="pi pi-times"></i></button>
@@ -280,7 +280,7 @@ import { TemplateSendPanelComponent } from './template-send-panel.component';
         <section class="cp-sec">
           <div class="cp-sec-title">Hồ sơ khách hàng</div>
           <div class="cp-kv cp-kv--muted"><i class="pi pi-hashtag"></i><span>{{ linkedCustomer.id }}</span></div>
-          <div class="cp-kv"><i class="pi pi-tag"></i><span>{{ linkedCustomer.customer_type || 'regular' }}</span></div>
+          <div class="cp-kv"><i class="pi pi-tag"></i><span>{{ customerTypeLabel(linkedCustomer.customer_type) }}</span></div>
           <div class="cp-sec-actions">
             <button type="button" class="cp-btn cp-btn--ghost cp-btn--sm" *ngIf="linkedCustomer.email && !showEmailForm()" (click)="showEmailForm.set(true)"><i class="pi pi-envelope"></i> Gửi email</button>
             <button type="button" class="cp-btn cp-btn--ghost cp-btn--sm" (click)="showRelink.set(!showRelink())"><i class="pi pi-sync"></i> Đổi khách</button>
@@ -504,6 +504,14 @@ export class CustomerPanelComponent implements OnDestroy {
 
   get productOptions() {
     return this.products.map(p => ({ label: p.name + ' (' + p.sku + ') — ' + (p.selling_price || 0).toLocaleString('vi-VN') + '₫', value: p.id }));
+  }
+
+  customerTypeLabel(t?: string): string {
+    const map: Record<string, string> = {
+      regular: 'Khách thường', vip: 'Khách VIP', wholesale: 'Khách sỉ',
+      corporate: 'Doanh nghiệp', new: 'Khách mới',
+    };
+    return map[(t || 'regular').toLowerCase()] || (t || 'Khách thường');
   }
 
   // ── Email
