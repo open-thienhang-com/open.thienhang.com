@@ -203,8 +203,12 @@ import { CreateOrderDialogComponent } from './create-order-dialog.component';
 
       <!-- Profile -->
       <ng-container *ngIf="activeTab() === 'profile'">
-        <div *ngIf="linkedCustomer.email" class="cp-info-row"><span class="cp-info-label">Email</span><span class="cp-info-val">{{ linkedCustomer.email }}</span></div>
-        <div class="cp-info-row"><span class="cp-info-label">Loại</span><span class="cp-info-val">{{ linkedCustomer.customer_type }}</span></div>
+        <div class="cp-info-row"><span class="cp-info-label">Họ tên</span><span class="cp-info-val">{{ linkedCustomer.name || '—' }}</span></div>
+        <div class="cp-info-row"><span class="cp-info-label">Điện thoại</span><span class="cp-info-val">{{ linkedCustomer.phone || '—' }}</span></div>
+        <div class="cp-info-row"><span class="cp-info-label">Email</span><span class="cp-info-val">{{ linkedCustomer.email || '—' }}</span></div>
+        <div class="cp-info-row"><span class="cp-info-label">Loại KH</span><span class="cp-info-val">{{ linkedCustomer.customer_type || 'regular' }}</span></div>
+        <div class="cp-info-row"><span class="cp-info-label">Trạng thái</span><span class="cp-info-val">{{ linkedCustomer.is_active ? 'Đang hoạt động' : 'Ngừng' }}</span></div>
+        <div class="cp-info-row"><span class="cp-info-label">Mã KH</span><span class="cp-info-val" style="font-size:.66rem;color:#94a3b8">{{ linkedCustomer.id }}</span></div>
 
         <!-- Send email -->
         <div style="margin-top:.6rem">
