@@ -690,7 +690,8 @@ export class CustomerPanelComponent implements OnDestroy {
       total_price: (Number(l.product.selling_price) || 0) * (Number(l.quantity) || 0),
     }));
     this.placingOrder.set(true);
-    this.chatService.createOrder({ customer_id: c.id, items, total_amount: total, net_amount: total, source: 'telegram' }).subscribe({
+    const orderNumber = 'TG-' + Date.now().toString().slice(-9);
+    this.chatService.createOrder({ order_number: orderNumber, customer_id: c.id, items, total_amount: total, net_amount: total, source: 'telegram' }).subscribe({
       next: (res: any) => {
         const d = res?.data || res || {};
         const order: CustomerOrder = {
