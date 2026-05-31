@@ -47,6 +47,32 @@ import { CreateOrderDialogComponent } from './create-order-dialog.component';
     .cp-staffbar-name { font-size:.78rem; font-weight:700; color:#312e81; }
     .cp-staffbar-name.unassigned { color:#94a3b8; font-weight:600; font-style:italic; }
 
+    /* ── CRM single-scroll layout ── */
+    .cp-crm { flex:1; min-height:0; overflow-y:auto; padding:.75rem; display:flex; flex-direction:column; gap:.75rem; }
+    .cp-hero { background:linear-gradient(135deg,#6366f1,#8b5cf6); border-radius:14px; padding:.85rem; color:#fff; box-shadow:0 8px 20px rgba(99,102,241,.28); }
+    .cp-hero-top { display:flex; align-items:center; gap:.6rem; }
+    .cp-hero-av { width:2.6rem; height:2.6rem; border-radius:14px; background:rgba(255,255,255,.22); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.1rem; flex-shrink:0; }
+    .cp-hero-id { flex:1; min-width:0; }
+    .cp-hero-name { font-size:1rem; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .cp-hero-badges { display:flex; gap:.3rem; margin-top:.25rem; flex-wrap:wrap; }
+    .cp-chip { font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; padding:.1rem .45rem; border-radius:999px; background:rgba(255,255,255,.22); color:#fff; }
+    .cp-chip--ok { background:rgba(255,255,255,.9); color:#16a34a; }
+    .cp-chip--off { background:rgba(0,0,0,.2); color:#fee2e2; }
+    .cp-hero-x { margin-left:auto; border:none; background:rgba(255,255,255,.18); color:#fff; width:1.7rem; height:1.7rem; border-radius:8px; cursor:pointer; flex-shrink:0; }
+    .cp-hero-x:hover { background:rgba(255,255,255,.32); }
+    .cp-hero-cta { width:100%; margin-top:.75rem; padding:.6rem; border:none; border-radius:10px; background:#fff; color:#4f46e5; font-weight:800; font-size:.85rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.45rem; box-shadow:0 2px 6px rgba(0,0,0,.12); }
+    .cp-hero-cta:hover { background:#f5f3ff; }
+
+    .cp-sec { background:#fff; border:1px solid #eceef4; border-radius:12px; padding:.7rem .8rem; }
+    .cp-sec-title { font-size:.68rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:.04em; margin-bottom:.5rem; display:flex; align-items:center; gap:.4rem; }
+    .cp-count { background:#eef2ff; color:#4f46e5; border-radius:999px; padding:0 .4rem; font-size:.66rem; font-weight:800; }
+    .cp-kv { display:flex; align-items:center; gap:.5rem; font-size:.8rem; color:#1e293b; padding:.2rem 0; }
+    .cp-kv i { color:#94a3b8; font-size:.78rem; width:1rem; text-align:center; flex-shrink:0; }
+    .cp-kv--muted span { font-size:.66rem; color:#94a3b8; }
+    .cp-kv-warn { color:#d97706; font-style:italic; }
+    .cp-sec-actions { display:flex; gap:.4rem; margin-top:.5rem; flex-wrap:wrap; }
+    .cp-relink { margin-top:.5rem; padding-top:.5rem; border-top:1px solid #f1f5f9; }
+
     .cp-input {
       width:100%; padding:.35rem .6rem; border:1px solid #e2e8f0; border-radius:6px;
       font:inherit; font-size:.78rem; outline:none; box-sizing:border-box;
@@ -163,81 +189,81 @@ import { CreateOrderDialogComponent } from './create-order-dialog.component';
     <span class="cp-staffbar-name" [class.unassigned]="!conversation.agent">{{ conversation.agent || 'Chưa gán' }}</span>
   </div>
 
-  <!-- ══ LINKED: customer card + tabs ══════════════════════════════════════ -->
+  <!-- ══ LINKED: single-scroll CRM panel ═══════════════════════════════════ -->
   <ng-container *ngIf="linkedCustomer">
+    <div class="cp-crm">
 
-    <!-- Card header -->
-    <div class="cp-scroll" style="flex:0;padding-bottom:0">
-      <div class="cp-card">
-        <div class="cp-card-head">
-          <div class="cp-avatar">{{ (linkedCustomer.name || '?').charAt(0).toUpperCase() }}</div>
-          <div class="cp-card-info">
-            <div class="cp-card-name">{{ linkedCustomer.name }}</div>
-            <div class="cp-card-phone">{{ linkedCustomer.phone || '—' }}</div>
+      <!-- Hero -->
+      <div class="cp-hero">
+        <div class="cp-hero-top">
+          <div class="cp-hero-av">{{ (linkedCustomer.name || '?').charAt(0).toUpperCase() }}</div>
+          <div class="cp-hero-id">
+            <div class="cp-hero-name">{{ linkedCustomer.name }}</div>
+            <div class="cp-hero-badges">
+              <span class="cp-chip cp-chip--type">{{ linkedCustomer.customer_type || 'regular' }}</span>
+              <span class="cp-chip" [class.cp-chip--ok]="linkedCustomer.is_active" [class.cp-chip--off]="!linkedCustomer.is_active">
+                {{ linkedCustomer.is_active ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
           </div>
-          <button type="button" class="cp-unlink" (click)="unlink()" [disabled]="linking" title="Hủy liên kết">
-            <i class="pi pi-times"></i>
-          </button>
+          <button type="button" class="cp-hero-x" (click)="unlink()" [disabled]="linking" title="Hủy liên kết"><i class="pi pi-times"></i></button>
         </div>
-        <div class="cp-card-tags">
-          <p-tag [value]="linkedCustomer.customer_type || 'customer'" severity="info"></p-tag>
-          <p-tag [value]="linkedCustomer.is_active ? 'Active' : 'Inactive'"
-                 [severity]="linkedCustomer.is_active ? 'success' : 'secondary'"></p-tag>
-        </div>
-        <button type="button" class="cp-btn cp-btn--primary cp-card-cta" (click)="showCreateOrder.set(true)">
+        <button type="button" class="cp-hero-cta" (click)="showCreateOrder.set(true)">
           <i class="pi pi-shopping-cart"></i> Tạo đơn hàng
         </button>
       </div>
-    </div>
 
-    <!-- Tabs -->
-    <div class="cp-tabs">
-      <button type="button" class="cp-tab" [class.active]="activeTab() === 'profile'" (click)="loadTab('profile')">Profile</button>
-      <button type="button" class="cp-tab" [class.active]="activeTab() === 'orders'" (click)="loadTab('orders')">Đơn hàng</button>
-      <button type="button" class="cp-tab" [class.active]="activeTab() === 'history'" (click)="loadTab('history')">Lịch sử</button>
-      <button type="button" class="cp-tab" [class.active]="activeTab() === 'relink'" (click)="activeTab.set('relink')">Đổi link</button>
-    </div>
-
-    <!-- Tab body -->
-    <div class="cp-tab-body">
-
-      <!-- Profile -->
-      <ng-container *ngIf="activeTab() === 'profile'">
-        <div class="cp-info-row"><span class="cp-info-label">Họ tên</span><span class="cp-info-val">{{ linkedCustomer.name || '—' }}</span></div>
-        <div class="cp-info-row"><span class="cp-info-label">Điện thoại</span><span class="cp-info-val">{{ linkedCustomer.phone || '—' }}</span></div>
-        <div class="cp-info-row"><span class="cp-info-label">Email</span><span class="cp-info-val">{{ linkedCustomer.email || '—' }}</span></div>
-        <div class="cp-info-row"><span class="cp-info-label">Loại KH</span><span class="cp-info-val">{{ linkedCustomer.customer_type || 'regular' }}</span></div>
-        <div class="cp-info-row"><span class="cp-info-label">Trạng thái</span><span class="cp-info-val">{{ linkedCustomer.is_active ? 'Đang hoạt động' : 'Ngừng' }}</span></div>
-        <div class="cp-info-row"><span class="cp-info-label">Mã KH</span><span class="cp-info-val" style="font-size:.66rem;color:#94a3b8">{{ linkedCustomer.id }}</span></div>
-
-        <!-- Send email -->
-        <div style="margin-top:.6rem">
-          <button *ngIf="linkedCustomer.email && !showEmailForm()" type="button" class="cp-btn cp-btn--ghost" (click)="showEmailForm.set(true)">
+      <!-- Contact -->
+      <section class="cp-sec">
+        <div class="cp-sec-title">Thông tin liên hệ</div>
+        <div class="cp-kv"><i class="pi pi-phone"></i><span>{{ linkedCustomer.phone || '—' }}</span></div>
+        <div class="cp-kv"><i class="pi pi-envelope"></i><span [class.cp-kv-warn]="!linkedCustomer.email">{{ linkedCustomer.email || 'Chưa có email' }}</span></div>
+        <div class="cp-kv cp-kv--muted"><i class="pi pi-id-card"></i><span>{{ linkedCustomer.id }}</span></div>
+        <div class="cp-sec-actions">
+          <button type="button" class="cp-btn cp-btn--ghost cp-btn--sm" *ngIf="linkedCustomer.email && !showEmailForm()" (click)="showEmailForm.set(true)">
             <i class="pi pi-envelope"></i> Gửi email
           </button>
-          <div *ngIf="showEmailForm()" class="cp-compose">
-            <span style="font-size:.72rem;font-weight:700;color:#0f172a">Gửi email tới {{ linkedCustomer.email }}</span>
-            <input type="text" class="cp-input" [(ngModel)]="emailSubject" placeholder="Tiêu đề *" />
-            <textarea class="cp-input" rows="3" [(ngModel)]="emailContent" placeholder="Nội dung *" style="resize:none"></textarea>
-            <div class="cp-compose-row">
-              <button type="button" class="cp-btn cp-btn--ghost" (click)="cancelEmail()">Hủy</button>
-              <button type="button" class="cp-btn cp-btn--primary" (click)="sendEmail()"
-                      [disabled]="sendingEmail() || !emailSubject.trim() || !emailContent.trim()">
-                <i [class]="sendingEmail() ? 'pi pi-spin pi-spinner' : 'pi pi-send'"></i>
-                {{ sendingEmail() ? 'Đang gửi...' : 'Gửi' }}
-              </button>
-            </div>
-            <span *ngIf="emailError" style="font-size:.7rem;color:#ef4444">{{ emailError }}</span>
-          </div>
+          <button type="button" class="cp-btn cp-btn--ghost cp-btn--sm" (click)="showRelink.set(!showRelink())">
+            <i class="pi pi-sync"></i> Đổi khách
+          </button>
         </div>
-      </ng-container>
+
+        <div *ngIf="showEmailForm()" class="cp-compose">
+          <span style="font-size:.72rem;font-weight:700;color:#0f172a">Gửi email tới {{ linkedCustomer.email }}</span>
+          <input type="text" class="cp-input" [(ngModel)]="emailSubject" placeholder="Tiêu đề *" />
+          <textarea class="cp-input" rows="3" [(ngModel)]="emailContent" placeholder="Nội dung *" style="resize:none"></textarea>
+          <div class="cp-compose-row">
+            <button type="button" class="cp-btn cp-btn--ghost" (click)="cancelEmail()">Hủy</button>
+            <button type="button" class="cp-btn cp-btn--primary" (click)="sendEmail()"
+                    [disabled]="sendingEmail() || !emailSubject.trim() || !emailContent.trim()">
+              <i [class]="sendingEmail() ? 'pi pi-spin pi-spinner' : 'pi pi-send'"></i>
+              {{ sendingEmail() ? 'Đang gửi...' : 'Gửi' }}
+            </button>
+          </div>
+          <span *ngIf="emailError" style="font-size:.7rem;color:#ef4444">{{ emailError }}</span>
+        </div>
+
+        <div *ngIf="showRelink()" class="cp-relink">
+          <div class="cp-search-wrap">
+            <i class="pi pi-search cp-search-icon"></i>
+            <input type="text" class="cp-input cp-input--search" [(ngModel)]="searchKeyword"
+                   (ngModelChange)="onSearch($event)" placeholder="Tìm khách khác: tên, SĐT, email..." />
+          </div>
+          <div *ngIf="searching" class="cp-empty"><i class="pi pi-spin pi-spinner"></i></div>
+          <button *ngFor="let c of searchResults" type="button" class="cp-result-row" [disabled]="linking" (click)="selectCustomer(c)">
+            <div class="cp-result-av">{{ (c.name||'?').charAt(0).toUpperCase() }}</div>
+            <div style="flex:1;min-width:0"><div class="cp-result-name">{{ c.name }}</div><div class="cp-result-phone">{{ c.phone }}</div></div>
+            <span class="cp-result-link">Link</span>
+          </button>
+          <span *ngIf="linkError" class="cp-error">{{ linkError }}</span>
+        </div>
+      </section>
 
       <!-- Orders -->
-      <ng-container *ngIf="activeTab() === 'orders'">
+      <section class="cp-sec">
+        <div class="cp-sec-title">Đơn hàng <span class="cp-count">{{ orders().length }}</span></div>
         <div *ngIf="ordersLoading()" class="cp-empty"><i class="pi pi-spin pi-spinner"></i></div>
-        <div *ngIf="!ordersLoading() && orders().length === 0" class="cp-empty">
-          <i class="pi pi-shopping-bag"></i><p>Chưa có đơn hàng</p>
-        </div>
+        <div *ngIf="!ordersLoading() && orders().length === 0" class="cp-empty"><i class="pi pi-shopping-bag"></i><p>Chưa có đơn hàng</p></div>
         <div *ngFor="let order of orders()" class="cp-order-row">
           <div class="cp-order-row-head">
             <div class="cp-order-num">{{ order.order_number }}</div>
@@ -260,14 +286,13 @@ import { CreateOrderDialogComponent } from './create-order-dialog.component';
             </button>
           </div>
         </div>
-      </ng-container>
+      </section>
 
       <!-- History -->
-      <ng-container *ngIf="activeTab() === 'history'">
+      <section class="cp-sec">
+        <div class="cp-sec-title">Lịch sử hội thoại</div>
         <div *ngIf="historyLoading()" class="cp-empty"><i class="pi pi-spin pi-spinner"></i></div>
-        <div *ngIf="!historyLoading() && chatHistory().length === 0" class="cp-empty">
-          <i class="pi pi-comments"></i><p>Chưa có lịch sử</p>
-        </div>
+        <div *ngIf="!historyLoading() && chatHistory().length === 0" class="cp-empty"><i class="pi pi-comments"></i><p>Chưa có lịch sử</p></div>
         <div *ngFor="let conv of chatHistory()" class="cp-hist-row">
           <div style="display:flex;align-items:center;gap:.3rem">
             <i [class]="'pi pi-' + (conv.platform === 'telegram' ? 'send' : 'envelope')" style="font-size:.65rem;color:#94a3b8"></i>
@@ -276,35 +301,7 @@ import { CreateOrderDialogComponent } from './create-order-dialog.component';
           <div class="cp-hist-preview">{{ conv.last_message }}</div>
           <div class="cp-hist-time">{{ conv.last_message_time | date:'dd/MM HH:mm' }}</div>
         </div>
-      </ng-container>
-
-      <!-- Re-link -->
-      <ng-container *ngIf="activeTab() === 'relink'">
-        <div style="margin-bottom:.5rem">
-          <div class="cp-search-wrap">
-            <i class="pi pi-search cp-search-icon"></i>
-            <input type="text" class="cp-input cp-input--search"
-                   [(ngModel)]="searchKeyword" (ngModelChange)="onSearch($event)"
-                   placeholder="Tên, SĐT, email..." />
-          </div>
-        </div>
-        <div *ngIf="searching" class="cp-empty"><i class="pi pi-spin pi-spinner"></i></div>
-        <ng-container *ngIf="!searching">
-          <button *ngFor="let c of searchResults" type="button" class="cp-result-row"
-                  [disabled]="linking" (click)="selectCustomer(c)">
-            <div class="cp-result-av">{{ (c.name||'?').charAt(0).toUpperCase() }}</div>
-            <div style="flex:1;min-width:0">
-              <div class="cp-result-name">{{ c.name }}</div>
-              <div class="cp-result-phone">{{ c.phone }}</div>
-            </div>
-            <span class="cp-result-link">Link</span>
-          </button>
-          <div *ngIf="searchKeyword.trim() && !searching && searchResults.length === 0" class="cp-empty">
-            <i class="pi pi-user-minus"></i><p>Không tìm thấy</p>
-          </div>
-        </ng-container>
-        <span *ngIf="linkError" class="cp-error">{{ linkError }}</span>
-      </ng-container>
+      </section>
 
     </div>
   </ng-container>
@@ -442,6 +439,8 @@ export class CustomerPanelComponent implements OnDestroy {
 
   // ── Create order (Telegram-channel checkout for the linked customer)
   showCreateOrder = signal(false);
+  // ── Re-link panel toggle (single-scroll layout, no tabs)
+  showRelink = signal(false);
 
   // ── Email
   showEmailForm = signal(false);
@@ -493,6 +492,22 @@ export class CustomerPanelComponent implements OnDestroy {
     }
   }
 
+  /** Single-scroll layout: load orders + chat history together once linked. */
+  loadCustomerData(): void {
+    const c = this.linkedCustomer;
+    if (!c) return;
+    this.ordersLoading.set(true);
+    this.chatService.getCustomerOrders(c.id).subscribe({
+      next: res => { this.orders.set((res.data as CustomerOrder[]) || []); this.ordersLoaded.set(true); this.ordersLoading.set(false); },
+      error: () => this.ordersLoading.set(false),
+    });
+    this.historyLoading.set(true);
+    this.chatService.getCustomerChatHistory(c.id).subscribe({
+      next: res => { this.chatHistory.set((res.data as any[]) || []); this.historyLoaded.set(true); this.historyLoading.set(false); },
+      error: () => this.historyLoading.set(false),
+    });
+  }
+
   onSearch(keyword: string): void { this.searchSubject.next(keyword); }
 
   selectCustomer(customer: CustomerSummary): void {
@@ -503,8 +518,10 @@ export class CustomerPanelComponent implements OnDestroy {
         this.linkedCustomer = customer;
         this.searchKeyword = ''; this.searchResults = [];
         this.linking = false;
+        this.showRelink.set(false);
         this.customerLinked.emit(customer);
         this._resetTabState();
+        this.loadCustomerData();
       },
       error: () => { this.linking = false; this.linkError = 'Liên kết thất bại. Thử lại.'; }
     });
@@ -632,6 +649,7 @@ export class CustomerPanelComponent implements OnDestroy {
     if (!customerId) { this.linkedCustomer = null; return; }
     this.chatService.getRetailCustomer(customerId).pipe(catchError(() => of(null))).subscribe(res => {
       this.linkedCustomer = res?.data ?? null;
+      if (this.linkedCustomer) this.loadCustomerData();
     });
   }
 
