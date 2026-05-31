@@ -709,7 +709,25 @@ export class CustomerPanelComponent implements OnDestroy {
           timestamp: new Date().toISOString(), message_type: 'text', delivery_status: 'sent',
         } as TelegramMessage);
         this.messageService.add({ severity: 'success', summary: 'Order', detail: `Created order #${order.order_number}` });
-        // Auto-send the success email when the customer has an address.
+
+        // Also confirm the order to the customer over Telegram (customer-facing, Vietnamese).
+        const chatId = (this.conversation as any)?.chat_id;
+        if (chatId) {
+          const lines = items.map(it => `• ${it.product_name} x${it.quantity} — ${(it.total_price).toLocaleString('vi-VN')}₫`).join('\n');
+          const tgText = `✅ *Đơn hàng #${order.order_number} đã được tạo*\n${lines}\n\n💰 *Tổng cộng: ${total.toLocaleString('vi-VN')}₫*\nCảm ơn quý khách! Chúng tôi sẽ xử lý đơn sớm nhất.`;
+          this.chatService.sendTelegramMessage({ chat_id: chatId, text: tgText, disable_notification: false, parse_mode: 'Markdown' } as any).subscribe({
+            next: () => {
+              this.messageSent.emit({
+                id: `order-tg-${order.id}-${Date.now()}`, sender: 'agent', sender_name: 'Agent',
+                content: tgText, timestamp: new Date().toISOString(), message_type: 'text', delivery_status: 'sent',
+              } as TelegramMessage);
+              this.messageService.add({ severity: 'success', summary: 'Telegram', detail: 'Order confirmation sent to customer' });
+            },
+            error: () => {},
+          });
+        }
+
+        // Also email the confirmation when the customer has an address.
         if (c.email && order.id) {
           this.chatService.sendOrderConfirmationEmail({
             order_id: order.id, customer_id: c.id,

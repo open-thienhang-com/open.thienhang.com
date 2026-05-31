@@ -491,7 +491,9 @@ export class ChatService {
 
     getCustomerOrders(customerId: string, limit: number = 5): Observable<ApiResponse<CustomerOrder[]>> {
         const params = new HttpParams().set('customer_id', customerId).set('limit', limit.toString()).set('sort', '-created_at');
-        return this.http.get<ApiResponse<CustomerOrder[]>>(`${getApiBase()}/retail/orders`, { params });
+        return this.http.get<ApiResponse<CustomerOrder[]>>(`${getApiBase()}/retail/orders`, { params }).pipe(
+            map(res => ({ ...res, data: (res.data || []).map((o: any) => ({ ...o, id: o.id || o._id, item_count: o.item_count ?? o.items?.length ?? 0 })) }))
+        );
     }
 
     getCustomerChatHistory(customerId: string, limit: number = 5): Observable<ApiResponse<TelegramConversation[]>> {

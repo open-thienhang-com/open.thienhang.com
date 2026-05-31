@@ -159,7 +159,7 @@ export class OrderConfirmationDialogComponent implements OnInit {
         this.errorMessage.set('');
 
         this.chatService.sendOrderConfirmationEmail({
-            order_id: this.order.id,
+            order_id: this.order.id || (this.order as any)._id,
             customer_id: this.customer.id,
             subject_override: this.subject.trim() || undefined,
             agent_note: this.agentNote.trim() || undefined,
@@ -192,7 +192,7 @@ export class OrderConfirmationDialogComponent implements OnInit {
         if (!this.customer?.id || !this.order?.id) return;
         this.previewLoading.set(true);
         this.chatService.sendOrderConfirmationEmail({
-            order_id: this.order.id,
+            order_id: this.order.id || (this.order as any)._id,
             customer_id: this.customer.id,
             subject_override: this.subject.trim() || undefined,
             agent_note: this.agentNote.trim() || undefined,
