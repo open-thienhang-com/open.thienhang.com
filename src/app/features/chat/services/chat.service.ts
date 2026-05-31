@@ -294,11 +294,15 @@ export class ChatService {
 
     searchRetailCustomers(keyword: string, limit: number = 8): Observable<ApiResponse<CustomerSummary[]>> {
         const params = new HttpParams().set('search', keyword).set('limit', limit.toString());
-        return this.http.get<ApiResponse<CustomerSummary[]>>(`${getApiBase()}/retail/customers`, { params });
+        return this.http.get<ApiResponse<CustomerSummary[]>>(`${getApiBase()}/retail/customers`, { params }).pipe(
+            map(res => ({ ...res, data: (res.data || []).map((c: any) => ({ ...c, id: c.id || c._id })) }))
+        );
     }
 
     getRetailCustomer(customerId: string): Observable<ApiResponse<CustomerSummary>> {
-        return this.http.get<ApiResponse<CustomerSummary>>(`${getApiBase()}/retail/customers/${customerId}`);
+        return this.http.get<ApiResponse<CustomerSummary>>(`${getApiBase()}/retail/customers/${customerId}`).pipe(
+            map(res => ({ ...res, data: res.data ? { ...res.data, id: (res.data as any).id || (res.data as any)._id } : res.data }))
+        );
     }
 
     linkConversationToCustomer(conversationId: string, customerId: string | null): Observable<ApiResponse<unknown>> {
