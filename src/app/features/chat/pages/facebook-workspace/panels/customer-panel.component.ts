@@ -88,9 +88,9 @@ import { TemplateSendPanelComponent } from './template-send-panel.component';
     .cp-pin-badges { display:flex; gap:.3rem; margin-top:.35rem; flex-wrap:wrap; }
     .cp-pin-x { border:none; background:rgba(255,255,255,.18); color:#fff; width:1.6rem; height:1.6rem; border-radius:8px; cursor:pointer; flex-shrink:0; }
     .cp-pin-x:hover:not(:disabled) { background:rgba(255,255,255,.34); }
-    .cp-pin-staff { margin-top:.55rem; padding-top:.5rem; border-top:1px solid rgba(255,255,255,.2); font-size:.72rem; opacity:.95; }
-    .cp-pin-staff i { font-size:.7rem; margin-right:.25rem; opacity:.85; }
-    .cp-pin-staff strong { font-weight:800; }
+    .cp-pin-info { margin-top:.55rem; padding-top:.5rem; border-top:1px solid rgba(255,255,255,.2); display:flex; flex-direction:column; gap:.2rem; }
+    .cp-pin-kv { font-size:.74rem; opacity:.95; display:flex; align-items:center; gap:.4rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .cp-pin-kv i { font-size:.7rem; opacity:.8; width:.9rem; text-align:center; flex-shrink:0; }
     .cp-chip { font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; padding:.08rem .42rem; border-radius:999px; background:rgba(255,255,255,.22); color:#fff; }
     .cp-chip--ok { background:rgba(255,255,255,.92); color:#16a34a; }
     .cp-chip--off { background:rgba(0,0,0,.22); color:#fee2e2; }
@@ -245,10 +245,6 @@ import { TemplateSendPanelComponent } from './template-send-panel.component';
         <div class="cp-pin-av">{{ (linkedCustomer.name || '?').charAt(0).toUpperCase() }}</div>
         <div class="cp-pin-id">
           <div class="cp-pin-name">{{ linkedCustomer.name }}</div>
-          <div class="cp-pin-contact">
-            <span><i class="pi pi-phone"></i> {{ linkedCustomer.phone || '—' }}</span>
-            <span [class.cp-kv-warn]="!linkedCustomer.email"><i class="pi pi-envelope"></i> {{ linkedCustomer.email || 'Chưa có email' }}</span>
-          </div>
           <div class="cp-pin-badges">
             <span class="cp-chip cp-chip--type">{{ linkedCustomer.customer_type || 'regular' }}</span>
             <span class="cp-chip" [class.cp-chip--ok]="linkedCustomer.is_active" [class.cp-chip--off]="!linkedCustomer.is_active">{{ linkedCustomer.is_active ? 'Active' : 'Inactive' }}</span>
@@ -256,7 +252,17 @@ import { TemplateSendPanelComponent } from './template-send-panel.component';
         </div>
         <button type="button" class="cp-pin-x" (click)="unlink()" [disabled]="linking" title="Đổi/Hủy khách"><i class="pi pi-times"></i></button>
       </div>
-      <div class="cp-pin-staff"><i class="pi pi-headphones"></i> Nhân viên hỗ trợ: <strong>{{ conversation?.agent || 'Chưa gán' }}</strong></div>
+      <div class="cp-pin-info">
+        <div class="cp-pin-kv"><i class="pi pi-phone"></i>{{ linkedCustomer.phone || '—' }}</div>
+        <div class="cp-pin-kv"><i class="pi pi-envelope"></i>{{ linkedCustomer.email || 'Chưa có email' }}</div>
+        <div class="cp-pin-kv"><i class="pi pi-hashtag"></i>{{ linkedCustomer.id }}</div>
+      </div>
+    </div>
+
+    <!-- Supporting staff (below the customer card) -->
+    <div class="cp-staffbar">
+      <span class="cp-staffbar-label"><i class="pi pi-headphones"></i> Nhân viên hỗ trợ</span>
+      <span class="cp-staffbar-name" [class.unassigned]="!conversation?.agent">{{ conversation?.agent || 'Chưa gán' }}</span>
     </div>
 
     <!-- Helper menu -->
