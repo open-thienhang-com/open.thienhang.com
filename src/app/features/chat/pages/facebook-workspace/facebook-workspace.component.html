@@ -317,44 +317,15 @@
     </main>
 
 
-    <!-- Right: info panel — always pinned, vertical tabs -->
-    <aside class="cw-drawer cw-drawer--pinned" *ngIf="selectedConversation() as conv">
+    <!-- Right: omni order-support panel (self-contained customer panel) -->
+    <aside class="cw-drawer cw-drawer--cust" *ngIf="selectedConversation() as conv">
+      <app-customer-panel [conversation]="selectedConversation()"
+                          (customerLinked)="handleCustomerLinked($event)"
+                          (messageSent)="handleMessageSent($event)">
+      </app-customer-panel>
 
-      <!-- Vertical tab strip -->
-      <nav class="cw-vtabs">
-        <button type="button" class="cw-vtab" [class.active]="infoPanel() === 'customer'"
-                title="Customer" (click)="openInfoPanel('customer')">
-          <i class="pi pi-user"></i>
-          <span>Customer</span>
-        </button>
-        <button type="button" class="cw-vtab" [class.active]="infoPanel() === 'context'"
-                title="Context" (click)="openInfoPanel('context')">
-          <i class="pi pi-info-circle"></i>
-          <span>Context</span>
-        </button>
-        <button type="button" class="cw-vtab" [class.active]="infoPanel() === 'product'"
-                title="Products" (click)="openInfoPanel('product')">
-          <i class="pi pi-shopping-bag"></i>
-          <span>Products</span>
-        </button>
-        <button type="button" class="cw-vtab" [class.active]="infoPanel() === 'template'"
-                title="Template" (click)="openInfoPanel('template')">
-          <i class="pi pi-file-export"></i>
-          <span>Template</span>
-        </button>
-      </nav>
-
-      <!-- Panel content -->
-      <div class="cw-drawer-body">
-
-        <!-- Customer -->
-        <div *ngIf="infoPanel() === 'customer'">
-          <app-customer-panel [conversation]="selectedConversation()"
-                              (customerLinked)="handleCustomerLinked($event)"
-                              (messageSent)="handleMessageSent($event)">
-          </app-customer-panel>
-        </div>
-
+      <!-- legacy panels disabled in favour of the customer panel's helper menu -->
+      <ng-container *ngIf="false">
         <!-- Context -->
         <div *ngIf="infoPanel() === 'context'" class="cw-context-panel">
           <div class="cw-info-row">
@@ -439,8 +410,7 @@
               [linkedCustomer]="linkedCustomer()">
           </app-template-send-panel>
         </div>
-
-      </div>
+      </ng-container>
     </aside>
   </div>
 </div>

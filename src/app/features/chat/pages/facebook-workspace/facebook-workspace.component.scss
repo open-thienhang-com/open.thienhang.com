@@ -1429,3 +1429,7 @@
 .cw-root .cw-vtabs { background: #fafbff; border-right: 1px solid #eceef4; }
 .cw-root .cw-vtab.active { background: #eef2ff; color: #4f46e5; }
 .cw-root .cw-vtab.active i { color: #6366f1; }
+
+/* Self-contained customer panel fills the right column */
+.cw-root .cw-drawer--cust { display: flex; flex-direction: column; padding: 0; overflow: hidden; background: #fff; border-left: 1px solid #eceef4; }
+.cw-root .cw-drawer--cust app-customer-panel { flex: 1; min-height: 0; display: flex; }
