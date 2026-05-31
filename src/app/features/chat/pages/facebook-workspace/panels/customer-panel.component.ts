@@ -171,6 +171,10 @@ import { CreateOrderDialogComponent } from './create-order-dialog.component';
           <p-tag [value]="linkedCustomer.is_active ? 'Active' : 'Inactive'"
                  [severity]="linkedCustomer.is_active ? 'success' : 'secondary'"></p-tag>
         </div>
+        <button type="button" (click)="showCreateOrder.set(true)"
+                style="width:100%;margin-top:.6rem;padding:.55rem;border:none;border-radius:8px;background:#2563eb;color:#fff;font-weight:600;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;">
+          <i class="pi pi-shopping-cart"></i> Tạo đơn hàng
+        </button>
       </div>
     </div>
 
@@ -214,10 +218,6 @@ import { CreateOrderDialogComponent } from './create-order-dialog.component';
 
       <!-- Orders -->
       <ng-container *ngIf="activeTab() === 'orders'">
-        <button type="button" (click)="showCreateOrder.set(true)"
-                style="width:100%;margin-bottom:.6rem;padding:.5rem;border:none;border-radius:6px;background:#2563eb;color:#fff;font-weight:600;font-size:.85rem;cursor:pointer;">
-          <i class="pi pi-plus"></i> Tạo đơn hàng
-        </button>
         <div *ngIf="ordersLoading()" class="cp-empty"><i class="pi pi-spin pi-spinner"></i></div>
         <div *ngIf="!ordersLoading() && orders().length === 0" class="cp-empty">
           <i class="pi pi-shopping-bag"></i><p>Chưa có đơn hàng</p>
