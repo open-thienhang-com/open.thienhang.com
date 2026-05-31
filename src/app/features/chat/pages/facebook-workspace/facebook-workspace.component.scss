@@ -1356,3 +1356,76 @@
     color: #1d4ed8;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Workspace UI refresh (v3) — modern, lighter, more spacious.
+   Appended overrides only (scoped to .cw-root) so nothing structural breaks.
+   ══════════════════════════════════════════════════════════════════════════ */
+.cw-root {
+  --cw-accent: #6366f1;
+  --cw-accent-soft: #eef2ff;
+  background: #f4f5fb;
+}
+
+/* Top bar — clean white, gradient brand mark */
+.cw-root .cw-topbar {
+  background: #ffffff;
+  border-bottom: 1px solid #eceef4;
+  box-shadow: 0 1px 2px rgba(17, 24, 39, .03);
+  padding: .6rem 1.1rem;
+}
+.cw-root .cw-brand-icon {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  border-radius: 13px;
+  box-shadow: 0 6px 16px rgba(99, 102, 241, .35);
+}
+.cw-root .cw-brand-title { font-weight: 800; letter-spacing: -.01em; }
+
+/* Queue tabs as a segmented pill control */
+.cw-root .cw-queue-tabs {
+  gap: .25rem; background: #eef0f7; padding: .25rem; border-radius: 12px;
+}
+.cw-root .cw-queue-tabs .cw-tab {
+  border: none; background: transparent; border-radius: 9px;
+  padding: .42rem .85rem; font-weight: 700; color: #6b7280; transition: all .15s;
+}
+.cw-root .cw-queue-tabs .cw-tab:hover { color: #111827; }
+.cw-root .cw-queue-tabs .cw-tab.active {
+  background: #ffffff; color: #4f46e5; box-shadow: 0 1px 3px rgba(17, 24, 39, .1);
+}
+.cw-root .cw-queue-tabs .cw-tab-count {
+  background: #dfe2ee; color: #4b5563; border-radius: 999px;
+  padding: .02rem .42rem; font-size: .66rem; margin-left: .35rem; font-weight: 700;
+}
+.cw-root .cw-queue-tabs .cw-tab.active .cw-tab-count { background: #6366f1; color: #fff; }
+
+/* Icon + presence buttons */
+.cw-root .cw-icon-btn { border-radius: 10px; color: #6b7280; }
+.cw-root .cw-icon-btn:hover { background: #eef0f7; color: #4f46e5; }
+.cw-root .cw-presence-btn { border-radius: 10px; }
+
+/* Left rail */
+.cw-root .cw-left { background: #ffffff; border-right: 1px solid #eceef4; }
+.cw-root .cw-search-wrap {
+  background: #f1f2f8; border: 1px solid transparent; border-radius: 12px;
+}
+.cw-root .cw-search-wrap:focus-within {
+  background: #fff; border-color: #c7d2fe; box-shadow: 0 0 0 3px rgba(99, 102, 241, .12);
+}
+.cw-root .cw-search-input { background: transparent; }
+
+/* Thread header — airy, modern avatar */
+.cw-root .cw-thread { background: #f4f5fb; }
+.cw-root .cw-thread-head { background: #fff; border-bottom: 1px solid #eceef4; padding: .8rem 1.1rem; }
+.cw-root .cw-th-avatar { border-radius: 14px; font-weight: 800; box-shadow: var(--cw-shadow-sm); }
+.cw-root .cw-th-name { font-weight: 800; letter-spacing: -.01em; }
+
+/* Composer — clean elevated bar */
+.cw-root .cw-composer { background: #fff; border-top: 1px solid #eceef4; }
+
+/* Right drawer */
+.cw-root .cw-drawer { background: #fff; border-left: 1px solid #eceef4; }
+.cw-root .cw-vtabs { background: #fafbff; border-right: 1px solid #eceef4; }
+.cw-root .cw-vtab.active { background: #eef2ff; color: #4f46e5; }
+.cw-root .cw-vtab.active i { color: #6366f1; }
