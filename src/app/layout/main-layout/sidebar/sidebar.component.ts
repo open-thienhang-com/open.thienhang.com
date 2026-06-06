@@ -97,12 +97,14 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   // ── App matrix ─────────────────────────────────────────────────────────────
   apps: { key: AppKey; label: string; icon: string; color: string }[] = [
+    { key: 'applications', label: 'Applications', icon: 'pi pi-th-large', color: '#0ea5e9' },
     { key: 'retail', label: 'Sales', icon: 'pi pi-shopping-bag', color: '#f97316' },
     { key: 'inventory', label: 'Inventory', icon: 'pi pi-box', color: '#10b981' },
     { key: 'governance', label: 'Governance', icon: 'pi pi-shield', color: '#8b5cf6' },
     { key: 'loyalty', label: 'Customers', icon: 'pi pi-users', color: '#3b82f6' },
     { key: 'support', label: 'Support', icon: 'pi pi-comments', color: '#06b6d4' },
     { key: 'planning', label: 'Planning', icon: 'pi pi-map', color: '#14b8a6' },
+    { key: 'map', label: 'Map', icon: 'pi pi-map-marker', color: '#22c55e' },
     { key: 'hotel', label: 'Hotel', icon: 'pi pi-building', color: '#f59e0b' },
     { key: 'blogger', label: 'Blogger', icon: 'pi pi-pencil', color: '#ec4899' },
     { key: 'admanager', label: 'Ad Manager', icon: 'pi pi-megaphone', color: '#ef4444' },
@@ -322,7 +324,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     const key = this.appKey;
 
     // ── All apps view ────────────────────────────────────────────────────────
-    if (!key || key === 'all') {
+    if (!key || key === 'all' || key === 'applications') {
       const allGroups = this.sidebarGroups.filter(g => {
         if (!g?.label) return false;
         const lbl = g.label.toLowerCase();
@@ -428,6 +430,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     const singleSectionApps: Partial<Record<AppKey, string>> = {
       blogger: 'blogger', explore: 'explore', admanager: 'ad manager',
       files: 'file', travel: 'travel', notification: 'notification',
+      map: 'map',
     };
     const singleLabel = singleSectionApps[key];
     if (singleLabel) {
@@ -463,7 +466,9 @@ export class SidebarComponent implements OnInit, OnChanges {
   deriveAppFromUrl(url: string): AppKey | null {
     if (!url) return null;
     const p = url.split('?')[0].toLowerCase();
-    if (p === '/' || p === '' || p === '/applications') return 'all';
+    if (p === '/' || p === '') return 'all';
+    if (p === '/applications' || p.startsWith('/applications/')) return 'applications';
+    if (p === '/map' || p.startsWith('/map/')) return 'map';
     if (p.startsWith('/governance')) return 'governance';
     if (p.startsWith('/retail/loyalty') || p.startsWith('/retail/rewards') || p.startsWith('/retail/campaigns') || p.startsWith('/retail/customers')) return 'loyalty';
     if (p.startsWith('/retail/omni-channel')) return 'support';
@@ -525,7 +530,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       fleet: '/planning/fleet', orders: '/retail/orders', transactions: '/retail/transactions',
       'retail-sales': '/retail/orders', 'retail-products': '/retail/products',
       'retail-customers': '/retail/customers', 'retail-omni': '/retail/omni-channel',
-      'retail-pos': '/retail/pos',
+      'retail-pos': '/retail/pos', applications: '/applications', map: '/map/address-extraction',
     };
     try { this.router.navigate([routes[key] || '/']); } catch { }
     this.closeAppMatrix();

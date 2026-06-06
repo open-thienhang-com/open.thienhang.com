@@ -19,6 +19,7 @@ import { notificationRoutes } from './features/notification/notification.routes'
 import { FRESH_RETAIL_FEATURE_CONFIG } from './features/retail/retail-services/feature-page/fresh-retail.config';
 import { INVENTORY_ROUTES } from './features/inventory/inventory.routes';
 import { LOYALTY_ROUTES } from './features/loyalty/loyalty.routes';
+import { MAP_ROUTES } from './features/map/map.routes';
 
 
 export const routes: Routes = [
@@ -410,6 +411,11 @@ export const routes: Routes = [
       {
         path: 'loyalty',
         children: LOYALTY_ROUTES
+      },
+      {
+        // Public module — no auth guard
+        path: 'map',
+        children: MAP_ROUTES
       },
       {
         path: 'retail',

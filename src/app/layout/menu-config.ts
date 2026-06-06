@@ -235,6 +235,15 @@ export const menu: MenuItem[] = [
         ]
     },
     {
+        label: 'Map',
+        icon: 'pi pi-map-marker',
+        type: 'item',
+        expanded: false,
+        children: [
+            { label: 'Address Extraction', url: '/map/address-extraction', icon: 'pi pi-map-marker' }
+        ]
+    },
+    {
         label: 'Hotel Management',
         icon: 'pi pi-building',
         type: 'item',

@@ -1,0 +1,118 @@
+<div class="address-extraction">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1><i class="pi pi-map-marker"></i> Address Extraction</h1>
+      <p class="subtitle">Phân tích địa chỉ Việt Nam bằng NER (BERT + gazetteer) — phân lớp Tỉnh/Thành phố, Quận/Huyện, Phường/Xã…</p>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div class="input-card">
+    <textarea
+      [(ngModel)]="text"
+      rows="3"
+      placeholder="Nhập địa chỉ, ví dụ: 45 Trương Đình Hội, Phường 16, Quận 8, TPHCM"
+      (keydown.control.enter)="extract()"></textarea>
+    <div class="input-actions">
+      <div class="samples">
+        <span class="samples-label">Ví dụ:</span>
+        @for (s of samples; track s) {
+          <button type="button" class="sample-chip" (click)="useSample(s)" [disabled]="loading()">{{ s }}</button>
+        }
+      </div>
+      <p-button
+        label="Extract"
+        icon="pi pi-sparkles"
+        [loading]="loading()"
+        [disabled]="!text.trim()"
+        (onClick)="extract()" />
+    </div>
+  </div>
+
+  <!-- Error -->
+  @if (error()) {
+    <div class="error-banner">
+      <i class="pi pi-exclamation-triangle"></i> {{ error() }}
+    </div>
+  }
+
+  <!-- Result -->
+  @if (result(); as r) {
+    <div class="result-section">
+      <!-- Canonical -->
+      <div class="canonical-card">
+        <div class="canonical-label">Địa chỉ chuẩn hoá</div>
+        <div class="canonical-value">{{ r.canonical || '—' }}</div>
+        <div class="original-value">Gốc: {{ r.text }}</div>
+      </div>
+
+      <!-- Classification table: one row per administrative level -->
+      <div class="table-card">
+        <div class="table-title">Phân lớp địa chỉ</div>
+        <p-table [value]="filledLevels" styleClass="p-datatable-sm" [tableStyle]="{'min-width': '40rem'}">
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width: 14rem">Phân lớp</th>
+              <th>Giá trị trích xuất</th>
+              <th style="width: 7rem">Độ tin cậy</th>
+              <th style="width: 11rem">Nguồn</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-level>
+            <tr>
+              <td>
+                <span class="level-cell"><i [class]="levelIcon(level.key)"></i> {{ level.label_vi }}</span>
+                <span class="level-raw">{{ level.label }}</span>
+              </td>
+              <td>
+                @if (level.entities.length) {
+                  <div class="entity-list">
+                    @for (e of level.entities; track $index) {
+                      <span class="entity-value">{{ e.text }}</span>
+                    }
+                  </div>
+                } @else {
+                  <span class="empty">—</span>
+                }
+              </td>
+              <td>
+                @for (e of level.entities; track $index) {
+                  <div class="score">{{ e.score | number:'1.0-4' }}</div>
+                }
+              </td>
+              <td>
+                @for (e of level.entities; track $index) {
+                  <div><p-tag [value]="e.source" [severity]="sourceSeverity(e.source)" /></div>
+                }
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+
+      <!-- Raw entities -->
+      <div class="table-card">
+        <div class="table-title">Entities (raw)</div>
+        <p-table [value]="r.entities" styleClass="p-datatable-sm" [tableStyle]="{'min-width': '40rem'}">
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width: 12rem">Label</th>
+              <th>Text</th>
+              <th style="width: 7rem">Score</th>
+              <th style="width: 11rem">Source</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-e>
+            <tr>
+              <td><code>{{ e.label }}</code></td>
+              <td>{{ e.text }}</td>
+              <td>{{ e.score | number:'1.0-4' }}</td>
+              <td><p-tag [value]="e.source" [severity]="sourceSeverity(e.source)" /></td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  }
+</div>
