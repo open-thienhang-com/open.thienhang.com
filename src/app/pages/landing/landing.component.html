@@ -1,165 +1,184 @@
-<div class="landing-page">
+<div class="lp">
 
-  <!-- Hero Section -->
+  <!-- Animated ambient background -->
+  <div class="lp-bg" aria-hidden="true">
+    <span class="orb orb-1"></span>
+    <span class="orb orb-2"></span>
+    <span class="orb orb-3"></span>
+    <div class="lp-grid"></div>
+  </div>
+
+  <!-- ─── Hero ─────────────────────────────────────────────── -->
   <section class="hero">
-    <div class="hero-bg-pattern"></div>
-    <div class="hero-grid-dots"></div>
-    <div class="hero-content">
+    <div class="hero-inner">
       <div class="hero-badge">
         <span class="badge-dot"></span>
-        MSIT 5910 — Capstone Project
+        One platform · {{ totalApps }} integrated apps
       </div>
+
       <h1 class="hero-title">
-        Digital Inventory &amp;
-        <span class="gradient-text">Demand Forecasting</span>
-        System
+        Every business app you need,
+        <span class="grad-text">in one open platform</span>
       </h1>
-      <p class="hero-subtitle">
-        For Fresh Retail in Vietnam
+
+      <p class="hero-lead">
+        From commerce and hospitality to messaging, ML and cloud integrations —
+        explore a living showroom of production-ready modules, all sharing one
+        identity, governance and data-mesh backbone.
       </p>
-      <p class="hero-description">
-        A full-stack enterprise platform delivering multi-tenant inventory management, sales &amp; commerce operations,
-        ML-driven demand forecasting, and governance with strict data isolation — purpose-built for Vietnam's fresh
-        produce supply chain.
-      </p>
-      <div class="hero-actions">
-        <a routerLink="/applications" class="btn-primary">
+
+      <div class="hero-cta">
+        <a routerLink="/applications" class="btn btn-primary">
           <i class="pi pi-th-large"></i>
-          Launch Dashboard
+          Browse all apps
         </a>
-        <a routerLink="/inventory" class="btn-secondary">
-          <i class="pi pi-box"></i>
-          Explore Inventory
+        <a routerLink="/register" class="btn btn-ghost">
+          <i class="pi pi-sparkles"></i>
+          Get started free
         </a>
       </div>
+
+      <ul class="hero-stats">
+        <li>
+          <span class="stat-num">{{ totalApps }}</span>
+          <span class="stat-lbl">Applications</span>
+        </li>
+        <li>
+          <span class="stat-num">{{ totalEndpoints }}+</span>
+          <span class="stat-lbl">API endpoints</span>
+        </li>
+        <li>
+          <span class="stat-num">{{ totalFeatures }}+</span>
+          <span class="stat-lbl">Features</span>
+        </li>
+        <li>
+          <span class="stat-num">{{ platformCount }}</span>
+          <span class="stat-lbl">Platform cores</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Floating app icon cloud -->
+    <div class="icon-cloud" aria-hidden="true">
+      <span *ngFor="let o of orbitIcons; let i = index"
+            class="float-icon"
+            [style.--accent]="o.accent"
+            [style.--i]="i">
+        <i [class]="o.icon"></i>
+      </span>
     </div>
   </section>
 
-  <div class="section-divider"></div>
+  <!-- ─── Showroom ─────────────────────────────────────────── -->
+  <section class="showroom">
+    <header class="sec-head" data-reveal>
+      <span class="sec-eyebrow">The showroom</span>
+      <h2 class="sec-title">Explore the app catalog</h2>
+      <p class="sec-sub">
+        Click any card to launch the module. Two platform cores power thirteen
+        plug-and-play domain adapters.
+      </p>
+    </header>
 
-  <!-- Academic Info -->
-  <section class="academic-section">
-    <div class="academic-card">
-      <div class="academic-grid">
-        <div class="academic-item">
-          <div class="academic-icon">
-            <i class="pi pi-user"></i>
-          </div>
-          <div>
-            <div class="academic-label">Submitted by</div>
-            <div class="academic-value">Hàng Tuấn Thiên <span class="academic-meta">(c1923591)</span></div>
-          </div>
-        </div>
-        <div class="academic-item">
-          <div class="academic-icon supervisor">
-            <i class="pi pi-star"></i>
-          </div>
-          <div>
-            <div class="academic-label">Supervised by</div>
-            <div class="academic-value">Dr. Shabia Shabir</div>
-          </div>
-        </div>
-        <div class="academic-item">
-          <div class="academic-icon degree">
-            <i class="pi pi-bookmark"></i>
-          </div>
-          <div>
-            <div class="academic-label">Degree</div>
-            <div class="academic-value">Master of Science in Information Technology</div>
-          </div>
-        </div>
-        <div class="academic-item">
-          <div class="academic-icon institution">
-            <i class="pi pi-building"></i>
-          </div>
-          <div>
-            <div class="academic-label">Institution</div>
-            <div class="academic-value">University of the People <span class="academic-meta">Pasadena, CA</span></div>
-          </div>
-        </div>
-      </div>
+    <div class="filters" data-reveal>
+      <button *ngFor="let f of filters"
+              class="filter-pill"
+              [class.active]="activeFilter === f.key"
+              (click)="setFilter(f.key)">
+        <i [class]="f.icon"></i>
+        {{ f.label }}
+      </button>
     </div>
-  </section>
 
-  <div class="section-divider"></div>
+    <div class="apps-grid">
+      <a *ngFor="let app of visibleApps; trackBy: trackByKey; let i = index"
+         [routerLink]="app.route"
+         class="app-card"
+         data-reveal
+         [style.--accent]="app.accent"
+         [style.--delay]="(i % 6) * 60 + 'ms'">
+        <span class="card-bar" [style.background]="app.gradient"></span>
 
-  <!-- System Modules -->
-  <section class="modules-section">
-    <div class="section-header">
-      <h2 class="section-title">System Modules</h2>
-      <p class="section-subtitle">4 core functional areas powering the digital supply chain platform</p>
-    </div>
-    <div class="modules-grid">
-      <a *ngFor="let mod of modules" [routerLink]="mod.route" class="module-card">
-        <div class="module-icon" [style.backgroundColor]="mod.bgColor" [style.color]="mod.color">
-          <i [class]="mod.icon"></i>
+        <div class="card-top">
+          <div class="card-icon" [style.background]="app.gradient">
+            <i [class]="app.icon"></i>
+          </div>
+          <span class="card-status" [attr.data-status]="app.status">
+            <span class="status-dot"></span>
+            {{ statusLabel(app.status) }}
+          </span>
         </div>
-        <h3 class="module-title">{{ mod.title }}</h3>
-        <p class="module-desc">{{ mod.description }}</p>
-        <div class="module-link" [style.color]="mod.color">
-          Explore <i class="pi pi-arrow-right"></i>
+
+        <h3 class="card-name">{{ app.name }}</h3>
+        <p class="card-tag">{{ app.tagline }}</p>
+        <p class="card-desc">{{ app.description }}</p>
+
+        <div class="card-foot">
+          <span class="card-meta">
+            <span class="meta-pill">{{ app.type }}</span>
+            <span class="meta-count" *ngIf="app.endpoints.length">
+              {{ app.endpoints.length }} endpoints
+            </span>
+          </span>
+          <span class="card-go">
+            Open <i class="pi pi-arrow-right"></i>
+          </span>
         </div>
       </a>
     </div>
   </section>
 
-  <div class="section-divider"></div>
-
-  <!-- Architecture Overview -->
-  <section class="arch-section">
-    <div class="section-header">
-      <h2 class="section-title">Technology Stack</h2>
-      <p class="section-subtitle">Built with modern, production-grade technologies</p>
-    </div>
-    <div class="tech-grid">
-      <div *ngFor="let tech of techStack" class="tech-chip">
-        <span class="tech-category">{{ tech.category }}</span>
-        <span class="tech-name">{{ tech.name }}</span>
+  <!-- ─── Why us ───────────────────────────────────────────── -->
+  <section class="value-band" data-reveal>
+    <header class="sec-head">
+      <span class="sec-eyebrow">Built to scale</span>
+      <h2 class="sec-title">One backbone, every domain</h2>
+    </header>
+    <div class="value-grid">
+      <div class="value-card">
+        <div class="value-icon vi-1"><i class="pi pi-shield"></i></div>
+        <h3>Secure by default</h3>
+        <p>Casbin multi-tenant RBAC, JWT sessions and OAuth2 protect every endpoint out of the box.</p>
       </div>
-    </div>
-    <div class="arch-diagram">
-      <div class="arch-layer">
-        <div class="arch-layer-label">Frontend</div>
-        <div class="arch-blocks">
-          <div class="arch-block frontend">Angular 19 + PrimeNG</div>
-          <div class="arch-block frontend">Tailwind CSS</div>
-        </div>
+      <div class="value-card">
+        <div class="value-icon vi-2"><i class="pi pi-bolt"></i></div>
+        <h3>Plug-and-play</h3>
+        <p>Domain adapters mount onto the platform core — add a vertical without touching the foundation.</p>
       </div>
-      <div class="arch-connector"><i class="pi pi-arrow-down"></i></div>
-      <div class="arch-layer">
-        <div class="arch-layer-label">API Gateway</div>
-        <div class="arch-blocks">
-          <div class="arch-block api">FastAPI + Casbin RBAC</div>
-          <div class="arch-block api">JWT Authentication</div>
-        </div>
+      <div class="value-card">
+        <div class="value-icon vi-3"><i class="pi pi-sitemap"></i></div>
+        <h3>Data-mesh native</h3>
+        <p>Every domain publishes governed data products with lineage, catalog and entitlements.</p>
       </div>
-      <div class="arch-connector"><i class="pi pi-arrow-down"></i></div>
-      <div class="arch-layer">
-        <div class="arch-layer-label">Services</div>
-        <div class="arch-blocks">
-          <div class="arch-block service">Inventory Engine</div>
-          <div class="arch-block service">ML Forecasting</div>
-        </div>
-      </div>
-      <div class="arch-connector"><i class="pi pi-arrow-down"></i></div>
-      <div class="arch-layer">
-        <div class="arch-layer-label">Data Layer</div>
-        <div class="arch-blocks">
-          <div class="arch-block data">MongoDB</div>
-          <div class="arch-block data">Redis Cache</div>
-        </div>
+      <div class="value-card">
+        <div class="value-icon vi-4"><i class="pi pi-chart-line"></i></div>
+        <h3>Intelligent</h3>
+        <p>ML model registry and demand forecasting turn operational data into decisions.</p>
       </div>
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="landing-footer">
-    <div class="footer-content">
-      <p class="footer-text">
-        Department of CS &amp; MSIT · University of the People, Pasadena, CA 91101, United States
-      </p>
-      <p class="footer-term">Term 4, 05, 2026</p>
+  <!-- ─── CTA ──────────────────────────────────────────────── -->
+  <section class="cta-band" data-reveal>
+    <div class="cta-inner">
+      <h2>Ready to explore the platform?</h2>
+      <p>Dive into the full app catalog or spin up your account in seconds.</p>
+      <div class="hero-cta">
+        <a routerLink="/applications" class="btn btn-light">
+          <i class="pi pi-th-large"></i>
+          Browse all apps
+        </a>
+        <a routerLink="/register" class="btn btn-outline">
+          <i class="pi pi-arrow-right"></i>
+          Create account
+        </a>
+      </div>
     </div>
+  </section>
+
+  <!-- ─── Footer ───────────────────────────────────────────── -->
+  <footer class="lp-footer">
+    <p>© {{ currentYear }} open.thienhang.com — an open, multi-tenant application platform.</p>
   </footer>
 
 </div>
