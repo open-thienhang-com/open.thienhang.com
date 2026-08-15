@@ -128,6 +128,52 @@
     </div>
   </section>
 
+  <!-- ─── Data Mesh & Platform ─────────────────────────────── -->
+  <section class="showroom data-showroom">
+    <header class="sec-head" data-reveal>
+      <span class="sec-eyebrow">Data Mesh &amp; Platform</span>
+      <h2 class="sec-title">Data products, sources &amp; marketplace</h2>
+      <p class="sec-sub">
+        Beyond the API catalog — discover governed data products, browse the
+        marketplace, connect data sources and keep everything observable.
+      </p>
+    </header>
+
+    <div class="apps-grid">
+      <a *ngFor="let app of platformApps; let i = index"
+         [routerLink]="app.route"
+         class="app-card"
+         data-reveal
+         [style.--accent]="app.accent"
+         [style.--delay]="(i % 6) * 60 + 'ms'">
+        <span class="card-bar" [style.background]="app.gradient"></span>
+
+        <div class="card-top">
+          <div class="card-icon" [style.background]="app.gradient">
+            <i [class]="app.icon"></i>
+          </div>
+          <span class="card-status" data-status="stable">
+            <span class="status-dot"></span>
+            {{ app.category }}
+          </span>
+        </div>
+
+        <h3 class="card-name">{{ app.name }}</h3>
+        <p class="card-tag">{{ app.tagline }}</p>
+        <p class="card-desc">{{ app.description }}</p>
+
+        <div class="card-foot">
+          <span class="card-meta">
+            <span class="meta-pill">{{ app.category }}</span>
+          </span>
+          <span class="card-go">
+            Open <i class="pi pi-arrow-right"></i>
+          </span>
+        </div>
+      </a>
+    </div>
+  </section>
+
   <!-- ─── Why us ───────────────────────────────────────────── -->
   <section class="value-band" data-reveal>
     <header class="sec-head">

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { getApiBase } from '../config/api-config';
+import { AuthServices } from './auth.services';
 
 export type PermissionMap = Record<string, boolean>;
 
@@ -69,7 +70,7 @@ export const SIDEBAR_CHECKS: SidebarCheck[] = [
 export class SidebarPermissionService {
   private permissions$ = new BehaviorSubject<PermissionMap | null>(null);
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private auth: AuthServices) {}
 
   loadPermissions(userId: string, tenantId: string): Observable<void> {
     const url = `${getApiBase()}/governance/casbin/bulk-check`;
@@ -89,6 +90,8 @@ export class SidebarPermissionService {
 
   /** Synchronous check — fail-open: true when map not loaded or path not in map. */
   isAllowed(casbinPath: string): boolean {
+    // Admin-class users see every sidebar entry regardless of fine-grained checks.
+    if (this.auth.isSuperAdmin()) return true;
     const map = this.permissions$.getValue();
     if (map === null) return true;
     if (!(casbinPath in map)) return true;

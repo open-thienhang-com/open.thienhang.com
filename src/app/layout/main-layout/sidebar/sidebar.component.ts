@@ -108,7 +108,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     { key: 'hotel', label: 'Hotel', icon: 'pi pi-building', color: '#f59e0b' },
     { key: 'blogger', label: 'Blogger', icon: 'pi pi-pencil', color: '#ec4899' },
     { key: 'admanager', label: 'Ad Manager', icon: 'pi pi-megaphone', color: '#ef4444' },
-    { key: 'explore', label: 'Explore', icon: 'pi pi-compass', color: '#6366f1' },
+    { key: 'explore', label: 'Data Mesh', icon: 'pi pi-sitemap', color: '#6366f1' },
     { key: 'files', label: 'Files', icon: 'pi pi-folder', color: '#84cc16' },
     { key: 'settings', label: 'Settings', icon: 'pi pi-cog', color: '#64748b' },
   ];
@@ -152,6 +152,10 @@ export class SidebarComponent implements OnInit, OnChanges {
         }
       }
     });
+
+    // Roles may resolve after the permission map loads — recompute so admins
+    // immediately get full sidebar visibility once their roles arrive.
+    this.authServices.getRoles().subscribe(() => this.computeVisibleGroups());
 
     if (this.authServices.isLoggedIn() && !this.currentUser()) {
       this.authServices.getCurrentUser().subscribe();
@@ -476,7 +480,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (p.startsWith('/retail')) return 'retail';
     if (p.startsWith('/inventory')) return 'inventory';
     if (p.startsWith('/loyalty')) return 'loyalty';
-    if (p.startsWith('/discovery') || p.startsWith('/explore') || p.startsWith('/data-catalog') || p.startsWith('/data-mesh')) return 'explore';
+    if (p.startsWith('/discovery') || p.startsWith('/explore') || p.startsWith('/data-catalog') || p.startsWith('/data-mesh') || p.startsWith('/marketplace') || p.startsWith('/observability')) return 'explore';
     if (p.startsWith('/blogger') || p.startsWith('/posts') || p.startsWith('/blog')) return 'blogger';
     if (p.startsWith('/hotel')) return 'hotel';
     if (p.startsWith('/ad-manager') || p.startsWith('/admanager') || p.startsWith('/ads')) return 'admanager';

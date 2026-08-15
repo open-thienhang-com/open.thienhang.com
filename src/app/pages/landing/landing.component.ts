@@ -11,6 +11,69 @@ interface AppCard extends ApiModuleData {
   tagline: string;
 }
 
+interface PlatformApp {
+  name: string;
+  category: string;
+  route: string;
+  icon: string;
+  tagline: string;
+  description: string;
+  gradient: string;
+  accent: string;
+}
+
+/** Front-end experience apps that live outside the API catalog (Data Mesh, platform tooling). */
+const PLATFORM_APPS: Array<Omit<PlatformApp, 'gradient' | 'accent'> & { from: string; to: string }> = [
+  {
+    name: 'Data Products', category: 'Data Mesh', route: '/data-mesh/data-products', icon: 'pi pi-shopping-cart',
+    tagline: 'Discover & subscribe to data products',
+    description: 'Browse governed, domain-owned data products with schemas, SLAs, ownership and subscription workflows.',
+    from: '#6366f1', to: '#8b5cf6',
+  },
+  {
+    name: 'Marketplace', category: 'Data Mesh', route: '/marketplace', icon: 'pi pi-shopping-bag',
+    tagline: 'Internal data & service marketplace',
+    description: 'A self-serve storefront where teams publish and consume data assets, APIs and services across domains.',
+    from: '#ec4899', to: '#f43f5e',
+  },
+  {
+    name: 'Domain Catalog', category: 'Data Mesh', route: '/data-mesh/catalogs', icon: 'pi pi-sitemap',
+    tagline: 'Explore data domains & ownership',
+    description: 'Navigate the mesh of data domains — owners, products, contracts and the assets each domain exposes.',
+    from: '#14b8a6', to: '#06b6d4',
+  },
+  {
+    name: 'Data Catalog', category: 'Discovery', route: '/discovery/catalog', icon: 'pi pi-book',
+    tagline: 'Search the enterprise data catalog',
+    description: 'Full-text discovery across tables, datasets and assets with metadata, tags and lineage.',
+    from: '#0ea5e9', to: '#3b82f6',
+  },
+  {
+    name: 'Data Sources', category: 'Explore', route: '/explore', icon: 'pi pi-database',
+    tagline: 'Connect databases, warehouses & more',
+    description: 'Unified explorer for databases, data warehouses, pipelines, topics, ML models and containers.',
+    from: '#22c55e', to: '#84cc16',
+  },
+  {
+    name: 'Data Assets', category: 'Data Mesh', route: '/data-mesh/assets', icon: 'pi pi-box',
+    tagline: 'Catalog of assets with lineage',
+    description: 'Inventory of physical and logical data assets — tables, dashboards, APIs and pipelines with lineage.',
+    from: '#a855f7', to: '#d946ef',
+  },
+  {
+    name: 'Data Contracts', category: 'Data Mesh', route: '/data-mesh/contracts', icon: 'pi pi-file-check',
+    tagline: 'Govern producer–consumer contracts',
+    description: 'Define and enforce schema, quality and SLA contracts between data producers and consumers.',
+    from: '#f59e0b', to: '#f97316',
+  },
+  {
+    name: 'Observability', category: 'Platform', route: '/observability', icon: 'pi pi-chart-line',
+    tagline: 'Metrics, alerts & audit logs',
+    description: 'Monitor platform health with live metrics, alerting and a unified audit log across every module.',
+    from: '#ef4444', to: '#ec4899',
+  },
+];
+
 /** Presentation layer: marketing route + brand gradient + short tagline per module. */
 const PRESENTATION: Record<string, { route: string; from: string; to: string; tagline: string }> = {
   authentication: { route: '/login', from: '#6366f1', to: '#3b82f6', tagline: 'Secure identity, sessions & OAuth2' },
@@ -60,7 +123,18 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
   ];
   activeFilter: 'all' | ModuleType = 'all';
 
-  readonly totalApps = API_MODULES.length;
+  readonly platformApps: PlatformApp[] = PLATFORM_APPS.map(a => ({
+    name: a.name,
+    category: a.category,
+    route: a.route,
+    icon: a.icon,
+    tagline: a.tagline,
+    description: a.description,
+    gradient: `linear-gradient(135deg, ${a.from} 0%, ${a.to} 100%)`,
+    accent: a.from,
+  }));
+
+  readonly totalApps = API_MODULES.length + PLATFORM_APPS.length;
   readonly totalEndpoints = API_MODULES.reduce((s, m) => s + m.endpoints.length, 0);
   readonly totalFeatures = API_MODULES.reduce((s, m) => s + m.features.length, 0);
   readonly platformCount = API_MODULES.filter(m => m.type === 'Platform').length;

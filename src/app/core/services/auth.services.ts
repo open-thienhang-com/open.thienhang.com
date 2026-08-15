@@ -74,6 +74,23 @@ export class AuthServices {
     return this.rolesSubject.getValue().includes(role);
   }
 
+  /** Synchronous snapshot of the current user's roles. */
+  currentRoles(): string[] {
+    return this.rolesSubject.getValue();
+  }
+
+  /**
+   * True when the user holds an admin-class role (admin / owner / super_admin /
+   * tenant_admin, with or without a `role:` prefix). Used to grant full sidebar
+   * visibility regardless of fine-grained Casbin checks.
+   */
+  isSuperAdmin(): boolean {
+    return this.rolesSubject.getValue().some(r => {
+      const x = (r || '').toLowerCase();
+      return x.includes('admin') || x.includes('owner') || x.includes('super');
+    });
+  }
+
   constructor(private http: HttpClient, private loadingService: LoadingService, private router: Router) {
     // Initialize user from sessionStorage if present
     try {

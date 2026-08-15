@@ -3,26 +3,39 @@ import { MenuItem } from './models/menu-item';
 export const sidebarGroups: MenuItem[] = [
     {
         label: 'Explore',
-        icon: 'pi pi-compass',
+        icon: 'pi pi-sitemap',
         expanded: false,
-        hidden: true,
+        casbinPath: '/data-mesh/*',
         children: [
             {
                 label: 'Data Mesh',
                 icon: 'pi pi-sitemap',
+                expanded: true,
                 children: [
-                    { label: 'Data Products', url: '/data-mesh/data-products', icon: 'pi pi-shopping-cart' },
-                    { label: 'API Explorer', url: '/data-mesh/api-explorer', icon: 'pi pi-code' },
+                    { label: 'Data Products',  url: '/data-mesh/data-products', icon: 'pi pi-shopping-cart' },
+                    { label: 'Marketplace',    url: '/marketplace',             icon: 'pi pi-shopping-bag' },
+                    { label: 'Domain Catalog', url: '/data-mesh/catalogs',      icon: 'pi pi-sitemap' },
+                    { label: 'Data Catalog',   url: '/discovery/catalog',       icon: 'pi pi-book' },
+                    { label: 'Data Assets',    url: '/data-mesh/assets',        icon: 'pi pi-database' },
+                    { label: 'Data Contracts', url: '/data-mesh/contracts',     icon: 'pi pi-file-edit' },
+                    { label: 'Observability',  url: '/observability',           icon: 'pi pi-chart-line' },
                 ]
             },
-            { label: 'Database', url: '/explore/database', icon: 'pi pi-database' },
-            { label: 'Google', url: '/explore/google', icon: 'pi pi-google' },
-            { label: 'Data Warehouse', url: '/explore/data-warehouse', icon: 'pi pi-server' },
-            { label: 'Pipelines', url: '/explore/pipelines', icon: 'pi pi-sliders-h' },
-            { label: 'Topics', url: '/explore/topics', icon: 'pi pi-tags' },
-            { label: 'ML Models', url: '/explore/ml-models', icon: 'pi pi-brain' },
-            { label: 'Container', url: '/explore/container', icon: 'pi pi-box' },
-            { label: 'Search', url: '/explore/search', icon: 'pi pi-search' }
+            {
+                label: 'Data Sources',
+                icon: 'pi pi-database',
+                expanded: false,
+                children: [
+                    { label: 'Database',       url: '/explore/database',        icon: 'pi pi-database' },
+                    { label: 'Data Warehouse', url: '/explore/data-warehouse',  icon: 'pi pi-server' },
+                    { label: 'Pipelines',      url: '/explore/pipelines',       icon: 'pi pi-sliders-h' },
+                    { label: 'Topics',         url: '/explore/topics',          icon: 'pi pi-tags' },
+                    { label: 'ML Models',      url: '/explore/ml-models',       icon: 'pi pi-brain' },
+                    { label: 'Container',      url: '/explore/container',       icon: 'pi pi-box' },
+                    { label: 'Search',         url: '/explore/search',          icon: 'pi pi-search' },
+                    { label: 'Google',         url: '/explore/google',          icon: 'pi pi-google' },
+                ]
+            }
         ]
     }
 ];
@@ -128,7 +141,6 @@ export const menu: MenuItem[] = [
                 label: 'Fleet & Routes',
                 icon: 'pi pi-directions',
                 casbinPath: '/planning/*',
-                hidden: true,
                 children: [
                     { label: 'Planning', url: '/planning/auto-planning', icon: 'pi pi-directions' },
                 ]
@@ -189,7 +201,6 @@ export const menu: MenuItem[] = [
         icon: 'pi pi-bullhorn',
         type: 'item',
         expanded: false,
-        hidden: true,
         children: [
             { label: 'Ad Overview', url: '/ad-manager', icon: 'pi pi-chart-line' },
             { label: 'Campaigns', url: '/ad-manager/campaigns', icon: 'pi pi-megaphone' },
@@ -203,7 +214,6 @@ export const menu: MenuItem[] = [
         icon: 'pi pi-pencil',
         type: 'item',
         expanded: false,
-        hidden: true,
         children: [
             { label: 'Dashboard', url: '/blogger', icon: 'pi pi-home' },
             { label: 'Posts', url: '/blogger/posts', icon: 'pi pi-file-edit' },
@@ -248,7 +258,6 @@ export const menu: MenuItem[] = [
         icon: 'pi pi-building',
         type: 'item',
         expanded: false,
-        hidden: true,
         children: [
             {
                 label: 'Property Management',

@@ -341,6 +341,22 @@ export const routes: Routes = [
         loadComponent: () => import('./features/discovery/data-catalog.component').then(m => m.DataCatalogComponent),
       },
       {
+        path: 'data-mesh/assets',
+        loadComponent: () => import('./features/data-assets/data-assets.component').then(m => m.DataAssetsComponent),
+      },
+      {
+        path: 'data-mesh/contracts',
+        loadComponent: () => import('./features/data-contracts/data-contracts.component').then(m => m.DataContractsComponent),
+      },
+      {
+        path: 'marketplace',
+        loadComponent: () => import('./features/marketplace/marketplace.component').then(m => m.MarketplaceComponent),
+      },
+      {
+        path: 'observability',
+        loadComponent: () => import('./features/observability/monitoring.component').then(m => m.MonitoringComponent),
+      },
+      {
         path: 'explore',
         loadComponent: () => import('./features/explore/explore.component').then(m => m.ExploreComponent),
       },
