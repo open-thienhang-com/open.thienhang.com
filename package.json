@@ -10,6 +10,9 @@
     "prebuild": "node generate-public-files-list.js",
     "build": "ng build --output-path=dist/open-mesh --base-href=/",
     "deploy": "npx angular-cli-ghpages --dir=dist/open-mesh",
+    "start:travel": "ng serve travel",
+    "build:travel": "ng build travel",
+    "deploy:travel": "npx angular-cli-ghpages --dir=dist/travel/browser --repo=git@github.com:open-thienhang-com/travel.thienhang.com.git --branch=gh-pages",
     "test": "ng test"
   },
   "dependencies": {

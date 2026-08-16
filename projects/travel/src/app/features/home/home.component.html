@@ -1,0 +1,87 @@
+<!-- Hero -->
+<section class="relative overflow-hidden border-b-4 border-black neo-grid px-6 py-20 sm:py-28">
+  <span
+    class="absolute right-8 top-10 hidden h-16 w-16 animate-spin-slow items-center justify-center border-4 border-black bg-neo-secondary text-2xl shadow-neo-sm sm:flex"
+  >✦</span>
+  <span
+    class="absolute bottom-10 left-10 hidden rotate-12 border-4 border-black bg-neo-muted px-3 py-1 text-xs font-black uppercase tracking-widest shadow-neo-sm md:block"
+  >kinh phí · lịch trình · bản đồ</span>
+
+  <div class="relative mx-auto max-w-5xl">
+    <span
+      class="inline-block -rotate-2 border-4 border-black bg-neo-accent px-3 py-1 text-xs font-black uppercase tracking-widest text-black shadow-neo-sm"
+    >✦ Nhật ký hành trình</span>
+
+    <h1 class="mt-6 text-6xl font-black uppercase leading-[0.85] tracking-tighter sm:text-8xl md:text-9xl">
+      Những nơi
+      <br />
+      <span class="rotate-1 inline-block bg-black px-2 text-neo-secondary">tôi đã đi</span>
+      qua
+    </h1>
+
+    <p class="mt-8 max-w-xl text-lg font-bold text-black/70 sm:text-xl">
+      Hành trình, lịch trình từng ngày, bản đồ điểm đến và kinh phí thực tế — ghi lại đầy đủ cho mỗi chuyến đi.
+    </p>
+
+    <div class="mt-8 flex flex-wrap gap-4">
+      <a
+        routerLink="/journeys"
+        class="border-4 border-black bg-black px-6 py-3 text-sm font-bold uppercase tracking-widest text-white shadow-neo-md transition-all duration-100 ease-out hover:bg-neo-accent active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+      >Xem tất cả hành trình →</a>
+      @if (upcomingTrips().length) {
+        <a
+          routerLink="/journeys"
+          class="border-4 border-black bg-white px-6 py-3 text-sm font-bold uppercase tracking-widest shadow-neo-md transition-all duration-100 ease-out hover:bg-neo-muted active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+        >{{ upcomingTrips().length }} chuyến sắp đi</a>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section class="border-b-4 border-black bg-black">
+  <div class="mx-auto grid max-w-7xl grid-cols-2 lg:grid-cols-4">
+    <div class="border-r-4 border-black p-8 text-white last:border-r-0 lg:border-r-4">
+      <p class="text-4xl font-black sm:text-5xl">{{ completedTrips().length }}</p>
+      <p class="mt-1 text-xs font-bold uppercase tracking-widest text-neo-secondary">Hành trình đã đi</p>
+    </div>
+    <div class="border-r-4 border-black p-8 text-white last:border-r-0 lg:border-r-4">
+      <p class="text-4xl font-black sm:text-5xl">{{ destinationCount() }}</p>
+      <p class="mt-1 text-xs font-bold uppercase tracking-widest text-neo-secondary">Điểm đến</p>
+    </div>
+    <div class="border-r-4 border-t-4 border-black p-8 text-white last:border-r-0 lg:border-t-0 lg:border-r-4">
+      <p class="text-4xl font-black sm:text-5xl">{{ totalDays() }}</p>
+      <p class="mt-1 text-xs font-bold uppercase tracking-widest text-neo-secondary">Ngày trên đường</p>
+    </div>
+    <div class="border-t-4 border-black p-8 text-white lg:border-t-0">
+      <p class="text-3xl font-black sm:text-4xl">{{ totalBudgetText() }}</p>
+      <p class="mt-1 text-xs font-bold uppercase tracking-widest text-neo-secondary">Tổng kinh phí</p>
+    </div>
+  </div>
+</section>
+
+<!-- Featured journeys -->
+<section class="mx-auto max-w-7xl px-6 py-20">
+  <span class="block text-sm font-black uppercase tracking-widest text-neo-accent">01. Hành trình nổi bật</span>
+  <h2 class="mt-2 text-4xl font-black uppercase tracking-tighter sm:text-5xl">Đã đi qua</h2>
+
+  @if (loading()) {
+    <div class="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="h-80 animate-pulse border-4 border-black bg-neo-muted/40 shadow-neo-md"></div>
+      }
+    </div>
+  } @else if (error()) {
+    <p class="mt-10 border-4 border-black bg-neo-accent px-6 py-4 font-bold uppercase">{{ error() }}</p>
+  } @else if (!featuredTrips().length) {
+    <p class="mt-10 border-4 border-black bg-neo-bg px-6 py-8 text-lg font-bold">
+      Chưa có hành trình nào được ghi lại. Quay lại sau nhé!
+    </p>
+  } @else {
+    <div class="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      @for (trip of featuredTrips(); track trip.id) {
+        <app-journey-card [trip]="trip" />
+      }
+    </div>
+  }
+</section>
